@@ -3,10 +3,22 @@ PROJECT(spectrum)
 FIND_PACKAGE(Qt4 REQUIRED)
 
 #source code files
-SET(spectrum_ALLSOURCES %sources%)
+SET(spectrum_SOURCES %sources%)
+SET(z80interpreter_SOURCES %sources%)
 
-STRING(REGEX REPLACE "z80interpreter.*" "" spectrum_SOURCES ${spectrum_ALLSOURCES})
-STRING(REPLACE "spectrum_main.cpp" "" z80interpreter_SOURCES ${z80interpreter_SOURCES})
+FOREACH(item ${spectrum_SOURCES})
+	STRING(REGEX MATCH "z80interpreter.*" isMatch ${item})
+
+	IF(isMatch)
+		LIST(REMOVE_ITEM spectrum_SOURCES ${item})
+	ENDIF(isMatch)
+ENDFOREACH(item)
+
+LIST(REMOVE_ITEM z80interpreter_SOURCES "spectrum_main.cpp")
+
+MESSAGE(STATUS "Spectrum sources: ${spectrum_SOURCES}")
+MESSAGE(STATUS "Z80Interpreter sources: ${z80interpreter_SOURCES}")
+MESSAGE(FATAL_ERROR "Stopping now.")
 
 # files that need to be processed by uic
 SET(spectrum_UI_FILES %uifiles%)

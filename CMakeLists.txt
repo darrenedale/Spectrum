@@ -3,10 +3,22 @@ PROJECT(spectrum)
 FIND_PACKAGE(Qt4 REQUIRED)
 
 #source code files
-SET(spectrum_ALLSOURCES computer.cpp cpu.cpp imagewidget.cpp mainwindow.cpp qspectrumdebugwindow.cpp qspectrumdisplay.cpp spectrum.cpp spectrumdisplaydevice.cpp spectrum_main.cpp spectrumthread.cpp z80.cpp z80interpreter.cpp z80interpreter_main.cpp z80iodevice.cpp )
+SET(spectrum_SOURCES computer.cpp cpu.cpp imagewidget.cpp mainwindow.cpp qspectrumdebugwindow.cpp qspectrumdisplay.cpp spectrum.cpp spectrumdisplaydevice.cpp spectrum_main.cpp spectrumthread.cpp z80.cpp z80interpreter.cpp z80interpreter_main.cpp z80iodevice.cpp )
+SET(z80interpreter_SOURCES computer.cpp cpu.cpp imagewidget.cpp mainwindow.cpp qspectrumdebugwindow.cpp qspectrumdisplay.cpp spectrum.cpp spectrumdisplaydevice.cpp spectrum_main.cpp spectrumthread.cpp z80.cpp z80interpreter.cpp z80interpreter_main.cpp z80iodevice.cpp )
 
-STRING(REGEX REPLACE "z80interpreter.*" "" spectrum_SOURCES ${spectrum_ALLSOURCES})
-STRING(REPLACE "spectrum_main.cpp" "" z80interpreter_SOURCES ${z80interpreter_SOURCES})
+FOREACH(item ${spectrum_SOURCES})
+	STRING(REGEX MATCH "z80interpreter.*" isMatch ${item})
+
+	IF(isMatch)
+		LIST(REMOVE_ITEM spectrum_SOURCES ${item})
+	ENDIF(isMatch)
+ENDFOREACH(item)
+
+LIST(REMOVE_ITEM z80interpreter_SOURCES "spectrum_main.cpp")
+
+MESSAGE(STATUS "Spectrum sources: ${spectrum_SOURCES}")
+MESSAGE(STATUS "Z80Interpreter sources: ${z80interpreter_SOURCES}")
+MESSAGE(FATAL_ERROR "Stopping now.")
 
 # files that need to be processed by uic
 SET(spectrum_UI_FILES )
