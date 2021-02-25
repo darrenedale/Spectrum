@@ -222,7 +222,7 @@
 #define Z80__ADC__REG8__N(dest,n) { UnsignedByte oldValue = (dest); (dest) += (n) + (Z80_FLAG_C_ISSET ? 1 : 0); Z80_FLAG_N_CLEAR; Z80_FLAG_Z_UPDATE(0 == (dest)); Z80_FLAG_S_UPDATE((dest) & 0x80); Z80_FLAG_P_UPDATE((dest) < oldValue); Z80_FLAG_C_UPDATE((dest) < oldValue); Z80_FLAG_H_UPDATE(Z80_CHECK_8BIT_HALFCARRY(oldValue,(dest))); }
 #define Z80__ADC__REG8__REG8(dest,src) { UnsignedByte oldValue = (dest); (dest) += (src) + (Z80_FLAG_C_ISSET ? 1 : 0); Z80_FLAG_N_CLEAR; Z80_FLAG_Z_UPDATE(0 == (dest)); Z80_FLAG_S_UPDATE((dest) & 0x80); Z80_FLAG_P_UPDATE((dest) < oldValue); Z80_FLAG_C_UPDATE((dest) < oldValue); Z80_FLAG_H_UPDATE(Z80_CHECK_8BIT_HALFCARRY(oldValue,(dest))); }
 #define Z80__ADC__REG8__INDIRECT_REG16(dest,src) Z80__ADC__REG8__INDRIECT_REG16_D((dest), (src), 0)
-#define Z80__ADC__REG16__REG16(dest,src) { UnsignedByte oldValue = (dest); (dest) += (src) + (Z80_FLAG_C_ISSET ? 1 : 0); Z80_FLAG_N_CLEAR; Z80_FLAG_Z_UPDATE(0 == (dest)); Z80_FLAG_S_UPDATE((dest) & 0x8000); Z80_FLAG_P_UPDATE((dest) < oldValue); Z80_FLAG_C_UPDATE((dest) < oldValue); Z80_FLAG_H_UPDATE(Z80_CHECK_16BIT_HALFCARRY_10_TO_11(oldValue,(dest))); }
+#define Z80__ADC__REG16__REG16(dest,src) { UnsignedWord oldValue = (dest); (dest) += (src) + (Z80_FLAG_C_ISSET ? 1 : 0); Z80_FLAG_N_CLEAR; Z80_FLAG_Z_UPDATE(0 == (dest)); Z80_FLAG_S_UPDATE((dest) & 0x8000); Z80_FLAG_P_UPDATE((dest) < oldValue); Z80_FLAG_C_UPDATE((dest) < oldValue); Z80_FLAG_H_UPDATE(Z80_CHECK_16BIT_HALFCARRY_10_TO_11(oldValue,(dest))); }
 #define Z80__ADC__REG8__INDRIECT_REG16_D(dest, reg, d) { UnsignedByte oldValue = (dest); UnsignedWord addr = (reg) + (d); (dest) += (peekUnsigned(addr)) + (Z80_FLAG_C_ISSET ? 1 : 0); Z80_FLAG_N_CLEAR; Z80_FLAG_Z_UPDATE(0 == (dest)); Z80_FLAG_S_UPDATE((dest) & 0x80); Z80_FLAG_P_UPDATE((dest) < oldValue); Z80_FLAG_C_UPDATE((dest) < oldValue); Z80_FLAG_H_UPDATE(Z80_CHECK_8BIT_HALFCARRY(oldValue,(dest))); }
 #define Z80__ADC__REG8__INDIRECT_REG16_D(dest, reg, d) Z80__ADC__REG8__N((dest), peekUnsigned((reg) + (d)))
 
@@ -251,7 +251,18 @@
 #define Z80__SBC__REG8__N(dest,n) { UnsignedByte oldValue = (dest); (dest) -= ((n) + (Z80_FLAG_C_ISSET ? 1 : 0)); Z80_FLAG_N_SET; Z80_FLAG_Z_UPDATE(0 == (dest)); Z80_FLAG_S_DEFAULTBEHAVIOUR; Z80_FLAG_P_UPDATE((dest) > oldValue); Z80_FLAG_C_UPDATE((dest) > oldValue); Z80_FLAG_H_UPDATE(Z80_CHECK_8BIT_HALFCARRY(oldValue,(dest))); }
 #define Z80__SBC__REG8__REG8(dest,src) { UnsignedByte oldValue = (dest); (dest) -= ((src) + (Z80_FLAG_C_ISSET ? 1 : 0)); Z80_FLAG_N_SET; Z80_FLAG_Z_UPDATE(0 == (dest)); Z80_FLAG_S_DEFAULTBEHAVIOUR; Z80_FLAG_P_UPDATE((dest) > oldValue); Z80_FLAG_C_UPDATE((dest) > oldValue); Z80_FLAG_H_UPDATE(Z80_CHECK_8BIT_HALFCARRY(oldValue,(dest))); }
 #define Z80__SBC__REG8__INDIRECT_REG16(dest,src) { UnsignedByte oldValue = (dest); (dest) -= (peekUnsigned(src) + (Z80_FLAG_C_ISSET ? 1 : 0)); Z80_FLAG_N_SET; Z80_FLAG_Z_UPDATE(0 == (dest)); Z80_FLAG_S_DEFAULTBEHAVIOUR; Z80_FLAG_P_UPDATE((dest) > oldValue); Z80_FLAG_C_UPDATE((dest) > oldValue); Z80_FLAG_H_UPDATE(Z80_CHECK_8BIT_HALFCARRY(oldValue,(dest))); }
-#define Z80__SBC__REG16__REG16(dest,src) { UnsignedByte oldValue = (dest); (dest) -= ((src) + (Z80_FLAG_C_ISSET ? 1 : 0)); Z80_FLAG_N_SET; Z80_FLAG_Z_UPDATE(0 == (dest)); Z80_FLAG_S_DEFAULTBEHAVIOUR16; Z80_FLAG_P_UPDATE((dest) > oldValue); Z80_FLAG_C_UPDATE((dest) > oldValue); Z80_FLAG_H_UPDATE(Z80_CHECK_16BIT_HALFCARRY_10_TO_11(oldValue,(dest))); }
+
+#define Z80__SBC__REG16__REG16(dest, src) { \
+    UnsignedWord oldValue = (dest);         \
+    (dest) -= ((src) + (Z80_FLAG_C_ISSET ? 1 : 0)); \
+    Z80_FLAG_N_SET;                         \
+    Z80_FLAG_Z_UPDATE(0 == (dest));         \
+    Z80_FLAG_S_DEFAULTBEHAVIOUR16;          \
+    Z80_FLAG_P_UPDATE((dest) > oldValue);   \
+    Z80_FLAG_C_UPDATE((dest) > oldValue);   \
+    Z80_FLAG_H_UPDATE(Z80_CHECK_16BIT_HALFCARRY_10_TO_11(oldValue, (dest))); \
+}
+
 #define Z80__SBC__REG8__INDIRECT_REG16_D(dest,reg,d) Z80__SBC__REG8__N((dest), peekUnsigned((reg) + (d)))
 
 /* increment instructions
@@ -614,7 +625,12 @@
 //IN REG8,(REG8)
 //IN REG8,(n)
 
-const unsigned int Z80::DdOrFdOpcodeSize[256] = {
+namespace
+{
+    constexpr const int DefaultClockSpeed = 3500000;
+}
+
+constexpr const unsigned int Z80::DdOrFdOpcodeSize[256] = {
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
     2, 4, 4, 2, 2, 2, 3, 2, 2, 2, 4, 2, 2, 2, 2, 2,
@@ -635,64 +651,70 @@ const unsigned int Z80::DdOrFdOpcodeSize[256] = {
 };
 
 
-Z80::Z80( unsigned char * mem, int memSize )
-:	Cpu(mem, memSize),
+Z80::Z80(unsigned char * mem, int memSize)
+: Cpu(mem, memSize),
 	// the 16-bit registers are all 16-bit scalar variables. I and R are 8-bit and are 8-bit scalar variables
 	m_af(0),
-	m_bc(0),
-	m_de(0),
-	m_hl(0),
-	m_sp(0),
-	m_pc(0),
-	m_ix(0),
-	m_iy(0),
-	m_i(0),
-	m_r(0),
-	m_afshadow(0),
-	m_bcshadow(0),
-	m_deshadow(0),
-	m_hlshadow(0),
+  m_bc(0),
+  m_de(0),
+  m_hl(0),
+  m_sp(0),
+  m_pc(0),
+  m_ix(0),
+  m_iy(0),
+  m_i(0),
+  m_r(0),
+  m_afshadow(0),
+  m_bcshadow(0),
+  m_deshadow(0),
+  m_hlshadow(0),
 	// the 8-bit registers are all pointers to the appropriate 8 bits of the 16-bit register - these are initialised,
 	// taking into account host endianness, in init()
 	m_a(nullptr),
-	m_f(nullptr),
-	m_b(nullptr),
-	m_c(nullptr),
-	m_d(nullptr),
-	m_e(nullptr),
-	m_h(nullptr),
-	m_l(nullptr),
-	m_ashadow(nullptr),
-	m_fshadow(nullptr),
-	m_bshadow(nullptr),
-	m_cshadow(nullptr),
-	m_dshadow(nullptr),
-	m_eshadow(nullptr),
-	m_hshadow(nullptr),
-	m_lshadow(nullptr),
-	m_ram(mem),
-	m_ramSize(memSize),
-	m_nmiPending(false),
-	m_interruptRequested(false),
-	m_iff1(false),
-	m_iff2(false),
-	m_interruptMode(0),
-	m_ioDeviceConnections(nullptr),
-	m_ioDeviceCount(0),
-	m_ioDeviceCapacity(0)
+  m_f(nullptr),
+  m_b(nullptr),
+  m_c(nullptr),
+  m_d(nullptr),
+  m_e(nullptr),
+  m_h(nullptr),
+  m_l(nullptr),
+  m_ixh(nullptr),
+  m_ixl(nullptr),
+  m_iyh(nullptr),
+  m_iyl(nullptr),
+  m_ashadow(nullptr),
+  m_fshadow(nullptr),
+  m_bshadow(nullptr),
+  m_cshadow(nullptr),
+  m_dshadow(nullptr),
+  m_eshadow(nullptr),
+  m_hshadow(nullptr),
+  m_lshadow(nullptr),
+  m_ram(mem),
+  m_ramSize(memSize),
+  m_clockSpeed(DefaultClockSpeed),
+  m_nmiPending(false),
+  m_interruptRequested(false),
+  m_iff1(false),
+  m_iff2(false),
+  m_interruptMode(0),
+  m_ioDeviceConnections(nullptr),
+  m_ioDeviceCount(0),
+  m_ioDeviceCapacity(0),
+  m_interruptMode0Instruction{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 {
 	init();
 }
 
 Z80::~Z80() = default;
 
-bool Z80::isEvenParity( Z80::UnsignedByte v )
+bool Z80::isEvenParity(Z80::UnsignedByte v)
 {
-	static bool s_parityLut[256] = {
+	static bool parityLut[256] = {
 #include "evenparitytable8.inc"
 	};
 
-	return s_parityLut[v];
+	return parityLut[v];
 
 //	int c = 0;
 //	UnsignedByte mask = 1;
@@ -710,11 +732,11 @@ bool Z80::isEvenParity( Z80::UnsignedByte v )
 
 bool Z80::isEvenParity(Z80::UnsignedWord v)
 {
-	static bool s_parityLut[65536] = {
+	static bool parityLut[65536] = {
 #include "evenparitytable16.inc"
 	};
 
-	return s_parityLut[v];
+	return parityLut[v];
 
 //	int c = 0;
 //	UnsignedByte mask = 1;
@@ -784,7 +806,7 @@ void Z80::init()
 	m_ioDeviceCount = 0;
 	m_ioDeviceCapacity = 100;
 	m_ioDeviceConnections = (IODeviceConnection **) malloc(sizeof(IODeviceConnection *) * m_ioDeviceCapacity);
-	*m_interrruptMode0Instruction = 0;
+	*m_interruptMode0Instruction = 0;
 
 	/* set up opcode cycle costs */
 #include "z80_plain_opcode_cycles.inc"
@@ -804,7 +826,7 @@ void Z80::init()
 }
 
 
-bool Z80::connectIODevice( Z80::UnsignedWord port, Z80IODevice * device )
+bool Z80::connectIODevice(Z80::UnsignedWord port, Z80IODevice * device)
 {
 	if (m_ioDeviceCount >= m_ioDeviceCapacity) {
 		m_ioDeviceCapacity += 100;
@@ -818,8 +840,7 @@ bool Z80::connectIODevice( Z80::UnsignedWord port, Z80IODevice * device )
 	return true;
 }
 
-
-void Z80::disconnectIODevice( Z80::UnsignedWord port, Z80IODevice * device ) {
+void Z80::disconnectIODevice(Z80::UnsignedWord port, Z80IODevice * device) {
 	for(int i = 0; i < m_ioDeviceCount; ++i) {
 		if (m_ioDeviceConnections[i]->device == device && m_ioDeviceConnections[i]->port == port) {
 			m_ioDeviceConnections[i]->device->setCpu(0);
@@ -832,30 +853,28 @@ void Z80::disconnectIODevice( Z80::UnsignedWord port, Z80IODevice * device ) {
 	}
 }
 
-
-void Z80::setInterruptMode0Instruction( Z80::UnsignedByte * instructions, int bytes ) {
-	for(int i = 0; i < bytes; ++i)
-		m_interrruptMode0Instruction[i] = instructions[i];
+void Z80::setInterruptMode0Instruction(Z80::UnsignedByte * instructions, int bytes) {
+	for(int i = 0; i < bytes; ++i) {
+        m_interruptMode0Instruction[i] = instructions[i];
+    }
 }
 
-
-void Z80::interrupt( void ) {
+void Z80::interrupt() {
 	m_interruptRequested = true;
 }
 
-
-void Z80::nmi( void ) {
+void Z80::nmi()
+{
 	m_nmiPending = true;
 }
 
-
-void Z80::reset( void ) {
+void Z80::reset()
+{
 	m_iff1 = m_iff2 = false;
 	m_nmiPending = false;
 	m_bc = m_de = m_hl = m_pc = m_bcshadow = m_deshadow = m_hlshadow = m_ix = m_iy = 0x0000;
 	m_af = m_afshadow = m_sp = 0xffff;
 }
-
 
 // TODO this doesn't belong here - the loop should be in the controlling Computer object
 void Z80::start()
@@ -868,7 +887,8 @@ void Z80::start()
 }
 
 
-void Z80::pokeUnsignedWord( int addr, Z80::UnsignedWord v ) {
+void Z80::pokeUnsignedWord(int addr, Z80::UnsignedWord v)
+{
 	if (addr < 0 || addr >= (m_ramSize - 1)) return;
 	v = Z80::hostToZ80ByteOrder(v);
 	m_ram[addr] = (Z80::UnsignedByte)((v & 0xff00) >> 8);
@@ -876,7 +896,7 @@ void Z80::pokeUnsignedWord( int addr, Z80::UnsignedWord v ) {
 }
 
 
-bool Z80::execute( const Z80::UnsignedByte * instruction, bool doPc, int * cycles, int * size )
+bool Z80::execute(const Z80::UnsignedByte * instruction, bool doPc, int * cycles, int * size)
 {
 	static int dummySize;
 
@@ -944,9 +964,9 @@ int Z80::fetchExecuteCycle()
 				}
 
 				/* execute the instruction */
-				execute(m_interrruptMode0Instruction, false);
+				execute(m_interruptMode0Instruction, false);
 				// clear the instruction cache - actually just turns it into a NOP
-				*m_interrruptMode0Instruction = 0;
+				*m_interruptMode0Instruction = 0;
 				break;
 
 			case 1:
@@ -967,7 +987,7 @@ int Z80::fetchExecuteCycle()
 }
 
 
-bool Z80::executePlainInstruction( const Z80::UnsignedByte * instruction, bool * doPc, int * cycles, int * size )
+bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * doPc, int * cycles, int * size)
 {
 	bool useJumpCycleCost = false;
 
@@ -2330,7 +2350,7 @@ bool Z80::executePlainInstruction( const Z80::UnsignedByte * instruction, bool *
 
 
 // no 0xcb instructions directly modify the PC so we don't need to receive the (bool *) doPc parameter to indicate this
-bool Z80::executeCbInstruction( const Z80::UnsignedByte * instruction, int * cycles, int * size )
+bool Z80::executeCbInstruction(const Z80::UnsignedByte * instruction, int * cycles, int * size)
 {
 	bool useJumpCycleCost = false;
 
@@ -3380,7 +3400,7 @@ bool Z80::executeCbInstruction( const Z80::UnsignedByte * instruction, int * cyc
 }
 
 
-bool Z80::executeEdInstruction( const Z80::UnsignedByte * instruction, bool * doPc, int * cycles, int * size )
+bool Z80::executeEdInstruction(const Z80::UnsignedByte * instruction, bool * doPc, int * cycles, int * size)
 {
 	bool useJumpCycleCost = false;
 
@@ -3588,7 +3608,17 @@ bool Z80::executeEdInstruction( const Z80::UnsignedByte * instruction, bool * do
 			break;
 
 		case Z80__ED__SBC__HL__BC:					/* 0xed 0x42 */
-			Z80__SBC__REG16__REG16(m_hl, m_bc);
+//        {
+//            UnsignedWord oldValue = (m_hl);
+//            (m_hl) -= ((m_bc) + (Z80_FLAG_C_ISSET ? 1 : 0));
+//            Z80_FLAG_N_SET;
+//            Z80_FLAG_Z_UPDATE(0 == (m_hl));
+//            Z80_FLAG_S_DEFAULTBEHAVIOUR16;
+//            Z80_FLAG_P_UPDATE((m_hl) > oldValue);
+//            Z80_FLAG_C_UPDATE((m_hl) > oldValue);
+//            Z80_FLAG_H_UPDATE(Z80_CHECK_16BIT_HALFCARRY_10_TO_11(oldValue, (m_hl)));
+//        }
+            Z80__SBC__REG16__REG16(m_hl, m_bc);
 			break;
 
 		case Z80__ED__LD__INDIRECT_NN__BC:		/* 0xed 0x43 */
@@ -4473,7 +4503,7 @@ bool Z80::executeEdInstruction( const Z80::UnsignedByte * instruction, bool * do
 }
 
 
-bool Z80::executeDdOrFdInstruction( Z80::UnsignedWord & reg, const Z80::UnsignedByte * instruction, bool * doPc, int * cycles, int * size )
+bool Z80::executeDdOrFdInstruction(Z80::UnsignedWord & reg, const Z80::UnsignedByte * instruction, bool * doPc, int * cycles, int * size)
 {
 	Z80_UNUSED(doPc);
 	bool useJumpCycleCost = false;
@@ -5062,7 +5092,7 @@ bool Z80::executeDdOrFdInstruction( Z80::UnsignedWord & reg, const Z80::Unsigned
 }
 
 
-bool Z80::executeDdcbOrFdcbInstruction( Z80::UnsignedWord & reg, const Z80::UnsignedByte * instruction, int * cycles, int * size )
+bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::UnsignedByte * instruction, int * cycles, int * size)
 {
 	/* NOTE these opcodes are of the form 0xdd 0xcb DD II or 0xfd 0xcb DD II
 	 * where II is the opcode and DD is the offset to use with IX or IY */
@@ -6096,7 +6126,7 @@ bool Z80::executeDdcbOrFdcbInstruction( Z80::UnsignedWord & reg, const Z80::Unsi
 	return true;
 }
 
-Z80::UnsignedWord Z80::registerValue( Register16 reg ) const
+Z80::UnsignedWord Z80::registerValue(Register16 reg) const
 {
 	switch (reg) {
 		case Register16::AF: return m_af;
@@ -6116,7 +6146,7 @@ Z80::UnsignedWord Z80::registerValue( Register16 reg ) const
 	return 0;
 }
 
-Z80::UnsignedByte Z80::registerValue( Register8 reg ) const
+Z80::UnsignedByte Z80::registerValue(Register8 reg) const
 {
 	switch (reg) {
 		case Register8::A: return *m_a;
@@ -6166,7 +6196,7 @@ void Z80::setRegisterValue( Register16 reg, Z80::UnsignedWord value)
 	}
 }
 
-void Z80::setRegisterValue( Register8 reg, Z80::UnsignedByte value )
+void Z80::setRegisterValue(Register8 reg, Z80::UnsignedByte value)
 {
 	switch (reg) {
 		case Register8::A: *m_a = value; break;
@@ -6194,7 +6224,7 @@ void Z80::setRegisterValue( Register8 reg, Z80::UnsignedByte value )
 	}
 }
 
-Z80::UnsignedWord Z80::peekUnsignedWord( int addr ) const
+Z80::UnsignedWord Z80::peekUnsignedWord(int addr) const
 {
 	if (addr < 0 || addr >= (m_ramSize - 1)) {
 	    return 0;
