@@ -1,13 +1,14 @@
 #ifndef Z80INTERPRETER_H
 #define Z80INTERPRETER_H
 
-#include "z80.h"
+#include "../z80.h"
 #include <QString>
 #include <QStringList>
 #include <QVector>
 #include <QRegExp>
 
-class Z80Interpreter {
+class Z80Interpreter
+{
 	public:
 		enum NumberFormat {
 			HexFormat = 0x01,
@@ -20,13 +21,13 @@ class Z80Interpreter {
 		typedef int NumberFormats;
 
 		Z80Interpreter( Z80 * cpu );
-		virtual ~Z80Interpreter( void );
+		virtual ~Z80Interpreter();
 
-		bool hasCpu( void ) const;
-		Z80 * cpu( void ) const;
+		bool hasCpu() const;
+		Z80 * cpu() const;
 		void setCpu( Z80 * cpu );
 
-		void run( void );
+		void run();
 
 		static void run( Z80 * cpu );
 
@@ -35,7 +36,7 @@ class Z80Interpreter {
 
 		static const Opcode InvalidInstruction;
 
-		QString readInput( void );
+		QString readInput();
 		static QStringList tokenise( const QString & input );
 
 		/* returns true if the interpreter should continue running, false if it
@@ -45,19 +46,19 @@ class Z80Interpreter {
 		/* dot-command methods */
 		void handleDotCommand( const QStringList & tokens );
 
-		void dotHelp( void ) const;
-		void dotShowOpcodes( void );
-		void dotHideOpcodes( void );
-		void dotShowCosts( void );
-		void dotHideCosts( void );
+		void dotHelp() const;
+		void dotShowOpcodes();
+		void dotHideOpcodes();
+		void dotShowCosts();
+		void dotHideCosts();
 		void dotAutoShowFlags( const QStringList & tokens );
 
-		void dotStatus( void ) const;
-		void dotDumpFlags( void ) const;
+		void dotStatus() const;
+		void dotDumpFlags() const;
 		void dotDumpMemory( const QStringList & tokens ) const;
 		void dotDumpMemory( int low, int len = 16 ) const;
 
-		void dotDumpRegisters( void ) const;
+		void dotDumpRegisters() const;
 		void dotRegisterValue( const QStringList & tokens ) const;
 		void dotRegisterValue( const Z80::Register8 reg, const NumberFormats & fmt = AllFormats ) const;
 		void dotRegisterValue( const Z80::Register16 reg, const NumberFormats & fmt = AllFormats  ) const;
@@ -137,7 +138,7 @@ class Z80Interpreter {
 		static Opcode assembleXOR( const QStringList & tokens );
 
 	private:
-		void discardCpu( void );
+		void discardCpu();
 
 		static QRegExp s_indirectAddress;
 		static QRegExp s_indirectRegister;

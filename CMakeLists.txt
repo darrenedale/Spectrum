@@ -44,8 +44,8 @@ add_executable(
         src/spectrum.cpp
         src/spectrumthread.cpp
         src/z80.cpp
-        src/z80interpreter.cpp
-        src/z80interpreter_main.cpp
+        src/interpreter/z80interpreter.cpp
+        src/interpreter/main.cpp
         src/z80iodevice.cpp
 )
 
