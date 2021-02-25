@@ -8,6 +8,7 @@
 #include <QSpinBox>
 #include <QFileDialog>
 #include <QDebug>
+#include <QSettings>
 
 #include "qspectrumdisplay.h"
 #include "spectrumthread.h"
@@ -34,7 +35,6 @@ MainWindow::MainWindow( QWidget * parent )
 	setCentralWidget(m_display);
 	connectWidgets();
 	m_spectrumThread->start();
-	m_spectrumThread->pause();
 }
 
 MainWindow::~MainWindow()
@@ -60,11 +60,10 @@ void MainWindow::createWidgets()
 	m_display = new QSpectrumDisplay();
 	QToolBar * myToolBar = addToolBar("Main");
 	m_startPause = myToolBar->addAction(QIcon::fromTheme("media-playback-start"), tr("Start/Pause"));
-	m_startPause->setCheckable(true);
 	m_reset = myToolBar->addAction(tr("Reset"));
 	m_debug = myToolBar->addAction(tr("Debug"));
 	m_debug->setCheckable(true);
-	m_debugStep = myToolBar->addAction(tr("Step"));
+	m_debugStep = myToolBar->addAction(QIcon::fromTheme("debug-step-instruction"), tr("Step"));
 	m_snapshot = myToolBar->addAction(QIcon::fromTheme("image"), tr("Snapshot"));
 	myToolBar->addSeparator();
 	m_emulationSpeedSlider = new QSlider(Qt::Horizontal);
@@ -85,15 +84,23 @@ void MainWindow::connectWidgets()
 	connect(m_emulationSpeedSlider, &QSlider::valueChanged, m_emulationSpeedSpin, &QSpinBox::setValue);
 	connect(m_emulationSpeedSpin, qOverload<int>(&QSpinBox::valueChanged), m_emulationSpeedSlider, &QSlider::setValue);
 
-	connect(m_startPause, &QAction::toggled, this, &MainWindow::slotStartPause);
+	connect(m_startPause, &QAction::triggered, this, &MainWindow::startPauseClicked);
 	connect(m_reset, &QAction::triggered, m_spectrumThread.get(), &SpectrumThread::reset, Qt::QueuedConnection);
 	connect(m_debug, &QAction::triggered, m_spectrumThread.get(), &SpectrumThread::setDebugMode, Qt::QueuedConnection);
 	connect(m_debug, &QAction::triggered, m_debugWindow, &QSpectrumDebugWindow::setVisible);
 	connect(m_debug, &QAction::triggered, m_debugWindow, &QSpectrumDebugWindow::updateStateDisplay);
 	connect(m_debugStep, &QAction::triggered, m_spectrumThread.get(), &SpectrumThread::step, Qt::QueuedConnection);
 	connect(m_reset, &QAction::triggered, m_spectrumThread.get(), &SpectrumThread::reset, Qt::QueuedConnection);
-	connect(m_snapshot, &QAction::triggered, this, &MainWindow::slotSnapshot);
+	connect(m_snapshot, &QAction::triggered, this, &MainWindow::snapshotTriggered);
 	connect(m_spectrumThread.get(), &SpectrumThread::debugStepTaken, m_debugWindow, &QSpectrumDebugWindow::updateStateDisplay, Qt::QueuedConnection);
+
+	connect(m_spectrumThread.get(), &SpectrumThread::started, [this]() {
+	    m_startPause->setIcon(QIcon::fromTheme("media-playback-pause"));
+	});
+
+	connect(m_spectrumThread.get(), &SpectrumThread::finished, [this]() {
+	    m_startPause->setIcon(QIcon::fromTheme("media-playback-start"));
+	});
 }
 
 void MainWindow::saveSnapshot(const QString & fileName) const
@@ -101,18 +108,18 @@ void MainWindow::saveSnapshot(const QString & fileName) const
 	m_display->image().save(fileName);
 }
 
-void MainWindow::slotStartPause(bool resume)
+void MainWindow::startPauseClicked()
 {
-	qDebug() << (resume ? "resuming" : "pausing");
-
-	if (resume) {
+	if (m_spectrumThread->paused()) {
         m_spectrumThread->resume();
+        m_startPause->setIcon(QIcon::fromTheme("media-playback-pause"));
     } else {
         m_spectrumThread->pause();
+        m_startPause->setIcon(QIcon::fromTheme("media-playback-start"));
     }
 }
 
-void MainWindow::slotSnapshot()
+void MainWindow::snapshotTriggered()
 {
 	static QStringList s_filters;
 
@@ -129,6 +136,19 @@ void MainWindow::slotSnapshot()
 
 void MainWindow::closeEvent(QCloseEvent * ev)
 {
+    QSettings settings;
+    settings.beginGroup("mainwindow");
+    settings.setValue("position", pos());
+    settings.setValue("size", size());
+    settings.endGroup();
     m_debugWindow->close();
     QWidget::closeEvent(ev);
+}
+
+void MainWindow::showEvent(QShowEvent * ev)
+{
+    QSettings settings;
+    settings.beginGroup("mainwindow");
+    setGeometry({settings.value(QStringLiteral("position")).toPoint(), settings.value(QStringLiteral("size")).toSize()});
+    settings.endGroup();
 }
