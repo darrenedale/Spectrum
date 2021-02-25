@@ -21,7 +21,18 @@ add_executable(
         src/spectrumthread.cpp
         src/z80.cpp
         src/z80iodevice.cpp
+        src/application.cpp
+        src/application.h
 )
+
+add_executable(
+        screenview
+        src/screenview/main.cpp
+        src/screenview/application.cpp
+        src/screenview/mainwindow.cpp
+        src/imagewidget.cpp
+        src/qspectrumdisplay.cpp
+        src/screenview/mainwindow.cpp src/screenview/mainwindow.h)
 
 add_executable(
         z80interpreter
@@ -39,10 +50,11 @@ add_executable(
 )
 
 set_target_properties(
-        spectrum z80interpreter
+        spectrum z80interpreter screenview
         PROPERTIES
             CXX_STANDARD 17
 )
 
 target_link_libraries(spectrum Qt5::Core Qt5::Gui Qt5::Widgets)
 target_link_libraries(z80interpreter Qt5::Core Qt5::Gui Qt5::Widgets)
+target_link_libraries(screenview Qt5::Core Qt5::Gui Qt5::Widgets)
