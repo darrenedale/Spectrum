@@ -25,6 +25,16 @@ namespace Spectrum {
 				return m_spectrum;
 			}
 
+			inline bool paused() const
+            {
+			    return m_pause;
+            }
+
+			inline bool debugMode() const
+            {
+			    return m_debugMode;
+            }
+
 		Q_SIGNALS:
 			void debugStepTaken();
 
