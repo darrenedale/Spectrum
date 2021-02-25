@@ -1,6 +1,7 @@
 #ifndef SPECTRUM_MAINWINDOW_H
 #define SPECTRUM_MAINWINDOW_H
 
+#include <memory>
 #include <QMainWindow>
 
 #include "spectrum.h"
@@ -20,25 +21,28 @@ namespace Spectrum {
 		 Q_OBJECT
 
 		public:
-			 MainWindow( QWidget * parent = 0 );
-			 ~MainWindow( void );
+			 MainWindow(QWidget * = nullptr);
+			 virtual ~MainWindow();
 
 			void saveSnapshot( const QString & fileName ) const;
 
 			inline Spectrum & spectrum( void ) {
-				return m_speccy;
+				return m_spectrum;
 			}
 
-		protected slots:
-			void slotStartPause( bool state );
-			void slotSnapshot( void );
+	protected:
+	    void closeEvent(QCloseEvent *) override;
+
+		protected Q_SLOTS:
+			void slotStartPause(bool);
+			void slotSnapshot();
 
 		private:
-			void createWidgets( void );
-			void connectWidgets( void );
+			void createWidgets();
+			void connectWidgets();
 
-			SpectrumThread * m_speccyThread;
-			Spectrum m_speccy;
+			std::unique_ptr<SpectrumThread> m_spectrumThread;
+			Spectrum m_spectrum;
 			QSpectrumDisplay * m_display;
 			QAction * m_startPause, * m_snapshot, * m_reset, * m_debug, * m_debugStep;
 			QSlider * m_emulationSpeedSlider;

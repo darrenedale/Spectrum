@@ -6,29 +6,30 @@
 class QSpinBox;
 class QLineEdit;
 
-namespace Spectrum {
+namespace Spectrum
+{
 	class Spectrum;
 
 	class QSpectrumDebugWindow
-	:	public QWidget {
-
+	:	public QWidget
+	{
 		Q_OBJECT
 
 		public:
-			QSpectrumDebugWindow( QWidget * parent = 0 );
-			QSpectrumDebugWindow( Spectrum * spectrum, QWidget * parent = 0 );
+			explicit QSpectrumDebugWindow( QWidget * = nullptr );
+			explicit QSpectrumDebugWindow( Spectrum * spectrum, QWidget * = nullptr );
 
-		public slots:
-			void updateStateDisplay( void );
-			void setMemoryDisplayStart( int address );
+		public Q_SLOTS:
+			void updateStateDisplay();
+			void setMemoryDisplayStart(int);
 
-		private slots:
-			void setRegister( void );
+		private Q_SLOTS:
+			void setRegister(int);
 
 		private:
-			QSpinBox * createRegisterSpinBox( int bits );
-			void createWidgets( void );
-			void connectWidgets( void );
+			QSpinBox * createRegisterSpinBox(int) const;
+			void createWidgets();
+			void connectWidgets();
 
 			Spectrum * m_spectrum;
 			int m_displayMemAddr;

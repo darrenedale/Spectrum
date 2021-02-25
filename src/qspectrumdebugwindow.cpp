@@ -11,93 +11,60 @@
 using namespace Spectrum;
 
 QSpectrumDebugWindow::QSpectrumDebugWindow( QWidget * parent )
-:	QWidget(parent),
-	m_spectrum(0),
-	m_af(0),
-	m_bc(0),
-	m_de(0),
-	m_hl(0),
-	m_ix(0),
-	m_iy(0),
-	m_afshadow(0),
-	m_bcshadow(0),
-	m_deshadow(0),
-	m_hlshadow(0),
-	m_pc(0),
-	m_sp(0),
-	m_a(0),
-	m_b(0),
-	m_c(0),
-	m_d(0),
-	m_e(0),
-	m_h(0),
-	m_l(0),
-	m_ashadow(0),
-	m_bshadow(0),
-	m_cshadow(0),
-	m_dshadow(0),
-	m_eshadow(0),
-	m_hshadow(0),
-	m_lshadow(0),
-	m_ixh(0),
-	m_ixl(0),
-	m_iyh(0),
-	m_iyl(0),
-	m_instruction(0) {
-	createWidgets();
-	connectWidgets();
+:	QSpectrumDebugWindow(nullptr, parent)
+{
 }
 
 
 QSpectrumDebugWindow::QSpectrumDebugWindow( Spectrum * spectrum, QWidget * parent )
 :	QWidget(parent),
 	m_spectrum(spectrum),
-	m_af(0),
-	m_bc(0),
-	m_de(0),
-	m_hl(0),
-	m_ix(0),
-	m_iy(0),
-	m_afshadow(0),
-	m_bcshadow(0),
-	m_deshadow(0),
-	m_hlshadow(0),
-	m_pc(0),
-	m_sp(0),
-	m_a(0),
-	m_b(0),
-	m_c(0),
-	m_d(0),
-	m_e(0),
-	m_h(0),
-	m_l(0),
-	m_ashadow(0),
-	m_bshadow(0),
-	m_cshadow(0),
-	m_dshadow(0),
-	m_eshadow(0),
-	m_hshadow(0),
-	m_lshadow(0),
-	m_ixh(0),
-	m_ixl(0),
-	m_iyh(0),
-	m_iyl(0),
-	m_instruction(0) {
+	m_af(nullptr),
+	m_bc(nullptr),
+	m_de(nullptr),
+	m_hl(nullptr),
+	m_ix(nullptr),
+	m_iy(nullptr),
+	m_afshadow(nullptr),
+	m_bcshadow(nullptr),
+	m_deshadow(nullptr),
+	m_hlshadow(nullptr),
+	m_pc(nullptr),
+	m_sp(nullptr),
+	m_a(nullptr),
+	m_b(nullptr),
+	m_c(nullptr),
+	m_d(nullptr),
+	m_e(nullptr),
+	m_h(nullptr),
+	m_l(nullptr),
+	m_ashadow(nullptr),
+	m_bshadow(nullptr),
+	m_cshadow(nullptr),
+	m_dshadow(nullptr),
+	m_eshadow(nullptr),
+	m_hshadow(nullptr),
+	m_lshadow(nullptr),
+	m_ixh(nullptr),
+	m_ixl(nullptr),
+	m_iyh(nullptr),
+	m_iyl(nullptr),
+	m_instruction(nullptr) {
 	createWidgets();
 	connectWidgets();
 }
 
-
-QSpinBox * QSpectrumDebugWindow::createRegisterSpinBox( int bits ) {
-	QSpinBox * ret = new QSpinBox();
+QSpinBox * QSpectrumDebugWindow::createRegisterSpinBox(int bits) const
+{
+	auto * ret = new QSpinBox();
 	ret->setMinimum(0);
 	ret->setMaximum((1 << bits) - 1);
-	connect(ret, SIGNAL(valueChanged(int)), this, SLOT(setRegister()));
+	connect(ret, qOverload<int>(&QSpinBox::valueChanged), this, &QSpectrumDebugWindow::setRegister);
 	return ret;
 }
 
-
-void QSpectrumDebugWindow::createWidgets( void ) {
+void QSpectrumDebugWindow::createWidgets()
+{
 	m_af = createRegisterSpinBox(16);
 	m_bc = createRegisterSpinBox(16);
 	m_de = createRegisterSpinBox(16);
@@ -133,8 +100,8 @@ void QSpectrumDebugWindow::createWidgets( void ) {
 	/*
 	 * layout
 	 */
-	QHBoxLayout * plainRegisters = new QHBoxLayout();
-	QHBoxLayout * shadowRegisters = new QHBoxLayout();
+	auto * plainRegisters = new QHBoxLayout();
+	auto * shadowRegisters = new QHBoxLayout();
 	QLabel * myLabel;
 
 	/* normal registers */
@@ -279,7 +246,7 @@ void QSpectrumDebugWindow::createWidgets( void ) {
 	shadowRegisters->addWidget(myLabel);
 	shadowRegisters->addWidget(m_hlshadow);
 
-	QVBoxLayout * myLayout = new QVBoxLayout();
+	auto * myLayout = new QVBoxLayout();
 	myLayout->addLayout(plainRegisters);
 	myLayout->addLayout(shadowRegisters);
 	myLayout->addWidget(m_instruction);
@@ -288,54 +255,67 @@ void QSpectrumDebugWindow::createWidgets( void ) {
 }
 
 
-void QSpectrumDebugWindow::connectWidgets( void ) {
+void QSpectrumDebugWindow::connectWidgets()
+{
 }
 
 
-void QSpectrumDebugWindow::setRegister( void ) {
-	if(!m_spectrum) return;
+void QSpectrumDebugWindow::setRegister(int value)
+{
+	if (!m_spectrum) {
+	    return;
+	}
 
-	Z80 * cpu = dynamic_cast<Z80 *>(m_spectrum->cpu());
-	if(!cpu) return;
+	auto * cpu = m_spectrum->z80();
 
-		if(sender() == m_af) cpu->setAf(m_af->value());
-		else if(sender() == m_bc) cpu->setBc(m_bc->value());
-		else if(sender() == m_de) cpu->setDe(m_de->value());
-		else if(sender() == m_hl) cpu->setHl(m_hl->value());
-		else if(sender() == m_ix) cpu->setIx(m_ix->value());
-		else if(sender() == m_iy) cpu->setIy(m_iy->value());
-		else if(sender() == m_afshadow) cpu->setAfShadow(m_afshadow->value());
-		else if(sender() == m_bcshadow) cpu->setBcShadow(m_bcshadow->value());
-		else if(sender() == m_deshadow) cpu->setDeShadow(m_deshadow->value());
-		else if(sender() == m_hlshadow) cpu->setHlShadow(m_hlshadow->value());
-		else if(sender() == m_pc) cpu->setPc(m_pc->value());
-		else if(sender() == m_sp) cpu->setSp(m_sp->value());
-		else if(sender() == m_a) cpu->setA(m_a->value());
-		else if(sender() == m_b) cpu->setB(m_b->value());
-		else if(sender() == m_c) cpu->setC(m_c->value());
-		else if(sender() == m_d) cpu->setD(m_d->value());
-		else if(sender() == m_e) cpu->setE(m_e->value());
-		else if(sender() == m_h) cpu->setH(m_h->value());
-		else if(sender() == m_l) cpu->setL(m_l->value());
-		else if(sender() == m_ashadow) cpu->setAShadow(m_ashadow->value());
-		else if(sender() == m_bshadow) cpu->setBShadow(m_bshadow->value());
-		else if(sender() == m_cshadow) cpu->setCShadow(m_cshadow->value());
-		else if(sender() == m_dshadow) cpu->setDShadow(m_dshadow->value());
-		else if(sender() == m_eshadow) cpu->setEShadow(m_eshadow->value());
-		else if(sender() == m_hshadow) cpu->setHShadow(m_hshadow->value());
-		else if(sender() == m_lshadow) cpu->setLShadow(m_lshadow->value());
-//		else if(sender() == m_ixh) cpu->setIxh(m_ixh->value());
-//		else if(sender() == m_ixl) cpu->seIxl(m_ixl->value());
-//		else if(sender() == m_iyh) cpu->setIyh(m_iyh->value());
-//		else if(sender() == m_iyl) cpu->setIyl(m_iyl->value());
+	if(!cpu) {
+        return;
+    }
+
+    if(sender() == m_af) cpu->setAf(value);
+    else if(sender() == m_bc) cpu->setBc(value);
+    else if(sender() == m_de) cpu->setDe(value);
+    else if(sender() == m_hl) cpu->setHl(value);
+    else if(sender() == m_ix) cpu->setIx(value);
+    else if(sender() == m_iy) cpu->setIy(value);
+    else if(sender() == m_afshadow) cpu->setAfShadow(value);
+    else if(sender() == m_bcshadow) cpu->setBcShadow(value);
+    else if(sender() == m_deshadow) cpu->setDeShadow(value);
+    else if(sender() == m_hlshadow) cpu->setHlShadow(value);
+    else if(sender() == m_pc) cpu->setPc(value);
+    else if(sender() == m_sp) cpu->setSp(value);
+    else if(sender() == m_a) cpu->setA(value);
+    else if(sender() == m_b) cpu->setB(value);
+    else if(sender() == m_c) cpu->setC(value);
+    else if(sender() == m_d) cpu->setD(value);
+    else if(sender() == m_e) cpu->setE(value);
+    else if(sender() == m_h) cpu->setH(value);
+    else if(sender() == m_l) cpu->setL(value);
+    else if(sender() == m_ashadow) cpu->setAShadow(value);
+    else if(sender() == m_bshadow) cpu->setBShadow(value);
+    else if(sender() == m_cshadow) cpu->setCShadow(value);
+    else if(sender() == m_dshadow) cpu->setDShadow(value);
+    else if(sender() == m_eshadow) cpu->setEShadow(value);
+    else if(sender() == m_hshadow) cpu->setHShadow(value);
+    else if(sender() == m_lshadow) cpu->setLShadow(value);
+//		else if(sender() == m_ixh) cpu->setIxh(value);
+//		else if(sender() == m_ixl) cpu->seIxl(value);
+//		else if(sender() == m_iyh) cpu->setIyh(value);
+//		else if(sender() == m_iyl) cpu->setIyl(value);
 }
 
 
-void QSpectrumDebugWindow::updateStateDisplay( void ) {
-	if(!m_spectrum) return;
+void QSpectrumDebugWindow::updateStateDisplay()
+{
+	if(!m_spectrum) {
+	    return;
+	}
 
-	Z80 * cpu = dynamic_cast<Z80 *>(m_spectrum->cpu());
-	if(!cpu) return;
+	auto * cpu = m_spectrum->z80();
+
+	if (!cpu) {
+	    return;
+	}
 
 	m_af->setValue(cpu->afRegisterValue());
 	m_bc->setValue(cpu->bcRegisterValue());
@@ -370,6 +350,7 @@ void QSpectrumDebugWindow::updateStateDisplay( void ) {
 }
 
 
-void QSpectrumDebugWindow::setMemoryDisplayStart( int address ) {
+void QSpectrumDebugWindow::setMemoryDisplayStart(int address)
+{
 
 }
