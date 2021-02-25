@@ -34,3 +34,5 @@ void ImageWidget::paintEvent(QPaintEvent *)
     p.drawImage(QRect(QPoint(0, 0), size()), m_image);
     p.end();
 }
+
+ImageWidget::~ImageWidget() = default;

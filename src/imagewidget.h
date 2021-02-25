@@ -15,6 +15,7 @@ class ImageWidget
 	public:
 		explicit ImageWidget(QWidget * parent = nullptr);
 		explicit ImageWidget(QImage, QWidget * parent = nullptr);
+		~ImageWidget() override;
 
 		inline const QImage & image() const
 		{
@@ -29,8 +30,8 @@ class ImageWidget
 		void setImage(const QImage &);
 
 	protected:
-		void resizeEvent(QResizeEvent *);
-		void paintEvent(QPaintEvent *);
+		void resizeEvent(QResizeEvent *) override;
+		void paintEvent(QPaintEvent *) override;
 
 	private:
 		QImage m_image;
