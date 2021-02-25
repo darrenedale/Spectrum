@@ -20,10 +20,17 @@ namespace Spectrum
 		public:
 			explicit QSpectrumDisplay(QWidget * = nullptr);
 			~QSpectrumDisplay() override;
+
+			void setImage(const QImage &) = delete;
+			void setBorder(Colour, bool = false) override;
 			void redrawDisplay(const uint8_t *) override;
 
 			int heightForWidth(int w) const override;
-	};
+
+	protected:
+        static constexpr int fullWidth();
+        static constexpr int fullHeight();
+    };
 }
 
 #endif // QSPECTRUMDISPLAY_H
