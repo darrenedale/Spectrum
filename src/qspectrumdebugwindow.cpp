@@ -7,6 +7,7 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QLabel>
+#include <QSettings>
 
 using namespace Spectrum;
 
@@ -14,7 +15,6 @@ QSpectrumDebugWindow::QSpectrumDebugWindow( QWidget * parent )
 :	QSpectrumDebugWindow(nullptr, parent)
 {
 }
-
 
 QSpectrumDebugWindow::QSpectrumDebugWindow( Spectrum * spectrum, QWidget * parent )
 :	QWidget(parent),
@@ -254,11 +254,27 @@ void QSpectrumDebugWindow::createWidgets()
 	setLayout(myLayout);
 }
 
-
 void QSpectrumDebugWindow::connectWidgets()
 {
 }
 
+void QSpectrumDebugWindow::closeEvent(QCloseEvent * ev)
+{
+    QSettings settings;
+    settings.beginGroup("debugwindow");
+    settings.setValue("position", pos());
+    settings.setValue("size", size());
+    settings.endGroup();
+    QWidget::closeEvent(ev);
+}
+
+void QSpectrumDebugWindow::showEvent(QShowEvent * ev)
+{
+    QSettings settings;
+    settings.beginGroup("debugwindow");
+    setGeometry({settings.value(QStringLiteral("position")).toPoint(), settings.value(QStringLiteral("size")).toSize()});
+    settings.endGroup();
+}
 
 void QSpectrumDebugWindow::setRegister(int value)
 {
@@ -304,7 +320,6 @@ void QSpectrumDebugWindow::setRegister(int value)
 //		else if(sender() == m_iyl) cpu->setIyl(value);
 }
 
-
 void QSpectrumDebugWindow::updateStateDisplay()
 {
 	if(!m_spectrum) {
@@ -348,7 +363,6 @@ void QSpectrumDebugWindow::updateStateDisplay()
 	m_iyh->setValue(cpu->iyhRegisterValue());
 	m_iyl->setValue(cpu->iylRegisterValue());
 }
-
 
 void QSpectrumDebugWindow::setMemoryDisplayStart(int address)
 {

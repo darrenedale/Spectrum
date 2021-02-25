@@ -19,6 +19,10 @@ namespace Spectrum
 			explicit QSpectrumDebugWindow( QWidget * = nullptr );
 			explicit QSpectrumDebugWindow( Spectrum * spectrum, QWidget * = nullptr );
 
+	protected:
+	    void showEvent(QShowEvent *) override;
+	    void closeEvent(QCloseEvent *) override;
+
 		public Q_SLOTS:
 			void updateStateDisplay();
 			void setMemoryDisplayStart(int);
