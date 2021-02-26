@@ -46,8 +46,23 @@ add_executable(
         src/z80/z80iodevice.cpp
 )
 
+add_executable(
+    z80-test
+    src/test/z80/main.cpp
+    src/test/z80/runner.cpp
+    src/test/z80/runner.h
+    src/test/z80/test.cpp
+    src/test/z80/test.h
+    src/test/z80/memory.h
+    src/test/z80/testfilereader.cpp
+    src/test/z80/testfilereader.h
+    src/cpu.cpp
+    src/z80/z80.cpp
+    src/z80/z80iodevice.cpp
+)
+
 set_target_properties(
-        spectrum z80interpreter screenview
+        spectrum z80interpreter screenview z80-test
         PROPERTIES
             CXX_STANDARD 17
 )
