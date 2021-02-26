@@ -11,18 +11,17 @@ include_directories(${CMAKE_BINARY_DIR})
 
 add_executable(
         spectrum
+        src/emulator/main.cpp
+        src/emulator/application.cpp
+        src/emulator/mainwindow.cpp
+        src/qt/spectrumthread.cpp
+        src/qt/ui/qspectrumdebugwindow.cpp
+        src/qt/ui/qspectrumdisplay.cpp
         src/cpu.cpp
-        src/imagewidget.cpp
-        src/mainwindow.cpp
-        src/qspectrumdebugwindow.cpp
-        src/qspectrumdisplay.cpp
+        src/qt/ui/imagewidget.cpp
         src/spectrum.cpp
-        src/spectrum_main.cpp
-        src/spectrumthread.cpp
-        src/z80.cpp
-        src/z80iodevice.cpp
-        src/application.cpp
-        src/application.h
+        src/z80/z80.cpp
+        src/z80/z80iodevice.cpp
 )
 
 add_executable(
@@ -30,23 +29,21 @@ add_executable(
         src/screenview/main.cpp
         src/screenview/application.cpp
         src/screenview/mainwindow.cpp
-        src/imagewidget.cpp
-        src/qspectrumdisplay.cpp
-        src/screenview/mainwindow.cpp src/screenview/mainwindow.h)
+        src/qt/ui/imagewidget.cpp
+        src/qt/ui/qspectrumdisplay.cpp
+        src/screenview/mainwindow.cpp
+        src/qt/ui/colourcombo.cpp
+)
 
 add_executable(
         z80interpreter
         src/cpu.cpp
-        src/imagewidget.cpp
-        src/mainwindow.cpp
-        src/qspectrumdebugwindow.cpp
-        src/qspectrumdisplay.cpp
+        src/qt/ui/imagewidget.cpp
         src/spectrum.cpp
-        src/spectrumthread.cpp
-        src/z80.cpp
+        src/z80/z80.cpp
         src/interpreter/z80interpreter.cpp
         src/interpreter/main.cpp
-        src/z80iodevice.cpp
+        src/z80/z80iodevice.cpp
 )
 
 set_target_properties(

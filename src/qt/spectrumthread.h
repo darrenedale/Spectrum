@@ -3,6 +3,7 @@
 
 #include <QThread>
 #include <QMutex>
+#include <QWaitCondition>
 
 namespace Spectrum {
 	class Spectrum;
@@ -14,6 +15,7 @@ namespace Spectrum {
 
 		public:
 			explicit SpectrumThread(Spectrum &, QObject * parent = nullptr);
+			~SpectrumThread() override;
 
 			inline const Spectrum & spectrum() const
 			{
@@ -51,6 +53,8 @@ namespace Spectrum {
 
 		private:
 			QMutex m_spectrumLock;
+			QMutex m_threadLock;
+			QWaitCondition m_waitCondition;
 			Spectrum & m_spectrum;
 			bool m_pause;
 			bool m_quit;

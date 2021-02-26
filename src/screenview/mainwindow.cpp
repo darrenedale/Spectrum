@@ -4,26 +4,33 @@
 
 #include <QPushButton>
 #include <QLineEdit>
-#include <QHBoxLayout>
+#include <QLabel>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QFileDialog>
 #include <QStandardPaths>
 
 #include "mainwindow.h"
+#include "../qt/ui/qspectrumdisplay.h"
+#include "../qt/ui/imagewidget.h"
 
 using namespace ScreenView;
 
 MainWindow::MainWindow(QWidget * parent)
 : QMainWindow(parent),
-  m_chooseFile(std::make_unique<QPushButton>(QIcon::fromTheme("document-open"), tr(""))),
+  m_chooseFile(std::make_unique<QPushButton>(QIcon::fromTheme(QStringLiteral("document-open")), tr(""))),
   m_fileName(std::make_unique<QLineEdit>()),
-  m_display(std::make_unique<Spectrum::QSpectrumDisplay>())
+  m_display(std::make_unique<ImageWidget>()),
+  m_borderColour(std::make_unique<ColourCombo>()),
+  m_screenData()
 {
     auto * mainLayout = new QVBoxLayout(this);
     auto * controlsLayout = new QHBoxLayout(this);
 
     controlsLayout->addWidget(m_fileName.get());
     controlsLayout->addWidget(m_chooseFile.get());
+    controlsLayout->addWidget(new QLabel(tr("Border")));
+    controlsLayout->addWidget(m_borderColour.get());
 
     mainLayout->addLayout(controlsLayout);
     mainLayout->addWidget(m_display.get());
@@ -32,11 +39,16 @@ MainWindow::MainWindow(QWidget * parent)
     centralWidget->setLayout(mainLayout);
     setCentralWidget(centralWidget);
 
+    m_borderColour->setColour(Spectrum::SpectrumDisplayDevice::Colour::White, false);
+
     connect(m_chooseFile.get(), &QPushButton::clicked, this, &MainWindow::chooseScreenFile);
 
     connect(m_fileName.get(), &QLineEdit::editingFinished, [this]() {
         loadScreen(m_fileName->text());
     });
+
+    connect(m_borderColour.get(), &ColourCombo::colourSelected, this, &MainWindow::updateScreen);
+    updateScreen();
 }
 
 void MainWindow::loadScreen(const QString & fileName)
@@ -64,7 +76,7 @@ void MainWindow::loadScreen(const QString & fileName)
         bytesToRead -= bytesRead;
     }
 
-    m_display->redrawDisplay(m_screenData);
+    updateScreen();
 }
 
 void MainWindow::chooseScreenFile()
@@ -111,6 +123,14 @@ void MainWindow::closeEvent(QCloseEvent * ev)
     settings.setValue(QStringLiteral("position"), pos());
     settings.setValue(QStringLiteral("size"), size());
     QWidget::closeEvent(ev);
+}
+
+void MainWindow::updateScreen()
+{
+    Spectrum::QSpectrumDisplay display;
+    display.redrawDisplay(m_screenData);
+    display.setBorder(m_borderColour->colour(), m_borderColour->isBright());
+    m_display->setImage(display.image());
 }
 
 MainWindow::~MainWindow() = default;

@@ -4,9 +4,12 @@
 #include <QApplication>
 #include <QDebug>
 
-#include "spectrum.h"
+#include "../spectrum.h"
 
-#define SPECTRUM_RUN_DEFAULT_INSTRUCTION_COUNT 50
+namespace
+{
+    constexpr const int DefaultInstructionCount = 50;
+}
 
 using namespace Spectrum;
 
@@ -20,56 +23,70 @@ SpectrumThread::SpectrumThread(Spectrum & spectrum, QObject * parent )
 {
 }
 
+SpectrumThread::~SpectrumThread()
+{
+    m_threadLock.lock();
+    m_quit = true;
+    m_pause = false;
+    m_waitCondition.wakeOne();
+    m_threadLock.unlock();
+    wait();
+}
+
 void SpectrumThread::run()
 {
-	int instructionCount;
+    m_threadLock.lock();
 	m_quit = false;
 	m_pause = false;
+	m_threadLock.unlock();
+
+	m_spectrumLock.lock();
     m_spectrum.reset();
+	m_spectrumLock.unlock();
 
     while (!m_quit) {
-        QApplication::processEvents();
-
-        if (m_pause || (m_debugMode && !m_step)) {
-            msleep(20);
-            continue;
-        }
-
-        if (m_debugMode) {
-            instructionCount = 1;
-        } else {
-            instructionCount = SPECTRUM_RUN_DEFAULT_INSTRUCTION_COUNT;
+        if (m_pause && !m_step) {
+            m_threadLock.lock();
+            m_waitCondition.wait(&m_threadLock);
+            m_threadLock.unlock();
         }
 
         m_spectrumLock.lock();
-        m_spectrum.run(instructionCount);
+        m_spectrum.run((m_pause && m_step ? 1 : DefaultInstructionCount));
         m_spectrumLock.unlock();
 
         if (m_debugMode) {
             Q_EMIT debugStepTaken();
-            m_step = false;
         }
+
+        m_step = false;
     }
 }
 
 void SpectrumThread::pause()
 {
+    QMutexLocker locker(&m_threadLock);
 	m_pause = true;
 }
 
 void SpectrumThread::setDebugMode(bool on)
 {
+    QMutexLocker locker(&m_threadLock);
 	m_debugMode = on;
 }
 
 void SpectrumThread::step()
 {
+    QMutexLocker locker(&m_threadLock);
 	m_step = true;
+    m_waitCondition.wakeOne();
 }
 
 void SpectrumThread::resume()
 {
+    QMutexLocker locker(&m_threadLock);
 	m_pause = false;
+	m_waitCondition.wakeOne();
 }
 
 void SpectrumThread::reset()
@@ -80,6 +97,7 @@ void SpectrumThread::reset()
 
 void SpectrumThread::quit()
 {
-	m_pause = false;
-	m_quit = true;
+    QMutexLocker locker(&m_threadLock);
+    m_pause = false;
+    m_quit = true;
 }

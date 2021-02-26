@@ -35,10 +35,10 @@ namespace
     };
 }
 
-QSpectrumDisplay::QSpectrumDisplay(QWidget * parent)
-: ImageWidget(QImage(fullWidth(), fullHeight(), QImage::Format_ARGB32), parent)
+QSpectrumDisplay::QSpectrumDisplay(QObject * parent)
+: QObject(parent),
+  m_image(fullWidth(), fullHeight(), QImage::Format_ARGB32)
 {
-    setMinimumSize(fullWidth(), fullHeight());
 }
 
 QSpectrumDisplay::~QSpectrumDisplay() = default;
@@ -91,12 +91,8 @@ void QSpectrumDisplay::redrawDisplay(const uint8_t * displayMemory)
 #if defined(QSPECTRUMDISPLAY_USEPAINTER)
     painter.end();
 #endif
-    update();
-}
 
-int QSpectrumDisplay::heightForWidth(int w) const
-{
-    return (w * Height) / Width;
+    Q_EMIT displayUpdated(image());
 }
 
 void QSpectrumDisplay::setBorder(SpectrumDisplayDevice::Colour colour, bool bright)
@@ -114,7 +110,7 @@ void QSpectrumDisplay::setBorder(SpectrumDisplayDevice::Colour colour, bool brig
     painter.fillRect(Width + BorderSize, BorderSize, BorderSize, Height, fill);
     painter.fillRect(0, Height + BorderSize, Width + BorderSize + BorderSize, BorderSize, fill);
     painter.end();
-    update();
+    Q_EMIT displayUpdated(image());
 }
 
 constexpr int QSpectrumDisplay::fullWidth()

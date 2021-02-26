@@ -2,8 +2,8 @@
 // Created by darren on 25/02/2021.
 //
 
-#ifndef SPECTRUM_APPLICATION_H
-#define SPECTRUM_APPLICATION_H
+#ifndef SPECTRUM_EMULATOR_APPLICATION_H
+#define SPECTRUM_EMULATOR_APPLICATION_H
 
 #include <QApplication>
 
@@ -16,4 +16,4 @@ namespace Spectrum
     };
 }
 
-#endif //SPECTRUM_APPLICATION_H
+#endif //SPECTRUM_EMULATOR_APPLICATION_H

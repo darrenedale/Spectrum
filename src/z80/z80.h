@@ -3,8 +3,7 @@
 
 #include <cstdint>
 
-//#include "types.h"
-#include "cpu.h"
+#include "../cpu.h"
 
 #define Z80_DEFAULT_RAM_SIZE = 65536
 #define Z80_MHZ(n) (n * 1000000.0)

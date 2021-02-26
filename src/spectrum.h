@@ -7,7 +7,7 @@
 #include <string>
 
 #include "computer.h"
-#include "z80.h"
+#include "z80/z80.h"
 
 #define SPECTRUM_OFFSET_DISPLAYFILE 0x4000
 #define SPECTRUM_DISPLAYFILE_SIZE 6912
@@ -32,7 +32,7 @@ namespace Spectrum {
 				return m_nmiCycleCounter;
 			}
 
-			uint8_t * displayMemory() const
+			std::uint8_t * displayMemory() const
 			{
 				return memory() + SPECTRUM_OFFSET_DISPLAYFILE;
 			}

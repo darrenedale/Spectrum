@@ -1,13 +1,14 @@
 #include "qspectrumdebugwindow.h"
 
-#include "spectrum.h"
-#include "z80.h"
 #include <QSpinBox>
 #include <QLineEdit>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QSettings>
+
+#include "../../spectrum.h"
+#include "../../z80/z80.h"
 
 using namespace Spectrum;
 

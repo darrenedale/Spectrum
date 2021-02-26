@@ -1,5 +1,3 @@
-#include "mainwindow.h"
-
 #include <iostream>
 
 #include <QToolBar>
@@ -9,18 +7,21 @@
 #include <QFileDialog>
 #include <QDebug>
 #include <QSettings>
+#include <QDateTime>
 
-#include "qspectrumdisplay.h"
-#include "spectrumthread.h"
-#include "qspectrumdebugwindow.h"
+#include "mainwindow.h"
+#include "../qt/spectrumthread.h"
+#include "../qt/ui/imagewidget.h"
+#include "../qt/ui/qspectrumdebugwindow.h"
 
 using namespace Spectrum;
 
-MainWindow::MainWindow( QWidget * parent )
+MainWindow::MainWindow(QWidget * parent)
 : QMainWindow(parent),
   m_spectrum(),
   m_spectrumThread(std::make_unique<SpectrumThread>(m_spectrum)),
-  m_display(nullptr),
+  m_display(),
+  m_displayWidget(std::make_unique<ImageWidget>()),
   m_startPause(nullptr),
   m_snapshot(nullptr),
   m_reset(nullptr),
@@ -31,8 +32,8 @@ MainWindow::MainWindow( QWidget * parent )
   m_debugWindow(nullptr)
 {
 	createWidgets();
-	m_spectrum.addDisplayDevice(m_display);
-	setCentralWidget(m_display);
+	m_spectrum.addDisplayDevice(&m_display);
+	setCentralWidget(m_displayWidget.get());
 	connectWidgets();
 	m_spectrumThread->start();
 }
@@ -57,8 +58,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::createWidgets()
 {
-	m_display = new QSpectrumDisplay();
-	QToolBar * myToolBar = addToolBar("Main");
+	QToolBar * myToolBar = addToolBar(QStringLiteral("Main"));
 	m_startPause = myToolBar->addAction(QIcon::fromTheme("media-playback-start"), tr("Start/Pause"));
 	m_reset = myToolBar->addAction(tr("Reset"));
 	m_debug = myToolBar->addAction(tr("Debug"));
@@ -101,11 +101,18 @@ void MainWindow::connectWidgets()
 	connect(m_spectrumThread.get(), &SpectrumThread::finished, [this]() {
 	    m_startPause->setIcon(QIcon::fromTheme("media-playback-start"));
 	});
+
+	connect(&m_display, &QSpectrumDisplay::displayUpdated, this, &MainWindow::updateSpectrumDisplay, Qt::QueuedConnection);
+}
+
+void MainWindow::updateSpectrumDisplay(const QImage & image)
+{
+    m_displayWidget->setImage(image);
 }
 
 void MainWindow::saveSnapshot(const QString & fileName) const
 {
-	m_display->image().save(fileName);
+	m_display.image().save(fileName);
 }
 
 void MainWindow::startPauseClicked()

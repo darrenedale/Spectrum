@@ -7,7 +7,7 @@
 #include <QThread>
 
 #include "spectrumdisplaydevice.h"
-#include "z80.h"
+#include "z80/z80.h"
 
 namespace
 {
