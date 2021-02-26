@@ -464,13 +464,23 @@ public:
         setRegisterValue(Register8::LShadow, value);
     }
 
+    inline void setIff1(bool iff1)
+    {
+        m_iff1 = iff1;
+    }
+
+    inline void setIff2(bool iff2)
+    {
+        m_iff2 = iff2;
+    }
+
     inline int ramSize() const
     {
         return m_ramSize;
     }
 
     /* memory access methods - values provided in host byte order */
-    inline const Z80::UnsignedByte * memory() const
+    inline Z80::UnsignedByte * memory() const
     {
         return m_ram;
     }
