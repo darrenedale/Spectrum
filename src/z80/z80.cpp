@@ -920,18 +920,34 @@ bool Z80::Z80::execute(const Z80::Z80::UnsignedByte * instruction, bool doPc, in
 			/* no 0xcb instructions modify PC directly so this method never needs
 			 * to override this request */
 			ret = executeCbInstruction(instruction + 1, cycles, size);
+
+            if (ret) {
+                ++m_registers.r;
+            }
 			break;
 
 		case Z80__PLAIN__PREFIX__ED:
 			ret = executeEdInstruction(instruction + 1, &doPc, cycles, size);
+
+            if (ret) {
+                ++m_registers.r;
+            }
 			break;
 
 		case Z80__PLAIN__PREFIX__DD:
 			ret = executeDdOrFdInstruction(m_registers.ix, instruction + 1, &doPc, cycles, size);
+
+            if (ret) {
+                ++m_registers.r;
+            }
 			break;
 
 		case Z80__PLAIN__PREFIX__FD:
 			ret = executeDdOrFdInstruction(m_registers.iy, instruction + 1, &doPc, cycles, size);
+
+            if (ret) {
+                ++m_registers.r;
+            }
 			break;
 
 		default:
@@ -941,8 +957,12 @@ bool Z80::Z80::execute(const Z80::Z80::UnsignedByte * instruction, bool doPc, in
 
 	/* doPc is altered by the instruction execution method to be false if a jump
 	 * was taken or the PC was otherwise directly affected by the instruction */
-	if (ret && doPc) {
-	    m_registers.pc += *size;
+	if (ret) {
+	    ++m_registers.r;
+
+	    if (doPc) {
+            m_registers.pc += *size;
+        }
 	}
 
 	return ret;

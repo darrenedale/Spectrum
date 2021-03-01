@@ -281,7 +281,7 @@ namespace Z80 {
         }
 
         inline UnsignedByte rRegisterValue() const {
-            return registerValue(Register8::L);
+            return registerValue(Register8::R);
         }
 
         inline UnsignedByte ixhRegisterValue() const {
