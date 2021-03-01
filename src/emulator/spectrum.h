@@ -6,8 +6,8 @@
 #include <algorithm>
 #include <string>
 
-#include "computer.h"
-#include "z80/z80.h"
+#include "../computer.h"
+#include "../z80/z80.h"
 
 #define SPECTRUM_OFFSET_DISPLAYFILE 0x4000
 #define SPECTRUM_DISPLAYFILE_SIZE 6912
@@ -22,9 +22,9 @@ namespace Spectrum {
 			explicit Spectrum(int = 65536, uint8_t * mem = nullptr);
 			~Spectrum() override;
 
-			inline Z80 * z80() const
+			inline Z80::Z80 * z80() const
             {
-			    return dynamic_cast<Z80 *>(cpu());
+			    return dynamic_cast<Z80::Z80 *>(cpu());
             }
 
 			inline int nmiCounter() const

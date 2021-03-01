@@ -5,8 +5,7 @@
  *
  * \brief Implementation of the Z80 CPU emulation.
  *
- * This emulation is based on interpretation. There is no dynamic compilation
- * and no cross-assembly.
+ * This emulation is based on interpretation. There is no dynamic compilation and no cross-assembly.
  *
  * \todo
  * - IX and IY register instructions (0xdd and 0xfd)
@@ -29,28 +28,28 @@
 #define Z80_TICK_CYCLE_THRESHOLD (clockSpeed() / Z80_TICK_DURATION)
 
 // downcast values to Z80 data types
-#define Z80_CUBYTE(v) Z80::UnsignedByte((v) & 0x00ff)
-#define Z80_CBYTE(v) Z80::SignedByte((v) & 0x00ff)
-#define Z80_CUWORD(v) Z80::UnsignedWord((v) & 0x0000ffff)
-#define Z80_CWORD(v) Z80::SignedWord((v) & 0x0000ffff)
+#define Z80_CUBYTE(v) Z80::Z80::UnsignedByte((v) & 0x00ff)
+#define Z80_CBYTE(v) Z80::Z80::SignedByte((v) & 0x00ff)
+#define Z80_CUWORD(v) Z80::Z80::UnsignedWord((v) & 0x0000ffff)
+#define Z80_CWORD(v) Z80::Z80::SignedWord((v) & 0x0000ffff)
 
-#define Z80_FLAG_C_SET (*m_f |= Z80_FLAG_C_MASK)
-#define Z80_FLAG_Z_SET (*m_f |= Z80_FLAG_Z_MASK)
-#define Z80_FLAG_P_SET (*m_f |= Z80_FLAG_P_MASK)
-#define Z80_FLAG_S_SET (*m_f |= Z80_FLAG_S_MASK)
-#define Z80_FLAG_N_SET (*m_f |= Z80_FLAG_N_MASK)
-#define Z80_FLAG_H_SET (*m_f |= Z80_FLAG_H_MASK)
-#define Z80_FLAG_F3_SET (*m_f |= Z80_FLAG_F3_MASK)
-#define Z80_FLAG_F5_SET (*m_f |= Z80_FLAG_F5_MASK)
+#define Z80_FLAG_C_SET (m_registers.f() |= Z80_FLAG_C_MASK)
+#define Z80_FLAG_Z_SET (m_registers.f() |= Z80_FLAG_Z_MASK)
+#define Z80_FLAG_P_SET (m_registers.f() |= Z80_FLAG_P_MASK)
+#define Z80_FLAG_S_SET (m_registers.f() |= Z80_FLAG_S_MASK)
+#define Z80_FLAG_N_SET (m_registers.f() |= Z80_FLAG_N_MASK)
+#define Z80_FLAG_H_SET (m_registers.f() |= Z80_FLAG_H_MASK)
+#define Z80_FLAG_F3_SET (m_registers.f() |= Z80_FLAG_F3_MASK)
+#define Z80_FLAG_F5_SET (m_registers.f() |= Z80_FLAG_F5_MASK)
 
-#define Z80_FLAG_C_CLEAR (*m_f &= ~Z80_FLAG_C_MASK)
-#define Z80_FLAG_Z_CLEAR (*m_f &= ~Z80_FLAG_Z_MASK)
-#define Z80_FLAG_P_CLEAR (*m_f &= ~Z80_FLAG_P_MASK)
-#define Z80_FLAG_S_CLEAR (*m_f &= ~Z80_FLAG_S_MASK)
-#define Z80_FLAG_N_CLEAR (*m_f &= ~Z80_FLAG_N_MASK)
-#define Z80_FLAG_H_CLEAR (*m_f &= ~Z80_FLAG_H_MASK)
-#define Z80_FLAG_F3_CLEAR (*m_f &= ~Z80_FLAG_F3_MASK)
-#define Z80_FLAG_F5_CLEAR (*m_f &= ~Z80_FLAG_F5_MASK)
+#define Z80_FLAG_C_CLEAR (m_registers.f() &= ~Z80_FLAG_C_MASK)
+#define Z80_FLAG_Z_CLEAR (m_registers.f() &= ~Z80_FLAG_Z_MASK)
+#define Z80_FLAG_P_CLEAR (m_registers.f() &= ~Z80_FLAG_P_MASK)
+#define Z80_FLAG_S_CLEAR (m_registers.f() &= ~Z80_FLAG_S_MASK)
+#define Z80_FLAG_N_CLEAR (m_registers.f() &= ~Z80_FLAG_N_MASK)
+#define Z80_FLAG_H_CLEAR (m_registers.f() &= ~Z80_FLAG_H_MASK)
+#define Z80_FLAG_F3_CLEAR (m_registers.f() &= ~Z80_FLAG_F3_MASK)
+#define Z80_FLAG_F5_CLEAR (m_registers.f() &= ~Z80_FLAG_F5_MASK)
 
 #define Z80_FLAG_C_UPDATE(cond) if (cond) Z80_FLAG_C_SET; else Z80_FLAG_C_CLEAR
 #define Z80_FLAG_Z_UPDATE(cond) if (cond) Z80_FLAG_Z_SET; else Z80_FLAG_Z_CLEAR
@@ -61,18 +60,18 @@
 #define Z80_FLAG_F3_UPDATE(cond) if (cond) Z80_FLAG_F3_SET; else Z80_FLAG_F3_CLEAR
 #define Z80_FLAG_F5_UPDATE(cond) if (cond) Z80_FLAG_F5_SET; else Z80_FLAG_F5_CLEAR
 
-#define Z80_FLAG_C_ISSET (0 != (*m_f & Z80_FLAG_C_MASK))
-#define Z80_FLAG_Z_ISSET (0 != (*m_f & Z80_FLAG_Z_MASK))
-#define Z80_FLAG_P_ISSET (0 != (*m_f & Z80_FLAG_P_MASK))
-#define Z80_FLAG_S_ISSET (0 != (*m_f & Z80_FLAG_S_MASK))
-#define Z80_FLAG_N_ISSET (0 != (*m_f & Z80_FLAG_N_MASK))
-#define Z80_FLAG_H_ISSET (0 != (*m_f & Z80_FLAG_H_MASK))
-#define Z80_FLAG_F3_ISSET (0 != (*m_f & Z80_FLAG_F3_MASK))
-#define Z80_FLAG_F5_ISSET (0 != (*m_f & Z80_FLAG_F5_MASK))
+#define Z80_FLAG_C_ISSET (0 != (m_registers.f() & Z80_FLAG_C_MASK))
+#define Z80_FLAG_Z_ISSET (0 != (m_registers.f() & Z80_FLAG_Z_MASK))
+#define Z80_FLAG_P_ISSET (0 != (m_registers.f() & Z80_FLAG_P_MASK))
+#define Z80_FLAG_S_ISSET (0 != (m_registers.f() & Z80_FLAG_S_MASK))
+#define Z80_FLAG_N_ISSET (0 != (m_registers.f() & Z80_FLAG_N_MASK))
+#define Z80_FLAG_H_ISSET (0 != (m_registers.f() & Z80_FLAG_H_MASK))
+#define Z80_FLAG_F3_ISSET (0 != (m_registers.f() & Z80_FLAG_F3_MASK))
+#define Z80_FLAG_F5_ISSET (0 != (m_registers.f() & Z80_FLAG_F5_MASK))
 
 /* default behaviour of flags after an operation on an 8-bit register */
-#define Z80_FLAG_Z_DEFAULTBEHAVIOUR Z80_FLAG_Z_UPDATE(0 == *m_a);
-#define Z80_FLAG_S_DEFAULTBEHAVIOUR Z80_FLAG_S_UPDATE(0x80 & *m_a);
+#define Z80_FLAG_Z_DEFAULTBEHAVIOUR Z80_FLAG_Z_UPDATE(0 == m_registers.a());
+#define Z80_FLAG_S_DEFAULTBEHAVIOUR Z80_FLAG_S_UPDATE(0x80 & m_registers.a());
 #define Z80_FLAG_F5_DEFAULTBEHAVIOUR
 #define Z80_FLAG_P_DEFAULTBEHAVIOUR
 #define Z80_FLAG_F3_DEFAULTBEHAVIOUR
@@ -81,8 +80,8 @@
 #define Z80_FLAG_C_DEFAULTBEHAVIOUR
 
 /* default behaviour of flags after an operation on a 16-bit register */
-#define Z80_FLAG_Z_DEFAULTBEHAVIOUR16 Z80_FLAG_Z_UPDATE(0 == m_hl);
-#define Z80_FLAG_S_DEFAULTBEHAVIOUR16 Z80_FLAG_S_UPDATE(0x80 & m_hl);
+#define Z80_FLAG_Z_DEFAULTBEHAVIOUR16 Z80_FLAG_Z_UPDATE(0 == m_registers.hl);
+#define Z80_FLAG_S_DEFAULTBEHAVIOUR16 Z80_FLAG_S_UPDATE(0x80 & m_registers.hl);
 
 #define Z80_FLAG_P_OVERFLOW Z80_FLAG_P_UPDATE()
 
@@ -150,7 +149,7 @@
  * nn (the memory address to load) MUST be in HOST byte order
  * TODO: check result against known working implementation.
  */
-#define Z80__LD__INDIRECT_NN__REG16(nn, src) (pokeUnsignedWord(Z80::z80ToHostByteOrder(nn), (src)))
+#define Z80__LD__INDIRECT_NN__REG16(nn, src) (pokeUnsignedWord(Z80::Z80::z80ToHostByteOrder(nn), (src)))
 
 /*
  * nn (the memory address to retrieve) MUST be in HOST byte order
@@ -175,23 +174,23 @@
  * FLAGS: no flags are modified.
  * TODO: check result against known working implementation.
  */
-#define Z80__RST__N(addr) Z80__PUSH__REG16(m_pc + 1); m_pc = (addr);
+#define Z80__RST__N(addr) Z80__PUSH__REG16(m_registers.pc + 1); m_registers.pc = (addr);
 
 /* context switching instructions
  *
  * FLAGS: no flags are modified.
  * TODO: check result against known working implementation.
  */
-#define Z80__EX__REG16__REG16(src, dest) {Z80::UnsignedWord __mytmp = (dest); (dest) = (src); (src) = __mytmp; }
-#define Z80__EX__INDIRECT_REG16__REG16(src, dest) {Z80::UnsignedWord __mytmp = peekUnsignedWord((dest)); pokeUnsignedWord((dest), (src)); (src) = __mytmp; }
+#define Z80__EX__REG16__REG16(src, dest) {Z80::Z80::UnsignedWord __mytmp = (dest); (dest) = (src); (src) = __mytmp; }
+#define Z80__EX__INDIRECT_REG16__REG16(src, dest) {Z80::Z80::UnsignedWord __mytmp = peekUnsignedWord((dest)); pokeUnsignedWord((dest), (src)); (src) = __mytmp; }
 
 /* stack instructions
  *
  * FLAGS: no flags are modified.
  * TODO: check result against known working implementation.
  */
-#define Z80__POP__REG16(reg) {m_sp += 2; (reg) = peekUnsignedWord(m_sp);}
-#define Z80__PUSH__REG16(reg) {pokeUnsignedWord(m_sp, (reg)); m_sp -= 2;}
+#define Z80__POP__REG16(reg) {m_registers.sp += 2; (reg) = peekUnsignedWord(m_registers.sp);}
+#define Z80__PUSH__REG16(reg) {pokeUnsignedWord(m_registers.sp, (reg)); m_registers.sp -= 2;}
 
 /* addition instructions
  *
@@ -232,7 +231,7 @@
  * TODO: check flags against known working implementation.
  * TODO: check result against known working implementation.
  */
-#define Z80__SUB__N(n) { UnsignedWord res = Z80_CUBYTE(*m_a) - Z80_CUBYTE(n); Z80_FLAG_P_UPDATE((((*m_a) ^ (n)) & ((*m_a) ^ Z80_CUBYTE(res)) & 0x80) != 0); Z80_FLAG_N_SET; Z80_FLAG_Z_UPDATE(0 == Z80_CUBYTE(res)); Z80_FLAG_S_UPDATE((res) & 0x0080); Z80_FLAG_C_UPDATE(0 != (res & 0x0100)); Z80_FLAG_H_UPDATE(0 != (((*m_a) ^ (n) ^ Z80_CUBYTE(res)) & 0x10)); Z80_FLAG_F5_UPDATE(0 != (Z80_CUBYTE(res) & 0x20)); Z80_FLAG_F3_UPDATE(0 != (Z80_CUBYTE(res) & 0x08)); (*m_a) = Z80_CUBYTE(res); }
+#define Z80__SUB__N(n) { UnsignedWord res = Z80_CUBYTE(m_registers.a()) - Z80_CUBYTE(n); Z80_FLAG_P_UPDATE((((m_registers.a()) ^ (n)) & ((m_registers.a()) ^ Z80_CUBYTE(res)) & 0x80) != 0); Z80_FLAG_N_SET; Z80_FLAG_Z_UPDATE(0 == Z80_CUBYTE(res)); Z80_FLAG_S_UPDATE((res) & 0x0080); Z80_FLAG_C_UPDATE(0 != (res & 0x0100)); Z80_FLAG_H_UPDATE(0 != (((m_registers.a()) ^ (n) ^ Z80_CUBYTE(res)) & 0x10)); Z80_FLAG_F5_UPDATE(0 != (Z80_CUBYTE(res) & 0x20)); Z80_FLAG_F3_UPDATE(0 != (Z80_CUBYTE(res) & 0x08)); (m_registers.a()) = Z80_CUBYTE(res); }
 #define Z80__SUB__REG8(reg) Z80__SUB__N(reg)
 #define Z80__SUB__INDIRECT_REG16(reg) { UnsignedByte v = peekUnsigned(reg); Z80__SUB__N(v) }
 #define Z80__SUB__INDIRECT_REG16_D(reg,d) Z80__SUB__N(peekUnsigned((reg) + (d)))
@@ -278,7 +277,14 @@
  * TODO: check flags against known working implementation.
  * TODO: check result against known working implementation.
  */
-#define Z80__INC__REG8(reg) (reg)++; Z80_FLAG_P_UPDATE(128 == (reg)); Z80_FLAG_H_UPDATE(0 == (0x0f & (reg))); Z80_FLAG_N_CLEAR; Z80_FLAG_Z_UPDATE(0 == (reg)); Z80_FLAG_S_UPDATE((reg) & 0x80);
+#define Z80__INC__REG8(reg) \
+(reg)++;                    \
+Z80_FLAG_P_UPDATE(128 == (reg)); \
+Z80_FLAG_H_UPDATE(0 == (0x0f & (reg))); \
+Z80_FLAG_N_CLEAR;           \
+Z80_FLAG_Z_UPDATE(0 == (reg));   \
+Z80_FLAG_S_UPDATE((reg) & 0x80);
+
 #define Z80__INC__INDIRECT_REG16(reg) Z80__INC__REG8(*(m_ram + (reg))) /*{ UnsignedByte oldValue = peekUnsigned(reg); pokeUnsigned((reg), peekUnsigned(reg) + 1); Z80_FLAG_P_UPDATE((reg) < oldValue); Z80_FLAG_C_UPDATE((reg) < oldValue); Z80_FLAG_H_UPDATE(0x0f == (oldValue & 0x8f)); Z80_FLAG_N_CLEAR; Z80_FLAG_Z_UPDATE(0 == (reg)); Z80_FLAG_S_UPDATE((reg) & 0x80); } */
 #define Z80__INC__REG16(reg) (reg)++;
 #define Z80__INC__INDIRECT_REG16_D(reg, d) (*(m_ram + (reg) + (d)))++;/*{ UnsignedWord addr = (reg) + (d); pokeUnsigned(addr, peekUnsigned(addr) + 1); }*/
@@ -296,7 +302,14 @@
  * TODO: check flags against known working implementation.
  * TODO: check result against known working implementation.
  */
-#define Z80__DEC__REG8(reg) (reg)--; Z80_FLAG_P_UPDATE(127 == (reg)); Z80_FLAG_H_UPDATE(0x0f == ((reg) & 0x0f)); Z80_FLAG_N_SET; Z80_FLAG_Z_UPDATE(0 == (reg)); Z80_FLAG_S_UPDATE((reg) & 0x80);
+#define Z80__DEC__REG8(reg) \
+(reg)--;                    \
+Z80_FLAG_P_UPDATE(127 == (reg)); \
+Z80_FLAG_H_UPDATE(0x0f == ((reg) & 0x0f)); \
+Z80_FLAG_N_SET;             \
+Z80_FLAG_Z_UPDATE(0 == (reg));   \
+Z80_FLAG_S_UPDATE((reg) & 0x80);
+
 #define Z80__DEC__INDIRECT_REG16(reg) Z80__DEC__REG8(*(m_ram + (reg)))
 #define Z80__DEC__REG16(reg) (reg)--;
 #define Z80__DEC__INDIRECT_REG16_D(reg, d) (*(m_ram + (reg) + (d)))--; /*{ UnsignedWord addr = (reg) + (d); pokeUnsigned(addr, peekUnsigned(addr) - 1); }*/
@@ -316,7 +329,7 @@
  * TODO: check flags against known working implementation.
  * TODO: check result against known working implementation.
  */
-#define Z80_NEG { UnsignedByte oldValue = *m_a; *m_a = 0 - (*m_a); Z80_FLAG_S_UPDATE((*m_a) & 0x80); Z80_FLAG_Z_DEFAULTBEHAVIOUR; Z80_FLAG_H_UPDATE(Z80_CHECK_8BIT_HALFCARRY(oldValue, *m_a)); Z80_FLAG_C_UPDATE(oldValue == 0); Z80_FLAG_P_UPDATE(SignedByte(oldValue) == -128); Z80_FLAG_N_SET; }
+#define Z80_NEG { UnsignedByte oldValue = m_registers.a(); m_registers.a() = 0 - (m_registers.a()); Z80_FLAG_S_UPDATE((m_registers.a()) & 0x80); Z80_FLAG_Z_DEFAULTBEHAVIOUR; Z80_FLAG_H_UPDATE(Z80_CHECK_8BIT_HALFCARRY(oldValue, m_registers.a())); Z80_FLAG_C_UPDATE(oldValue == 0); Z80_FLAG_P_UPDATE(SignedByte(oldValue) == -128); Z80_FLAG_N_SET; }
 
 /* compare instructions
  *
@@ -329,7 +342,7 @@
  * TODO: check flags against known working implementation.
  * TODO: check result against known working implementation.
  */
-#define Z80__CP__N(n) { UnsignedByte tmp = *m_a; Z80__SUB__N((n)); *m_a = tmp; }
+#define Z80__CP__N(n) { UnsignedByte tmp = m_registers.a(); Z80__SUB__N((n)); m_registers.a() = tmp; }
 #define Z80__CP__REG8(reg) Z80__CP__N(reg)
 #define Z80__CP__INDIRECT_REG16(reg) Z80__CP__N(peekUnsigned((reg)))
 #define Z80__CP__INDIRECT_REG16_D(reg,d) Z80__CP__N(peekUnsigned((reg) + (d)))
@@ -342,18 +355,18 @@
  * TODO: check flags against known working implementation.
  * TODO: check result against known working implementation.
  */
-#define Z80_BITWISE_FLAGS Z80_FLAG_C_CLEAR; Z80_FLAG_N_CLEAR; Z80_FLAG_P_UPDATE(isEvenParity(*m_a)); Z80_FLAG_S_DEFAULTBEHAVIOUR; Z80_FLAG_Z_DEFAULTBEHAVIOUR;
-#define Z80__AND__N(n) *m_a &= (n); Z80_BITWISE_FLAGS;
+#define Z80_BITWISE_FLAGS Z80_FLAG_C_CLEAR; Z80_FLAG_N_CLEAR; Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a())); Z80_FLAG_S_DEFAULTBEHAVIOUR; Z80_FLAG_Z_DEFAULTBEHAVIOUR;
+#define Z80__AND__N(n) m_registers.a() &= (n); Z80_BITWISE_FLAGS;
 #define Z80__AND__REG8(reg) Z80__AND__N((reg))
 #define Z80__AND__INDIRECT_REG16(reg) Z80__AND__N(peekUnsigned(reg))
 #define Z80__AND__INDIRECT_REG16_D(reg,d) Z80__AND__N(peekUnsigned((reg) + (d)))
 
-#define Z80__OR__N(n) *m_a |= (n); Z80_BITWISE_FLAGS;
+#define Z80__OR__N(n) m_registers.a() |= (n); Z80_BITWISE_FLAGS;
 #define Z80__OR__REG8(reg) Z80__OR__N((reg))
 #define Z80__OR__INDIRECT_REG16(reg) Z80__OR__N(peekUnsigned(reg))
 #define Z80__OR__INDIRECT_REG16_D(reg,d) Z80__OR__N(peekUnsigned((reg) + (d)))
 
-#define Z80__XOR__N(n) *m_a ^= (n); Z80_BITWISE_FLAGS;
+#define Z80__XOR__N(n) m_registers.a() ^= (n); Z80_BITWISE_FLAGS;
 #define Z80__XOR__REG8(reg) Z80__XOR__N((reg))
 #define Z80__XOR__INDIRECT_REG16(reg) Z80__XOR__N((peekUnsigned(reg)))
 #define Z80__XOR__INDIRECT_REG16_D(reg,d) Z80__XOR__N(peekUnsigned((reg) + (d)))
@@ -606,7 +619,7 @@
  * FLAGS: all preserved.
  * TODO: check result against known working implementation.
  */
-#define Z80__RETN Z80__POP__REG16(m_pc); m_iff1 = m_iff2;
+#define Z80__RETN Z80__POP__REG16(m_registers.pc); m_iff1 = m_iff2;
 
 /* interrupt handler return instruction
  *
@@ -617,7 +630,7 @@
  * FLAGS: all preserved.
  * TODO: check result against known working implementation.
  */
-#define Z80__RETI Z80__POP__REG16(m_pc); /* TODO signal IO device that interrupt has finished */
+#define Z80__RETI Z80__POP__REG16(m_registers.pc); /* TODO signal IO device that interrupt has finished */
 
 /* TODO: */
 //OUT (REG8),REG8
@@ -630,7 +643,7 @@ namespace
     constexpr const int DefaultClockSpeed = 3500000;
 }
 
-constexpr const unsigned int Z80::DdOrFdOpcodeSize[256] = {
+constexpr const unsigned int Z80::Z80::DdOrFdOpcodeSize[256] = {
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
     2, 4, 4, 2, 2, 2, 3, 2, 2, 2, 4, 2, 2, 2, 2, 2,
@@ -651,45 +664,45 @@ constexpr const unsigned int Z80::DdOrFdOpcodeSize[256] = {
 };
 
 
-Z80::Z80(unsigned char * mem, int memSize)
+Z80::Z80::Z80(unsigned char * mem, int memSize)
 : Cpu(mem, memSize),
 	// the 16-bit registers are all 16-bit scalar variables. I and R are 8-bit and are 8-bit scalar variables
-	m_af(0),
-  m_bc(0),
-  m_de(0),
-  m_hl(0),
-  m_sp(0),
-  m_pc(0),
-  m_ix(0),
-  m_iy(0),
-  m_i(0),
-  m_r(0),
-  m_afshadow(0),
-  m_bcshadow(0),
-  m_deshadow(0),
-  m_hlshadow(0),
-	// the 8-bit registers are all pointers to the appropriate 8 bits of the 16-bit register - these are initialised,
-	// taking into account host endianness, in init()
-	m_a(nullptr),
-  m_f(nullptr),
-  m_b(nullptr),
-  m_c(nullptr),
-  m_d(nullptr),
-  m_e(nullptr),
-  m_h(nullptr),
-  m_l(nullptr),
-  m_ixh(nullptr),
-  m_ixl(nullptr),
-  m_iyh(nullptr),
-  m_iyl(nullptr),
-  m_ashadow(nullptr),
-  m_fshadow(nullptr),
-  m_bshadow(nullptr),
-  m_cshadow(nullptr),
-  m_dshadow(nullptr),
-  m_eshadow(nullptr),
-  m_hshadow(nullptr),
-  m_lshadow(nullptr),
+//	m_af(0),
+//  m_bc(0),
+//  m_de(0),
+//  m_hl(0),
+//  m_sp(0),
+//  m_pc(0),
+//  m_ix(0),
+//  m_iy(0),
+//  m_i(0),
+//  m_r(0),
+//  m_afshadow(0),
+//  m_bcshadow(0),
+//  m_deshadow(0),
+//  m_hlshadow(0),
+//	// the 8-bit registers are all pointers to the appropriate 8 bits of the 16-bit register - these are initialised,
+//	// taking into account host endianness, in init()
+//	m_a(nullptr),
+//  m_f(nullptr),
+//  m_b(nullptr),
+//  m_c(nullptr),
+//  m_d(nullptr),
+//  m_e(nullptr),
+//  m_h(nullptr),
+//  m_l(nullptr),
+//  m_ixh(nullptr),
+//  m_ixl(nullptr),
+//  m_iyh(nullptr),
+//  m_iyl(nullptr),
+//  m_ashadow(nullptr),
+//  m_fshadow(nullptr),
+//  m_bshadow(nullptr),
+//  m_cshadow(nullptr),
+//  m_dshadow(nullptr),
+//  m_eshadow(nullptr),
+//  m_hshadow(nullptr),
+//  m_lshadow(nullptr),
   m_ram(mem),
   m_ramSize(memSize),
   m_clockSpeed(DefaultClockSpeed),
@@ -706,9 +719,9 @@ Z80::Z80(unsigned char * mem, int memSize)
 	init();
 }
 
-Z80::~Z80() = default;
+Z80::Z80::~Z80() = default;
 
-bool Z80::isEvenParity(Z80::UnsignedByte v)
+bool Z80::Z80::isEvenParity(Z80::Z80::UnsignedByte v)
 {
 	static bool parityLut[256] = {
 #include "evenparitytable8.inc"
@@ -730,7 +743,7 @@ bool Z80::isEvenParity(Z80::UnsignedByte v)
 }
 
 
-bool Z80::isEvenParity(Z80::UnsignedWord v)
+bool Z80::Z80::isEvenParity(Z80::Z80::UnsignedWord v)
 {
 	static bool parityLut[65536] = {
 #include "evenparitytable16.inc"
@@ -752,55 +765,51 @@ bool Z80::isEvenParity(Z80::UnsignedWord v)
 }
 
 
-void Z80::init()
+void Z80::Z80::init()
 {
-	switch (hostByteOrder()) {
-		case BigEndian:
-			m_f = (Z80::UnsignedByte *) &m_af;
-			m_a = m_f + 1;
-			m_c = (Z80::UnsignedByte *) &m_bc;
-			m_b = m_c + 1;
-			m_e = (Z80::UnsignedByte *) &m_de;
-			m_d = m_e + 1;
-			m_l = (Z80::UnsignedByte *) &m_hl;
-			m_h = m_l + 1;
-			m_ixl = (Z80::UnsignedByte *) &m_ix;
-			m_ixh = m_ixl + 1;
-			m_iyl = (Z80::UnsignedByte *) &m_iy;
-			m_iyh = m_iyl + 1;
-			m_fshadow = (Z80::UnsignedByte *) &m_afshadow;
-			m_ashadow = m_fshadow + 1;
-			m_cshadow = (Z80::UnsignedByte *) &m_bcshadow;
-			m_bshadow = m_cshadow + 1;
-			m_eshadow = (Z80::UnsignedByte *) &m_deshadow;
-			m_dshadow = m_eshadow + 1;
-			m_lshadow = (Z80::UnsignedByte *) &m_hlshadow;
-			m_hshadow = m_lshadow + 1;
-			break;
-
-		case LittleEndian:
-			m_a = (Z80::UnsignedByte *) &m_af;
-			m_f = m_a + 1;
-			m_b = (Z80::UnsignedByte *) &m_bc;
-			m_c = m_b + 1;
-			m_d = (Z80::UnsignedByte *) &m_de;
-			m_e = m_d + 1;
-			m_h = (Z80::UnsignedByte *) &m_hl;
-			m_l = m_h + 1;
-			m_ixh = (Z80::UnsignedByte *) &m_ix;
-			m_ixl = m_ixl + 1;
-			m_iyh = (Z80::UnsignedByte *) &m_iy;
-			m_iyl = m_iyl + 1;
-			m_ashadow = (Z80::UnsignedByte *) &m_afshadow;
-			m_fshadow = m_ashadow + 1;
-			m_bshadow = (Z80::UnsignedByte *) &m_bcshadow;
-			m_cshadow = m_bshadow + 1;
-			m_dshadow = (Z80::UnsignedByte *) &m_deshadow;
-			m_eshadow = m_dshadow + 1;
-			m_hshadow = (Z80::UnsignedByte *) &m_hlshadow;
-			m_lshadow = m_hshadow + 1;
-			break;
-	}
+//	if (HostByteOrder == Z80ByteOrder) {
+//        m_a = (Z80::Z80::UnsignedByte *) &m_af;
+//        m_f = m_a + 1;
+//        m_b = (Z80::Z80::UnsignedByte *) &m_bc;
+//        m_c = m_b + 1;
+//        m_d = (Z80::Z80::UnsignedByte *) &m_de;
+//        m_e = m_d + 1;
+//        m_h = (Z80::Z80::UnsignedByte *) &m_hl;
+//        m_l = m_h + 1;
+//        m_ixh = (Z80::Z80::UnsignedByte *) &m_ix;
+//        m_ixl = m_ixl + 1;
+//        m_iyh = (Z80::Z80::UnsignedByte *) &m_iy;
+//        m_iyl = m_iyl + 1;
+//        m_ashadow = (Z80::Z80::UnsignedByte *) &m_afshadow;
+//        m_fshadow = m_ashadow + 1;
+//        m_bshadow = (Z80::Z80::UnsignedByte *) &m_bcshadow;
+//        m_cshadow = m_bshadow + 1;
+//        m_dshadow = (Z80::Z80::UnsignedByte *) &m_deshadow;
+//        m_eshadow = m_dshadow + 1;
+//        m_hshadow = (Z80::Z80::UnsignedByte *) &m_hlshadow;
+//        m_lshadow = m_hshadow + 1;
+//	} else {
+//        m_f = (Z80::Z80::UnsignedByte *) &m_af;
+//        m_a = m_f + 1;
+//        m_c = (Z80::Z80::UnsignedByte *) &m_bc;
+//        m_b = m_c + 1;
+//        m_e = (Z80::Z80::UnsignedByte *) &m_de;
+//        m_d = m_e + 1;
+//        m_l = (Z80::Z80::UnsignedByte *) &m_hl;
+//        m_h = m_l + 1;
+//        m_ixl = (Z80::Z80::UnsignedByte *) &m_ix;
+//        m_ixh = m_ixl + 1;
+//        m_iyl = (Z80::Z80::UnsignedByte *) &m_iy;
+//        m_iyh = m_iyl + 1;
+//        m_fshadow = (Z80::Z80::UnsignedByte *) &m_afshadow;
+//        m_ashadow = m_fshadow + 1;
+//        m_cshadow = (Z80::Z80::UnsignedByte *) &m_bcshadow;
+//        m_bshadow = m_cshadow + 1;
+//        m_eshadow = (Z80::Z80::UnsignedByte *) &m_deshadow;
+//        m_dshadow = m_eshadow + 1;
+//        m_lshadow = (Z80::Z80::UnsignedByte *) &m_hlshadow;
+//        m_hshadow = m_lshadow + 1;
+//	}
 
 	/* set IO up device connections */
 	m_ioDeviceCount = 0;
@@ -826,7 +835,7 @@ void Z80::init()
 }
 
 
-bool Z80::connectIODevice(Z80::UnsignedWord port, Z80IODevice * device)
+bool Z80::Z80::connectIODevice(Z80::Z80::UnsignedWord port, Z80IODevice * device)
 {
 	if (m_ioDeviceCount >= m_ioDeviceCapacity) {
 		m_ioDeviceCapacity += 100;
@@ -840,7 +849,7 @@ bool Z80::connectIODevice(Z80::UnsignedWord port, Z80IODevice * device)
 	return true;
 }
 
-void Z80::disconnectIODevice(Z80::UnsignedWord port, Z80IODevice * device) {
+void Z80::Z80::disconnectIODevice(Z80::Z80::UnsignedWord port, Z80IODevice * device) {
 	for(int i = 0; i < m_ioDeviceCount; ++i) {
 		if (m_ioDeviceConnections[i]->device == device && m_ioDeviceConnections[i]->port == port) {
 			m_ioDeviceConnections[i]->device->setCpu(0);
@@ -853,31 +862,30 @@ void Z80::disconnectIODevice(Z80::UnsignedWord port, Z80IODevice * device) {
 	}
 }
 
-void Z80::setInterruptMode0Instruction(Z80::UnsignedByte * instructions, int bytes) {
+void Z80::Z80::setInterruptMode0Instruction(Z80::Z80::UnsignedByte * instructions, int bytes) {
 	for(int i = 0; i < bytes; ++i) {
         m_interruptMode0Instruction[i] = instructions[i];
     }
 }
 
-void Z80::interrupt() {
+void Z80::Z80::interrupt() {
 	m_interruptRequested = true;
 }
 
-void Z80::nmi()
+void Z80::Z80::nmi()
 {
 	m_nmiPending = true;
 }
 
-void Z80::reset()
+void Z80::Z80::reset()
 {
 	m_iff1 = m_iff2 = false;
 	m_nmiPending = false;
-	m_bc = m_de = m_hl = m_pc = m_bcshadow = m_deshadow = m_hlshadow = m_ix = m_iy = 0x0000;
-	m_af = m_afshadow = m_sp = 0xffff;
+	m_registers.reset();
 }
 
 // TODO this doesn't belong here - the loop should be in the controlling Computer object
-void Z80::start()
+void Z80::Z80::start()
 {
 	int cycleCounter = 0;
 
@@ -887,16 +895,16 @@ void Z80::start()
 }
 
 
-void Z80::pokeUnsignedWord(int addr, Z80::UnsignedWord v)
+void Z80::Z80::pokeUnsignedWord(int addr, Z80::Z80::UnsignedWord v)
 {
 	if (addr < 0 || addr >= (m_ramSize - 1)) return;
-	v = Z80::hostToZ80ByteOrder(v);
-	m_ram[addr] = (Z80::UnsignedByte)((v & 0xff00) >> 8);
-	m_ram[addr + 1] = (Z80::UnsignedByte)(v & 0x00ff);
+	v = Z80::Z80::hostToZ80ByteOrder(v);
+	m_ram[addr] = (Z80::Z80::UnsignedByte)((v & 0xff00) >> 8);
+	m_ram[addr + 1] = (Z80::Z80::UnsignedByte)(v & 0x00ff);
 }
 
 
-bool Z80::execute(const Z80::UnsignedByte * instruction, bool doPc, int * cycles, int * size)
+bool Z80::Z80::execute(const Z80::Z80::UnsignedByte * instruction, bool doPc, int * cycles, int * size)
 {
 	static int dummySize;
 
@@ -919,11 +927,11 @@ bool Z80::execute(const Z80::UnsignedByte * instruction, bool doPc, int * cycles
 			break;
 
 		case Z80__PLAIN__PREFIX__DD:
-			ret = executeDdOrFdInstruction(m_ix, instruction + 1, &doPc, cycles, size);
+			ret = executeDdOrFdInstruction(m_registers.ix, instruction + 1, &doPc, cycles, size);
 			break;
 
 		case Z80__PLAIN__PREFIX__FD:
-			ret = executeDdOrFdInstruction(m_iy, instruction + 1, &doPc, cycles, size);
+			ret = executeDdOrFdInstruction(m_registers.iy, instruction + 1, &doPc, cycles, size);
 			break;
 
 		default:
@@ -932,13 +940,16 @@ bool Z80::execute(const Z80::UnsignedByte * instruction, bool doPc, int * cycles
 	}
 
 	/* doPc is altered by the instruction execution method to be false if a jump
-	 * was taken or the PC was otherwise direclty affected by the instruction */
-	if (ret && doPc) m_pc += *size;
+	 * was taken or the PC was otherwise directly affected by the instruction */
+	if (ret && doPc) {
+	    m_registers.pc += *size;
+	}
+
 	return ret;
 }
 
 
-int Z80::fetchExecuteCycle()
+int Z80::Z80::fetchExecuteCycle()
 {
 	int cycles = 0;
 	int size = 0;
@@ -947,9 +958,8 @@ int Z80::fetchExecuteCycle()
 		/* do the interrupt */
 		m_iff2 = m_iff1;
 		m_iff1 = false;
-		Z80__PUSH__REG16(m_pc);
-		m_pc = 0x0066;
-
+		Z80__PUSH__REG16(m_registers.pcZ80());
+		m_registers.pc = 0x0066;
 		m_nmiPending = false;
 	}
 
@@ -960,7 +970,7 @@ int Z80::fetchExecuteCycle()
 				m_iff1 = m_iff2 = false;
 				// TODO if the instruction is a call or RST, push PC onto stack
 				if (false/* is_call_or_rst */) {
-				    Z80__PUSH__REG16(m_pc);
+				    Z80__PUSH__REG16(m_registers.pcZ80());
 				}
 
 				/* execute the instruction */
@@ -971,8 +981,8 @@ int Z80::fetchExecuteCycle()
 
 			case 1:
 				m_iff1 = m_iff2 = false;
-				Z80__PUSH__REG16(m_pc);
-				m_pc = 0x0038;
+				Z80__PUSH__REG16(m_registers.pcZ80());
+                m_registers.pc = 0x0038;
 				break;
 
 			case 2:
@@ -982,12 +992,12 @@ int Z80::fetchExecuteCycle()
 		m_interruptRequested = false;
 	}
 
-	execute(m_ram + m_pc, true, &cycles, &size);
+	execute(m_ram + m_registers.pc, true, &cycles, &size);
 	return cycles;
 }
 
 
-bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * doPc, int * cycles, int * size)
+bool Z80::Z80::executePlainInstruction(const Z80::Z80::UnsignedByte * instruction, bool * doPc, int * cycles, int * size)
 {
 	bool useJumpCycleCost = false;
 
@@ -997,42 +1007,42 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 			break;
 
 		case Z80__PLAIN__LD__BC__NN:					// 0x01
-			Z80__LD__REG16__NN(m_bc, Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG16__NN(m_registers.bcZ80(), *((UnsignedWord *)(instruction + 1)));
 			break;
 
 		case Z80__PLAIN__LD__INDIRECT_BC__A:		// 0x02
-			Z80__LD__INDIRECT_REG16__REG8(m_bc, *m_a);
+			Z80__LD__INDIRECT_REG16__REG8(m_registers.bc, m_registers.a());
 			break;
 
 		case Z80__PLAIN__INC__BC:						// 0x03
-			Z80__INC__REG16(m_bc);
+			Z80__INC__REG16(m_registers.bc);
 			break;
 
 		case Z80__PLAIN__INC__B:						// 0x04
-			Z80__INC__REG8(*m_b);
+			Z80__INC__REG8(m_registers.b());
 			break;
 
 		case Z80__PLAIN__DEC__B:						// 0x05
-			Z80__DEC__REG8(*m_b);
+			Z80__DEC__REG8(m_registers.b());
 			break;
 
 		case Z80__PLAIN__LD__B__N:					// 0x06
-			Z80__LD__REG8__N(*m_b, *(instruction + 1));
+			Z80__LD__REG8__N(m_registers.b(), *(instruction + 1));
 			break;
 
 		case Z80__PLAIN__RLCA:						// 0x07
 			/* FLAGS: S, Z and P preserved, H and N cleared, C modified directly by
 				instruction */
 			{
-				bool bit = (*m_a) & 0x80;
-				(*m_a) <<= 1;
+				bool bit = (m_registers.a()) & 0x80;
+				(m_registers.a()) <<= 1;
 
 				if (bit) {
-					(*m_a) |= 0x01;
+					(m_registers.a()) |= 0x01;
 					Z80_FLAG_C_SET;
 				}
 				else {
-					(*m_a) &= 0xfe;
+					(m_registers.a()) &= 0xfe;
 					Z80_FLAG_C_CLEAR;
 				}
 
@@ -1042,46 +1052,46 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 			break;
 
 		case Z80__PLAIN__EX__AF__AF_SHADOW:			// 0x08
-			Z80__EX__REG16__REG16(m_af, m_afshadow);
+			Z80__EX__REG16__REG16(m_registers.af, m_registers.afShadow);
 			break;
 
 		case Z80__PLAIN__ADD__HL__BC:				// 0x09
-			Z80__ADD__REG16__REG16(m_hl, m_bc);
+			Z80__ADD__REG16__REG16(m_registers.hl, m_registers.bc);
 			break;
 
 		case Z80__PLAIN__LD__A__INDIRECT_BC:		// 0x0a
-			Z80__LD__REG8__INDIRECT_REG16(*m_a, m_bc);
+			Z80__LD__REG8__INDIRECT_REG16(m_registers.a(), m_registers.bc);
 			break;
 
 		case Z80__PLAIN__DEC__BC:						// 0x0b
-			Z80__DEC__REG16(m_bc);
+			Z80__DEC__REG16(m_registers.bc);
 			break;
 
 		case Z80__PLAIN__INC__C:						// 0x0c
-			Z80__INC__REG8(*m_c);
+			Z80__INC__REG8(m_registers.c());
 			break;
 
 		case Z80__PLAIN__DEC__C:						// 0x0d
-			Z80__DEC__REG8(*m_c);
+			Z80__DEC__REG8(m_registers.c());
 			break;
 
 		case Z80__PLAIN__LD__C__N:					// 0x0e
-			Z80__LD__REG8__N(*m_c, *(instruction + 1));
+			Z80__LD__REG8__N(m_registers.c(), *(instruction + 1));
 			break;
 
 		case Z80__PLAIN__RRCA:						// 0x0f
 			/* FLAGS: S, Z and P preserved, H and N cleared, C modified directly by
 				instruction */
 			{
-				bool bit = (*m_a) & 0x01;
-				(*m_a) >>= 1;
+				bool bit = (m_registers.a()) & 0x01;
+				(m_registers.a()) >>= 1;
 
 				if (bit) {
-					(*m_a) |= 0x80;
+					(m_registers.a()) |= 0x80;
 					Z80_FLAG_C_SET;
 				}
 				else {
-					(*m_a) &= 0x7f;
+					(m_registers.a()) &= 0x7f;
 					Z80_FLAG_C_CLEAR;
 				}
 
@@ -1091,8 +1101,8 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 			break;
 
 		case Z80__PLAIN__DJNZ__d:						// 0x10
-			if (0 != --(*m_b)) {
-				m_pc += SignedByte(*(instruction + 1));
+			if (0 != --(m_registers.b())) {
+				m_registers.pc += SignedByte(*(instruction + 1));
 				Z80_DONT_UPDATE_PC;
 				Z80_USE_JUMP_CYCLE_COST;
 			}
@@ -1100,27 +1110,27 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 			break;
 
 		case Z80__PLAIN__LD__DE__NN:				// 0x11
-			Z80__LD__REG16__NN(m_de, Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG16__NN(m_registers.de, *((UnsignedWord *)(instruction + 1)));
 			break;
 
 		case Z80__PLAIN__LD__INDIRECT_DE__A:		// 0x12
-			Z80__LD__INDIRECT_REG16__REG8(m_de, *m_a);
+			Z80__LD__INDIRECT_REG16__REG8(m_registers.de, m_registers.a());
 			break;
 
 		case Z80__PLAIN__INC__DE:					// 0x13
-			Z80__INC__REG16(m_de);
+			Z80__INC__REG16(m_registers.de);
 			break;
 
 		case Z80__PLAIN__INC__D:						// 0x14
-			Z80__INC__REG8(*m_d);
+			Z80__INC__REG8(m_registers.d());
 			break;
 
 		case Z80__PLAIN__DEC__D:						// 0x15
-			Z80__DEC__REG8(*m_d);
+			Z80__DEC__REG8(m_registers.d());
 			break;
 
 		case Z80__PLAIN__LD__D__N:					// 0x16
-			Z80__LD__REG8__N(*m_d, *(instruction + 1));
+			Z80__LD__REG8__N(m_registers.d(), *(instruction + 1));
 			break;
 
 		case Z80__PLAIN__RLA:							// 0x17
@@ -1131,42 +1141,42 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 				 *
 				 * FLAGS: S, Z and P preserved, C modified directly by instruction,
 				 * H and N cleared */
-				UnsignedByte flags = (*m_f & ~Z80_FLAG_C_MASK);
-				Z80__RL__REG8(*m_a);
-				*m_f = flags | (*m_f & Z80_FLAG_C_MASK);
+				UnsignedByte flags = (m_registers.f() & ~Z80_FLAG_C_MASK);
+				Z80__RL__REG8(m_registers.a());
+				m_registers.f() = flags | (m_registers.f() & Z80_FLAG_C_MASK);
 				Z80_FLAG_H_CLEAR;
 				Z80_FLAG_N_CLEAR;
 			}
 			break;
 
 		case Z80__PLAIN__JR__d:						// 0x18
-			m_pc += SignedByte(*(instruction + 1));
+			m_registers.pc += SignedByte(*(instruction + 1));
 			Z80_DONT_UPDATE_PC;
 			Z80_USE_JUMP_CYCLE_COST;
 			break;
 
 		case Z80__PLAIN__ADD__HL__DE:				// 0x19
-			Z80__ADD__REG16__REG16(m_hl, m_de);
+			Z80__ADD__REG16__REG16(m_registers.hl, m_registers.de);
 			break;
 
 		case Z80__PLAIN__LD__A__INDIRECT_DE:		// 0x1a
-			Z80__LD__REG8__INDIRECT_REG16(*m_a, m_de);
+			Z80__LD__REG8__INDIRECT_REG16(m_registers.a(), m_registers.de);
 			break;
 
 		case Z80__PLAIN__DEC__DE:					// 0x1b
-			Z80__DEC__REG16(m_de);
+			Z80__DEC__REG16(m_registers.de);
 			break;
 
 		case Z80__PLAIN__INC__E:						// 0x1c
-			Z80__INC__REG8(*m_e);
+			Z80__INC__REG8(m_registers.e());
 			break;
 
 		case Z80__PLAIN__DEC__E:						// 0x1d
-			Z80__DEC__REG8(*m_e);
+			Z80__DEC__REG8(m_registers.e());
 			break;
 
 		case Z80__PLAIN__LD__E__N:					// 0x1e
-			Z80__LD__REG8__N(*m_e, *(instruction + 1));
+			Z80__LD__REG8__N(m_registers.e(), *(instruction + 1));
 			break;
 
 		case Z80__PLAIN__RRA:							// 0x1f
@@ -1177,9 +1187,9 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 				 *
 				 * FLAGS: S, Z and P preserved, C modified directly by instruction,
 				 * H and N cleared */
-				UnsignedByte flags = (*m_f & ~Z80_FLAG_C_MASK);
-				Z80__RR__REG8(*m_a);
-				*m_f = flags | (*m_f & Z80_FLAG_C_MASK);
+				UnsignedByte flags = (m_registers.f() & ~Z80_FLAG_C_MASK);
+				Z80__RR__REG8(m_registers.a());
+				m_registers.f() = flags | (m_registers.f() & Z80_FLAG_C_MASK);
 				Z80_FLAG_H_CLEAR;
 				Z80_FLAG_N_CLEAR;
 			}
@@ -1187,34 +1197,34 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 
 		case Z80__PLAIN__JR__NZ__d:					// 0x20
 			if (!Z80_FLAG_Z_ISSET) {
-				m_pc += SignedByte(*(instruction + 1));
+				m_registers.pc += SignedByte(*(instruction + 1));
 				Z80_DONT_UPDATE_PC;
 				Z80_USE_JUMP_CYCLE_COST;
 			}
 			break;
 
 		case Z80__PLAIN__LD__HL__NN:				// 0x21
-			Z80__LD__REG16__NN(m_hl, Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG16__NN(m_registers.hl, *((UnsignedWord *)(instruction + 1)));
 			break;
 
 		case Z80__PLAIN__LD__INDIRECT_NN__HL:	// 0x22
-			Z80__LD__INDIRECT_NN__REG16(Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_hl);
+			Z80__LD__INDIRECT_NN__REG16(Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_registers.hl);
 			break;
 
 		case Z80__PLAIN__INC__HL:					// 0x23
-			Z80__INC__REG16(m_hl);
+			Z80__INC__REG16(m_registers.hl);
 			break;
 
 		case Z80__PLAIN__INC__H:						// 0x24
-			Z80__INC__REG8(*m_h);
+			Z80__INC__REG8(m_registers.h());
 			break;
 
 		case Z80__PLAIN__DEC__H:						// 0x25
-			Z80__DEC__REG8(*m_h);
+			Z80__DEC__REG8(m_registers.h());
 			break;
 
 		case Z80__PLAIN__LD__H__N:					// 0x26
-			Z80__LD__REG8__N(*m_h, *(instruction + 1));
+			Z80__LD__REG8__N(m_registers.h(), *(instruction + 1));
 			break;
 
 		case Z80__PLAIN__DAA:							// 0x27
@@ -1244,10 +1254,10 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 			 * defined.
 			 */
 			{
-//				UnsignedByte hi = ((*m_a) & 0xf0) >> 4;
-//				UnsignedByte lo = (*m_a) & 0x0f;
+//				UnsignedByte hi = ((m_registers.a()) & 0xf0) >> 4;
+//				UnsignedByte lo = (m_registers.a()) & 0x0f;
 
-//std::cerr << "A is " << int(*m_a) << "\n";
+//std::cerr << "A is " << int(m_registers.a()) << "\n";
 //std::cerr << "N flag is " << (Z80_FLAG_N_ISSET ? "true" : "false") << "\n";
 //std::cerr << "C flag is " << (Z80_FLAG_C_ISSET ? "true" : "false") << "\n";
 //std::cerr << "high nybble is " << int(hi) << "\n";
@@ -1255,40 +1265,40 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 //std::cerr << "low nybble is " << int(lo) << "\n";
 
 //				if (	!Z80_FLAG_N_ISSET &&		!Z80_FLAG_C_ISSET &&		hi <= 0x09 &&						!Z80_FLAG_H_ISSET && lo <= 0x09)						{ /* A is already BCD valid */ Z80_FLAG_C_CLEAR; }
-//				else if (!Z80_FLAG_N_ISSET &&	!Z80_FLAG_C_ISSET &&		hi <= 0x08 &&						!Z80_FLAG_H_ISSET && lo >= 0x0a && lo <= 0x0f)	{ (*m_a) += 0x06; Z80_FLAG_C_CLEAR; }
-//				else if (!Z80_FLAG_N_ISSET &&	!Z80_FLAG_C_ISSET &&		hi <= 0x09 &&						!Z80_FLAG_H_ISSET && lo <= 0x03)						{ (*m_a) += 0x06; Z80_FLAG_C_CLEAR; }
-//				else if (!Z80_FLAG_N_ISSET &&	!Z80_FLAG_C_ISSET &&		hi >= 0x0a && hi <= 0x0f &&	Z80_FLAG_H_ISSET &&	lo <= 0x09)						{ (*m_a) += 0x60; Z80_FLAG_C_SET; }
-//				else if (!Z80_FLAG_N_ISSET &&	!Z80_FLAG_C_ISSET &&		hi >= 0x09 && hi <= 0x0f &&	!Z80_FLAG_H_ISSET && lo >= 0x0a && lo <= 0x0f)	{ (*m_a) += 0x66; Z80_FLAG_C_SET; }
-//				else if (!Z80_FLAG_N_ISSET &&	!Z80_FLAG_C_ISSET &&		hi >= 0x0a && hi <= 0x0f &&	!Z80_FLAG_H_ISSET && lo <= 0x03)						{ (*m_a) += 0x66; Z80_FLAG_C_SET; }
-//				else if (!Z80_FLAG_N_ISSET &&	Z80_FLAG_C_ISSET &&		hi <= 0x02 &&						Z80_FLAG_H_ISSET &&	lo <= 0x09)						{ std::cerr << "adding0x60\n"; (*m_a) += 0x60; Z80_FLAG_C_SET; }
-//				else if (!Z80_FLAG_N_ISSET &&	Z80_FLAG_C_ISSET &&		hi <= 0x02 &&						!Z80_FLAG_H_ISSET && lo >= 0x0a && lo <= 0x0f)	{ (*m_a) += 0x66; Z80_FLAG_C_SET; }
-//				else if (!Z80_FLAG_N_ISSET &&	Z80_FLAG_C_ISSET &&		hi <= 0x03 &&						Z80_FLAG_H_ISSET &&	lo <= 0x03)						{ (*m_a) += 0x66; Z80_FLAG_C_SET; }
+//				else if (!Z80_FLAG_N_ISSET &&	!Z80_FLAG_C_ISSET &&		hi <= 0x08 &&						!Z80_FLAG_H_ISSET && lo >= 0x0a && lo <= 0x0f)	{ (m_registers.a()) += 0x06; Z80_FLAG_C_CLEAR; }
+//				else if (!Z80_FLAG_N_ISSET &&	!Z80_FLAG_C_ISSET &&		hi <= 0x09 &&						!Z80_FLAG_H_ISSET && lo <= 0x03)						{ (m_registers.a()) += 0x06; Z80_FLAG_C_CLEAR; }
+//				else if (!Z80_FLAG_N_ISSET &&	!Z80_FLAG_C_ISSET &&		hi >= 0x0a && hi <= 0x0f &&	Z80_FLAG_H_ISSET &&	lo <= 0x09)						{ (m_registers.a()) += 0x60; Z80_FLAG_C_SET; }
+//				else if (!Z80_FLAG_N_ISSET &&	!Z80_FLAG_C_ISSET &&		hi >= 0x09 && hi <= 0x0f &&	!Z80_FLAG_H_ISSET && lo >= 0x0a && lo <= 0x0f)	{ (m_registers.a()) += 0x66; Z80_FLAG_C_SET; }
+//				else if (!Z80_FLAG_N_ISSET &&	!Z80_FLAG_C_ISSET &&		hi >= 0x0a && hi <= 0x0f &&	!Z80_FLAG_H_ISSET && lo <= 0x03)						{ (m_registers.a()) += 0x66; Z80_FLAG_C_SET; }
+//				else if (!Z80_FLAG_N_ISSET &&	Z80_FLAG_C_ISSET &&		hi <= 0x02 &&						Z80_FLAG_H_ISSET &&	lo <= 0x09)						{ std::cerr << "adding0x60\n"; (m_registers.a()) += 0x60; Z80_FLAG_C_SET; }
+//				else if (!Z80_FLAG_N_ISSET &&	Z80_FLAG_C_ISSET &&		hi <= 0x02 &&						!Z80_FLAG_H_ISSET && lo >= 0x0a && lo <= 0x0f)	{ (m_registers.a()) += 0x66; Z80_FLAG_C_SET; }
+//				else if (!Z80_FLAG_N_ISSET &&	Z80_FLAG_C_ISSET &&		hi <= 0x03 &&						Z80_FLAG_H_ISSET &&	lo <= 0x03)						{ (m_registers.a()) += 0x66; Z80_FLAG_C_SET; }
 //				else if (Z80_FLAG_N_ISSET &&	!Z80_FLAG_C_ISSET &&		hi <= 0x09 &&						!Z80_FLAG_H_ISSET && lo <= 0x09)						{  /* A is already BCD valid */ Z80_FLAG_C_CLEAR; }
-//				else if (Z80_FLAG_N_ISSET &&	!Z80_FLAG_C_ISSET &&		hi <= 0x08 &&						Z80_FLAG_H_ISSET &&	lo >= 0x06 && lo <= 0x0f)	{ (*m_a) += 0xfa; Z80_FLAG_C_CLEAR; }
-//				else if (Z80_FLAG_N_ISSET &&	Z80_FLAG_C_ISSET &&		hi >= 0x07 && hi <= 0x0f &&	!Z80_FLAG_H_ISSET && lo <= 0x09)						{ (*m_a) += 0xa0; Z80_FLAG_C_SET; }
-//				else if (Z80_FLAG_N_ISSET &&	Z80_FLAG_C_ISSET &&		hi >= 0x06 && hi <= 0x0f &&	Z80_FLAG_H_ISSET &&	lo >= 0x06 && lo <= 0x0f)	{ (*m_a) += 0x9a; Z80_FLAG_C_SET; }
+//				else if (Z80_FLAG_N_ISSET &&	!Z80_FLAG_C_ISSET &&		hi <= 0x08 &&						Z80_FLAG_H_ISSET &&	lo >= 0x06 && lo <= 0x0f)	{ (m_registers.a()) += 0xfa; Z80_FLAG_C_CLEAR; }
+//				else if (Z80_FLAG_N_ISSET &&	Z80_FLAG_C_ISSET &&		hi >= 0x07 && hi <= 0x0f &&	!Z80_FLAG_H_ISSET && lo <= 0x09)						{ (m_registers.a()) += 0xa0; Z80_FLAG_C_SET; }
+//				else if (Z80_FLAG_N_ISSET &&	Z80_FLAG_C_ISSET &&		hi >= 0x06 && hi <= 0x0f &&	Z80_FLAG_H_ISSET &&	lo >= 0x06 && lo <= 0x0f)	{ (m_registers.a()) += 0x9a; Z80_FLAG_C_SET; }
 //				else std::cerr << "DAA failed to execute\n";
 
 //				Z80_FLAG_S_DEFAULTBEHAVIOUR;
 //				Z80_FLAG_Z_DEFAULTBEHAVIOUR;
-//				Z80_FLAG_H_UPDATE((*m_a) & 0x10);
-//				Z80_FLAG_P_UPDATE(isEvenParity(*m_a));
+//				Z80_FLAG_H_UPDATE((m_registers.a()) & 0x10);
+//				Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a()));
 
 				/* implementation ported from hob.java */
-				UnsignedWord res = UnsignedWord(0 | ((*m_a) & 0x0f & 0xff) << 8);
-				res = UnsignedWord(Z80_FLAG_N_ISSET ? Z80_FLAG_C_ISSET ? Z80_FLAG_H_ISSET ? 0x9a01 : 0xa001 : Z80_FLAG_H_ISSET ? 0xfa00 : 0 : Z80_FLAG_C_ISSET ? Z80_FLAG_H_ISSET ? 0x6601 : ((res & 0xff00) >> 8) >= 0x0a ? 0x6601 : 0x6001 : Z80_FLAG_H_ISSET ? ((*m_a) & 0xff) >= 0xa0 ? 0x6601 : 0x0600 : (res & 0xff00) >> 8 >= 0x0a ? ((*m_a) & 0xff) >= 0x90 ? 0x6601 : 0x0600 : ((*m_a) & 0xff) >= 0xa0 ? 0x6001 : 0x0000);
-				*m_a = UnsignedByte((((res & 0xff00) >> 8) + ((*m_a) & 0xff)) & 0xff);
+				UnsignedWord res = UnsignedWord(0 | ((m_registers.a()) & 0x0f & 0xff) << 8);
+				res = UnsignedWord(Z80_FLAG_N_ISSET ? Z80_FLAG_C_ISSET ? Z80_FLAG_H_ISSET ? 0x9a01 : 0xa001 : Z80_FLAG_H_ISSET ? 0xfa00 : 0 : Z80_FLAG_C_ISSET ? Z80_FLAG_H_ISSET ? 0x6601 : ((res & 0xff00) >> 8) >= 0x0a ? 0x6601 : 0x6001 : Z80_FLAG_H_ISSET ? ((m_registers.a()) & 0xff) >= 0xa0 ? 0x6601 : 0x0600 : (res & 0xff00) >> 8 >= 0x0a ? ((m_registers.a()) & 0xff) >= 0x90 ? 0x6601 : 0x0600 : ((m_registers.a()) & 0xff) >= 0xa0 ? 0x6001 : 0x0000);
+				m_registers.a() = UnsignedByte((((res & 0xff00) >> 8) + ((m_registers.a()) & 0xff)) & 0xff);
 				Z80_FLAG_S_DEFAULTBEHAVIOUR;
 				Z80_FLAG_Z_DEFAULTBEHAVIOUR;
 				Z80_FLAG_H_UPDATE(res & 0x0010);
-				Z80_FLAG_P_UPDATE(isEvenParity(*m_a));
+				Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a()));
 				Z80_FLAG_C_UPDATE(res & 0x0001);
 
-//				UnsignedByte oldValue = *m_a;
-//				if (((*m_a) & 0x0f) > 9 || Z80_FLAG_C_ISSET) *m_a += 0x06;
+//				UnsignedByte oldValue = m_registers.a();
+//				if (((m_registers.a()) & 0x0f) > 9 || Z80_FLAG_C_ISSET) m_registers.a() += 0x06;
 
-//				if ((((*m_a) & 0xf0) >> 4) > 9 || Z80_FLAG_C_ISSET) {
-//					*m_a += 0x60;
+//				if ((((m_registers.a()) & 0xf0) >> 4) > 9 || Z80_FLAG_C_ISSET) {
+//					m_registers.a() += 0x60;
 //					Z80_FLAG_C_SET;
 //				}
 //				else
@@ -1296,82 +1306,82 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 
 //				Z80_FLAG_S_DEFAULTBEHAVIOUR;
 //				Z80_FLAG_Z_DEFAULTBEHAVIOUR;
-//				Z80_FLAG_P_UPDATE(isEvenParity(*m_a));
-//				Z80_FLAG_H_UPDATE(Z80_CHECK_8BIT_HALFCARRY(oldValue, *m_a));
+//				Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a()));
+//				Z80_FLAG_H_UPDATE(Z80_CHECK_8BIT_HALFCARRY(oldValue, m_registers.a()));
 			}
 			break;
 
 		case Z80__PLAIN__JR__Z__d:					// 0x28
 			if (Z80_FLAG_Z_ISSET) {
-				m_pc += SignedByte(*(instruction + 1));
+				m_registers.pc += SignedByte(*(instruction + 1));
 				Z80_DONT_UPDATE_PC;
 				Z80_USE_JUMP_CYCLE_COST;
 			}
 			break;
 
 		case Z80__PLAIN__ADD__HL__HL:				// 0x29
-			Z80__ADD__REG16__REG16(m_hl, m_hl);
+			Z80__ADD__REG16__REG16(m_registers.hl, m_registers.hl);
 			break;
 
 		case Z80__PLAIN__LD__HL__INDIRECT_NN:	// 0x2a
-			Z80__LD__REG16__INDIRECT_NN(m_hl, Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG16__INDIRECT_NN(m_registers.hl, Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
 			break;
 
 		case Z80__PLAIN__DEC__HL:					// 0x2b
-			Z80__DEC__REG16(m_hl);
+			Z80__DEC__REG16(m_registers.hl);
 			break;
 
 		case Z80__PLAIN__INC__L:						// 0x2c
-			Z80__INC__REG8(*m_l);
+			Z80__INC__REG8(m_registers.l());
 			break;
 
 		case Z80__PLAIN__DEC__L:						// 0x2d
-			Z80__DEC__REG8(*m_l);
+			Z80__DEC__REG8(m_registers.l());
 			break;
 
 		case Z80__PLAIN__LD__L__N:					// 0x2e
-			Z80__LD__REG8__N(*m_l, *(instruction + 1));
+			Z80__LD__REG8__N(m_registers.l(), *(instruction + 1));
 			break;
 
 		case Z80__PLAIN__CPL:							// 0x2f
 			/* complement A
 			 *
 			 * FLAGS: S, Z, P and C preserved, N and H set */
-			(*m_a) = ~(*m_a);
+			(m_registers.a()) = ~(m_registers.a());
 			Z80_FLAG_N_SET;
 			Z80_FLAG_H_SET;
 			break;
 
 		case Z80__PLAIN__JR__NC__d:					// 0x30
 			if (!Z80_FLAG_C_ISSET) {
-				m_pc += SignedByte(*(instruction + 1));
+				m_registers.pc += SignedByte(*(instruction + 1));
 				Z80_DONT_UPDATE_PC;
 				Z80_USE_JUMP_CYCLE_COST;
 			}
 			break;
 
 		case Z80__PLAIN__LD__SP__NN:				// 0x31
-			Z80__LD__REG16__NN(m_sp, Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG16__NN(m_registers.sp, Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
 			break;
 
 		case Z80__PLAIN__LD__INDIRECT_NN__A:		// 0x32
-			Z80__LD__INDIRECT_NN__REG8(Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), *m_a);
+			Z80__LD__INDIRECT_NN__REG8(Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_registers.a());
 			break;
 
 		case Z80__PLAIN__INC__SP:					// 0x33
-			Z80__INC__REG16(m_sp);
+			Z80__INC__REG16(m_registers.sp);
 			break;
 
 		case Z80__PLAIN__INC__INDIRECT_HL:		// 0x34
-			Z80__INC__INDIRECT_REG16(m_hl);
+			Z80__INC__INDIRECT_REG16(m_registers.hl);
 			break;
 
 		case Z80__PLAIN__DEC__INDIRECT_HL:		// 0x35
-			Z80__DEC__INDIRECT_REG16(m_hl);
+			Z80__DEC__INDIRECT_REG16(m_registers.hl);
 			break;
 
 		case Z80__PLAIN__LD__INDIRECT_HL__N:		// 0x36
-			Z80__LD__INDIRECT_REG16__N(m_hl, *(instruction + 1));
+			Z80__LD__INDIRECT_REG16__N(m_registers.hl, *(instruction + 1));
 			break;
 
 		case Z80__PLAIN__SCF:							// 0x37
@@ -1380,34 +1390,34 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 
 		case Z80__PLAIN__JR__C__d:					// 0x38
 			if (Z80_FLAG_C_ISSET) {
-				m_pc += SignedByte(*(instruction + 1));
+				m_registers.pc += SignedByte(*(instruction + 1));
 				Z80_DONT_UPDATE_PC;
 				Z80_USE_JUMP_CYCLE_COST;
 			}
 			break;
 
 		case Z80__PLAIN__ADD__HL__SP:				// 0x39
-			Z80__ADD__REG16__REG16(m_hl, m_sp);
+			Z80__ADD__REG16__REG16(m_registers.hl, m_registers.sp);
 			break;
 
 		case Z80__PLAIN__LD__A__INDIRECT_NN:		// 0x3a
-			Z80__LD__REG8__INDIRECT_NN(*m_a, Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG8__INDIRECT_NN(m_registers.a(), Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
 			break;
 
 		case Z80__PLAIN__DEC__SP:					// 0x3b
-			Z80__DEC__REG16(m_sp);
+			Z80__DEC__REG16(m_registers.sp);
 			break;
 
 		case Z80__PLAIN__INC__A:						// 0x3c
-			Z80__INC__REG8(*m_a);
+			Z80__INC__REG8(m_registers.a());
 			break;
 
 		case Z80__PLAIN__DEC__A:						// 0x3d
-			Z80__DEC__REG8(*m_a);
+			Z80__DEC__REG8(m_registers.a());
 			break;
 
 		case Z80__PLAIN__LD__A__N:					// 0x3e
-			Z80__LD__REG8__N(*m_a, *(instruction + 1));
+			Z80__LD__REG8__N(m_registers.a(), *(instruction + 1));
 			break;
 
 		case Z80__PLAIN__CCF:							// 0x3f
@@ -1415,219 +1425,219 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 			break;
 
 		case Z80__PLAIN__LD__B__B:					// 0x40
-			Z80__LD__REG8__REG8(*m_b, *m_b);
+			Z80__LD__REG8__REG8(m_registers.b(), m_registers.b());
 			break;
 
 		case Z80__PLAIN__LD__B__C:					// 0x41
-			Z80__LD__REG8__REG8(*m_b, *m_c);
+			Z80__LD__REG8__REG8(m_registers.b(), m_registers.c());
 			break;
 
 		case Z80__PLAIN__LD__B__D:					// 0x42
-			Z80__LD__REG8__REG8(*m_b, *m_d);
+			Z80__LD__REG8__REG8(m_registers.b(), m_registers.d());
 			break;
 
 		case Z80__PLAIN__LD__B__E:					// 0x43
-			Z80__LD__REG8__REG8(*m_b, *m_e);
+			Z80__LD__REG8__REG8(m_registers.b(), m_registers.e());
 			break;
 
 		case Z80__PLAIN__LD__B__H:					// 0x44
-			Z80__LD__REG8__REG8(*m_b, *m_h);
+			Z80__LD__REG8__REG8(m_registers.b(), m_registers.h());
 			break;
 
 		case Z80__PLAIN__LD__B__L:					// 0x45
-			Z80__LD__REG8__REG8(*m_b, *m_l);
+			Z80__LD__REG8__REG8(m_registers.b(), m_registers.l());
 			break;
 
 		case Z80__PLAIN__LD__B__INDIRECT_HL:		// 0x46
-			Z80__LD__REG8__INDIRECT_REG16(*m_b, m_hl);
+			Z80__LD__REG8__INDIRECT_REG16(m_registers.b(), m_registers.hl);
 			break;
 
 		case Z80__PLAIN__LD__B__A:					// 0x47
-			Z80__LD__REG8__REG8(*m_b, *m_a);
+			Z80__LD__REG8__REG8(m_registers.b(), m_registers.a());
 			break;
 
 		case Z80__PLAIN__LD__C__B:					// 0x48
-			Z80__LD__REG8__REG8(*m_c, *m_b);
+			Z80__LD__REG8__REG8(m_registers.c(), m_registers.b());
 			break;
 
 		case Z80__PLAIN__LD__C__C:					// 0x49
-			Z80__LD__REG8__REG8(*m_c, *m_c);
+			Z80__LD__REG8__REG8(m_registers.c(), m_registers.c());
 			break;
 
 		case Z80__PLAIN__LD__C__D:					// 0x4a
-			Z80__LD__REG8__REG8(*m_c, *m_d);
+			Z80__LD__REG8__REG8(m_registers.c(), m_registers.d());
 			break;
 
 		case Z80__PLAIN__LD__C__E:					// 0x4b
-			Z80__LD__REG8__REG8(*m_c, *m_e);
+			Z80__LD__REG8__REG8(m_registers.c(), m_registers.e());
 			break;
 
 		case Z80__PLAIN__LD__C__H:					// 0x4c
-			Z80__LD__REG8__REG8(*m_c, *m_h);
+			Z80__LD__REG8__REG8(m_registers.c(), m_registers.h());
 			break;
 
 		case Z80__PLAIN__LD__C__L:					// 0x4d
-			Z80__LD__REG8__REG8(*m_c, *m_l);
+			Z80__LD__REG8__REG8(m_registers.c(), m_registers.l());
 			break;
 
 		case Z80__PLAIN__LD__C__INDIRECT_HL:		// 0x4e
-			Z80__LD__REG8__INDIRECT_REG16(*m_c, m_hl);
+			Z80__LD__REG8__INDIRECT_REG16(m_registers.c(), m_registers.hl);
 			break;
 
 		case Z80__PLAIN__LD__C__A:					// 0x4f
-			Z80__LD__REG8__REG8(*m_c, *m_a);
+			Z80__LD__REG8__REG8(m_registers.c(), m_registers.a());
 			break;
 
 		case Z80__PLAIN__LD__D__B:					// 0x50
-			Z80__LD__REG8__REG8(*m_d, *m_b);
+			Z80__LD__REG8__REG8(m_registers.d(), m_registers.b());
 			break;
 
 		case Z80__PLAIN__LD__D__C:					// 0x51
-			Z80__LD__REG8__REG8(*m_d, *m_c);
+			Z80__LD__REG8__REG8(m_registers.d(), m_registers.c());
 			break;
 
 		case Z80__PLAIN__LD__D__D:					// 0x52
-			Z80__LD__REG8__REG8(*m_d, *m_d);
+			Z80__LD__REG8__REG8(m_registers.d(), m_registers.d());
 			break;
 
 		case Z80__PLAIN__LD__D__E:					// 0x53
-			Z80__LD__REG8__REG8(*m_d, *m_e);
+			Z80__LD__REG8__REG8(m_registers.d(), m_registers.e());
 			break;
 
 		case Z80__PLAIN__LD__D__H:					// 0x54
-			Z80__LD__REG8__REG8(*m_d, *m_h);
+			Z80__LD__REG8__REG8(m_registers.d(), m_registers.h());
 			break;
 
 		case Z80__PLAIN__LD__D__L:					// 0x55
-			Z80__LD__REG8__REG8(*m_d, *m_l);
+			Z80__LD__REG8__REG8(m_registers.d(), m_registers.l());
 			break;
 
 		case Z80__PLAIN__LD__D__INDIRECT_HL:		// 0x56
-			Z80__LD__REG8__INDIRECT_REG16(*m_d, m_hl);
+			Z80__LD__REG8__INDIRECT_REG16(m_registers.d(), m_registers.hl);
 			break;
 
 		case Z80__PLAIN__LD__D__A:					// 0x57
-			Z80__LD__REG8__REG8(*m_d, *m_a);
+			Z80__LD__REG8__REG8(m_registers.d(), m_registers.a());
 			break;
 
 		case Z80__PLAIN__LD__E__B:					// 0x58
-			Z80__LD__REG8__REG8(*m_e, *m_b);
+			Z80__LD__REG8__REG8(m_registers.e(), m_registers.b());
 			break;
 
 		case Z80__PLAIN__LD__E__C:					// 0x59
-			Z80__LD__REG8__REG8(*m_e, *m_c);
+			Z80__LD__REG8__REG8(m_registers.e(), m_registers.c());
 			break;
 
 		case Z80__PLAIN__LD__E__D:					// 0x5a
-			Z80__LD__REG8__REG8(*m_e, *m_d);
+			Z80__LD__REG8__REG8(m_registers.e(), m_registers.d());
 			break;
 
 		case Z80__PLAIN__LD__E__E:					// 0x5b
-			Z80__LD__REG8__REG8(*m_e, *m_e);
+			Z80__LD__REG8__REG8(m_registers.e(), m_registers.e());
 			break;
 
 		case Z80__PLAIN__LD__E__H:					// 0x5c
-			Z80__LD__REG8__REG8(*m_e, *m_h);
+			Z80__LD__REG8__REG8(m_registers.e(), m_registers.h());
 			break;
 
 		case Z80__PLAIN__LD__E__L:					// 0x5d
-			Z80__LD__REG8__REG8(*m_e, *m_l);
+			Z80__LD__REG8__REG8(m_registers.e(), m_registers.l());
 			break;
 
 		case Z80__PLAIN__LD__E__INDIRECT_HL:		// 0x5e
-			Z80__LD__REG8__INDIRECT_REG16(*m_e, m_hl);
+			Z80__LD__REG8__INDIRECT_REG16(m_registers.e(), m_registers.hl);
 			break;
 
 		case Z80__PLAIN__LD__E__A:					// 0x5f
-			Z80__LD__REG8__REG8(*m_e, *m_a);
+			Z80__LD__REG8__REG8(m_registers.e(), m_registers.a());
 			break;
 
 		case Z80__PLAIN__LD__H__B:					// 0x60
-			Z80__LD__REG8__REG8(*m_h, *m_b);
+			Z80__LD__REG8__REG8(m_registers.h(), m_registers.b());
 			break;
 
 		case Z80__PLAIN__LD__H__C:					// 0x61
-			Z80__LD__REG8__REG8(*m_h, *m_c);
+			Z80__LD__REG8__REG8(m_registers.h(), m_registers.c());
 			break;
 
 		case Z80__PLAIN__LD__H__D:					// 0x62
-			Z80__LD__REG8__REG8(*m_h, *m_d);
+			Z80__LD__REG8__REG8(m_registers.h(), m_registers.d());
 			break;
 
 		case Z80__PLAIN__LD__H__E:					// 0x63
-			Z80__LD__REG8__REG8(*m_h, *m_e);
+			Z80__LD__REG8__REG8(m_registers.h(), m_registers.e());
 			break;
 
 		case Z80__PLAIN__LD__H__H:					// 0x64
-			Z80__LD__REG8__REG8(*m_h, *m_h);
+			Z80__LD__REG8__REG8(m_registers.h(), m_registers.h());
 			break;
 
 		case Z80__PLAIN__LD__H__L:					// 0x65
-			Z80__LD__REG8__REG8(*m_h, *m_l);
+			Z80__LD__REG8__REG8(m_registers.h(), m_registers.l());
 			break;
 
 		case Z80__PLAIN__LD__H__INDIRECT_HL:		// 0x66
-			Z80__LD__REG8__INDIRECT_REG16(*m_h, m_hl);
+			Z80__LD__REG8__INDIRECT_REG16(m_registers.h(), m_registers.hl);
 			break;
 
 		case Z80__PLAIN__LD__H__A:					// 0x67
-			Z80__LD__REG8__REG8(*m_h, *m_a);
+			Z80__LD__REG8__REG8(m_registers.h(), m_registers.a());
 			break;
 
 		case Z80__PLAIN__LD__L__B:					// 0x68
-			Z80__LD__REG8__REG8(*m_l, *m_b);
+			Z80__LD__REG8__REG8(m_registers.l(), m_registers.b());
 			break;
 
 		case Z80__PLAIN__LD__L__C:					// 0x69
-			Z80__LD__REG8__REG8(*m_l, *m_c);
+			Z80__LD__REG8__REG8(m_registers.l(), m_registers.c());
 			break;
 
 		case Z80__PLAIN__LD__L__D:					// 0x6a
-			Z80__LD__REG8__REG8(*m_l, *m_d);
+			Z80__LD__REG8__REG8(m_registers.l(), m_registers.d());
 			break;
 
 		case Z80__PLAIN__LD__L__E:					// 0x6b
-			Z80__LD__REG8__REG8(*m_l, *m_e);
+			Z80__LD__REG8__REG8(m_registers.l(), m_registers.e());
 			break;
 
 		case Z80__PLAIN__LD__L__H:					// 0x6c
-			Z80__LD__REG8__REG8(*m_l, *m_h);
+			Z80__LD__REG8__REG8(m_registers.l(), m_registers.h());
 			break;
 
 		case Z80__PLAIN__LD__L__L:					// 0x6d
-			Z80__LD__REG8__REG8(*m_l, *m_l);
+			Z80__LD__REG8__REG8(m_registers.l(), m_registers.l());
 			break;
 
 		case Z80__PLAIN__LD__L__INDIRECT_HL:		// 0x6e
-			Z80__LD__REG8__INDIRECT_REG16(*m_l, m_hl);
+			Z80__LD__REG8__INDIRECT_REG16(m_registers.l(), m_registers.hl);
 			break;
 
 		case Z80__PLAIN__LD__L__A:					// 0x6f
-			Z80__LD__REG8__REG8(*m_l, *m_a);
+			Z80__LD__REG8__REG8(m_registers.l(), m_registers.a());
 			break;
 
 		case Z80__PLAIN__LD__INDIRECT_HL__B:		// 0x70
-			Z80__LD__INDIRECT_REG16__REG8(m_hl, *m_b);
+			Z80__LD__INDIRECT_REG16__REG8(m_registers.hl, m_registers.b());
 			break;
 
 		case Z80__PLAIN__LD__INDIRECT_HL__C:		// 0x71
-			Z80__LD__INDIRECT_REG16__REG8(m_hl, *m_c);
+			Z80__LD__INDIRECT_REG16__REG8(m_registers.hl, m_registers.c());
 			break;
 
 		case Z80__PLAIN__LD__INDIRECT_HL__D:		// 0x72
-			Z80__LD__INDIRECT_REG16__REG8(m_hl, *m_d);
+			Z80__LD__INDIRECT_REG16__REG8(m_registers.hl, m_registers.d());
 			break;
 
 		case Z80__PLAIN__LD__INDIRECT_HL__E:		// 0x73
-			Z80__LD__INDIRECT_REG16__REG8(m_hl, *m_e);
+			Z80__LD__INDIRECT_REG16__REG8(m_registers.hl, m_registers.e());
 			break;
 
 		case Z80__PLAIN__LD__INDIRECT_HL__H:		// 0x74
-			Z80__LD__INDIRECT_REG16__REG8(m_hl, *m_h);
+			Z80__LD__INDIRECT_REG16__REG8(m_registers.hl, m_registers.h());
 			break;
 
 		case Z80__PLAIN__LD__INDIRECT_HL__L:		// 0x75
-			Z80__LD__INDIRECT_REG16__REG8(m_hl, *m_l);
+			Z80__LD__INDIRECT_REG16__REG8(m_registers.hl, m_registers.l());
 			break;
 
 		case Z80__PLAIN__HALT:						// 0x76
@@ -1637,319 +1647,319 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 			break;
 
 		case Z80__PLAIN__LD__INDIRECT_HL__A:		// 0x77
-			Z80__LD__INDIRECT_REG16__REG8(m_hl, *m_a);
+			Z80__LD__INDIRECT_REG16__REG8(m_registers.hl, m_registers.a());
 			break;
 
 		case Z80__PLAIN__LD__A__B:					// 0x78
-			Z80__LD__REG8__REG8(*m_a, *m_b);
+			Z80__LD__REG8__REG8(m_registers.a(), m_registers.b());
 			break;
 
 		case Z80__PLAIN__LD__A__C:					// 0x79
-			Z80__LD__REG8__REG8(*m_a, *m_c);
+			Z80__LD__REG8__REG8(m_registers.a(), m_registers.c());
 			break;
 
 		case Z80__PLAIN__LD__A__D:					// 0x7a
-			Z80__LD__REG8__REG8(*m_a, *m_d);
+			Z80__LD__REG8__REG8(m_registers.a(), m_registers.d());
 			break;
 
 		case Z80__PLAIN__LD__A__E:					// 0x7b
-			Z80__LD__REG8__REG8(*m_a, *m_e);
+			Z80__LD__REG8__REG8(m_registers.a(), m_registers.e());
 			break;
 
 		case Z80__PLAIN__LD__A__H:					// 0x7c
-			Z80__LD__REG8__REG8(*m_a, *m_h);
+			Z80__LD__REG8__REG8(m_registers.a(), m_registers.h());
 			break;
 
 		case Z80__PLAIN__LD__A__L:					// 0x7d
-			Z80__LD__REG8__REG8(*m_a, *m_l);
+			Z80__LD__REG8__REG8(m_registers.a(), m_registers.l());
 			break;
 
 		case Z80__PLAIN__LD__A__INDIRECT_HL:		// 0x7e
-			Z80__LD__REG8__INDIRECT_REG16(*m_a, m_hl);
+			Z80__LD__REG8__INDIRECT_REG16(m_registers.a(), m_registers.hl);
 			break;
 
 		case Z80__PLAIN__LD__A__A:					// 0x7f
-			Z80__LD__REG8__REG8(*m_a, *m_a);
+			Z80__LD__REG8__REG8(m_registers.a(), m_registers.a());
 			break;
 
 		case Z80__PLAIN__ADD__A__B:					// 0x80
-			Z80__ADD__REG8__REG8(*m_a, *m_b);
+			Z80__ADD__REG8__REG8(m_registers.a(), m_registers.b());
 			break;
 
 		case Z80__PLAIN__ADD__A__C:					// 0x81
-			Z80__ADD__REG8__REG8(*m_a, *m_c);
+			Z80__ADD__REG8__REG8(m_registers.a(), m_registers.c());
 			break;
 
 		case Z80__PLAIN__ADD__A__D:					// 0x82
-			Z80__ADD__REG8__REG8(*m_a, *m_d);
+			Z80__ADD__REG8__REG8(m_registers.a(), m_registers.d());
 			break;
 
 		case Z80__PLAIN__ADD__A__E:					// 0x83
-			Z80__ADD__REG8__REG8(*m_a, *m_e);
+			Z80__ADD__REG8__REG8(m_registers.a(), m_registers.e());
 			break;
 
 		case Z80__PLAIN__ADD__A__H:					// 0x84
-			Z80__ADD__REG8__REG8(*m_a, *m_h);
+			Z80__ADD__REG8__REG8(m_registers.a(), m_registers.h());
 			break;
 
 		case Z80__PLAIN__ADD__A__L:					// 0x85
-			Z80__ADD__REG8__REG8(*m_a, *m_l);
+			Z80__ADD__REG8__REG8(m_registers.a(), m_registers.l());
 			break;
 
 		case Z80__PLAIN__ADD__A__INDIRECT_HL:	// 0x86
-			Z80__ADD__REG8__INDIRECT_REG16(*m_a, m_hl);
+			Z80__ADD__REG8__INDIRECT_REG16(m_registers.a(), m_registers.hl);
 			break;
 
 		case Z80__PLAIN__ADD__A__A:					// 0x87
-			Z80__ADD__REG8__REG8(*m_a, *m_a);
+			Z80__ADD__REG8__REG8(m_registers.a(), m_registers.a());
 			break;
 
 		case Z80__PLAIN__ADC__A__B:					// 0x88
-			Z80__ADC__REG8__REG8(*m_a, *m_b);
+			Z80__ADC__REG8__REG8(m_registers.a(), m_registers.b());
 			break;
 
 		case Z80__PLAIN__ADC__A__C:					// 0x89
-			Z80__ADC__REG8__REG8(*m_a, *m_c);
+			Z80__ADC__REG8__REG8(m_registers.a(), m_registers.c());
 			break;
 
 		case Z80__PLAIN__ADC__A__D:					// 0x8a
-			Z80__ADC__REG8__REG8(*m_a, *m_d);
+			Z80__ADC__REG8__REG8(m_registers.a(), m_registers.d());
 			break;
 
 		case Z80__PLAIN__ADC__A__E:					// 0x8b
-			Z80__ADC__REG8__REG8(*m_a, *m_e);
+			Z80__ADC__REG8__REG8(m_registers.a(), m_registers.e());
 			break;
 
 		case Z80__PLAIN__ADC__A__H:					// 0x8c
-			Z80__ADC__REG8__REG8(*m_a, *m_h);
+			Z80__ADC__REG8__REG8(m_registers.a(), m_registers.h());
 			break;
 
 		case Z80__PLAIN__ADC__A__L:					// 0x8d
-			Z80__ADC__REG8__REG8(*m_a, *m_l);
+			Z80__ADC__REG8__REG8(m_registers.a(), m_registers.l());
 			break;
 
 		case Z80__PLAIN__ADC__A__INDIRECT_HL:	// 0x8e
-			Z80__ADC__REG8__INDIRECT_REG16(*m_a, m_hl);
+			Z80__ADC__REG8__INDIRECT_REG16(m_registers.a(), m_registers.hl);
 			break;
 
 		case Z80__PLAIN__ADC__A__A:					// 0x8f
-			Z80__ADC__REG8__REG8(*m_a, *m_a);
+			Z80__ADC__REG8__REG8(m_registers.a(), m_registers.a());
 			break;
 
 		case Z80__PLAIN__SUB__B:						// 0x90
-			Z80__SUB__REG8(*m_b);
+			Z80__SUB__REG8(m_registers.b());
 			break;
 
 		case Z80__PLAIN__SUB__C:						// 0x91
-			Z80__SUB__REG8(*m_c);
+			Z80__SUB__REG8(m_registers.c());
 			break;
 
 		case Z80__PLAIN__SUB__D:						// 0x92
-			Z80__SUB__REG8(*m_d);
+			Z80__SUB__REG8(m_registers.d());
 			break;
 
 		case Z80__PLAIN__SUB__E:						// 0x93
-			Z80__SUB__REG8(*m_e);
+			Z80__SUB__REG8(m_registers.e());
 			break;
 
 		case Z80__PLAIN__SUB__H:						// 0x94
-			Z80__SUB__REG8(*m_h);
+			Z80__SUB__REG8(m_registers.h());
 			break;
 
 		case Z80__PLAIN__SUB__L:						// 0x95
-			Z80__SUB__REG8(*m_l);
+			Z80__SUB__REG8(m_registers.l());
 			break;
 
 		case Z80__PLAIN__SUB__INDIRECT_HL:		// 0x96
-			Z80__SUB__INDIRECT_REG16(m_hl);
+			Z80__SUB__INDIRECT_REG16(m_registers.hl);
 			break;
 
 		case Z80__PLAIN__SUB__A:						// 0x97
-			Z80__SUB__REG8(*m_a);
+			Z80__SUB__REG8(m_registers.a());
 			break;
 
 		case Z80__PLAIN__SBC__A__B:					// 0x98
-			Z80__SBC__REG8__REG8(*m_a, *m_b);
+			Z80__SBC__REG8__REG8(m_registers.a(), m_registers.b());
 			break;
 
 		case Z80__PLAIN__SBC__A__C:					// 0x99
-			Z80__SBC__REG8__REG8(*m_a, *m_c);
+			Z80__SBC__REG8__REG8(m_registers.a(), m_registers.c());
 			break;
 
 		case Z80__PLAIN__SBC__A__D:					// 0x9a
-			Z80__SBC__REG8__REG8(*m_a, *m_d);
+			Z80__SBC__REG8__REG8(m_registers.a(), m_registers.d());
 			break;
 
 		case Z80__PLAIN__SBC__A__E:					// 0x9b
-			Z80__SBC__REG8__REG8(*m_a, *m_e);
+			Z80__SBC__REG8__REG8(m_registers.a(), m_registers.e());
 			break;
 
 		case Z80__PLAIN__SBC__A__H:					// 0x9c
-			Z80__SBC__REG8__REG8(*m_a, *m_h);
+			Z80__SBC__REG8__REG8(m_registers.a(), m_registers.h());
 			break;
 
 		case Z80__PLAIN__SBC__A__L:					// 0x9d
-			Z80__SBC__REG8__REG8(*m_a, *m_l);
+			Z80__SBC__REG8__REG8(m_registers.a(), m_registers.l());
 			break;
 
 		case Z80__PLAIN__SBC__A__INDIRECT_HL:	// 0x9e
-			Z80__SBC__REG8__INDIRECT_REG16(*m_a, m_hl);
+			Z80__SBC__REG8__INDIRECT_REG16(m_registers.a(), m_registers.hl);
 			break;
 
 		case Z80__PLAIN__SBC__A__A:					// 0x9f
-			Z80__SBC__REG8__REG8(*m_a, *m_a);
+			Z80__SBC__REG8__REG8(m_registers.a(), m_registers.a());
 			break;
 
 		case Z80__PLAIN__AND__B:						// 0xa0
-			Z80__AND__REG8(*m_b);
+			Z80__AND__REG8(m_registers.b());
 			break;
 
 		case Z80__PLAIN__AND__C:						// 0xa1
-			Z80__AND__REG8(*m_c);
+			Z80__AND__REG8(m_registers.c());
 			break;
 
 		case Z80__PLAIN__AND__D:						// 0xa2
-			Z80__AND__REG8(*m_d);
+			Z80__AND__REG8(m_registers.d());
 			break;
 
 		case Z80__PLAIN__AND__E:						// 0xa3
-			Z80__AND__REG8(*m_e);
+			Z80__AND__REG8(m_registers.e());
 			break;
 
 		case Z80__PLAIN__AND__H:						// 0xa4
-			Z80__AND__REG8(*m_h);
+			Z80__AND__REG8(m_registers.h());
 			break;
 
 		case Z80__PLAIN__AND__L:						// 0xa5
-			Z80__AND__REG8(*m_l);
+			Z80__AND__REG8(m_registers.l());
 			break;
 
 		case Z80__PLAIN__AND__INDIRECT_HL:		// 0xa6
-			Z80__AND__INDIRECT_REG16(m_hl);
+			Z80__AND__INDIRECT_REG16(m_registers.hl);
 			break;
 
 		case Z80__PLAIN__AND__A:						// 0xa7
-			Z80__AND__REG8(*m_a);
+			Z80__AND__REG8(m_registers.a());
 			break;
 
 		case Z80__PLAIN__XOR__B:						// 0xa8
-			Z80__XOR__REG8(*m_b);
+			Z80__XOR__REG8(m_registers.b());
 			break;
 
 		case Z80__PLAIN__XOR__C:						// 0xa9
-			Z80__XOR__REG8(*m_c);
+			Z80__XOR__REG8(m_registers.c());
 			break;
 
 		case Z80__PLAIN__XOR__D:						// 0xaa
-			Z80__XOR__REG8(*m_d);
+			Z80__XOR__REG8(m_registers.d());
 			break;
 
 		case Z80__PLAIN__XOR__E:						// 0xab
-			Z80__XOR__REG8(*m_e);
+			Z80__XOR__REG8(m_registers.e());
 			break;
 
 		case Z80__PLAIN__XOR__H:						// 0xac
-			Z80__XOR__REG8(*m_h);
+			Z80__XOR__REG8(m_registers.h());
 			break;
 
 		case Z80__PLAIN__XOR__L:						// 0xad
-			Z80__XOR__REG8(*m_l);
+			Z80__XOR__REG8(m_registers.l());
 			break;
 
 		case Z80__PLAIN__XOR__INDIRECT_HL:		// 0xae
-			Z80__XOR__INDIRECT_REG16(m_hl);
+			Z80__XOR__INDIRECT_REG16(m_registers.hl);
 			break;
 
 		case Z80__PLAIN__XOR__A:						// 0xaf
-			Z80__XOR__REG8(*m_a);
+			Z80__XOR__REG8(m_registers.a());
 			break;
 
 		case Z80__PLAIN__OR__B:						// 0xb0
-			Z80__OR__REG8(*m_b);
+			Z80__OR__REG8(m_registers.b());
 			break;
 
 		case Z80__PLAIN__OR__C:						// 0xb1
-			Z80__OR__REG8(*m_c);
+			Z80__OR__REG8(m_registers.c());
 			break;
 
 		case Z80__PLAIN__OR__D:						// 0xb2
-			Z80__OR__REG8(*m_d);
+			Z80__OR__REG8(m_registers.d());
 			break;
 
 		case Z80__PLAIN__OR__E:						// 0xb3
-			Z80__OR__REG8(*m_e);
+			Z80__OR__REG8(m_registers.e());
 			break;
 
 		case Z80__PLAIN__OR__H:						// 0xb4
-			Z80__OR__REG8(*m_h);
+			Z80__OR__REG8(m_registers.h());
 			break;
 
 		case Z80__PLAIN__OR__L:						// 0xb5
-			Z80__OR__REG8(*m_l);
+			Z80__OR__REG8(m_registers.l());
 			break;
 
 		case Z80__PLAIN__OR__INDIRECT_HL:			// 0xb6
-			Z80__OR__INDIRECT_REG16(m_hl);
+			Z80__OR__INDIRECT_REG16(m_registers.hl);
 			break;
 
 		case Z80__PLAIN__OR__A:						// 0xb7
-			Z80__OR__REG8(*m_a);
+			Z80__OR__REG8(m_registers.a());
 			break;
 
 		case Z80__PLAIN__CP__B:						// 0xb8
-			Z80__CP__REG8(*m_b);
+			Z80__CP__REG8(m_registers.b());
 			break;
 
 		case Z80__PLAIN__CP__C:						// 0xb9
-			Z80__CP__REG8(*m_c);
+			Z80__CP__REG8(m_registers.c());
 			break;
 
 		case Z80__PLAIN__CP__D:						// 0xba
-			Z80__CP__REG8(*m_d);
+			Z80__CP__REG8(m_registers.d());
 			break;
 
 		case Z80__PLAIN__CP__E:						// 0xbb
-			Z80__CP__REG8(*m_e);
+			Z80__CP__REG8(m_registers.e());
 			break;
 
 		case Z80__PLAIN__CP__H:						// 0xbc
-			Z80__CP__REG8(*m_h);
+			Z80__CP__REG8(m_registers.h());
 			break;
 
 		case Z80__PLAIN__CP__L:						// 0xbd
-			Z80__CP__REG8(*m_l);
+			Z80__CP__REG8(m_registers.l());
 			break;
 
 		case Z80__PLAIN__CP__INDIRECT_HL:			// 0xbe
-			Z80__CP__INDIRECT_REG16(m_hl);
+			Z80__CP__INDIRECT_REG16(m_registers.hl);
 			break;
 
 		case Z80__PLAIN__CP__A:						// 0xbf
-			Z80__CP__REG8(*m_a);
+			Z80__CP__REG8(m_registers.a());
 			break;
 
 		case Z80__PLAIN__RET__NZ:					// 0xc0
 			if (!Z80_FLAG_Z_ISSET) {
-				Z80__POP__REG16(m_pc);
+				Z80__POP__REG16(m_registers.pc);
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
 			break;
 
 		case Z80__PLAIN__POP__BC:					// 0xc1
-			Z80__POP__REG16(m_bc);
+			Z80__POP__REG16(m_registers.bc);
 			break;
 
 		case Z80__PLAIN__JP__NZ__NN:				// 0xc2
 			if (!Z80_FLAG_Z_ISSET) {
-				m_pc = Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+				m_registers.pc = Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
 			break;
 
 		case Z80__PLAIN__JP__NN:						// 0xc3
-			m_pc = Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+			m_registers.pc = Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
 			Z80_DONT_UPDATE_PC;
 			/* don't set the jumped indicator because there's no different cycle
 				cost - the jump always takes place, so the base cost in cycles is
@@ -1958,19 +1968,19 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 
 		case Z80__PLAIN__CALL__NZ__NN:				// 0xc4
 			if (!Z80_FLAG_Z_ISSET) {
-				Z80__PUSH__REG16(m_pc + 3);
-				m_pc = Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+				Z80__PUSH__REG16(m_registers.pc + 3);
+				m_registers.pc = Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
 			break;
 
 		case Z80__PLAIN__PUSH__BC:					// 0xc5
-			Z80__PUSH__REG16(m_bc);
+			Z80__PUSH__REG16(m_registers.bc);
 			break;
 
 		case Z80__PLAIN__ADD__A__N:					// 0xc6
-			Z80__ADD__REG8__N(*m_a, *(instruction + 1));
+			Z80__ADD__REG8__N(m_registers.a(), *(instruction + 1));
 			break;
 
 		case Z80__PLAIN__RST__00:					// 0xc7
@@ -1981,14 +1991,14 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 
 		case Z80__PLAIN__RET__Z:						// 0xc8
 			if (Z80_FLAG_Z_ISSET) {
-				Z80__POP__REG16(m_pc);
+				Z80__POP__REG16(m_registers.pc);
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
 			break;
 
 		case Z80__PLAIN__RET:							// 0xc9
-			Z80__POP__REG16(m_pc);
+			Z80__POP__REG16(m_registers.pc);
 			Z80_DONT_UPDATE_PC;
 			/* don't set the jumped indicator because there's no different cycle
 				cost - the jump always takes place, so the base cost in cycles is
@@ -1997,7 +2007,7 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 
 		case Z80__PLAIN__JP__Z__NN:					// 0xca
 			if (Z80_FLAG_Z_ISSET) {
-				m_pc = Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+				m_registers.pc = Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
@@ -2009,22 +2019,22 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 
 		case Z80__PLAIN__CALL__Z__NN:				// 0xcc
 			if (Z80_FLAG_Z_ISSET) {
-				Z80__PUSH__REG16(m_pc + 3);
-				m_pc = Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+				Z80__PUSH__REG16(m_registers.pc + 3);
+				m_registers.pc = Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
 			break;
 
 		case Z80__PLAIN__CALL__NN:					// 0xcd
-			Z80__PUSH__REG16(m_pc + 3);
-			m_pc = Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+			Z80__PUSH__REG16(m_registers.pc + 3);
+			m_registers.pc = Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
 			Z80_USE_JUMP_CYCLE_COST;
 			Z80_DONT_UPDATE_PC;
 			break;
 
 		case Z80__PLAIN__ADC__A__N:					// 0xce
-			Z80__ADC__REG8__N(*m_a, *(instruction + 1));
+			Z80__ADC__REG8__N(m_registers.a(), *(instruction + 1));
 			break;
 
 		case Z80__PLAIN__RST__08:					// 0xcf
@@ -2034,19 +2044,19 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 
 		case Z80__PLAIN__RET__NC:					// 0xd0
 			if (!Z80_FLAG_C_ISSET) {
-				Z80__POP__REG16(m_pc);
+				Z80__POP__REG16(m_registers.pc);
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
 			break;
 
 		case Z80__PLAIN__POP__DE:					// 0xd1
-			Z80__POP__REG16(m_de);
+			Z80__POP__REG16(m_registers.de);
 			break;
 
 		case Z80__PLAIN__JP__NC__NN:				// 0xd2
 			if (!Z80_FLAG_C_ISSET) {
-				m_pc = Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+				m_registers.pc = Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
@@ -2059,15 +2069,15 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 
 		case Z80__PLAIN__CALL__NC__NN:				// 0xd4
 			if (!Z80_FLAG_C_ISSET) {
-				Z80__PUSH__REG16(m_pc + 3);
-				m_pc = Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+				Z80__PUSH__REG16(m_registers.pc + 3);
+				m_registers.pc = Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
 			break;
 
 		case Z80__PLAIN__PUSH__DE:					// 0xd5
-			Z80__PUSH__REG16(m_de);
+			Z80__PUSH__REG16(m_registers.de);
 			break;
 
 		case Z80__PLAIN__SUB__N:						// 0xd6
@@ -2081,21 +2091,21 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 
 		case Z80__PLAIN__RET__C:						// 0xd8
 			if (Z80_FLAG_C_ISSET) {
-				Z80__POP__REG16(m_pc);
+				Z80__POP__REG16(m_registers.pc);
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
 			break;
 
 		case Z80__PLAIN__EXX:							// 0xd9
-			Z80__EX__REG16__REG16(m_bc, m_bcshadow);
-			Z80__EX__REG16__REG16(m_de, m_deshadow);
-			Z80__EX__REG16__REG16(m_hl, m_hlshadow);
+			Z80__EX__REG16__REG16(m_registers.bc, m_registers.bcShadow);
+			Z80__EX__REG16__REG16(m_registers.de, m_registers.deShadow);
+			Z80__EX__REG16__REG16(m_registers.hl, m_registers.hlShadow);
 			break;
 
 		case Z80__PLAIN__JP__C__NN:					// 0xda
 			if (Z80_FLAG_C_ISSET) {
-				m_pc = Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+				m_registers.pc = Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
@@ -2108,8 +2118,8 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 
 		case Z80__PLAIN__CALL__C__NN:				// 0xdc
 			if (Z80_FLAG_C_ISSET) {
-				Z80__PUSH__REG16(m_pc + 3);
-				m_pc = Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+				Z80__PUSH__REG16(m_registers.pc + 3);
+				m_registers.pc = Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
@@ -2120,7 +2130,7 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 			break;
 
 		case Z80__PLAIN__SBC__A__N:					// 0xde
-			Z80__SBC__REG8__N(*m_a, *(instruction + 1));
+			Z80__SBC__REG8__N(m_registers.a(), *(instruction + 1));
 			break;
 
 		case Z80__PLAIN__RST__18:					// 0xdf
@@ -2131,41 +2141,41 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 		case Z80__PLAIN__RET__PO:					// 0xe0
 			/* the operand PO stands for "parity odd" */
 			if (!Z80_FLAG_P_ISSET) {
-				Z80__POP__REG16(m_pc);
+				Z80__POP__REG16(m_registers.pc);
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
 			break;
 
 		case Z80__PLAIN__POP__HL:					// 0xe1
-			Z80__POP__REG16(m_hl);
+			Z80__POP__REG16(m_registers.hl);
 			break;
 
 		case Z80__PLAIN__JP__PO__NN:				// 0xe2
 			/* the operand PO stands for "parity odd" */
 			if (!Z80_FLAG_P_ISSET) {
-				m_pc = Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+				m_registers.pc = Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
 			break;
 
 		case Z80__PLAIN__EX__INDIRECT_SP__HL:	// 0xe3
-			Z80__EX__INDIRECT_REG16__REG16(m_sp, m_hl);
+			Z80__EX__INDIRECT_REG16__REG16(m_registers.sp, m_registers.hl);
 			break;
 
 		case Z80__PLAIN__CALL__PO__NN:				// 0xe4
 			/* the operand PO stands for "parity odd" */
 			if (!Z80_FLAG_P_ISSET) {
-				Z80__PUSH__REG16(m_pc + 3);
-				m_pc = Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+				Z80__PUSH__REG16(m_registers.pc + 3);
+				m_registers.pc = Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
 			break;
 
 		case Z80__PLAIN__PUSH__HL:					// 0xe5
-			Z80__PUSH__REG16(m_hl);
+			Z80__PUSH__REG16(m_registers.hl);
 			break;
 
 		case Z80__PLAIN__AND__N:						// 0xe6
@@ -2180,14 +2190,14 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 		case Z80__PLAIN__RET__PE:					// 0xe8
 			/* the operand PE stands for "parity even" */
 			if (Z80_FLAG_P_ISSET) {
-				Z80__POP__REG16(m_pc);
+				Z80__POP__REG16(m_registers.pc);
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
 			break;
 
 		case Z80__PLAIN__JP__INDIRECT_HL:			// 0xe9
-			m_pc = m_hl;
+			m_registers.pc = m_registers.hl;
 			Z80_USE_JUMP_CYCLE_COST;
 			Z80_DONT_UPDATE_PC;
 			break;
@@ -2195,21 +2205,21 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 		case Z80__PLAIN__JP__PE__NN:				// 0xea
 			/* the operand PE stands for "parity even" */
 			if (Z80_FLAG_P_ISSET) {
-				m_pc = Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+				m_registers.pc = Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
 			break;
 
 		case Z80__PLAIN__EX__DE__HL:				// 0xeb
-			Z80__EX__REG16__REG16(m_de, m_hl);
+			Z80__EX__REG16__REG16(m_registers.de, m_registers.hl);
 			break;
 
 		case Z80__PLAIN__CALL__PE__NN:				// 0xec
 			/* the operand PE stands for "parity even" */
 			if (Z80_FLAG_P_ISSET) {
-				Z80__PUSH__REG16(m_pc + 3);
-				m_pc = Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+				Z80__PUSH__REG16(m_registers.pc + 3);
+				m_registers.pc = Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
@@ -2233,14 +2243,14 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 			/* the operand P means "plus" and therefore uses the sign flag; not
 				to be confused with the parity flag */
 			if (!Z80_FLAG_S_ISSET) {
-				Z80__POP__REG16(m_pc);
+				Z80__POP__REG16(m_registers.pc);
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
 			break;
 
 		case Z80__PLAIN__POP__AF:					// 0xf1
-			Z80__POP__REG16(m_af);
+			Z80__POP__REG16(m_registers.af);
 			break;
 
 		case Z80__PLAIN__JP__P__NN:					// 0xf2
@@ -2248,7 +2258,7 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 				confused for the parity flag. it properly operates using the sign
 				flag */
 			if (!Z80_FLAG_S_ISSET) {
-				m_pc = Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+				m_registers.pc = Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
@@ -2262,15 +2272,15 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 			/* the operand P stands for "plus" and thus uses the sign flag, not
 			  to be confused with the parity flag */
 			if (!Z80_FLAG_S_ISSET) {
-				Z80__PUSH__REG16(m_pc + 3);
-				m_pc = Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+				Z80__PUSH__REG16(m_registers.pc + 3);
+				m_registers.pc = Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
 			break;
 
 		case Z80__PLAIN__PUSH__AF:					// 0xf5
-			Z80__PUSH__REG16(m_af);
+			Z80__PUSH__REG16(m_registers.af);
 			break;
 
 		case Z80__PLAIN__OR__N:						// 0xf6
@@ -2285,20 +2295,20 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 		case Z80__PLAIN__RET__M:						// 0xf8
 			/* the operand M stands for "minus" and therefore uses the sign flag */
 			if (Z80_FLAG_S_ISSET) {
-				Z80__POP__REG16(m_pc);
+				Z80__POP__REG16(m_registers.pc);
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
 			break;
 
 		case Z80__PLAIN__LD__SP__HL:				// 0xf9
-			Z80__LD__REG16__REG16(m_sp, m_hl);
+			Z80__LD__REG16__REG16(m_registers.sp, m_registers.hl);
 			break;
 
 		case Z80__PLAIN__JP__M__NN:					// 0xfa
 			/* the operand M stands for "minus" and therefore uses the sign flag */
 			if (Z80_FLAG_S_ISSET) {
-				m_pc = Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+				m_registers.pc = Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
@@ -2311,8 +2321,8 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 		case Z80__PLAIN__CALL__M__NN:				// 0xfc
 			/* the operand M stands for "minus" and therefore uses the sign flag */
 			if (Z80_FLAG_S_ISSET) {
-				Z80__PUSH__REG16(m_sp + 3);
-				m_pc = Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+				Z80__PUSH__REG16(m_registers.sp + 3);
+				m_registers.pc = Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
@@ -2350,1036 +2360,1036 @@ bool Z80::executePlainInstruction(const Z80::UnsignedByte * instruction, bool * 
 
 
 // no 0xcb instructions directly modify the PC so we don't need to receive the (bool *) doPc parameter to indicate this
-bool Z80::executeCbInstruction(const Z80::UnsignedByte * instruction, int * cycles, int * size)
+bool Z80::Z80::executeCbInstruction(const Z80::Z80::UnsignedByte * instruction, int * cycles, int * size)
 {
 	bool useJumpCycleCost = false;
 
 	switch(*instruction) {
 		case Z80__CB__RLC__B:		/* 0xcb 0x00 */
-			Z80__RLC__REG8(*m_b);
+			Z80__RLC__REG8(m_registers.b());
 			break;
 
 		case Z80__CB__RLC__C:		/* 0xcb 0x01 */
-			Z80__RLC__REG8(*m_c);
+			Z80__RLC__REG8(m_registers.c());
 			break;
 
 		case Z80__CB__RLC__D:		/* 0xcb 0x02 */
-			Z80__RLC__REG8(*m_d);
+			Z80__RLC__REG8(m_registers.d());
 			break;
 
 		case Z80__CB__RLC__E:		/* 0xcb 0x03 */
-			Z80__RLC__REG8(*m_e);
+			Z80__RLC__REG8(m_registers.e());
 			break;
 
 		case Z80__CB__RLC__H:		/* 0xcb 0x04 */
-			Z80__RLC__REG8(*m_h);
+			Z80__RLC__REG8(m_registers.h());
 			break;
 
 		case Z80__CB__RLC__L:		/* 0xcb 0x05 */
-			Z80__RLC__REG8(*m_l);
+			Z80__RLC__REG8(m_registers.l());
 			break;
 
 		case Z80__CB__RLC__INDIRECT_HL:		/* 0xcb 0x06 */
-			Z80__RLC__INDIRECT_REG16(m_hl);
+			Z80__RLC__INDIRECT_REG16(m_registers.hl);
 			break;
 
 		case Z80__CB__RLC__A:		/* 0xcb 0x07 */
-			Z80__RLC__REG8(*m_a);
+			Z80__RLC__REG8(m_registers.a());
 			break;
 
 		case Z80__CB__RRC__B:		/* 0xcb 0x08 */
-			Z80__RRC__REG8(*m_b);
+			Z80__RRC__REG8(m_registers.b());
 			break;
 
 		case Z80__CB__RRC__C:		/* 0xcb 0x09 */
-			Z80__RRC__REG8(*m_c);
+			Z80__RRC__REG8(m_registers.c());
 			break;
 
 		case Z80__CB__RRC__D:		/* 0xcb 0x0a */
-			Z80__RRC__REG8(*m_d);
+			Z80__RRC__REG8(m_registers.d());
 			break;
 
 		case Z80__CB__RRC__E:		/* 0xcb 0x0b */
-			Z80__RRC__REG8(*m_e);
+			Z80__RRC__REG8(m_registers.e());
 			break;
 
 		case Z80__CB__RRC__H:		/* 0xcb 0x0c */
-			Z80__RRC__REG8(*m_h);
+			Z80__RRC__REG8(m_registers.h());
 			break;
 
 		case Z80__CB__RRC__L:		/* 0xcb 0x0d */
-			Z80__RRC__REG8(*m_l);
+			Z80__RRC__REG8(m_registers.l());
 			break;
 
 		case Z80__CB__RRC__INDIRECT_HL:		/* 0xcb 0x0e */
-			Z80__RRC__INDIRECT_REG16(m_hl);
+			Z80__RRC__INDIRECT_REG16(m_registers.hl);
 			break;
 
 		case Z80__CB__RRC__A:		/* 0xcb 0x0f */
-			Z80__RRC__REG8(*m_a);
+			Z80__RRC__REG8(m_registers.a());
 			break;
 
 		case Z80__CB__RL__B:		/* 0xcb 0x10 */
-			Z80__RL__REG8(*m_b);
+			Z80__RL__REG8(m_registers.b());
 			break;
 
 		case Z80__CB__RL__C:		/* 0xcb 0x11 */
-			Z80__RL__REG8(*m_c);
+			Z80__RL__REG8(m_registers.c());
 			break;
 
 		case Z80__CB__RL__D:		/* 0xcb 0x12 */
-			Z80__RL__REG8(*m_d);
+			Z80__RL__REG8(m_registers.d());
 			break;
 
 		case Z80__CB__RL__E:		/* 0xcb 0x13 */
-			Z80__RL__REG8(*m_e);
+			Z80__RL__REG8(m_registers.e());
 			break;
 
 		case Z80__CB__RL__H:		/* 0xcb 0x14 */
-			Z80__RL__REG8(*m_h);
+			Z80__RL__REG8(m_registers.h());
 			break;
 
 		case Z80__CB__RL__L:		/* 0xcb 0x15 */
-			Z80__RL__REG8(*m_l);
+			Z80__RL__REG8(m_registers.l());
 			break;
 
 		case Z80__CB__RL__INDIRECT_HL:		/* 0xcb 0x16 */
-			Z80__RL__INDIRECT_REG16(m_hl);
+			Z80__RL__INDIRECT_REG16(m_registers.hl);
 			break;
 
 		case Z80__CB__RL__A:		/* 0xcb 0x17 */
-			Z80__RL__REG8(*m_a);
+			Z80__RL__REG8(m_registers.a());
 			break;
 
 		case Z80__CB__RR__B:		/* 0xcb 0x18 */
-			Z80__RR__REG8(*m_b);
+			Z80__RR__REG8(m_registers.b());
 			break;
 
 		case Z80__CB__RR__C:		/* 0xcb 0x19 */
-			Z80__RR__REG8(*m_c);
+			Z80__RR__REG8(m_registers.c());
 			break;
 
 		case Z80__CB__RR__D:		/* 0xcb 0x1a */
-			Z80__RR__REG8(*m_d);
+			Z80__RR__REG8(m_registers.d());
 			break;
 
 		case Z80__CB__RR__E:		/* 0xcb 0x1b */
-			Z80__RR__REG8(*m_e);
+			Z80__RR__REG8(m_registers.e());
 			break;
 
 		case Z80__CB__RR__H:		/* 0xcb 0x1c */
-			Z80__RR__REG8(*m_h);
+			Z80__RR__REG8(m_registers.h());
 			break;
 
 		case Z80__CB__RR__L:		/* 0xcb 0x1d */
-			Z80__RR__REG8(*m_l);
+			Z80__RR__REG8(m_registers.l());
 			break;
 
 		case Z80__CB__RR__INDIRECT_HL:		/* 0xcb 0x1e */
-			Z80__RR__INDIRECT_REG16(m_hl);
+			Z80__RR__INDIRECT_REG16(m_registers.hl);
 			break;
 
 		case Z80__CB__RR__A:		/* 0xcb 0x1f */
-			Z80__RR__REG8(*m_a);
+			Z80__RR__REG8(m_registers.a());
 			break;
 
 		case Z80__CB__SLA__B:		/* 0xcb 0x21 */
-			Z80__SLA__REG8(*m_b);
+			Z80__SLA__REG8(m_registers.b());
 			break;
 
 		case Z80__CB__SLA__C:		/* 0xcb 0x22 */
-			Z80__SLA__REG8(*m_c);
+			Z80__SLA__REG8(m_registers.c());
 			break;
 
 		case Z80__CB__SLA__D:		/* 0xcb 0x23 */
-			Z80__SLA__REG8(*m_d);
+			Z80__SLA__REG8(m_registers.d());
 			break;
 
 		case Z80__CB__SLA__E:		/* 0xcb 0x24 */
-			Z80__SLA__REG8(*m_e);
+			Z80__SLA__REG8(m_registers.e());
 			break;
 
 		case Z80__CB__SLA__H:		/* 0xcb 0x25 */
-			Z80__SLA__REG8(*m_h);
+			Z80__SLA__REG8(m_registers.h());
 			break;
 
 		case Z80__CB__SLA__L:		/* 0xcb 0x26 */
-			Z80__SLA__REG8(*m_l);
+			Z80__SLA__REG8(m_registers.l());
 			break;
 
 		case Z80__CB__SLA__INDIRECT_HL:		/* 0xcb 0x26 */
-			Z80__SLA__INDIRECT_REG16(m_hl);
+			Z80__SLA__INDIRECT_REG16(m_registers.hl);
 			break;
 
 		case Z80__CB__SLA__A:		/* 0xcb 0x27 */
-			Z80__SLA__REG8(*m_a);
+			Z80__SLA__REG8(m_registers.a());
 			break;
 
 		case Z80__CB__SRA__B:		/* 0xcb 0x28 */
-			Z80__SRA__REG8(*m_b);
+			Z80__SRA__REG8(m_registers.b());
 			break;
 
 		case Z80__CB__SRA__C:		/* 0xcb 0x29 */
-			Z80__SRA__REG8(*m_c);
+			Z80__SRA__REG8(m_registers.c());
 			break;
 
 		case Z80__CB__SRA__D:		/* 0xcb 0x2a */
-			Z80__SRA__REG8(*m_d);
+			Z80__SRA__REG8(m_registers.d());
 			break;
 
 		case Z80__CB__SRA__E:		/* 0xcb 0x2b */
-			Z80__SRA__REG8(*m_e);
+			Z80__SRA__REG8(m_registers.e());
 			break;
 
 		case Z80__CB__SRA__H:		/* 0xcb 0x2c */
-			Z80__SRA__REG8(*m_h);
+			Z80__SRA__REG8(m_registers.h());
 			break;
 
 		case Z80__CB__SRA__L:		/* 0xcb 0x2d */
-			Z80__SRA__REG8(*m_l);
+			Z80__SRA__REG8(m_registers.l());
 			break;
 
 		case Z80__CB__SRA__INDIRECT_HL:		/* 0xcb 0x2e */
-			Z80__SRA__INDIRECT_REG16(m_hl);
+			Z80__SRA__INDIRECT_REG16(m_registers.hl);
 			break;
 
 		case Z80__CB__SRA__A:		/* 0xcb 0x2f */
-			Z80__SRA__REG8(*m_a);
+			Z80__SRA__REG8(m_registers.a());
 			break;
 
 		case Z80__CB__SLL__B:		/* 0xcb 0x30 */
-			Z80__SLL__REG8(*m_b);
+			Z80__SLL__REG8(m_registers.b());
 			break;
 
 		case Z80__CB__SLL__C:		/* 0xcb 0x31 */
-			Z80__SLL__REG8(*m_c);
+			Z80__SLL__REG8(m_registers.c());
 			break;
 
 		case Z80__CB__SLL__D:		/* 0xcb 0x32 */
-			Z80__SLL__REG8(*m_d);
+			Z80__SLL__REG8(m_registers.d());
 			break;
 
 		case Z80__CB__SLL__E:		/* 0xcb 0x33 */
-			Z80__SLL__REG8(*m_e);
+			Z80__SLL__REG8(m_registers.e());
 			break;
 
 		case Z80__CB__SLL__H:		/* 0xcb 0x34 */
-			Z80__SLL__REG8(*m_h);
+			Z80__SLL__REG8(m_registers.h());
 			break;
 
 		case Z80__CB__SLL__L:		/* 0xcb 0x35 */
-			Z80__SLL__REG8(*m_l);
+			Z80__SLL__REG8(m_registers.l());
 			break;
 
 		case Z80__CB__SLL__INDIRECT_HL:		/* 0xcb 0x36 */
-			Z80__SLL__INDIRECT_REG16(m_hl);
+			Z80__SLL__INDIRECT_REG16(m_registers.hl);
 			break;
 
 		case Z80__CB__SLL__A:		/* 0xcb 0x37 */
-			Z80__SLL__REG8(*m_a);
+			Z80__SLL__REG8(m_registers.a());
 			break;
 
 		case Z80__CB__SRL__B:		/* 0xcb 0x38 */
-			Z80__SRL__REG8(*m_b);
+			Z80__SRL__REG8(m_registers.b());
 			break;
 
 		case Z80__CB__SRL__C:		/* 0xcb 0x39 */
-			Z80__SRL__REG8(*m_c);
+			Z80__SRL__REG8(m_registers.c());
 			break;
 
 		case Z80__CB__SRL__D:		/* 0xcb 0x3a */
-			Z80__SRL__REG8(*m_d);
+			Z80__SRL__REG8(m_registers.d());
 			break;
 
 		case Z80__CB__SRL__E:		/* 0xcb 0x3b */
-			Z80__SRL__REG8(*m_e);
+			Z80__SRL__REG8(m_registers.e());
 			break;
 
 		case Z80__CB__SRL__H:		/* 0xcb 0x3c */
-			Z80__SRL__REG8(*m_h);
+			Z80__SRL__REG8(m_registers.h());
 			break;
 
 		case Z80__CB__SRL__L:		/* 0xcb 0x3d */
-			Z80__SRL__REG8(*m_l);
+			Z80__SRL__REG8(m_registers.l());
 			break;
 
 		case Z80__CB__SRL__INDIRECT_HL:		/* 0xcb 0x3e */
-			Z80__SRL__INDIRECT_REG16(m_hl);
+			Z80__SRL__INDIRECT_REG16(m_registers.hl);
 			break;
 
 		case Z80__CB__SRL__A:		/* 0xcb 0x3f */
-			Z80__SRL__REG8(*m_a);
+			Z80__SRL__REG8(m_registers.a());
 			break;
 
 		/* BIT opcodes */
 		case Z80__CB__BIT__0__B:		/* 0xcb 0x40 */
-			Z80__BIT__N__REG8(0, *m_b);
+			Z80__BIT__N__REG8(0, m_registers.b());
 			break;
 
 		case Z80__CB__BIT__0__C:		/* 0xcb 0x41 */
-			Z80__BIT__N__REG8(0, *m_c);
+			Z80__BIT__N__REG8(0, m_registers.c());
 			break;
 
 		case Z80__CB__BIT__0__D:		/* 0xcb 0x42 */
-			Z80__BIT__N__REG8(0, *m_d);
+			Z80__BIT__N__REG8(0, m_registers.d());
 			break;
 
 		case Z80__CB__BIT__0__E:		/* 0xcb 0x43 */
-			Z80__BIT__N__REG8(0, *m_e);
+			Z80__BIT__N__REG8(0, m_registers.e());
 			break;
 
 		case Z80__CB__BIT__0__H:		/* 0xcb 0x44 */
-			Z80__BIT__N__REG8(0, *m_h);
+			Z80__BIT__N__REG8(0, m_registers.h());
 			break;
 
 		case Z80__CB__BIT__0__L:		/* 0xcb 0x45 */
-			Z80__BIT__N__REG8(0, *m_l);
+			Z80__BIT__N__REG8(0, m_registers.l());
 			break;
 
 		case Z80__CB__BIT__0__INDIRECT_HL:		/* 0xcb 0x46 */
-			Z80__BIT__N__INDIRECT_REG16(0, m_hl);
+			Z80__BIT__N__INDIRECT_REG16(0, m_registers.hl);
 			break;
 
 		case Z80__CB__BIT__0__A:		/* 0xcb 0x47 */
-			Z80__BIT__N__REG8(0, *m_a);
+			Z80__BIT__N__REG8(0, m_registers.a());
 			break;
 
 		case Z80__CB__BIT__1__B:		/* 0xcb 0x48 */
-			Z80__BIT__N__REG8(1, *m_b);
+			Z80__BIT__N__REG8(1, m_registers.b());
 			break;
 
 		case Z80__CB__BIT__1__C:		/* 0xcb 0x49 */
-			Z80__BIT__N__REG8(1, *m_c);
+			Z80__BIT__N__REG8(1, m_registers.c());
 			break;
 
 		case Z80__CB__BIT__1__D:		/* 0xcb 0x4a */
-			Z80__BIT__N__REG8(1, *m_d);
+			Z80__BIT__N__REG8(1, m_registers.d());
 			break;
 
 		case Z80__CB__BIT__1__E:		/* 0xcb 0x4b */
-			Z80__BIT__N__REG8(1, *m_e);
+			Z80__BIT__N__REG8(1, m_registers.e());
 			break;
 
 		case Z80__CB__BIT__1__H:		/* 0xcb 0x4c */
-			Z80__BIT__N__REG8(1, *m_h);
+			Z80__BIT__N__REG8(1, m_registers.h());
 			break;
 
 		case Z80__CB__BIT__1__L:		/* 0xcb 0x4d */
-			Z80__BIT__N__REG8(1, *m_l);
+			Z80__BIT__N__REG8(1, m_registers.l());
 			break;
 
 		case Z80__CB__BIT__1__INDIRECT_HL:		/* 0xcb 0x4e */
-			Z80__BIT__N__INDIRECT_REG16(1, m_hl);
+			Z80__BIT__N__INDIRECT_REG16(1, m_registers.hl);
 			break;
 
 		case Z80__CB__BIT__1__A:		/* 0xcb 0x4f */
-			Z80__BIT__N__REG8(1, *m_a);
+			Z80__BIT__N__REG8(1, m_registers.a());
 			break;
 
 		case Z80__CB__BIT__2__B:		/* 0xcb 0x50 */
-			Z80__BIT__N__REG8(2, *m_b);
+			Z80__BIT__N__REG8(2, m_registers.b());
 			break;
 
 		case Z80__CB__BIT__2__C:		/* 0xcb 0x51 */
-			Z80__BIT__N__REG8(2, *m_c);
+			Z80__BIT__N__REG8(2, m_registers.c());
 			break;
 
 		case Z80__CB__BIT__2__D:		/* 0xcb 0x52 */
-			Z80__BIT__N__REG8(2, *m_d);
+			Z80__BIT__N__REG8(2, m_registers.d());
 			break;
 
 		case Z80__CB__BIT__2__E:		/* 0xcb 0x53 */
-			Z80__BIT__N__REG8(2, *m_e);
+			Z80__BIT__N__REG8(2, m_registers.e());
 			break;
 
 		case Z80__CB__BIT__2__H:		/* 0xcb 0x54 */
-			Z80__BIT__N__REG8(2, *m_h);
+			Z80__BIT__N__REG8(2, m_registers.h());
 			break;
 
 		case Z80__CB__BIT__2__L:		/* 0xcb 0x55 */
-			Z80__BIT__N__REG8(2, *m_l);
+			Z80__BIT__N__REG8(2, m_registers.l());
 			break;
 
 		case Z80__CB__BIT__2__INDIRECT_HL:		/* 0xcb 0x56 */
-			Z80__BIT__N__INDIRECT_REG16(2, *m_b);
+			Z80__BIT__N__INDIRECT_REG16(2, m_registers.b());
 			break;
 
 		case Z80__CB__BIT__2__A:		/* 0xcb 0x57 */
-			Z80__BIT__N__REG8(2, *m_a);
+			Z80__BIT__N__REG8(2, m_registers.a());
 			break;
 
 		case Z80__CB__BIT__3__B:		/* 0xcb 0x58 */
-			Z80__BIT__N__REG8(3, *m_b);
+			Z80__BIT__N__REG8(3, m_registers.b());
 			break;
 
 		case Z80__CB__BIT__3__C:		/* 0xcb 0x59 */
-			Z80__BIT__N__REG8(3, *m_c);
+			Z80__BIT__N__REG8(3, m_registers.c());
 			break;
 
 		case Z80__CB__BIT__3__D:		/* 0xcb 0x5a */
-			Z80__BIT__N__REG8(3, *m_d);
+			Z80__BIT__N__REG8(3, m_registers.d());
 			break;
 
 		case Z80__CB__BIT__3__E:		/* 0xcb 0x5b */
-			Z80__BIT__N__REG8(3, *m_e);
+			Z80__BIT__N__REG8(3, m_registers.e());
 			break;
 
 		case Z80__CB__BIT__3__H:		/* 0xcb 0x5c */
-			Z80__BIT__N__REG8(3, *m_h);
+			Z80__BIT__N__REG8(3, m_registers.h());
 			break;
 
 		case Z80__CB__BIT__3__L:		/* 0xcb 0x5d */
-			Z80__BIT__N__REG8(3, *m_l);
+			Z80__BIT__N__REG8(3, m_registers.l());
 			break;
 
 		case Z80__CB__BIT__3__INDIRECT_HL:		/* 0xcb 0x5e */
-			Z80__BIT__N__INDIRECT_REG16(3, *m_a);
+			Z80__BIT__N__INDIRECT_REG16(3, m_registers.a());
 			break;
 
 		case Z80__CB__BIT__3__A:		/* 0xcb 0x5f */
-			Z80__BIT__N__REG8(3, *m_a);
+			Z80__BIT__N__REG8(3, m_registers.a());
 			break;
 
 		case Z80__CB__BIT__4__B:		/* 0xcb 0x60 */
-			Z80__BIT__N__REG8(4, *m_b);
+			Z80__BIT__N__REG8(4, m_registers.b());
 			break;
 
 		case Z80__CB__BIT__4__C:		/* 0xcb 0x61 */
-			Z80__BIT__N__REG8(4, *m_c);
+			Z80__BIT__N__REG8(4, m_registers.c());
 			break;
 
 		case Z80__CB__BIT__4__D:		/* 0xcb 0x62 */
-			Z80__BIT__N__REG8(4, *m_d);
+			Z80__BIT__N__REG8(4, m_registers.d());
 			break;
 
 		case Z80__CB__BIT__4__E:		/* 0xcb 0x63 */
-			Z80__BIT__N__REG8(4, *m_e);
+			Z80__BIT__N__REG8(4, m_registers.e());
 			break;
 
 		case Z80__CB__BIT__4__H:		/* 0xcb 0x64 */
-			Z80__BIT__N__REG8(4, *m_h);
+			Z80__BIT__N__REG8(4, m_registers.h());
 			break;
 
 		case Z80__CB__BIT__4__L:		/* 0xcb 0x65 */
-			Z80__BIT__N__REG8(4, *m_l);
+			Z80__BIT__N__REG8(4, m_registers.l());
 			break;
 
 		case Z80__CB__BIT__4__INDIRECT_HL:		/* 0xcb 0x66 */
-			Z80__BIT__N__INDIRECT_REG16(4, m_hl);
+			Z80__BIT__N__INDIRECT_REG16(4, m_registers.hl);
 			break;
 
 		case Z80__CB__BIT__4__A:		/* 0xcb 0x67 */
-			Z80__BIT__N__REG8(4, *m_a);
+			Z80__BIT__N__REG8(4, m_registers.a());
 			break;
 
 		case Z80__CB__BIT__5__B:		/* 0xcb 0x68 */
-			Z80__BIT__N__REG8(5, *m_b);
+			Z80__BIT__N__REG8(5, m_registers.b());
 			break;
 
 		case Z80__CB__BIT__5__C:		/* 0xcb 0x69 */
-			Z80__BIT__N__REG8(5, *m_c);
+			Z80__BIT__N__REG8(5, m_registers.c());
 			break;
 
 		case Z80__CB__BIT__5__D:		/* 0xcb 0x6a */
-			Z80__BIT__N__REG8(5, *m_d);
+			Z80__BIT__N__REG8(5, m_registers.d());
 			break;
 
 		case Z80__CB__BIT__5__E:		/* 0xcb 0x6b */
-			Z80__BIT__N__REG8(5, *m_e);
+			Z80__BIT__N__REG8(5, m_registers.e());
 			break;
 
 		case Z80__CB__BIT__5__H:		/* 0xcb 0x6c */
-			Z80__BIT__N__REG8(5, *m_h);
+			Z80__BIT__N__REG8(5, m_registers.h());
 			break;
 
 		case Z80__CB__BIT__5__L:		/* 0xcb 0x6d */
-			Z80__BIT__N__REG8(5, *m_l);
+			Z80__BIT__N__REG8(5, m_registers.l());
 			break;
 
 		case Z80__CB__BIT__5__INDIRECT_HL:		/* 0xcb 0x6e */
-			Z80__BIT__N__INDIRECT_REG16(5, m_hl);
+			Z80__BIT__N__INDIRECT_REG16(5, m_registers.hl);
 			break;
 
 		case Z80__CB__BIT__5__A:		/* 0xcb 0x6f */
-			Z80__BIT__N__REG8(5, *m_a);
+			Z80__BIT__N__REG8(5, m_registers.a());
 			break;
 
 		case Z80__CB__BIT__6__B:		/* 0xcb 0x70 */
-			Z80__BIT__N__REG8(6, *m_b);
+			Z80__BIT__N__REG8(6, m_registers.b());
 			break;
 
 		case Z80__CB__BIT__6__C:		/* 0xcb 0x71 */
-			Z80__BIT__N__REG8(6, *m_c);
+			Z80__BIT__N__REG8(6, m_registers.c());
 			break;
 
 		case Z80__CB__BIT__6__D:		/* 0xcb 0x72 */
-			Z80__BIT__N__REG8(6, *m_d);
+			Z80__BIT__N__REG8(6, m_registers.d());
 			break;
 
 		case Z80__CB__BIT__6__E:		/* 0xcb 0x73 */
-			Z80__BIT__N__REG8(6, *m_e);
+			Z80__BIT__N__REG8(6, m_registers.e());
 			break;
 
 		case Z80__CB__BIT__6__H:		/* 0xcb 0x74 */
-			Z80__BIT__N__REG8(6, *m_h);
+			Z80__BIT__N__REG8(6, m_registers.h());
 			break;
 
 		case Z80__CB__BIT__6__L:		/* 0xcb 0x75 */
-			Z80__BIT__N__REG8(6, *m_l);
+			Z80__BIT__N__REG8(6, m_registers.l());
 			break;
 
 		case Z80__CB__BIT__6__INDIRECT_HL:		/* 0xcb 0x76 */
-			Z80__BIT__N__INDIRECT_REG16(6, m_hl);
+			Z80__BIT__N__INDIRECT_REG16(6, m_registers.hl);
 			break;
 
 		case Z80__CB__BIT__6__A:		/* 0xcb 0x77 */
-			Z80__BIT__N__REG8(6, *m_a);
+			Z80__BIT__N__REG8(6, m_registers.a());
 			break;
 
 		case Z80__CB__BIT__7__B:		/* 0xcb 0x78 */
-			Z80__BIT__N__REG8(7, *m_b);
+			Z80__BIT__N__REG8(7, m_registers.b());
 			break;
 
 		case Z80__CB__BIT__7__C:		/* 0xcb 0x79 */
-			Z80__BIT__N__REG8(7, *m_c);
+			Z80__BIT__N__REG8(7, m_registers.c());
 			break;
 
 		case Z80__CB__BIT__7__D:		/* 0xcb 0x7a */
-			Z80__BIT__N__REG8(7, *m_d);
+			Z80__BIT__N__REG8(7, m_registers.d());
 			break;
 
 		case Z80__CB__BIT__7__E:		/* 0xcb 0x7b */
-			Z80__BIT__N__REG8(7, *m_e);
+			Z80__BIT__N__REG8(7, m_registers.e());
 			break;
 
 		case Z80__CB__BIT__7__H:		/* 0xcb 0x7c */
-			Z80__BIT__N__REG8(7, *m_h);
+			Z80__BIT__N__REG8(7, m_registers.h());
 			break;
 
 		case Z80__CB__BIT__7__L:		/* 0xcb 0x7d */
-			Z80__BIT__N__REG8(7, *m_l);
+			Z80__BIT__N__REG8(7, m_registers.l());
 			break;
 
 		case Z80__CB__BIT__7__INDIRECT_HL:		/* 0xcb 0x7e */
-			Z80__BIT__N__INDIRECT_REG16(7, m_hl);
+			Z80__BIT__N__INDIRECT_REG16(7, m_registers.hl);
 			break;
 
 		case Z80__CB__BIT__7__A:		/* 0xcb 0x7f */
-			Z80__BIT__N__REG8(7, *m_a);
+			Z80__BIT__N__REG8(7, m_registers.a());
 			break;
 
 		/* RES opcodes */
 		case Z80__CB__RES__0__B:		/* 0xcb 0x80 */
-			Z80__RES__N__REG8(0, *m_b);
+			Z80__RES__N__REG8(0, m_registers.b());
 			break;
 
 		case Z80__CB__RES__0__C:		/* 0xcb 0x81 */
-			Z80__RES__N__REG8(0, *m_c);
+			Z80__RES__N__REG8(0, m_registers.c());
 			break;
 
 		case Z80__CB__RES__0__D:		/* 0xcb 0x82 */
-			Z80__RES__N__REG8(0, *m_d);
+			Z80__RES__N__REG8(0, m_registers.d());
 			break;
 
 		case Z80__CB__RES__0__E:		/* 0xcb 0x83 */
-			Z80__RES__N__REG8(0, *m_e);
+			Z80__RES__N__REG8(0, m_registers.e());
 			break;
 
 		case Z80__CB__RES__0__H:		/* 0xcb 0x84 */
-			Z80__RES__N__REG8(0, *m_h);
+			Z80__RES__N__REG8(0, m_registers.h());
 			break;
 
 		case Z80__CB__RES__0__L:		/* 0xcb 0x85 */
-			Z80__RES__N__REG8(0, *m_l);
+			Z80__RES__N__REG8(0, m_registers.l());
 			break;
 
 		case Z80__CB__RES__0__INDIRECT_HL:		/* 0xcb 0x86 */
-			Z80__RES__N__INDIRECT_REG16(0, m_hl);
+			Z80__RES__N__INDIRECT_REG16(0, m_registers.hl);
 			break;
 
 		case Z80__CB__RES__0__A:		/* 0xcb 0x87 */
-			Z80__RES__N__REG8(0, *m_a);
+			Z80__RES__N__REG8(0, m_registers.a());
 			break;
 
 		case Z80__CB__RES__1__B:		/* 0xcb 0x88 */
-			Z80__RES__N__REG8(1, *m_b);
+			Z80__RES__N__REG8(1, m_registers.b());
 			break;
 
 		case Z80__CB__RES__1__C:		/* 0xcb 0x89 */
-			Z80__RES__N__REG8(1, *m_c);
+			Z80__RES__N__REG8(1, m_registers.c());
 			break;
 
 		case Z80__CB__RES__1__D:		/* 0xcb 0x8a */
-			Z80__RES__N__REG8(1, *m_d);
+			Z80__RES__N__REG8(1, m_registers.d());
 			break;
 
 		case Z80__CB__RES__1__E:		/* 0xcb 0x8b */
-			Z80__RES__N__REG8(1, *m_e);
+			Z80__RES__N__REG8(1, m_registers.e());
 			break;
 
 		case Z80__CB__RES__1__H:		/* 0xcb 0x8c */
-			Z80__RES__N__REG8(1, *m_h);
+			Z80__RES__N__REG8(1, m_registers.h());
 			break;
 
 		case Z80__CB__RES__1__L:		/* 0xcb 0x8d */
-			Z80__RES__N__REG8(1, *m_l);
+			Z80__RES__N__REG8(1, m_registers.l());
 			break;
 
 		case Z80__CB__RES__1__INDIRECT_HL:		/* 0xcb 0x8e */
-			Z80__RES__N__INDIRECT_REG16(1, m_hl);
+			Z80__RES__N__INDIRECT_REG16(1, m_registers.hl);
 			break;
 
 		case Z80__CB__RES__1__A:		/* 0xcb 0x8f */
-			Z80__RES__N__REG8(1, *m_a);
+			Z80__RES__N__REG8(1, m_registers.a());
 			break;
 
 		case Z80__CB__RES__2__B:		/* 0xcb 0x90 */
-			Z80__RES__N__REG8(2, *m_b);
+			Z80__RES__N__REG8(2, m_registers.b());
 			break;
 
 		case Z80__CB__RES__2__C:		/* 0xcb 0x91 */
-			Z80__RES__N__REG8(2, *m_c);
+			Z80__RES__N__REG8(2, m_registers.c());
 			break;
 
 		case Z80__CB__RES__2__D:		/* 0xcb 0x92 */
-			Z80__RES__N__REG8(2, *m_d);
+			Z80__RES__N__REG8(2, m_registers.d());
 			break;
 
 		case Z80__CB__RES__2__E:		/* 0xcb 0x93 */
-			Z80__RES__N__REG8(2, *m_e);
+			Z80__RES__N__REG8(2, m_registers.e());
 			break;
 
 		case Z80__CB__RES__2__H:		/* 0xcb 0x94 */
-			Z80__RES__N__REG8(2, *m_h);
+			Z80__RES__N__REG8(2, m_registers.h());
 			break;
 
 		case Z80__CB__RES__2__L:		/* 0xcb 0x95 */
-			Z80__RES__N__REG8(2, *m_l);
+			Z80__RES__N__REG8(2, m_registers.l());
 			break;
 
 		case Z80__CB__RES__2__INDIRECT_HL:		/* 0xcb 0x96 */
-			Z80__RES__N__INDIRECT_REG16(2, m_hl);
+			Z80__RES__N__INDIRECT_REG16(2, m_registers.hl);
 			break;
 
 		case Z80__CB__RES__2__A:		/* 0xcb 0x97 */
-			Z80__RES__N__REG8(2, *m_a);
+			Z80__RES__N__REG8(2, m_registers.a());
 			break;
 
 		case Z80__CB__RES__3__B:		/* 0xcb 0x98 */
-			Z80__RES__N__REG8(3, *m_b);
+			Z80__RES__N__REG8(3, m_registers.b());
 			break;
 
 		case Z80__CB__RES__3__C:		/* 0xcb 0x99 */
-			Z80__RES__N__REG8(3, *m_c);
+			Z80__RES__N__REG8(3, m_registers.c());
 			break;
 
 		case Z80__CB__RES__3__D:		/* 0xcb 0x9a */
-			Z80__RES__N__REG8(3, *m_d);
+			Z80__RES__N__REG8(3, m_registers.d());
 			break;
 
 		case Z80__CB__RES__3__E:		/* 0xcb 0x9b */
-			Z80__RES__N__REG8(3, *m_e);
+			Z80__RES__N__REG8(3, m_registers.e());
 			break;
 
 		case Z80__CB__RES__3__H:		/* 0xcb 0x9c */
-			Z80__RES__N__REG8(3, *m_h);
+			Z80__RES__N__REG8(3, m_registers.h());
 			break;
 
 		case Z80__CB__RES__3__L:		/* 0xcb 0x9d */
-			Z80__RES__N__REG8(3, *m_l);
+			Z80__RES__N__REG8(3, m_registers.l());
 			break;
 
 		case Z80__CB__RES__3__INDIRECT_HL:		/* 0xcb 0x9e */
-			Z80__RES__N__INDIRECT_REG16(3, m_hl);
+			Z80__RES__N__INDIRECT_REG16(3, m_registers.hl);
 			break;
 
 		case Z80__CB__RES__3__A:		/* 0xcb 0x9f */
-			Z80__RES__N__REG8(3, *m_a);
+			Z80__RES__N__REG8(3, m_registers.a());
 			break;
 
 		case Z80__CB__RES__4__B:		/* 0xcb 0xa0 */
-			Z80__RES__N__REG8(4, *m_b);
+			Z80__RES__N__REG8(4, m_registers.b());
 			break;
 
 		case Z80__CB__RES__4__C:		/* 0xcb 0xa1 */
-			Z80__RES__N__REG8(4, *m_c);
+			Z80__RES__N__REG8(4, m_registers.c());
 			break;
 
 		case Z80__CB__RES__4__D:		/* 0xcb 0xa2 */
-			Z80__RES__N__REG8(4, *m_d);
+			Z80__RES__N__REG8(4, m_registers.d());
 			break;
 
 		case Z80__CB__RES__4__E:		/* 0xcb 0xa3 */
-			Z80__RES__N__REG8(4, *m_e);
+			Z80__RES__N__REG8(4, m_registers.e());
 			break;
 
 		case Z80__CB__RES__4__H:		/* 0xcb 0xa4 */
-			Z80__RES__N__REG8(4, *m_h);
+			Z80__RES__N__REG8(4, m_registers.h());
 			break;
 
 		case Z80__CB__RES__4__L:		/* 0xcb 0xa5 */
-			Z80__RES__N__REG8(4, *m_l);
+			Z80__RES__N__REG8(4, m_registers.l());
 			break;
 
 		case Z80__CB__RES__4__INDIRECT_HL:		/* 0xcb 0xa6 */
-			Z80__RES__N__INDIRECT_REG16(4, m_hl);
+			Z80__RES__N__INDIRECT_REG16(4, m_registers.hl);
 			break;
 
 		case Z80__CB__RES__4__A:		/* 0xcb 0xa7 */
-			Z80__RES__N__REG8(4, *m_a);
+			Z80__RES__N__REG8(4, m_registers.a());
 			break;
 
 		case Z80__CB__RES__5__B:		/* 0xcb 0xa8 */
-			Z80__RES__N__REG8(5, *m_b);
+			Z80__RES__N__REG8(5, m_registers.b());
 			break;
 
 		case Z80__CB__RES__5__C:		/* 0xcb 0xa9 */
-			Z80__RES__N__REG8(5, *m_c);
+			Z80__RES__N__REG8(5, m_registers.c());
 			break;
 
 		case Z80__CB__RES__5__D:		/* 0xcb 0xaa */
-			Z80__RES__N__REG8(5, *m_d);
+			Z80__RES__N__REG8(5, m_registers.d());
 			break;
 
 		case Z80__CB__RES__5__E:		/* 0xcb 0xab */
-			Z80__RES__N__REG8(5, *m_e);
+			Z80__RES__N__REG8(5, m_registers.e());
 			break;
 
 		case Z80__CB__RES__5__H:		/* 0xcb 0xac */
-			Z80__RES__N__REG8(5, *m_h);
+			Z80__RES__N__REG8(5, m_registers.h());
 			break;
 
 		case Z80__CB__RES__5__L:		/* 0xcb 0xad */
-			Z80__RES__N__REG8(5, *m_l);
+			Z80__RES__N__REG8(5, m_registers.l());
 			break;
 
 		case Z80__CB__RES__5__INDIRECT_HL:		/* 0xcb 0xae */
-			Z80__RES__N__INDIRECT_REG16(5, m_hl);
+			Z80__RES__N__INDIRECT_REG16(5, m_registers.hl);
 			break;
 
 		case Z80__CB__RES__5__A:		/* 0xcb 0xaf */
-			Z80__RES__N__REG8(5, *m_a);
+			Z80__RES__N__REG8(5, m_registers.a());
 			break;
 
 		case Z80__CB__RES__6__B:		/* 0xcb 0xb0 */
-			Z80__RES__N__REG8(6, *m_b);
+			Z80__RES__N__REG8(6, m_registers.b());
 			break;
 
 		case Z80__CB__RES__6__C:		/* 0xcb 0xb1 */
-			Z80__RES__N__REG8(6, *m_c);
+			Z80__RES__N__REG8(6, m_registers.c());
 			break;
 
 		case Z80__CB__RES__6__D:		/* 0xcb 0xb2 */
-			Z80__RES__N__REG8(6, *m_d);
+			Z80__RES__N__REG8(6, m_registers.d());
 			break;
 
 		case Z80__CB__RES__6__E:		/* 0xcb 0xb3 */
-			Z80__RES__N__REG8(6, *m_e);
+			Z80__RES__N__REG8(6, m_registers.e());
 			break;
 
 		case Z80__CB__RES__6__H:		/* 0xcb 0xb4 */
-			Z80__RES__N__REG8(6, *m_h);
+			Z80__RES__N__REG8(6, m_registers.h());
 			break;
 
 		case Z80__CB__RES__6__L:		/* 0xcb 0xb5 */
-			Z80__RES__N__REG8(6, *m_l);
+			Z80__RES__N__REG8(6, m_registers.l());
 			break;
 
 		case Z80__CB__RES__6__INDIRECT_HL:		/* 0xcb 0xb6 */
-			Z80__RES__N__INDIRECT_REG16(6, m_hl);
+			Z80__RES__N__INDIRECT_REG16(6, m_registers.hl);
 			break;
 
 		case Z80__CB__RES__6__A:		/* 0xcb 0xb7 */
-			Z80__RES__N__REG8(6, *m_a);
+			Z80__RES__N__REG8(6, m_registers.a());
 			break;
 
 		case Z80__CB__RES__7__B:		/* 0xcb 0xb8 */
-			Z80__RES__N__REG8(7, *m_b);
+			Z80__RES__N__REG8(7, m_registers.b());
 			break;
 
 		case Z80__CB__RES__7__C:		/* 0xcb 0xb9 */
-			Z80__RES__N__REG8(7, *m_c);
+			Z80__RES__N__REG8(7, m_registers.c());
 			break;
 
 		case Z80__CB__RES__7__D:		/* 0xcb 0xba */
-			Z80__RES__N__REG8(7, *m_d);
+			Z80__RES__N__REG8(7, m_registers.d());
 			break;
 
 		case Z80__CB__RES__7__E:		/* 0xcb 0xbb */
-			Z80__RES__N__REG8(7, *m_e);
+			Z80__RES__N__REG8(7, m_registers.e());
 			break;
 
 		case Z80__CB__RES__7__H:		/* 0xcb 0xbc */
-			Z80__RES__N__REG8(7, *m_h);
+			Z80__RES__N__REG8(7, m_registers.h());
 			break;
 
 		case Z80__CB__RES__7__L:		/* 0xcb 0xbd */
-			Z80__RES__N__REG8(7, *m_l);
+			Z80__RES__N__REG8(7, m_registers.l());
 			break;
 
 		case Z80__CB__RES__7__INDIRECT_HL:		/* 0xcb 0xbe */
-			Z80__RES__N__INDIRECT_REG16(7, m_hl);
+			Z80__RES__N__INDIRECT_REG16(7, m_registers.hl);
 			break;
 
 		case Z80__CB__RES__7__A:		/* 0xcb 0xbf */
-			Z80__RES__N__REG8(7, *m_a);
+			Z80__RES__N__REG8(7, m_registers.a());
 			break;
 
 		/* SET opcodes */
 		case Z80__CB__SET__0__B:		/* 0xcb 0xc0 */
-			Z80__SET__N__REG8(0, *m_b);
+			Z80__SET__N__REG8(0, m_registers.b());
 			break;
 
 		case Z80__CB__SET__0__C:		/* 0xcb 0xc1 */
-			Z80__SET__N__REG8(0, *m_c);
+			Z80__SET__N__REG8(0, m_registers.c());
 			break;
 
 		case Z80__CB__SET__0__D:		/* 0xcb 0xc2 */
-			Z80__SET__N__REG8(0, *m_d);
+			Z80__SET__N__REG8(0, m_registers.d());
 			break;
 
 		case Z80__CB__SET__0__E:		/* 0xcb 0xc3 */
-			Z80__SET__N__REG8(0, *m_e);
+			Z80__SET__N__REG8(0, m_registers.e());
 			break;
 
 		case Z80__CB__SET__0__H:		/* 0xcb 0xc4 */
-			Z80__SET__N__REG8(0, *m_h);
+			Z80__SET__N__REG8(0, m_registers.h());
 			break;
 
 		case Z80__CB__SET__0__L:		/* 0xcb 0xc5 */
-			Z80__SET__N__REG8(0, *m_l);
+			Z80__SET__N__REG8(0, m_registers.l());
 			break;
 
 		case Z80__CB__SET__0__INDIRECT_HL:		/* 0xcb 0xc6 */
-			Z80__SET__N__INDIRECT_REG16(0, m_hl);
+			Z80__SET__N__INDIRECT_REG16(0, m_registers.hl);
 			break;
 
 		case Z80__CB__SET__0__A:		/* 0xcb 0xc7 */
-			Z80__SET__N__REG8(0, *m_a);
+			Z80__SET__N__REG8(0, m_registers.a());
 			break;
 
 		case Z80__CB__SET__1__B:		/* 0xcb 0xc8 */
-			Z80__SET__N__REG8(1, *m_b);
+			Z80__SET__N__REG8(1, m_registers.b());
 			break;
 
 		case Z80__CB__SET__1__C:		/* 0xcb 0xc9 */
-			Z80__SET__N__REG8(1, *m_c);
+			Z80__SET__N__REG8(1, m_registers.c());
 			break;
 
 		case Z80__CB__SET__1__D:		/* 0xcb 0xca */
-			Z80__SET__N__REG8(1, *m_d);
+			Z80__SET__N__REG8(1, m_registers.d());
 			break;
 
 		case Z80__CB__SET__1__E:		/* 0xcb 0xcb */
-			Z80__SET__N__REG8(1, *m_e);
+			Z80__SET__N__REG8(1, m_registers.e());
 			break;
 
 		case Z80__CB__SET__1__H:		/* 0xcb 0xcc */
-			Z80__SET__N__REG8(1, *m_h);
+			Z80__SET__N__REG8(1, m_registers.h());
 			break;
 
 		case Z80__CB__SET__1__L:		/* 0xcb 0xcd */
-			Z80__SET__N__REG8(1, *m_l);
+			Z80__SET__N__REG8(1, m_registers.l());
 			break;
 
 		case Z80__CB__SET__1__INDIRECT_HL:		/* 0xcb 0xce */
-			Z80__SET__N__INDIRECT_REG16(1, m_hl);
+			Z80__SET__N__INDIRECT_REG16(1, m_registers.hl);
 			break;
 
 		case Z80__CB__SET__1__A:		/* 0xcb 0xcf */
-			Z80__SET__N__REG8(1, *m_a);
+			Z80__SET__N__REG8(1, m_registers.a());
 			break;
 
 		case Z80__CB__SET__2__B:		/* 0xcb 0xd0 */
-			Z80__SET__N__REG8(2, *m_b);
+			Z80__SET__N__REG8(2, m_registers.b());
 			break;
 
 		case Z80__CB__SET__2__C:		/* 0xcb 0xd1 */
-			Z80__SET__N__REG8(2, *m_c);
+			Z80__SET__N__REG8(2, m_registers.c());
 			break;
 
 		case Z80__CB__SET__2__D:		/* 0xcb 0xd2 */
-			Z80__SET__N__REG8(2, *m_d);
+			Z80__SET__N__REG8(2, m_registers.d());
 			break;
 
 		case Z80__CB__SET__2__E:		/* 0xcb 0xd3 */
-			Z80__SET__N__REG8(2, *m_e);
+			Z80__SET__N__REG8(2, m_registers.e());
 			break;
 
 		case Z80__CB__SET__2__H:		/* 0xcb 0xd4 */
-			Z80__SET__N__REG8(2, *m_h);
+			Z80__SET__N__REG8(2, m_registers.h());
 			break;
 
 		case Z80__CB__SET__2__L:		/* 0xcb 0xd5 */
-			Z80__SET__N__REG8(2, *m_l);
+			Z80__SET__N__REG8(2, m_registers.l());
 			break;
 
 		case Z80__CB__SET__2__INDIRECT_HL:		/* 0xcb 0xd6 */
-			Z80__SET__N__INDIRECT_REG16(2, m_hl);
+			Z80__SET__N__INDIRECT_REG16(2, m_registers.hl);
 			break;
 
 		case Z80__CB__SET__2__A:		/* 0xcb 0xd7 */
-			Z80__SET__N__REG8(2, *m_a);
+			Z80__SET__N__REG8(2, m_registers.a());
 			break;
 
 		case Z80__CB__SET__3__B:		/* 0xcb 0xd8 */
-			Z80__SET__N__REG8(3, *m_b);
+			Z80__SET__N__REG8(3, m_registers.b());
 			break;
 
 		case Z80__CB__SET__3__C:		/* 0xcb 0xd9 */
-			Z80__SET__N__REG8(3, *m_c);
+			Z80__SET__N__REG8(3, m_registers.c());
 			break;
 
 		case Z80__CB__SET__3__D:		/* 0xcb 0xda */
-			Z80__SET__N__REG8(3, *m_d);
+			Z80__SET__N__REG8(3, m_registers.d());
 			break;
 
 		case Z80__CB__SET__3__E:		/* 0xcb 0xdb */
-			Z80__SET__N__REG8(3, *m_e);
+			Z80__SET__N__REG8(3, m_registers.e());
 			break;
 
 		case Z80__CB__SET__3__H:		/* 0xcb 0xdc */
-			Z80__SET__N__REG8(3, *m_h);
+			Z80__SET__N__REG8(3, m_registers.h());
 			break;
 
 		case Z80__CB__SET__3__L:		/* 0xcb 0xdd */
-			Z80__SET__N__REG8(3, *m_l);
+			Z80__SET__N__REG8(3, m_registers.l());
 			break;
 
 		case Z80__CB__SET__3__INDIRECT_HL:		/* 0xcb 0xde */
-			Z80__SET__N__INDIRECT_REG16(3, m_hl);
+			Z80__SET__N__INDIRECT_REG16(3, m_registers.hl);
 			break;
 
 		case Z80__CB__SET__3__A:		/* 0xcb 0xdf */
-			Z80__SET__N__REG8(3, *m_a);
+			Z80__SET__N__REG8(3, m_registers.a());
 			break;
 
 		case Z80__CB__SET__4__B:		/* 0xcb 0xe0 */
-			Z80__SET__N__REG8(4, *m_b);
+			Z80__SET__N__REG8(4, m_registers.b());
 			break;
 
 		case Z80__CB__SET__4__C:		/* 0xcb 0xe1 */
-			Z80__SET__N__REG8(4, *m_c);
+			Z80__SET__N__REG8(4, m_registers.c());
 			break;
 
 		case Z80__CB__SET__4__D:		/* 0xcb 0xe2 */
-			Z80__SET__N__REG8(4, *m_d);
+			Z80__SET__N__REG8(4, m_registers.d());
 			break;
 
 		case Z80__CB__SET__4__E:		/* 0xcb 0xe3 */
-			Z80__SET__N__REG8(4, *m_e);
+			Z80__SET__N__REG8(4, m_registers.e());
 			break;
 
 		case Z80__CB__SET__4__H:		/* 0xcb 0xe4 */
-			Z80__SET__N__REG8(4, *m_h);
+			Z80__SET__N__REG8(4, m_registers.h());
 			break;
 
 		case Z80__CB__SET__4__L:		/* 0xcb 0xe5 */
-			Z80__SET__N__REG8(4, *m_l);
+			Z80__SET__N__REG8(4, m_registers.l());
 			break;
 
 		case Z80__CB__SET__4__INDIRECT_HL:		/* 0xcb 0xe6 */
-			Z80__SET__N__INDIRECT_REG16(4, m_hl);
+			Z80__SET__N__INDIRECT_REG16(4, m_registers.hl);
 			break;
 
 		case Z80__CB__SET__4__A:		/* 0xcb 0xe7 */
-			Z80__SET__N__REG8(4, *m_a);
+			Z80__SET__N__REG8(4, m_registers.a());
 			break;
 
 		case Z80__CB__SET__5__B:		/* 0xcb 0xe8 */
-			Z80__SET__N__REG8(5, *m_b);
+			Z80__SET__N__REG8(5, m_registers.b());
 			break;
 
 		case Z80__CB__SET__5__C:		/* 0xcb 0xe9 */
-			Z80__SET__N__REG8(5, *m_c);
+			Z80__SET__N__REG8(5, m_registers.c());
 			break;
 
 		case Z80__CB__SET__5__D:		/* 0xcb 0xea */
-			Z80__SET__N__REG8(5, *m_d);
+			Z80__SET__N__REG8(5, m_registers.d());
 			break;
 
 		case Z80__CB__SET__5__E:		/* 0xcb 0xeb */
-			Z80__SET__N__REG8(5, *m_e);
+			Z80__SET__N__REG8(5, m_registers.e());
 			break;
 
 		case Z80__CB__SET__5__H:		/* 0xcb 0xec */
-			Z80__SET__N__REG8(5, *m_h);
+			Z80__SET__N__REG8(5, m_registers.h());
 			break;
 
 		case Z80__CB__SET__5__L:		/* 0xcb 0xed */
-			Z80__SET__N__REG8(5, *m_l);
+			Z80__SET__N__REG8(5, m_registers.l());
 			break;
 
 		case Z80__CB__SET__5__INDIRECT_HL:		/* 0xcb 0xee */
-			Z80__SET__N__INDIRECT_REG16(5, m_hl);
+			Z80__SET__N__INDIRECT_REG16(5, m_registers.hl);
 			break;
 
 		case Z80__CB__SET__5__A:		/* 0xcb 0xef */
-			Z80__SET__N__REG8(5, *m_a);
+			Z80__SET__N__REG8(5, m_registers.a());
 			break;
 
 		case Z80__CB__SET__6__B:		/* 0xcb 0xf0 */
-			Z80__SET__N__REG8(6, *m_b);
+			Z80__SET__N__REG8(6, m_registers.b());
 			break;
 
 		case Z80__CB__SET__6__C:		/* 0xcb 0xf1 */
-			Z80__SET__N__REG8(6, *m_c);
+			Z80__SET__N__REG8(6, m_registers.c());
 			break;
 
 		case Z80__CB__SET__6__D:		/* 0xcb 0xf2 */
-			Z80__SET__N__REG8(6, *m_d);
+			Z80__SET__N__REG8(6, m_registers.d());
 			break;
 
 		case Z80__CB__SET__6__E:		/* 0xcb 0xf3 */
-			Z80__SET__N__REG8(6, *m_e);
+			Z80__SET__N__REG8(6, m_registers.e());
 			break;
 
 		case Z80__CB__SET__6__H:		/* 0xcb 0xf4 */
-			Z80__SET__N__REG8(6, *m_h);
+			Z80__SET__N__REG8(6, m_registers.h());
 			break;
 
 		case Z80__CB__SET__6__L:		/* 0xcb 0xf5 */
-			Z80__SET__N__REG8(6, *m_l);
+			Z80__SET__N__REG8(6, m_registers.l());
 			break;
 
 		case Z80__CB__SET__6__INDIRECT_HL:		/* 0xcb 0xf6 */
-			Z80__SET__N__INDIRECT_REG16(6, m_hl);
+			Z80__SET__N__INDIRECT_REG16(6, m_registers.hl);
 			break;
 
 		case Z80__CB__SET__6__A:		/* 0xcb 0xf7 */
-			Z80__SET__N__REG8(6, *m_a);
+			Z80__SET__N__REG8(6, m_registers.a());
 			break;
 
 		case Z80__CB__SET__7__B:		/* 0xcb 0xf8 */
-			Z80__SET__N__REG8(7, *m_b);
+			Z80__SET__N__REG8(7, m_registers.b());
 			break;
 
 		case Z80__CB__SET__7__C:		/* 0xcb 0xf9 */
-			Z80__SET__N__REG8(7, *m_c);
+			Z80__SET__N__REG8(7, m_registers.c());
 			break;
 
 		case Z80__CB__SET__7__D:		/* 0xcb 0xfa */
-			Z80__SET__N__REG8(7, *m_d);
+			Z80__SET__N__REG8(7, m_registers.d());
 			break;
 
 		case Z80__CB__SET__7__E:		/* 0xcb 0xfb */
-			Z80__SET__N__REG8(7, *m_e);
+			Z80__SET__N__REG8(7, m_registers.e());
 			break;
 
 		case Z80__CB__SET__7__H:		/* 0xcb 0xfc */
-			Z80__SET__N__REG8(7, *m_h);
+			Z80__SET__N__REG8(7, m_registers.h());
 			break;
 
 		case Z80__CB__SET__7__L:		/* 0xcb 0xfd */
-			Z80__SET__N__REG8(7, *m_l);
+			Z80__SET__N__REG8(7, m_registers.l());
 			break;
 
 		case Z80__CB__SET__7__INDIRECT_HL:		/* 0xcb 0xfe */
-			Z80__SET__N__INDIRECT_REG16(7, m_hl);
+			Z80__SET__N__INDIRECT_REG16(7, m_registers.hl);
 			break;
 
 		case Z80__CB__SET__7__A:		/* 0xcb 0xff */
-			Z80__SET__N__REG8(7, *m_a);
+			Z80__SET__N__REG8(7, m_registers.a());
 			break;
 
 		default:
@@ -3400,7 +3410,7 @@ bool Z80::executeCbInstruction(const Z80::UnsignedByte * instruction, int * cycl
 }
 
 
-bool Z80::executeEdInstruction(const Z80::UnsignedByte * instruction, bool * doPc, int * cycles, int * size)
+bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, bool * doPc, int * cycles, int * size)
 {
 	bool useJumpCycleCost = false;
 
@@ -3609,20 +3619,20 @@ bool Z80::executeEdInstruction(const Z80::UnsignedByte * instruction, bool * doP
 
 		case Z80__ED__SBC__HL__BC:					/* 0xed 0x42 */
 //        {
-//            UnsignedWord oldValue = (m_hl);
-//            (m_hl) -= ((m_bc) + (Z80_FLAG_C_ISSET ? 1 : 0));
+//            UnsignedWord oldValue = (m_registers.hl);
+//            (m_registers.hl) -= ((m_registers.bc) + (Z80_FLAG_C_ISSET ? 1 : 0));
 //            Z80_FLAG_N_SET;
-//            Z80_FLAG_Z_UPDATE(0 == (m_hl));
+//            Z80_FLAG_Z_UPDATE(0 == (m_registers.hl));
 //            Z80_FLAG_S_DEFAULTBEHAVIOUR16;
-//            Z80_FLAG_P_UPDATE((m_hl) > oldValue);
-//            Z80_FLAG_C_UPDATE((m_hl) > oldValue);
-//            Z80_FLAG_H_UPDATE(Z80_CHECK_16BIT_HALFCARRY_10_TO_11(oldValue, (m_hl)));
+//            Z80_FLAG_P_UPDATE((m_registers.hl) > oldValue);
+//            Z80_FLAG_C_UPDATE((m_registers.hl) > oldValue);
+//            Z80_FLAG_H_UPDATE(Z80_CHECK_16BIT_HALFCARRY_10_TO_11(oldValue, (m_registers.hl)));
 //        }
-            Z80__SBC__REG16__REG16(m_hl, m_bc);
+            Z80__SBC__REG16__REG16(m_registers.hl, m_registers.bc);
 			break;
 
 		case Z80__ED__LD__INDIRECT_NN__BC:		/* 0xed 0x43 */
-			Z80__LD__INDIRECT_NN__REG16(Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_bc);
+			Z80__LD__INDIRECT_NN__REG16(Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_registers.bc);
 			break;
 
 		case Z80__ED__NEG:							/* 0xed 0x44 */
@@ -3649,11 +3659,11 @@ bool Z80::executeEdInstruction(const Z80::UnsignedByte * instruction, bool * doP
 			break;
 
 		case Z80__ED__ADC__HL__BC:
-			Z80__ADC__REG16__REG16(m_hl, m_bc);
+			Z80__ADC__REG16__REG16(m_registers.hl, m_registers.bc);
 			break;
 
 		case Z80__ED__LD__BC__INDIRECT_NN:
-			Z80__LD__REG16__INDIRECT_NN(m_bc, Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG16__INDIRECT_NN(m_registers.bc, Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
 			break;
 
 		case Z80__ED__NEG__0XED__0X4C:		/* 0xed 0x4c */
@@ -3682,11 +3692,11 @@ bool Z80::executeEdInstruction(const Z80::UnsignedByte * instruction, bool * doP
 			break;
 
 		case Z80__ED__SBC__HL__DE:
-			Z80__SBC__REG16__REG16(m_hl, m_de);
+			Z80__SBC__REG16__REG16(m_registers.hl, m_registers.de);
 			break;
 
 		case Z80__ED__LD__INDIRECT_NN__DE:	/* 0xed 0x53 */
-			Z80__LD__INDIRECT_NN__REG16(Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_de);
+			Z80__LD__INDIRECT_NN__REG16(Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_registers.de);
 			break;
 
 		case Z80__ED__NEG__0XED__0X54:		/* 0xed 0x54 */
@@ -3703,11 +3713,11 @@ bool Z80::executeEdInstruction(const Z80::UnsignedByte * instruction, bool * doP
 			break;
 
 		case Z80__ED__LD__A__I:				/* 0xed 0x57 */
-			Z80__LD__REG8__REG8(*m_a, m_i);
+			Z80__LD__REG8__REG8(m_registers.a(), m_registers.i);
 			Z80_FLAG_S_DEFAULTBEHAVIOUR;
 			Z80_FLAG_Z_DEFAULTBEHAVIOUR;
 			Z80_FLAG_H_CLEAR;
-			Z80_FLAG_P_UPDATE(isEvenParity(*m_a));
+			Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a()));
 			Z80_FLAG_N_CLEAR;
 			break;
 
@@ -3722,11 +3732,11 @@ bool Z80::executeEdInstruction(const Z80::UnsignedByte * instruction, bool * doP
 			break;
 
 		case Z80__ED__ADC__HL__DE:
-			Z80__ADC__REG16__REG16(m_hl, m_de);
+			Z80__ADC__REG16__REG16(m_registers.hl, m_registers.de);
 			break;
 
 		case Z80__ED__LD__DE__INDIRECT_NN:
-			Z80__LD__REG16__INDIRECT_NN(m_de, Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG16__INDIRECT_NN(m_registers.de, Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
 			break;
 
 		case Z80__ED__NEG__0XED__0X5C:		/* 0xed 0x5c */
@@ -3743,11 +3753,11 @@ bool Z80::executeEdInstruction(const Z80::UnsignedByte * instruction, bool * doP
 			break;
 
 		case Z80__ED__LD__A__R:
-			Z80__LD__REG8__REG8(*m_a, m_r);
+			Z80__LD__REG8__REG8(m_registers.a(), m_registers.r);
 			Z80_FLAG_S_DEFAULTBEHAVIOUR;
 			Z80_FLAG_Z_DEFAULTBEHAVIOUR;
 			Z80_FLAG_H_CLEAR;
-			Z80_FLAG_P_UPDATE(isEvenParity(*m_a));
+			Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a()));
 			Z80_FLAG_N_CLEAR;
 			break;
 
@@ -3762,11 +3772,11 @@ bool Z80::executeEdInstruction(const Z80::UnsignedByte * instruction, bool * doP
 			break;
 
 		case Z80__ED__SBC__HL__HL:			/* 0xed 0x62 */
-			Z80__SBC__REG16__REG16(m_hl, m_hl);
+			Z80__SBC__REG16__REG16(m_registers.hl, m_registers.hl);
 			break;
 
 		case Z80__ED__LD__INDIRECT_NN__HL:
-			Z80__LD__INDIRECT_NN__REG16(Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_hl);
+			Z80__LD__INDIRECT_NN__REG16(Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_registers.hl);
 			break;
 
 		case Z80__ED__NEG__0XED__0X64:	/* 0xed 0x64 */
@@ -3787,25 +3797,25 @@ bool Z80::executeEdInstruction(const Z80::UnsignedByte * instruction, bool * doP
 		case Z80__ED__RRD:
 			/* FLAGS: H and N cleared, C preserved, P is parity, S and Z as defined */
 			{
-				UnsignedByte v = peekUnsigned(m_hl);
+				UnsignedByte v = peekUnsigned(m_registers.hl);
 
 				/* cache least sig. nybble of A */
-				UnsignedByte tmp = (*m_a) & 0x0f;
+				UnsignedByte tmp = (m_registers.a()) & 0x0f;
 
 				/* copy least sig. nybble of (HL) into least sig. nybble of A */
-				(*m_a) &= 0xf0;
-				(*m_a) |= (v & 0x0f);
+				(m_registers.a()) &= 0xf0;
+				(m_registers.a()) |= (v & 0x0f);
 
 				/* copy cached least sig. nybble of A into most sig. nybble of (HL)
 				 * and most sig. nybble of (HL) into least sig. nybble of (HL) */
 				v >>= 4;
 				v |= (tmp << 4);
-				pokeUnsigned(m_hl, v);
+				pokeUnsigned(m_registers.hl, v);
 
 				Z80_FLAG_H_CLEAR;
 				Z80_FLAG_N_CLEAR;
 				/* should this be set according to A or both A and (HL) ? */
-				Z80_FLAG_P_UPDATE(isEvenParity(*m_a));
+				Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a()));
 				Z80_FLAG_Z_DEFAULTBEHAVIOUR;
 				Z80_FLAG_S_DEFAULTBEHAVIOUR;
 			}
@@ -3822,11 +3832,11 @@ bool Z80::executeEdInstruction(const Z80::UnsignedByte * instruction, bool * doP
 			break;
 
 		case Z80__ED__ADC__HL__HL:
-			Z80__ADC__REG16__REG16(m_hl, m_hl);
+			Z80__ADC__REG16__REG16(m_registers.hl, m_registers.hl);
 			break;
 
 		case Z80__ED__LD__HL__INDIRECT_NN:
-			Z80__LD__REG16__INDIRECT_NN(m_hl, Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG16__INDIRECT_NN(m_registers.hl, Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
 			break;
 
 		case Z80__ED__NEG__0XED__0X6C:	/* 0xed 0x6c */
@@ -3847,27 +3857,27 @@ bool Z80::executeEdInstruction(const Z80::UnsignedByte * instruction, bool * doP
 		case Z80__ED__RLD:
 			/* FLAGS: H and N cleared, C preserved, P is parity, S and Z as defined */
 			{
-				UnsignedByte v = peekUnsigned(m_hl);
+				UnsignedByte v = peekUnsigned(m_registers.hl);
 
 				/* cache least sig. nybble of (HL) */
 				UnsignedByte tmp = v & 0x0f;
 
 				/* copy least sig. nybble of A into least sig. nybble of (HL) */
 				v &= 0xf0;
-				v |= ((*m_a) & 0x0f);
+				v |= ((m_registers.a()) & 0x0f);
 
 				/* copy cached least sig. nybble of (HL) into most sig. nybble of (HL)
 				 * and most sig. nybble of (HL) into least sig. nybble of A */
-				(*m_a) &= 0xf0;
-				(*m_a) |= ((v & 0xf0) >> 4);
+				(m_registers.a()) &= 0xf0;
+				(m_registers.a()) |= ((v & 0xf0) >> 4);
 				v = (v & 0x0f) | (tmp << 4);
 
-				pokeUnsigned(m_hl, v);
+				pokeUnsigned(m_registers.hl, v);
 
 				Z80_FLAG_H_CLEAR;
 				Z80_FLAG_N_CLEAR;
 				/* should this be set according to A or both A and (HL) ? */
-				Z80_FLAG_P_UPDATE(isEvenParity(*m_a));
+				Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a()));
 				Z80_FLAG_Z_DEFAULTBEHAVIOUR;
 				Z80_FLAG_S_DEFAULTBEHAVIOUR;
 			}
@@ -3884,11 +3894,11 @@ bool Z80::executeEdInstruction(const Z80::UnsignedByte * instruction, bool * doP
 			break;
 
 		case Z80__ED__SBC__HL__SP:
-			Z80__SBC__REG16__REG16(m_hl, m_sp);
+			Z80__SBC__REG16__REG16(m_registers.hl, m_registers.sp);
 			break;
 
 		case Z80__ED__LD__INDIRECT_NN__SP:
-			Z80__LD__INDIRECT_NN__REG16(Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_sp);
+			Z80__LD__INDIRECT_NN__REG16(Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_registers.sp);
 			break;
 
 		case Z80__ED__NEG__0XED__0X74:	/* oxed 0x74 */
@@ -3920,11 +3930,11 @@ bool Z80::executeEdInstruction(const Z80::UnsignedByte * instruction, bool * doP
 			break;
 
 		case Z80__ED__ADC__HL__SP:
-			Z80__ADC__REG16__REG16(m_hl, m_sp);
+			Z80__ADC__REG16__REG16(m_registers.hl, m_registers.sp);
 			break;
 
 		case Z80__ED__LD__SP__INDIRECT_NN:
-			Z80__LD__REG16__INDIRECT_NN(m_sp, Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG16__INDIRECT_NN(m_registers.sp, Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
 			break;
 
 		case Z80__ED__NEG__0XED__0X7C:		/* 0xed 0x7c */
@@ -4043,10 +4053,10 @@ bool Z80::executeEdInstruction(const Z80::UnsignedByte * instruction, bool * doP
 
 		case Z80__ED__LDI:
 			/* FLAGS: H and N are cleared, S, Z and C are preserved, P is unknown */
-			pokeUnsigned(m_de, peekUnsigned(m_hl));
-			m_de++;
-			m_hl++;
-			m_bc--;
+			pokeUnsigned(m_registers.de, peekUnsigned(m_registers.hl));
+			m_registers.de++;
+			m_registers.hl++;
+			m_registers.bc--;
 			Z80_FLAG_H_CLEAR;
 			Z80_FLAG_N_CLEAR;
 			/* TODO flag P */
@@ -4059,14 +4069,14 @@ bool Z80::executeEdInstruction(const Z80::UnsignedByte * instruction, bool * doP
 				 * this is identical to CP instruction, except C is unmodified and
 				 * P is currently unknown */
 				bool flagC = Z80_FLAG_C_ISSET;
-				Z80__CP__INDIRECT_REG16(m_hl);
+				Z80__CP__INDIRECT_REG16(m_registers.hl);
 
-				m_hl++;
-				m_bc--;
+				m_registers.hl++;
+				m_registers.bc--;
 
 				/* TODO not sure if this is the correct P flag behaviour */
 				Z80_FLAG_C_UPDATE(flagC);
-				Z80_FLAG_P_UPDATE(isEvenParity(*m_a));
+				Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a()));
 			}
 			break;
 
@@ -4094,10 +4104,10 @@ bool Z80::executeEdInstruction(const Z80::UnsignedByte * instruction, bool * doP
 
 		case Z80__ED__LDD:
 			/* FLAGS: H and N are cleared, S, Z and C are preserved, P is unknown */
-			pokeUnsigned(m_de, peekUnsigned(m_hl));
-			m_de--;
-			m_hl--;
-			m_bc--;
+			pokeUnsigned(m_registers.de, peekUnsigned(m_registers.hl));
+			m_registers.de--;
+			m_registers.hl--;
+			m_registers.bc--;
 			Z80_FLAG_H_CLEAR;
 			Z80_FLAG_N_CLEAR;
 			/* TODO flag P */
@@ -4110,14 +4120,14 @@ bool Z80::executeEdInstruction(const Z80::UnsignedByte * instruction, bool * doP
 				 * this is identical to CP instruction, except C is unmodified and
 				 * P is currently unknown */
 				bool flagC = Z80_FLAG_C_ISSET;
-				Z80__CP__INDIRECT_REG16(m_hl);
+				Z80__CP__INDIRECT_REG16(m_registers.hl);
 
-				m_hl--;
-				m_bc--;
+				m_registers.hl--;
+				m_registers.bc--;
 
 				/* TODO not sure if this is the correct P flag behaviour */
 				Z80_FLAG_C_UPDATE(flagC);
-				Z80_FLAG_P_UPDATE(isEvenParity(*m_a));
+				Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a()));
 			}
 			break;
 
@@ -4148,10 +4158,10 @@ bool Z80::executeEdInstruction(const Z80::UnsignedByte * instruction, bool * doP
 			/* TODO interrupts can occur while this instruction is processing */
 			/* FLAGS: H, P and N are cleared, S, Z and C are preserved */
 			do {
-				pokeUnsigned(m_de, peekUnsigned(m_hl));
-				m_de++;
-				m_hl++;
-			} while(--m_bc);
+				pokeUnsigned(m_registers.de, peekUnsigned(m_registers.hl));
+				m_registers.de++;
+				m_registers.hl++;
+			} while(--m_registers.bc);
 
 			Z80_FLAG_H_CLEAR;
 			Z80_FLAG_N_CLEAR;
@@ -4169,13 +4179,13 @@ bool Z80::executeEdInstruction(const Z80::UnsignedByte * instruction, bool * doP
 				bool flagC = Z80_FLAG_C_ISSET;
 
 				do {
-					Z80__CP__INDIRECT_REG16(m_hl);
-					m_hl++;
-				} while(--m_bc);
+					Z80__CP__INDIRECT_REG16(m_registers.hl);
+					m_registers.hl++;
+				} while(--m_registers.bc);
 
 				/* TODO not sure if this is the correct P flag behaviour */
 				Z80_FLAG_C_UPDATE(flagC);
-				Z80_FLAG_P_UPDATE(isEvenParity(*m_a));
+				Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a()));
 			}
 			break;
 
@@ -4206,10 +4216,10 @@ bool Z80::executeEdInstruction(const Z80::UnsignedByte * instruction, bool * doP
 			/* TODO interrupts can occur while this instruction is processing */
 			/* FLAGS: H, P and N are cleared, S, Z and C are preserved */
 			do {
-				pokeUnsigned(m_de, peekUnsigned(m_hl));
-				m_de--;
-				m_hl--;
-			} while(--m_bc);
+				pokeUnsigned(m_registers.de, peekUnsigned(m_registers.hl));
+				m_registers.de--;
+				m_registers.hl--;
+			} while(--m_registers.bc);
 
 			Z80_FLAG_H_CLEAR;
 			Z80_FLAG_N_CLEAR;
@@ -4227,13 +4237,13 @@ bool Z80::executeEdInstruction(const Z80::UnsignedByte * instruction, bool * doP
 				bool flagC = Z80_FLAG_C_ISSET;
 
 				do {
-					Z80__CP__INDIRECT_REG16(m_hl);
-					m_hl--;
-				} while(--m_bc);
+					Z80__CP__INDIRECT_REG16(m_registers.hl);
+					m_registers.hl--;
+				} while(--m_registers.bc);
 
 				/* TODO not sure if this is the correct P flag behaviour */
 				Z80_FLAG_C_UPDATE(flagC);
-				Z80_FLAG_P_UPDATE(isEvenParity(*m_a));
+				Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a()));
 			}
 			break;
 
@@ -4452,7 +4462,7 @@ bool Z80::executeEdInstruction(const Z80::UnsignedByte * instruction, bool * doP
 			break;
 
 		case Z80__ED__LD__I__A:				/* 0xed 0x47 */
-			Z80__LD__REG8__REG8(m_i, *m_a);
+			Z80__LD__REG8__REG8(m_registers.i, m_registers.a());
 			/* Z80__LD__REG8__REG8() preserves all flags because all but 2 8-bit
 			 * LD instructions don't alter any flags. LD I,A and LD R,A both alter
 			 * flags thus:
@@ -4469,7 +4479,7 @@ bool Z80::executeEdInstruction(const Z80::UnsignedByte * instruction, bool * doP
 			break;
 
 		case Z80__ED__LD__R__A:				/* 0xed 0x4f */
-			Z80__LD__REG8__REG8(m_r, *m_a);
+			Z80__LD__REG8__REG8(m_registers.r, m_registers.a());
 			/* Z80__LD__REG8__REG8() preserves all flags because all but 2 8-bit
 			 * LD instructions don't alter any flags. LD I,A and LD R,A both alter
 			 * flags thus:
@@ -4503,38 +4513,38 @@ bool Z80::executeEdInstruction(const Z80::UnsignedByte * instruction, bool * doP
 }
 
 
-bool Z80::executeDdOrFdInstruction(Z80::UnsignedWord & reg, const Z80::UnsignedByte * instruction, bool * doPc, int * cycles, int * size)
+bool Z80::Z80::executeDdOrFdInstruction(Z80::Z80::UnsignedWord & reg, const Z80::Z80::UnsignedByte * instruction, bool * doPc, int * cycles, int * size)
 {
 	Z80_UNUSED(doPc);
 	bool useJumpCycleCost = false;
 
 	// work out which high and low reg pointers to use
-	Z80::UnsignedByte * regHigh;
-	Z80::UnsignedByte * regLow;
+	Z80::Z80::UnsignedByte * regHigh;
+	Z80::Z80::UnsignedByte * regLow;
 
-	if (&reg == &m_ix) {
-		regHigh = m_ixh;
-		regLow = m_ixl;
+	if (&reg == &m_registers.ix) {
+		regHigh = &(m_registers.ixh());
+		regLow = &(m_registers.ixl());
 	} else {
-		regHigh = m_iyh;
-		regLow = m_iyl;
+		regHigh = &(m_registers.iyh());
+		regLow = &(m_registers.iyl());
 	}
 
 	switch (*instruction) {
 		case Z80__DD_OR_FD__ADD__IX_OR_IY__BC: /*  0x09 */
-			Z80__ADD__REG16__REG16(reg, m_bc);
+			Z80__ADD__REG16__REG16(reg, m_registers.bc);
 			break;
 
 		case Z80__DD_OR_FD__ADD__IX_OR_IY__DE: /*  0x19 */
-			Z80__ADD__REG16__REG16(reg, m_de);
+			Z80__ADD__REG16__REG16(reg, m_registers.de);
 			break;
 
 		case Z80__DD_OR_FD__LD__IX_OR_IY__NN: /*  0x21 */
-			Z80__LD__REG16__NN(reg, Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG16__NN(reg, Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
 			break;
 
 		case Z80__DD_OR_FD__LD__INDIRECT_NN__IX_OR_IY: /*  0x22 */
-			Z80__LD__INDIRECT_NN__REG16(Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), reg);
+			Z80__LD__INDIRECT_NN__REG16(Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), reg);
 			break;
 
 		case Z80__DD_OR_FD__INC__IX_OR_IY: /*  0x23 */
@@ -4558,7 +4568,7 @@ bool Z80::executeDdOrFdInstruction(Z80::UnsignedWord & reg, const Z80::UnsignedB
 			break;
 
 		case Z80__DD_OR_FD__LD__IX_OR_IY__INDIRECT_NN: /*  0x2a */
-			Z80__LD__REG16__INDIRECT_NN(reg, Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG16__INDIRECT_NN(reg, Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
 			break;
 
 		case Z80__DD_OR_FD__DEC__IX_OR_IY: /*  0x2b */
@@ -4590,76 +4600,76 @@ bool Z80::executeDdOrFdInstruction(Z80::UnsignedWord & reg, const Z80::UnsignedB
 			break;
 
 		case Z80__DD_OR_FD__ADD__IX_OR_IY__SP: /*  0x39 */
-			Z80__ADD__REG16__REG16(reg, m_sp);
+			Z80__ADD__REG16__REG16(reg, m_registers.sp);
 			break;
 
 		case Z80__DD_OR_FD__LD__B__IXH_OR_IYH: /*  0x44 */
-			Z80__LD__REG8__REG8(*m_b, *regHigh);
+			Z80__LD__REG8__REG8(m_registers.b(), *regHigh);
 			break;
 
 		case Z80__DD_OR_FD__LD__B__IXL_OR_IYL: /*  0x45 */
-			Z80__LD__REG8__REG8(*m_b, *regLow);
+			Z80__LD__REG8__REG8(m_registers.b(), *regLow);
 			break;
 
 		case Z80__DD_OR_FD__LD__B__INDIRECT_IX_d_OR_IY_d: /*  0x46 */
-			Z80__LD__REG8__INDIRECT_REG16_D(*m_b, reg, SignedByte(*(instruction + 1)));
+			Z80__LD__REG8__INDIRECT_REG16_D(m_registers.b(), reg, SignedByte(*(instruction + 1)));
 			break;
 
 		case Z80__DD_OR_FD__LD__C__IXH_OR_IYH: /*  0x4c */
-			Z80__LD__REG8__REG8(*m_c, *regHigh);
+			Z80__LD__REG8__REG8(m_registers.c(), *regHigh);
 			break;
 
 
 		case Z80__DD_OR_FD__LD__C__IXL_OR_IYL: /*  0x4d */
-			Z80__LD__REG8__REG8(*m_c, *regLow);
+			Z80__LD__REG8__REG8(m_registers.c(), *regLow);
 			break;
 
 
 		case Z80__DD_OR_FD__LD__C__INDIRECT_IX_d_OR_IY_d: /*  0x4e */
-			Z80__LD__REG8__INDIRECT_REG16_D(*m_c, reg, SignedByte(*(instruction + 1)));
+			Z80__LD__REG8__INDIRECT_REG16_D(m_registers.c(), reg, SignedByte(*(instruction + 1)));
 			break;
 
 		case Z80__DD_OR_FD__LD__D__IXH_OR_IYH: /*  0x54 */
-			Z80__LD__REG8__REG8(*m_d, *regHigh);
+			Z80__LD__REG8__REG8(m_registers.d(), *regHigh);
 			break;
 
 
 		case Z80__DD_OR_FD__LD__D__IXL_OR_IYL: /*  0x55 */
-			Z80__LD__REG8__REG8(*m_d, *regLow);
+			Z80__LD__REG8__REG8(m_registers.d(), *regLow);
 			break;
 
 
 		case Z80__DD_OR_FD__LD__D__INDIRECT_IX_d_OR_IY_d: /*  0x56 */
-			Z80__LD__REG8__INDIRECT_REG16_D(*m_d, reg, SignedByte(*(instruction + 1)));
+			Z80__LD__REG8__INDIRECT_REG16_D(m_registers.d(), reg, SignedByte(*(instruction + 1)));
 			break;
 
 		case Z80__DD_OR_FD__LD__E__IXH_OR_IYH: /*  0x5c */
-			Z80__LD__REG8__REG8(*m_e, *regHigh);
+			Z80__LD__REG8__REG8(m_registers.e(), *regHigh);
 			break;
 
 
 		case Z80__DD_OR_FD__LD__E__IXL_OR_IYL: /*  0x5d */
-			Z80__LD__REG8__REG8(*m_e, *regLow);
+			Z80__LD__REG8__REG8(m_registers.e(), *regLow);
 			break;
 
 		case Z80__DD_OR_FD__LD__E__INDIRECT_IX_d_OR_IY_d: /*  0x5e */
-			Z80__LD__REG8__INDIRECT_REG16_D(*m_e, reg, SignedByte(*(instruction + 1)));
+			Z80__LD__REG8__INDIRECT_REG16_D(m_registers.e(), reg, SignedByte(*(instruction + 1)));
 			break;
 
 		case Z80__DD_OR_FD__LD__IXH_OR_IYH__B: /*  0x60 */
-			Z80__LD__REG8__REG8(*regHigh, *m_b);
+			Z80__LD__REG8__REG8(*regHigh, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__LD__IXH_OR_IYH__C: /*  0x61 */
-			Z80__LD__REG8__REG8(*regHigh, *m_c);
+			Z80__LD__REG8__REG8(*regHigh, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__LD__IXH_OR_IYH__D: /*  0x62 */
-			Z80__LD__REG8__REG8(*regHigh, *m_d);
+			Z80__LD__REG8__REG8(*regHigh, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__LD__IXH_OR_IYH__E: /*  0x63 */
-			Z80__LD__REG8__REG8(*regHigh, *m_e);
+			Z80__LD__REG8__REG8(*regHigh, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__LD__IXH_OR_IYH__IXH_OR_IYH: /*  0x64 */
@@ -4672,27 +4682,27 @@ bool Z80::executeDdOrFdInstruction(Z80::UnsignedWord & reg, const Z80::UnsignedB
 			break;
 
 		case Z80__DD_OR_FD__LD__H__INDIRECT_IX_d_OR_IY_d: /*  0x66 */
-			Z80__LD__REG8__INDIRECT_REG16_D(*m_h, reg, SignedByte(*(instruction + 1)));
+			Z80__LD__REG8__INDIRECT_REG16_D(m_registers.h(), reg, SignedByte(*(instruction + 1)));
 			break;
 
 		case Z80__DD_OR_FD__LD__IXH_OR_IYH__A: /*  0x67 */
-			Z80__LD__REG8__REG8(*regHigh, *m_a);
+			Z80__LD__REG8__REG8(*regHigh, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__LD__IXL_OR_IYL__B: /*  0x68 */
-			Z80__LD__REG8__REG8(*regLow, *m_b);
+			Z80__LD__REG8__REG8(*regLow, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__LD__IXL_OR_IYL__C: /*  0x69 */
-			Z80__LD__REG8__REG8(*regLow, *m_c);
+			Z80__LD__REG8__REG8(*regLow, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__LD__IXL_OR_IYL__D: /*  0x6a */
-			Z80__LD__REG8__REG8(*regLow, *m_d);
+			Z80__LD__REG8__REG8(*regLow, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__LD__IXL_OR_IYL__E: /*  0x6b */
-			Z80__LD__REG8__REG8(*regLow, *m_e);
+			Z80__LD__REG8__REG8(*regLow, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__LD__IXL_OR_IYL__IXH_OR_IYH: /*  0x6c */
@@ -4705,75 +4715,75 @@ bool Z80::executeDdOrFdInstruction(Z80::UnsignedWord & reg, const Z80::UnsignedB
 			break;
 
 		case Z80__DD_OR_FD__LD__L__INDIRECT_IX_d_OR_IY_d: /*  0x6e */
-			Z80__LD__REG8__INDIRECT_REG16_D(*m_l, reg, SignedByte(*(instruction + 1)));
+			Z80__LD__REG8__INDIRECT_REG16_D(m_registers.l(), reg, SignedByte(*(instruction + 1)));
 			break;
 
 		case Z80__DD_OR_FD__LD__IXL_OR_IYL__A: /*  0x6f */
-			Z80__LD__REG8__REG8(*regLow, *m_a);
+			Z80__LD__REG8__REG8(*regLow, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__LD__INDIRECT_IX_d_OR_IY_d__B: /*  0x70 */
-			Z80__LD__INDIRECT_REG16_D__REG8(reg, SignedByte(*(instruction + 1)), *m_b);
+			Z80__LD__INDIRECT_REG16_D__REG8(reg, SignedByte(*(instruction + 1)), m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__LD__INDIRECT_IX_d_OR_IY_d__C: /*  0x71 */
-			Z80__LD__INDIRECT_REG16_D__REG8(reg, SignedByte(*(instruction + 1)), *m_c);
+			Z80__LD__INDIRECT_REG16_D__REG8(reg, SignedByte(*(instruction + 1)), m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__LD__INDIRECT_IX_d_OR_IY_d__D: /*  0x72 */
-			Z80__LD__INDIRECT_REG16_D__REG8(reg, SignedByte(*(instruction + 1)), *m_d);
+			Z80__LD__INDIRECT_REG16_D__REG8(reg, SignedByte(*(instruction + 1)), m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__LD__INDIRECT_IX_d_OR_IY_d__E: /*  0x73 */
-			Z80__LD__INDIRECT_REG16_D__REG8(reg, SignedByte(*(instruction + 1)), *m_e);
+			Z80__LD__INDIRECT_REG16_D__REG8(reg, SignedByte(*(instruction + 1)), m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__LD__INDIRECT_IX_d_OR_IY_d__H: /*  0x74 */
-			Z80__LD__INDIRECT_REG16_D__REG8(reg, SignedByte(*(instruction + 1)), *m_h);
+			Z80__LD__INDIRECT_REG16_D__REG8(reg, SignedByte(*(instruction + 1)), m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__LD__INDIRECT_IX_d_OR_IY_d__L: /*  0x75 */
-			Z80__LD__INDIRECT_REG16_D__REG8(reg, SignedByte(*(instruction + 1)), *m_l);
+			Z80__LD__INDIRECT_REG16_D__REG8(reg, SignedByte(*(instruction + 1)), m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__LD__INDIRECT_IX_d_OR_IY_d__A: /*  0x77 */
-			Z80__LD__INDIRECT_REG16_D__REG8(reg, SignedByte(*(instruction + 1)), *m_a);
+			Z80__LD__INDIRECT_REG16_D__REG8(reg, SignedByte(*(instruction + 1)), m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__LD__A__IXH_OR_IYH: /*  0x7c */
-			Z80__LD__REG8__REG8(*m_a, *regHigh);
+			Z80__LD__REG8__REG8(m_registers.a(), *regHigh);
 			break;
 
 		case Z80__DD_OR_FD__LD__A__IXL_OR_IYL: /*  0x7d */
-			Z80__LD__REG8__REG8(*m_a, *regLow);
+			Z80__LD__REG8__REG8(m_registers.a(), *regLow);
 			break;
 
 		case Z80__DD_OR_FD__LD__A__INDIRECT_IX_d_OR_IY_d: /*  0x7e */
-			Z80__LD__REG8__INDIRECT_REG16_D(*m_a, reg, SignedByte(*(instruction + 1)));
+			Z80__LD__REG8__INDIRECT_REG16_D(m_registers.a(), reg, SignedByte(*(instruction + 1)));
 			break;
 
 		case Z80__DD_OR_FD__ADD__A__IXH_OR_IYH: /*  0x84 */
-			Z80__ADD__REG8__REG8(*m_a, *regHigh);
+			Z80__ADD__REG8__REG8(m_registers.a(), *regHigh);
 			break;
 
 		case Z80__DD_OR_FD__ADD__A__IXL_OR_IYL: /*  0x85 */
-			Z80__ADD__REG8__REG8(*m_a, *regLow);
+			Z80__ADD__REG8__REG8(m_registers.a(), *regLow);
 			break;
 
 		case Z80__DD_OR_FD__ADD__A__INDIRECT_IX_d_OR_IY_d: /*  0x86 */
-			Z80__ADD__REG8__INDIRECT_REG16_D(*m_a, reg, SignedByte(*(instruction + 1)));
+			Z80__ADD__REG8__INDIRECT_REG16_D(m_registers.a(), reg, SignedByte(*(instruction + 1)));
 			break;
 
 		case Z80__DD_OR_FD__ADC__A__IXH_OR_IYH: /*  0x8c */
-			Z80__ADC__REG8__REG8(*m_a, *regHigh);
+			Z80__ADC__REG8__REG8(m_registers.a(), *regHigh);
 			break;
 
 		case Z80__DD_OR_FD__ADC__A__IXL_OR_IYL: /*  0x8d */
-			Z80__ADC__REG8__REG8(*m_a, *regLow);
+			Z80__ADC__REG8__REG8(m_registers.a(), *regLow);
 			break;
 
 		case Z80__DD_OR_FD__ADC__A__INDIRECT_IX_d_OR_IY_d: /*  0x8e */
-			Z80__ADC__REG8__INDRIECT_REG16_D(*m_a, reg, SignedByte(*(instruction + 1)));
+			Z80__ADC__REG8__INDRIECT_REG16_D(m_registers.a(), reg, SignedByte(*(instruction + 1)));
 			break;
 
 		case Z80__DD_OR_FD__SUB__IXH_OR_IYH: /*  0x94 */
@@ -4789,15 +4799,15 @@ bool Z80::executeDdOrFdInstruction(Z80::UnsignedWord & reg, const Z80::UnsignedB
 			break;
 
 		case Z80__DD_OR_FD__SBC__A__IXH_OR_IYH: /*  0x9c */
-			Z80__SBC__REG8__REG8(*m_a, *regHigh);
+			Z80__SBC__REG8__REG8(m_registers.a(), *regHigh);
 			break;
 
 		case Z80__DD_OR_FD__SBC__A__IXL_OR_IYL: /*  0x9d */
-			Z80__SBC__REG8__REG8(*m_a, *regLow);
+			Z80__SBC__REG8__REG8(m_registers.a(), *regLow);
 			break;
 
 		case Z80__DD_OR_FD__SBC__A__INDIRECT_IX_d_OR_IY_d: /*  0x9e */
-			Z80__SBC__REG8__INDIRECT_REG16_D(*m_a, reg, SignedByte(*(instruction + 1)));
+			Z80__SBC__REG8__INDIRECT_REG16_D(m_registers.a(), reg, SignedByte(*(instruction + 1)));
 			break;
 
 		case Z80__DD_OR_FD__AND__IXH_OR_IYH: /*  0xa4 */
@@ -4853,17 +4863,17 @@ bool Z80::executeDdOrFdInstruction(Z80::UnsignedWord & reg, const Z80::UnsignedB
 			break;
 
 		case Z80__DD_OR_FD__EX__INDIRECT_SP__IX_OR_IY: /*  0xe3 */
-			Z80__EX__REG16__REG16(m_sp, reg);
+			Z80__EX__REG16__REG16(m_registers.sp, reg);
 			break;
 
 		case Z80__DD_OR_FD__JP__INDIRECT_IX_OR_IY: /*  0xe9 */
-			m_pc = Z80::z80ToHostByteOrder(peekUnsignedWord(reg));
+			m_registers.pc = Z80::Z80::z80ToHostByteOrder(peekUnsignedWord(reg));
 			Z80_USE_JUMP_CYCLE_COST;
 			Z80_DONT_UPDATE_PC;
 			break;
 
 		case Z80__DD_OR_FD__LD__SP__IX_OR_IY: /*  0xf9 */
-			Z80__LD__REG16__REG16(m_sp, reg);
+			Z80__LD__REG16__REG16(m_registers.sp, reg);
 			break;
 
 		case Z80__DD_OR_FD__PREFIX__CB: /*  0xcb */
@@ -5092,7 +5102,7 @@ bool Z80::executeDdOrFdInstruction(Z80::UnsignedWord & reg, const Z80::UnsignedB
 }
 
 
-bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::UnsignedByte * instruction, int * cycles, int * size)
+bool Z80::Z80::executeDdcbOrFdcbInstruction(Z80::Z80::UnsignedWord & reg, const Z80::Z80::UnsignedByte * instruction, int * cycles, int * size)
 {
 	/* NOTE these opcodes are of the form 0xdd 0xcb DD II or 0xfd 0xcb DD II
 	 * where II is the opcode and DD is the offset to use with IX or IY */
@@ -5100,27 +5110,27 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 
 	switch(*(instruction + 1)) {
 		case Z80__DD_OR_FD__CB__RLC__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x00 */
-			Z80__RLC__INDIRECT_REG16_D__REG8(reg, d, *m_b);
+			Z80__RLC__INDIRECT_REG16_D__REG8(reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__RLC__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x01 */
-			Z80__RLC__INDIRECT_REG16_D__REG8(reg, d, *m_c);
+			Z80__RLC__INDIRECT_REG16_D__REG8(reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__RLC__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x02 */
-			Z80__RLC__INDIRECT_REG16_D__REG8(reg, d, *m_d);
+			Z80__RLC__INDIRECT_REG16_D__REG8(reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__RLC__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x03 */
-			Z80__RLC__INDIRECT_REG16_D__REG8(reg, d, *m_e);
+			Z80__RLC__INDIRECT_REG16_D__REG8(reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__RLC__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x04 */
-			Z80__RLC__INDIRECT_REG16_D__REG8(reg, d, *m_h);
+			Z80__RLC__INDIRECT_REG16_D__REG8(reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__RLC__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x05 */
-			Z80__RLC__INDIRECT_REG16_D__REG8(reg, d, *m_l);
+			Z80__RLC__INDIRECT_REG16_D__REG8(reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__RLC__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x06 */
@@ -5128,31 +5138,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__RLC__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x07 */
-			Z80__RLC__INDIRECT_REG16_D__REG8(reg, d, *m_a);
+			Z80__RLC__INDIRECT_REG16_D__REG8(reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__RRC__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x08 */
-			Z80__RRC__INDIRECT_REG16_D__REG8(reg, d, *m_b);
+			Z80__RRC__INDIRECT_REG16_D__REG8(reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__RRC__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x09 */
-			Z80__RRC__INDIRECT_REG16_D__REG8(reg, d, *m_c);
+			Z80__RRC__INDIRECT_REG16_D__REG8(reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__RRC__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x0a */
-			Z80__RRC__INDIRECT_REG16_D__REG8(reg, d, *m_d);
+			Z80__RRC__INDIRECT_REG16_D__REG8(reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__RRC__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x0b */
-			Z80__RRC__INDIRECT_REG16_D__REG8(reg, d, *m_e);
+			Z80__RRC__INDIRECT_REG16_D__REG8(reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__RRC__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x0c */
-			Z80__RRC__INDIRECT_REG16_D__REG8(reg, d, *m_h);
+			Z80__RRC__INDIRECT_REG16_D__REG8(reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__RRC__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x0d */
-			Z80__RRC__INDIRECT_REG16_D__REG8(reg, d, *m_l);
+			Z80__RRC__INDIRECT_REG16_D__REG8(reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__RRC__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x0e */
@@ -5160,31 +5170,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__RRC__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x0f */
-			Z80__RRC__INDIRECT_REG16_D__REG8(reg, d, *m_a);
+			Z80__RRC__INDIRECT_REG16_D__REG8(reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__RL__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x10 */
-			Z80__RL__INDIRECT_REG16_D__REG8(reg, d, *m_b);
+			Z80__RL__INDIRECT_REG16_D__REG8(reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__RL__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x11 */
-			Z80__RL__INDIRECT_REG16_D__REG8(reg, d, *m_c);
+			Z80__RL__INDIRECT_REG16_D__REG8(reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__RL__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x12 */
-			Z80__RL__INDIRECT_REG16_D__REG8(reg, d, *m_d);
+			Z80__RL__INDIRECT_REG16_D__REG8(reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__RL__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x13 */
-			Z80__RL__INDIRECT_REG16_D__REG8(reg, d, *m_e);
+			Z80__RL__INDIRECT_REG16_D__REG8(reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__RL__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x14 */
-			Z80__RL__INDIRECT_REG16_D__REG8(reg, d, *m_h);
+			Z80__RL__INDIRECT_REG16_D__REG8(reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__RL__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x15 */
-			Z80__RL__INDIRECT_REG16_D__REG8(reg, d, *m_l);
+			Z80__RL__INDIRECT_REG16_D__REG8(reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__RL__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x16 */
@@ -5192,31 +5202,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__RL__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x17 */
-			Z80__RL__INDIRECT_REG16_D__REG8(reg, d, *m_a);
+			Z80__RL__INDIRECT_REG16_D__REG8(reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__RR__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x18 */
-			Z80__RR__INDIRECT_REG16_D__REG8(reg, d, *m_b);
+			Z80__RR__INDIRECT_REG16_D__REG8(reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__RR__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x19 */
-			Z80__RR__INDIRECT_REG16_D__REG8(reg, d, *m_c);
+			Z80__RR__INDIRECT_REG16_D__REG8(reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__RR__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x1a */
-			Z80__RR__INDIRECT_REG16_D__REG8(reg, d, *m_d);
+			Z80__RR__INDIRECT_REG16_D__REG8(reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__RR__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x1b */
-			Z80__RR__INDIRECT_REG16_D__REG8(reg, d, *m_e);
+			Z80__RR__INDIRECT_REG16_D__REG8(reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__RR__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x1c */
-			Z80__RR__INDIRECT_REG16_D__REG8(reg, d, *m_h);
+			Z80__RR__INDIRECT_REG16_D__REG8(reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__RR__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x1d */
-			Z80__RR__INDIRECT_REG16_D__REG8(reg, d, *m_l);
+			Z80__RR__INDIRECT_REG16_D__REG8(reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__RR__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x1e */
@@ -5224,31 +5234,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__RR__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x1f */
-			Z80__RR__INDIRECT_REG16_D__REG8(reg, d, *m_a);
+			Z80__RR__INDIRECT_REG16_D__REG8(reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__SLA__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x21 */
-			Z80__SLA__INDIRECT_REG16_D__REG8(reg, d, *m_b);
+			Z80__SLA__INDIRECT_REG16_D__REG8(reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__SLA__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x22 */
-			Z80__SLA__INDIRECT_REG16_D__REG8(reg, d, *m_c);
+			Z80__SLA__INDIRECT_REG16_D__REG8(reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__SLA__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x23 */
-			Z80__SLA__INDIRECT_REG16_D__REG8(reg, d, *m_d);
+			Z80__SLA__INDIRECT_REG16_D__REG8(reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__SLA__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x24 */
-			Z80__SLA__INDIRECT_REG16_D__REG8(reg, d, *m_e);
+			Z80__SLA__INDIRECT_REG16_D__REG8(reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__SLA__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x25 */
-			Z80__SLA__INDIRECT_REG16_D__REG8(reg, d, *m_h);
+			Z80__SLA__INDIRECT_REG16_D__REG8(reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__SLA__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x26 */
-			Z80__SLA__INDIRECT_REG16_D__REG8(reg, d, *m_l);
+			Z80__SLA__INDIRECT_REG16_D__REG8(reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__SLA__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x26 */
@@ -5256,31 +5266,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__SLA__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x27 */
-			Z80__SLA__INDIRECT_REG16_D__REG8(reg, d, *m_a);
+			Z80__SLA__INDIRECT_REG16_D__REG8(reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__SRA__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x28 */
-			Z80__SRA__INDIRECT_REG16_D__REG8(reg, d, *m_b);
+			Z80__SRA__INDIRECT_REG16_D__REG8(reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__SRA__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x29 */
-			Z80__SRA__INDIRECT_REG16_D__REG8(reg, d, *m_c);
+			Z80__SRA__INDIRECT_REG16_D__REG8(reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__SRA__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x2a */
-			Z80__SRA__INDIRECT_REG16_D__REG8(reg, d, *m_d);
+			Z80__SRA__INDIRECT_REG16_D__REG8(reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__SRA__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x2b */
-			Z80__SRA__INDIRECT_REG16_D__REG8(reg, d, *m_e);
+			Z80__SRA__INDIRECT_REG16_D__REG8(reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__SRA__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x2c */
-			Z80__SRA__INDIRECT_REG16_D__REG8(reg, d, *m_h);
+			Z80__SRA__INDIRECT_REG16_D__REG8(reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__SRA__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x2d */
-			Z80__SRA__INDIRECT_REG16_D__REG8(reg, d, *m_l);
+			Z80__SRA__INDIRECT_REG16_D__REG8(reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__SRA__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x2e */
@@ -5288,31 +5298,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__SRA__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x2f */
-			Z80__SRA__INDIRECT_REG16_D__REG8(reg, d, *m_a);
+			Z80__SRA__INDIRECT_REG16_D__REG8(reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__SLL__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x30 */
-			Z80__SLL__INDIRECT_REG16_D__REG8(reg, d, *m_b);
+			Z80__SLL__INDIRECT_REG16_D__REG8(reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__SLL__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x31 */
-			Z80__SLL__INDIRECT_REG16_D__REG8(reg, d, *m_c);
+			Z80__SLL__INDIRECT_REG16_D__REG8(reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__SLL__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x32 */
-			Z80__SLL__INDIRECT_REG16_D__REG8(reg, d, *m_d);
+			Z80__SLL__INDIRECT_REG16_D__REG8(reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__SLL__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x33 */
-			Z80__SLL__INDIRECT_REG16_D__REG8(reg, d, *m_e);
+			Z80__SLL__INDIRECT_REG16_D__REG8(reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__SLL__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x34 */
-			Z80__SLL__INDIRECT_REG16_D__REG8(reg, d, *m_h);
+			Z80__SLL__INDIRECT_REG16_D__REG8(reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__SLL__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x35 */
-			Z80__SLL__INDIRECT_REG16_D__REG8(reg, d, *m_l);
+			Z80__SLL__INDIRECT_REG16_D__REG8(reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__SLL__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x36 */
@@ -5320,31 +5330,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__SLL__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x37 */
-			Z80__SLL__INDIRECT_REG16_D__REG8(reg, d, *m_a);
+			Z80__SLL__INDIRECT_REG16_D__REG8(reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__SRL__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x38 */
-			Z80__SRL__INDIRECT_REG16_D__REG8(reg, d, *m_b);
+			Z80__SRL__INDIRECT_REG16_D__REG8(reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__SRL__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x39 */
-			Z80__SRL__INDIRECT_REG16_D__REG8(reg, d, *m_c);
+			Z80__SRL__INDIRECT_REG16_D__REG8(reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__SRL__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x3a */
-			Z80__SRL__INDIRECT_REG16_D__REG8(reg, d, *m_d);
+			Z80__SRL__INDIRECT_REG16_D__REG8(reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__SRL__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x3b */
-			Z80__SRL__INDIRECT_REG16_D__REG8(reg, d, *m_e);
+			Z80__SRL__INDIRECT_REG16_D__REG8(reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__SRL__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x3c */
-			Z80__SRL__INDIRECT_REG16_D__REG8(reg, d, *m_h);
+			Z80__SRL__INDIRECT_REG16_D__REG8(reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__SRL__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x3d */
-			Z80__SRL__INDIRECT_REG16_D__REG8(reg, d, *m_l);
+			Z80__SRL__INDIRECT_REG16_D__REG8(reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__SRL__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x3e */
@@ -5352,32 +5362,32 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__SRL__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x3f */
-			Z80__SRL__INDIRECT_REG16_D__REG8(reg, d, *m_a);
+			Z80__SRL__INDIRECT_REG16_D__REG8(reg, d, m_registers.a());
 			break;
 
 		/* BIT opcodes */
 		case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x40 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(0, reg, d, *m_b);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x41 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(0, reg, d, *m_c);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x42 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(0, reg, d, *m_d);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x43 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(0, reg, d, *m_e);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x44 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(0, reg, d, *m_h);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x45 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(0, reg, d, *m_l);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x46 */
@@ -5385,31 +5395,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x47 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(0, reg, d, *m_a);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x48 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(1, reg, d, *m_b);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x49 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(1, reg, d, *m_c);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x4a */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(1, reg, d, *m_d);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x4b */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(1, reg, d, *m_e);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x4c */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(1, reg, d, *m_h);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x4d */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(1, reg, d, *m_l);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x4e */
@@ -5417,31 +5427,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x4f */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(1, reg, d, *m_a);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x50 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(2, reg, d, *m_b);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x51 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(2, reg, d, *m_c);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x52 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(2, reg, d, *m_d);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x53 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(2, reg, d, *m_e);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x54 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(2, reg, d, *m_h);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x55 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(2, reg, d, *m_l);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x56 */
@@ -5449,31 +5459,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x57 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(2, reg, d, *m_a);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x58 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(3, reg, d, *m_b);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x59 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(3, reg, d, *m_c);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x5a */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(3, reg, d, *m_d);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x5b */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(3, reg, d, *m_e);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x5c */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(3, reg, d, *m_h);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x5d */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(3, reg, d, *m_l);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x5e */
@@ -5481,31 +5491,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x5f */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(3, reg, d, *m_a);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x60 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(4, reg, d, *m_b);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x61 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(4, reg, d, *m_c);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x62 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(4, reg, d, *m_d);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x63 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(4, reg, d, *m_e);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x64 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(4, reg, d, *m_h);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x65 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(4, reg, d, *m_l);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x66 */
@@ -5513,31 +5523,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x67 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(4, reg, d, *m_a);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x68 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(5, reg, d, *m_b);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x69 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(5, reg, d, *m_c);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x6a */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(5, reg, d, *m_d);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x6b */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(5, reg, d, *m_e);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x6c */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(5, reg, d, *m_h);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x6d */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(5, reg, d, *m_l);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x6e */
@@ -5545,31 +5555,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x6f */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(5, reg, d, *m_a);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x70 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(6, reg, d, *m_b);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x71 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(6, reg, d, *m_c);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x72 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(6, reg, d, *m_d);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x73 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(6, reg, d, *m_e);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x74 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(6, reg, d, *m_h);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x75 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(6, reg, d, *m_l);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x76 */
@@ -5577,31 +5587,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x77 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(6, reg, d, *m_a);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x78 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(7, reg, d, *m_b);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x79 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(7, reg, d, *m_c);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x7a */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(7, reg, d, *m_d);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x7b */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(7, reg, d, *m_e);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x7c */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(7, reg, d, *m_h);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x7d */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(7, reg, d, *m_l);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x7e */
@@ -5609,32 +5619,32 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x7f */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(7, reg, d, *m_a);
+			Z80__BIT__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.a());
 			break;
 
 		/* RES opcodes */
 		case Z80__DD_OR_FD__CB__RES__0__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x80 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(0, reg, d, *m_b);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__0__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x81 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(0, reg, d, *m_c);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__0__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x82 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(0, reg, d, *m_d);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__0__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x83 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(0, reg, d, *m_e);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__0__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x84 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(0, reg, d, *m_h);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__0__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x85 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(0, reg, d, *m_l);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__0__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x86 */
@@ -5642,31 +5652,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__0__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x87 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(0, reg, d, *m_a);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__1__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x88 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(1, reg, d, *m_b);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__1__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x89 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(1, reg, d, *m_c);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__1__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x8a */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(1, reg, d, *m_d);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__1__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x8b */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(1, reg, d, *m_e);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__1__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x8c */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(1, reg, d, *m_h);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__1__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x8d */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(1, reg, d, *m_l);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__1__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x8e */
@@ -5674,31 +5684,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__1__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x8f */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(1, reg, d, *m_a);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__2__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x90 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(2, reg, d, *m_b);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__2__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x91 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(2, reg, d, *m_c);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__2__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x92 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(2, reg, d, *m_d);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__2__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x93 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(2, reg, d, *m_e);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__2__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x94 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(2, reg, d, *m_h);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__2__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x95 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(2, reg, d, *m_l);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__2__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x96 */
@@ -5706,31 +5716,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__2__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x97 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(2, reg, d, *m_a);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__3__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x98 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(3, reg, d, *m_b);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__3__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x99 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(3, reg, d, *m_c);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__3__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x9a */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(3, reg, d, *m_d);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__3__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x9b */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(3, reg, d, *m_e);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__3__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x9c */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(3, reg, d, *m_h);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__3__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x9d */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(3, reg, d, *m_l);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__3__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x9e */
@@ -5738,31 +5748,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__3__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x9f */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(3, reg, d, *m_a);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__4__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0xa0 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(4, reg, d, *m_b);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__4__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0xa1 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(4, reg, d, *m_c);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__4__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0xa2 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(4, reg, d, *m_d);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__4__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0xa3 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(4, reg, d, *m_e);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__4__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0xa4 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(4, reg, d, *m_h);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__4__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0xa5 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(4, reg, d, *m_l);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__4__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0xa6 */
@@ -5770,31 +5780,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__4__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0xa7 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(4, reg, d, *m_a);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__5__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0xa8 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(5, reg, d, *m_b);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__5__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0xa9 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(5, reg, d, *m_c);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__5__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0xaa */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(5, reg, d, *m_d);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__5__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0xab */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(5, reg, d, *m_e);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__5__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0xac */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(5, reg, d, *m_h);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__5__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0xad */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(5, reg, d, *m_l);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__5__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0xae */
@@ -5802,31 +5812,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__5__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0xaf */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(5, reg, d, *m_a);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__6__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0xb0 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(6, reg, d, *m_b);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__6__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0xb1 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(6, reg, d, *m_c);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__6__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0xb2 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(6, reg, d, *m_d);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__6__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0xb3 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(6, reg, d, *m_e);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__6__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0xb4 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(6, reg, d, *m_h);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__6__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0xb5 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(6, reg, d, *m_l);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__6__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0xb6 */
@@ -5834,31 +5844,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__6__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0xb7 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(6, reg, d, *m_a);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__7__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0xb8 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(7, reg, d, *m_b);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__7__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0xb9 */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(7, reg, d, *m_c);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__7__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0xba */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(7, reg, d, *m_d);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__7__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0xbb */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(7, reg, d, *m_e);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__7__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0xbc */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(7, reg, d, *m_h);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__7__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0xbd */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(7, reg, d, *m_l);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__7__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0xbe */
@@ -5866,32 +5876,32 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__RES__7__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0xbf */
-			Z80__RES__N__INDIRECT_REG16_D__REG8(7, reg, d, *m_a);
+			Z80__RES__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.a());
 			break;
 
 		/* SET opcodes */
 		case Z80__DD_OR_FD__CB__SET__0__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0xc0 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(0, reg, d, *m_b);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__0__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0xc1 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(0, reg, d, *m_c);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__0__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0xc2 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(0, reg, d, *m_d);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__0__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0xc3 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(0, reg, d, *m_e);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__0__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0xc4 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(0, reg, d, *m_h);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__0__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0xc5 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(0, reg, d, *m_l);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__0__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0xc6 */
@@ -5899,31 +5909,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__0__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0xc7 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(0, reg, d, *m_a);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__1__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0xc8 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(1, reg, d, *m_b);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__1__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0xc9 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(1, reg, d, *m_c);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__1__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0xca */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(1, reg, d, *m_d);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__1__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0xcb */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(1, reg, d, *m_e);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__1__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0xcc */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(1, reg, d, *m_h);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__1__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0xcd */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(1, reg, d, *m_l);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__1__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0xce */
@@ -5931,31 +5941,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__1__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0xcf */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(1, reg, d, *m_a);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__2__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0xd0 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(2, reg, d, *m_b);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__2__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0xd1 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(2, reg, d, *m_c);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__2__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0xd2 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(2, reg, d, *m_d);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__2__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0xd3 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(2, reg, d, *m_e);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__2__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0xd4 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(2, reg, d, *m_h);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__2__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0xd5 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(2, reg, d, *m_l);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__2__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0xd6 */
@@ -5963,31 +5973,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__2__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0xd7 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(2, reg, d, *m_a);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__3__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0xd8 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(3, reg, d, *m_b);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__3__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0xd9 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(3, reg, d, *m_c);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__3__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0xda */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(3, reg, d, *m_d);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__3__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0xdb */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(3, reg, d, *m_e);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__3__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0xdc */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(3, reg, d, *m_h);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__3__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0xdd */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(3, reg, d, *m_l);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__3__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0xde */
@@ -5995,31 +6005,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__3__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0xdf */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(3, reg, d, *m_a);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__4__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0xe0 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(4, reg, d, *m_b);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__4__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0xe1 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(4, reg, d, *m_c);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__4__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0xe2 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(4, reg, d, *m_d);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__4__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0xe3 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(4, reg, d, *m_e);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__4__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0xe4 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(4, reg, d, *m_h);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__4__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0xe5 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(4, reg, d, *m_l);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__4__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0xe6 */
@@ -6027,31 +6037,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__4__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0xe7 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(4, reg, d, *m_a);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__5__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0xe8 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(5, reg, d, *m_b);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__5__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0xe9 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(5, reg, d, *m_c);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__5__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0xea */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(5, reg, d, *m_d);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__5__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0xeb */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(5, reg, d, *m_e);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__5__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0xec */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(5, reg, d, *m_h);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__5__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0xed */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(5, reg, d, *m_l);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__5__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0xee */
@@ -6059,31 +6069,31 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__5__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0xef */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(5, reg, d, *m_a);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__6__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0xf0 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(6, reg, d, *m_b);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__6__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0xf1 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(6, reg, d, *m_c);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__6__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0xf2 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(6, reg, d, *m_d);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__6__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0xf3 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(6, reg, d, *m_e);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__6__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0xf4 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(6, reg, d, *m_h);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.h());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__6__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0xf5 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(6, reg, d, *m_l);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.l());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__6__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0xf6 */
@@ -6091,27 +6101,27 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__6__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0xf7 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(6, reg, d, *m_a);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.a());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__7__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0xf8 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(7, reg, d, *m_b);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.b());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__7__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0xf9 */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(7, reg, d, *m_c);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.c());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__7__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0xfa */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(7, reg, d, *m_d);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.d());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__7__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0xfb */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(7, reg, d, *m_e);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.e());
 			break;
 
 		case Z80__DD_OR_FD__CB__SET__7__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0xfc */
-			Z80__SET__N__INDIRECT_REG16_D__REG8(7, reg, d, *m_h);
+			Z80__SET__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.h());
 			break;
 	}
 
@@ -6126,117 +6136,162 @@ bool Z80::executeDdcbOrFdcbInstruction(Z80::UnsignedWord & reg, const Z80::Unsig
 	return true;
 }
 
-Z80::UnsignedWord Z80::registerValue(Register16 reg) const
+Z80::Z80::UnsignedWord Z80::Z80::registerValue(Register16 reg) const
 {
 	switch (reg) {
-		case Register16::AF: return m_af;
-		case Register16::BC: return m_bc;
-		case Register16::DE: return m_de;
-		case Register16::HL: return m_hl;
-		case Register16::AFShadow: return m_afshadow;
-		case Register16::BCShadow: return m_bcshadow;
-		case Register16::DEShadow: return m_deshadow;
-		case Register16::HLShadow: return m_hlshadow;
-		case Register16::IX: return m_ix;
-		case Register16::IY: return m_iy;
-		case Register16::SP: return m_sp;
-		case Register16::PC: return m_pc;
+        case Register16::AF: return m_registers.af;
+        case Register16::BC: return m_registers.bc;
+        case Register16::DE: return m_registers.de;
+        case Register16::HL: return m_registers.hl;
+        case Register16::AFShadow: return m_registers.afShadow;
+        case Register16::BCShadow: return m_registers.bcShadow;
+        case Register16::DEShadow: return m_registers.deShadow;
+        case Register16::HLShadow: return m_registers.hlShadow;
+        case Register16::IX: return m_registers.ix;
+        case Register16::IY: return m_registers.iy;
+        case Register16::SP: return m_registers.sp;
+        case Register16::PC: return m_registers.pc;
 	}
 
 	return 0;
 }
 
-Z80::UnsignedByte Z80::registerValue(Register8 reg) const
+Z80::Z80::UnsignedWord Z80::Z80::registerValueZ80(Register16 reg) const
 {
 	switch (reg) {
-		case Register8::A: return *m_a;
-		case Register8::F: return *m_f;
-		case Register8::B: return *m_b;
-		case Register8::C: return *m_c;
-		case Register8::D: return *m_d;
-		case Register8::E: return *m_e;
-		case Register8::H: return *m_h;
-		case Register8::L: return *m_l;
-		case Register8::IXH: return *m_ixh;
-		case Register8::IXL: return *m_ixl;
-		case Register8::IYH: return *m_iyh;
-		case Register8::IYL: return *m_iyl;
-
-		case Register8::AShadow: return *m_ashadow;
-		case Register8::FShadow: return *m_fshadow;
-		case Register8::BShadow: return *m_bshadow;
-		case Register8::CShadow: return *m_cshadow;
-		case Register8::DShadow: return *m_dshadow;
-		case Register8::EShadow: return *m_eshadow;
-		case Register8::HShadow: return *m_hshadow;
-		case Register8::LShadow: return *m_lshadow;
-
-		case Register8::I: return m_i;
-		case Register8::R: return m_r;
+        case Register16::AF: return hostToZ80ByteOrder(m_registers.af);
+        case Register16::BC: return hostToZ80ByteOrder(m_registers.bc);
+        case Register16::DE: return hostToZ80ByteOrder(m_registers.de);
+        case Register16::HL: return hostToZ80ByteOrder(m_registers.hl);
+        case Register16::AFShadow: return hostToZ80ByteOrder(m_registers.afShadow);
+        case Register16::BCShadow: return hostToZ80ByteOrder(m_registers.bcShadow);
+        case Register16::DEShadow: return hostToZ80ByteOrder(m_registers.deShadow);
+        case Register16::HLShadow: return hostToZ80ByteOrder(m_registers.hlShadow);
+        case Register16::IX: return hostToZ80ByteOrder(m_registers.ix);
+        case Register16::IY: return hostToZ80ByteOrder(m_registers.iy);
+        case Register16::SP: return hostToZ80ByteOrder(m_registers.sp);
+        case Register16::PC: return hostToZ80ByteOrder(m_registers.pc);
 	}
 
 	return 0;
 }
 
-void Z80::setRegisterValue( Register16 reg, Z80::UnsignedWord value)
+Z80::Z80::UnsignedByte Z80::Z80::registerValue(Register8 reg) const
 {
 	switch (reg) {
-		case Register16::AF: m_af = value; break;
-		case Register16::BC: m_bc = value; break;
-		case Register16::DE: m_de = value; break;
-		case Register16::HL: m_hl = value; break;
-		case Register16::AFShadow: m_afshadow = value; break;
-		case Register16::BCShadow: m_bcshadow = value; break;
-		case Register16::DEShadow: m_deshadow = value; break;
-		case Register16::HLShadow: m_hlshadow = value; break;
-		case Register16::IX: m_ix = value; break;
-		case Register16::IY: m_iy = value; break;
-		case Register16::SP: m_sp = value; break;
-		case Register16::PC: m_pc = value; break;
+		case Register8::A: return m_registers.a();
+		case Register8::F: return m_registers.f();
+		case Register8::B: return m_registers.b();
+		case Register8::C: return m_registers.c();
+		case Register8::D: return m_registers.d();
+		case Register8::E: return m_registers.e();
+		case Register8::H: return m_registers.h();
+		case Register8::L: return m_registers.l();
+		case Register8::IXH: return m_registers.ixh();
+		case Register8::IXL: return m_registers.ixl();
+		case Register8::IYH: return m_registers.iyh();
+		case Register8::IYL: return m_registers.iyl();
+
+		case Register8::AShadow: return m_registers.aShadow();
+		case Register8::FShadow: return m_registers.fShadow();
+		case Register8::BShadow: return m_registers.bShadow();
+		case Register8::CShadow: return m_registers.cShadow();
+		case Register8::DShadow: return m_registers.dShadow();
+		case Register8::EShadow: return m_registers.eShadow();
+		case Register8::HShadow: return m_registers.hShadow();
+		case Register8::LShadow: return m_registers.lShadow();
+
+		case Register8::I: return m_registers.i;
+		case Register8::R: return m_registers.r;
+	}
+
+	return 0;
+}
+
+void Z80::Z80::setRegisterValue(Register16 reg, Z80::Z80::UnsignedWord value)
+{
+	switch (reg) {
+        case Register16::AF: m_registers.af = value; break;
+        case Register16::BC: m_registers.bc = value; break;
+        case Register16::DE: m_registers.de = value; break;
+        case Register16::HL: m_registers.hl = value; break;
+        case Register16::AFShadow: m_registers.afShadow = value; break;
+        case Register16::BCShadow: m_registers.bcShadow = value; break;
+        case Register16::DEShadow: m_registers.deShadow = value; break;
+        case Register16::HLShadow: m_registers.hlShadow = value; break;
+        case Register16::IX: m_registers.ix = value; break;
+        case Register16::IY: m_registers.iy = value; break;
+        case Register16::SP: m_registers.sp = value; break;
+        case Register16::PC: m_registers.pc = value; break;
 	}
 }
 
-void Z80::setRegisterValue(Register8 reg, Z80::UnsignedByte value)
+void Z80::Z80::setRegisterValueZ80(Register16 reg, Z80::Z80::UnsignedWord value)
 {
 	switch (reg) {
-		case Register8::A: *m_a = value; break;
-		case Register8::F: *m_f = value; break;
-		case Register8::B: *m_b = value; break;
-		case Register8::C: *m_c = value; break;
-		case Register8::D: *m_d = value; break;
-		case Register8::E: *m_e = value; break;
-		case Register8::H: *m_h = value; break;
-		case Register8::L: *m_l = value; break;
-		case Register8::IXH: *m_ixh = value; break;
-		case Register8::IXL: *m_ixl = value; break;
-		case Register8::IYH: *m_iyh = value; break;
-		case Register8::IYL: *m_iyl = value; break;
-		case Register8::AShadow: *m_ashadow = value; break;
-		case Register8::FShadow: *m_fshadow = value; break;
-		case Register8::BShadow: *m_bshadow = value; break;
-		case Register8::CShadow: *m_cshadow = value; break;
-		case Register8::DShadow: *m_dshadow = value; break;
-		case Register8::EShadow: *m_eshadow = value; break;
-		case Register8::HShadow: *m_hshadow = value; break;
-		case Register8::LShadow: *m_lshadow = value; break;
-		case Register8::I: m_i = value; break;
-		case Register8::R: m_r = value; break;
+        case Register16::AF: m_registers.af = z80ToHostByteOrder(value); break;
+        case Register16::BC: m_registers.bc = z80ToHostByteOrder(value); break;
+        case Register16::DE: m_registers.de = z80ToHostByteOrder(value); break;
+        case Register16::HL: m_registers.hl = z80ToHostByteOrder(value); break;
+        case Register16::AFShadow: m_registers.afShadow = z80ToHostByteOrder(value); break;
+        case Register16::BCShadow: m_registers.bcShadow = z80ToHostByteOrder(value); break;
+        case Register16::DEShadow: m_registers.deShadow = z80ToHostByteOrder(value); break;
+        case Register16::HLShadow: m_registers.hlShadow = z80ToHostByteOrder(value); break;
+        case Register16::IX: m_registers.ix = z80ToHostByteOrder(value); break;
+        case Register16::IY: m_registers.iy = z80ToHostByteOrder(value); break;
+        case Register16::SP: m_registers.sp = z80ToHostByteOrder(value); break;
+        case Register16::PC: m_registers.pc = z80ToHostByteOrder(value); break;
 	}
 }
 
-Z80::UnsignedWord Z80::peekUnsignedWord(int addr) const
+void Z80::Z80::setRegisterValue(Register8 reg, Z80::Z80::UnsignedByte value)
 {
+	switch (reg) {
+		case Register8::A: m_registers.a() = value; break;
+		case Register8::F: m_registers.f() = value; break;
+		case Register8::B: m_registers.b() = value; break;
+		case Register8::C: m_registers.c() = value; break;
+		case Register8::D: m_registers.d() = value; break;
+		case Register8::E: m_registers.e() = value; break;
+		case Register8::H: m_registers.h() = value; break;
+		case Register8::L: m_registers.l() = value; break;
+		case Register8::IXH: m_registers.ixh() = value; break;
+		case Register8::IXL: m_registers.ixl() = value; break;
+		case Register8::IYH: m_registers.iyh() = value; break;
+		case Register8::IYL: m_registers.iyl() = value; break;
+		case Register8::AShadow: m_registers.aShadow() = value; break;
+		case Register8::FShadow: m_registers.fShadow() = value; break;
+		case Register8::BShadow: m_registers.bShadow() = value; break;
+		case Register8::CShadow: m_registers.cShadow() = value; break;
+		case Register8::DShadow: m_registers.dShadow() = value; break;
+		case Register8::EShadow: m_registers.eShadow() = value; break;
+		case Register8::HShadow: m_registers.hShadow() = value; break;
+		case Register8::LShadow: m_registers.lShadow() = value; break;
+		case Register8::I: m_registers.i = value; break;
+		case Register8::R: m_registers.r = value; break;
+	}
+}
+
+Z80::Z80::UnsignedWord Z80::Z80::peekUnsignedWord(int addr) const
+{
+    // TODO make an assertion instead
 	if (addr < 0 || addr >= (m_ramSize - 1)) {
 	    return 0;
 	}
 
-	switch (hostByteOrder()) {
-		case LittleEndian:
-			return (m_ram[addr] << 8) | m_ram[addr + 1];
+	if (HostByteOrder == Z80ByteOrder) {
+        return (m_ram[addr] << 8) | m_ram[addr + 1];
+    }
 
-		case BigEndian:
-			return m_ram[addr + 1] << 8 | m_ram[addr];
+    return m_ram[addr + 1] << 8 | m_ram[addr];
+}
+
+Z80::Z80::UnsignedWord Z80::Z80::peekUnsignedWordZ80(int addr) const
+{
+    // TODO make an assertion instead
+	if (addr < 0 || addr >= (m_ramSize - 1)) {
+	    return 0;
 	}
 
-	return 0;
+    return (m_ram[addr] << 8) | m_ram[addr + 1];
 }

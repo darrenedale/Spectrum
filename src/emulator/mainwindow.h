@@ -4,7 +4,7 @@
 #include <memory>
 #include <QMainWindow>
 
-#include "../spectrum.h"
+#include "spectrum.h"
 #include "../qt/ui/qspectrumdisplay.h"
 
 class QAction;
@@ -27,7 +27,7 @@ namespace Spectrum
          explicit MainWindow(QWidget * = nullptr);
          ~MainWindow() override;
 
-        void saveSnapshot( const QString & fileName ) const;
+        void saveSnapshot(const QString & fileName) const;
 
         inline Spectrum & spectrum()
         {

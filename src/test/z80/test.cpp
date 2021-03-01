@@ -3,28 +3,27 @@
 //
 
 #include <cstring>
-#include <cstdio>
-#include <cctype>
 
 #include "test.h"
 
-using namespace Spectrum::Test::Z80;
+using TestClass = Test::Z80::Test;
 
-Test::Test(std::string description, std::optional<InitialState> initialState)
-: m_description(std::move(description))
+TestClass::Test(std::string description, std::size_t tStates, std::optional<State> initialState)
+: m_description(std::move(description)),
+  m_tStates(tStates)
 {
     if (initialState) {
         m_initialState = std::move(*initialState);
     }
 }
 
-Test::Test(const Test & other) = default;
-Test::Test(Test && other) noexcept = default;
-Test & Test::operator=(const Test & other) = default;
-Test & Test::operator=(Test && other) noexcept = default;
-Test::~Test() = default;
+TestClass::Test(const TestClass & other) = default;
+TestClass::Test(TestClass && other) noexcept = default;
+TestClass & TestClass::operator=(const TestClass & other) = default;
+TestClass & TestClass::operator=(TestClass && other) noexcept = default;
+TestClass::~Test() = default;
 
-void Test::setupZ80(::Z80 & cpu)
+void TestClass::setupZ80(::Z80::Z80 & cpu) const
 {
     cpu.reset();
     cpu.setAf(m_initialState.af);
@@ -47,7 +46,7 @@ void Test::setupZ80(::Z80 & cpu)
     cpu.setIff2(m_initialState.iff2);
 }
 
-void Test::setupMemory(UnsignedByte * memory)
+void TestClass::setupMemory(UnsignedByte * memory) const
 {
     for (const auto & block : m_initialState.memory) {
         std::memcpy(memory + block.address, block.data.data(), block.data.size());

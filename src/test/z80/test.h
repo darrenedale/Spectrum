@@ -11,49 +11,15 @@
 
 #include "../../z80/z80.h"
 #include "memory.h"
+#include "memoryblock.h"
+#include "state.h"
 
-namespace Spectrum::Test::Z80
+namespace Test::Z80
 {
-    using UnsignedWord = ::Z80::UnsignedWord;
-    using UnsignedByte = ::Z80::UnsignedByte;
-
-    struct MemoryBlock
-    {
-        UnsignedWord address;
-        std::vector<UnsignedByte> data;
-    };
-
-    struct InitialState
-    {
-        UnsignedWord af;
-        UnsignedWord bc;
-        UnsignedWord de;
-        UnsignedWord hl;
-        UnsignedWord afShadow;
-        UnsignedWord bcShadow;
-        UnsignedWord deShadow;
-        UnsignedWord hlShadow;
-        UnsignedWord ix;
-        UnsignedWord iy;
-        UnsignedWord sp;
-        UnsignedWord pc;
-        UnsignedWord memptr;
-
-        UnsignedByte i;
-        UnsignedByte r;
-        bool iff1;
-        bool iff2;
-        bool im;
-        bool halted;
-        std::size_t tStates;
-
-        std::vector<MemoryBlock> memory;
-    };
-
     class Test
     {
     public:
-        explicit Test(std::string description, std::optional<InitialState> initialState = {});
+        explicit Test(std::string description, std::size_t tStates, std::optional<State> initialState = {});
         Test(const Test & other);
         Test(Test && other) noexcept;
         Test & operator=(const Test & other);
@@ -70,12 +36,18 @@ namespace Spectrum::Test::Z80
             return m_description;
         }
 
-        void setupZ80(::Z80 & cpu);
-        void setupMemory(UnsignedByte * memory);
+        void setupZ80(::Z80::Z80 & cpu) const;
+        void setupMemory(UnsignedByte * memory) const;
+
+        std::size_t tStates() const
+        {
+            return m_tStates;
+        }
 
     private:
         std::string m_description;
-        InitialState m_initialState;
+        State m_initialState;
+        std::size_t m_tStates;
     };
 }
 

@@ -7,7 +7,7 @@
 
 #include "../../z80/z80.h"
 
-namespace Spectrum::Test::Z80
+namespace Test::Z80
 {
     using Memory = ::Z80::UnsignedByte[65536];
 }

@@ -7,7 +7,7 @@
 
 #include <QComboBox>
 
-#include "../../spectrumdisplaydevice.h"
+#include "../../emulator/spectrumdisplaydevice.h"
 
 namespace ScreenView
 {

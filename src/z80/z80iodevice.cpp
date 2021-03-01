@@ -1,9 +1,9 @@
 #include "z80iodevice.h"
 
-Z80IODevice::Z80IODevice( void )
-:	m_cpu(0)
+using namespace Z80;
+
+Z80IODevice::Z80IODevice()
+:	m_cpu(nullptr)
 {}
 
-
-Z80IODevice::~Z80IODevice( void )
-{}
+Z80IODevice::~Z80IODevice() = default;

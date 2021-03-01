@@ -5,7 +5,7 @@
 
 #include <QRgb>
 
-#include "../../spectrumdisplaydevice.h"
+#include "../../emulator/spectrumdisplaydevice.h"
 
 namespace Spectrum
 {
