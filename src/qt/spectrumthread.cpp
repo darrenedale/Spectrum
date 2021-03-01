@@ -4,7 +4,7 @@
 #include <QApplication>
 #include <QDebug>
 
-#include "../spectrum.h"
+#include "../emulator/spectrum.h"
 
 namespace
 {

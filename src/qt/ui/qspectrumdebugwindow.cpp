@@ -7,7 +7,7 @@
 #include <QLabel>
 #include <QSettings>
 
-#include "../../spectrum.h"
+#include "../../emulator/spectrum.h"
 #include "../../z80/z80.h"
 
 using namespace Spectrum;
