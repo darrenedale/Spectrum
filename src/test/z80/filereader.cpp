@@ -131,7 +131,7 @@ std::optional<std::string> FileReader::readLine()
 
 }
 
-std::optional<std::string> FileReader::readDescription()
+std::optional<std::string> FileReader::readName()
 {
     return readLine();
 }

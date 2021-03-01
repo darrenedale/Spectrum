@@ -19,21 +19,16 @@ namespace Test::Z80
     class Test
     {
     public:
-        explicit Test(std::string description, std::size_t tStates, std::optional<State> initialState = {});
+        explicit Test(std::string name, std::size_t tStates, std::optional<State> initialState = {});
         Test(const Test & other);
         Test(Test && other) noexcept;
         Test & operator=(const Test & other);
         Test & operator=(Test && other) noexcept;
         virtual ~Test();
 
-        inline const std::string & description() const
+        inline const std::string & name() const
         {
-            return m_description;
-        }
-
-        inline std::string description()
-        {
-            return m_description;
+            return m_name;
         }
 
         void setupZ80(::Z80::Z80 & cpu) const;
@@ -45,7 +40,7 @@ namespace Test::Z80
         }
 
     private:
-        std::string m_description;
+        std::string m_name;
         State m_initialState;
         std::size_t m_tStates;
     };

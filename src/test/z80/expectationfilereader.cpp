@@ -24,11 +24,11 @@ std::optional<Expectation> ExpectationFileReader::nextExpectation()
     }
 
     skipEmptyLines();
-    auto description = readDescription();
+    auto name = readName();
 
-    if (!description) {
-        // failed to read description
-        std::cerr << "Failed reading description for expectation\n";
+    if (!name) {
+        // failed to read name
+        std::cerr << "Failed reading name for expectation\n";
         return {};
     }
 
@@ -42,14 +42,14 @@ std::optional<Expectation> ExpectationFileReader::nextExpectation()
     State state;
 
     if (!readRegisterPairs(state)) {
-        std::cerr << "Failed reading register pairs for expectation " << *description << "\n";
+        std::cerr << "Failed reading register pairs for expectation " << *name << "\n";
         return {};
     }
 
     std::size_t tStates;
 
     if (!readRegistersFlagsTStates(state, tStates)) {
-        std::cerr << "Failed reading registers, flags and t-states for expectation " << *description << "\n";
+        std::cerr << "Failed reading registers, flags and t-states for expectation " << *name << "\n";
         return {};
     }
 
@@ -65,7 +65,7 @@ std::optional<Expectation> ExpectationFileReader::nextExpectation()
     }
 
     skipEmptyLines();
-    return Expectation(std::move(*description), tStates, std::move(*events), std::move(state));
+    return Expectation(std::move(*name), tStates, std::move(*events), std::move(state));
 }
 
 std::optional<std::vector<Event>> ExpectationFileReader::readEvents()

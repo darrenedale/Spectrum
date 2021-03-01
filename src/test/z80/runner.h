@@ -34,12 +34,39 @@ namespace Test::Z80
             return *m_cpu;
         }
 
-        bool runTest(const std::string & description);
-        void runNextTest();
-        void runAllTests();
+        /**
+         * Run a single named test.
+         *
+         * @param name The name of the test to run.
+         * @return Whether or not the test was found and run.
+         */
+        bool runTest(const std::string & name);
+
+        /**
+         * @return Count of failures encountered.
+         */
+        int runNextTest();
+
+        /**
+         * @return Count of tests executed, count of failures encountered
+         */
+        std::tuple<int, int> runAllTests();
+
+        /**
+         * Run a subset of named tests.
+         *
+         * @param tests The names of the tests to run.
+         *
+         * @return The count of tests executed, the count of failures encountered.
+         */
+        std::tuple<int, int> runTests(const std::vector<std::string> & tests);
 
     protected:
-        void runTest(const TestBattery::TestCase & testCase);
+        /**
+         * @param testCase
+         * @return Count of failures encountered.
+         */
+        int runTest(const TestBattery::TestCase & testCase);
         void outputZ80State(std::ostream & stream = std::cout) const;
 
     private:
@@ -47,6 +74,7 @@ namespace Test::Z80
         bool m_borrowedCpu;
         bool m_testsRead;
         TestBattery m_tests;
+
     };
 }
 

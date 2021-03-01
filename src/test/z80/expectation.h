@@ -8,6 +8,7 @@
 #include <optional>
 #include <vector>
 #include <string>
+#include <any>
 
 #include "../../z80/z80.h"
 #include "memory.h"
@@ -20,46 +21,50 @@ namespace Test::Z80
     using UnsignedWord = ::Z80::UnsignedWord;
     using UnsignedByte = ::Z80::UnsignedByte;
 
-    enum class ExpectationFailure
-    {
-        AfIncorrect,
-        BcIncorrect,
-        DeIncorrect,
-        HlIncorrect,
-        IxIncorrect,
-        IyIncorrect,
-        AfShadowIncorrect,
-        BcShadowIncorrect,
-        DeShadowIncorrect,
-        HlShadowIncorrect,
-        IIncorrect,
-        RIncorrect,
-        Iff1Incorrect,
-        Iff2Incorrect,
-        InterruptModeIncorrect,
-        MemoryIncorrect,
-    };
-
     class Expectation
     {
     public:
-        using Failures = std::vector<ExpectationFailure>;
+        enum class FailureType
+        {
+            AfIncorrect,
+            BcIncorrect,
+            DeIncorrect,
+            HlIncorrect,
+            IxIncorrect,
+            IyIncorrect,
+            AfShadowIncorrect,
+            BcShadowIncorrect,
+            DeShadowIncorrect,
+            HlShadowIncorrect,
+            IIncorrect,
+            RIncorrect,
+            Iff1Incorrect,
+            Iff2Incorrect,
+            InterruptModeIncorrect,
+            MemoryIncorrect,
+            TStatesIncorrect,
+        };
 
-        Expectation(std::string description, std::size_t tStates, Events events, State expectedState);
+        struct Failure
+        {
+            FailureType type;
+            std::any expected;
+            std::any actual;
+            std::string message;
+        };
+
+        using Failures = std::vector<Failure>;
+
+        Expectation(std::string name, std::size_t tStates, Events events, State expectedState);
         Expectation(const Expectation & other);
         Expectation(Expectation && other) noexcept;
         Expectation & operator=(const Expectation & other);
         Expectation & operator=(Expectation && other) noexcept;
         virtual ~Expectation();
 
-        inline const std::string & description() const
+        inline const std::string & name() const
         {
-            return m_description;
-        }
-
-        inline std::string description()
-        {
-            return m_description;
+            return m_name;
         }
 
         std::size_t tStates() const
@@ -73,9 +78,10 @@ namespace Test::Z80
         Failures checkInterruptFlipFlops(::Z80::Z80 & cpu) const;
         Failures checkInterruptMode(::Z80::Z80 & cpu) const;
         Failures checkMemory(::Z80::Z80 & cpu) const;
+        Failures checkTStates(const std::size_t & tStates) const;
 
     private:
-        std::string m_description;
+        std::string m_name;
         Events m_events;
         State m_expectedState;
         std::size_t m_tStates;

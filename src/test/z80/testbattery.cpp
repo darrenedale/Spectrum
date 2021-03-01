@@ -25,7 +25,7 @@ bool Test::Z80::TestBattery::readTests()
     std::optional<Test> test;
 
     while (!testReader.eof() && (test = testReader.nextTest())) {
-        auto [it, insert] = cases.insert_or_assign(test->description(), TestCase({*test, {}}));
+        auto [it, insert] = cases.insert_or_assign(test->name(), TestCase({*test, {}}));
 
         if (insert) {
             std::cerr << "";
@@ -45,7 +45,7 @@ bool Test::Z80::TestBattery::readTests()
     std::optional<Expectation> expectation;
 
     while (!expectationReader.eof() && (expectation = expectationReader.nextExpectation())) {
-        auto testCase = cases.find(expectation->description());
+        auto testCase = cases.find(expectation->name());
         if (cases.end() == testCase) {
             // found expectation for test that wasn't read
             continue;

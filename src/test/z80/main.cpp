@@ -30,15 +30,15 @@ int main(int argc, char ** argv)
     Runner testRunner(argv[1]);
 
     if (3 <= argc) {
+        std::vector<std::string> testNames;
         int argIdx = 2;
 
         while (argIdx < argc) {
-            if (!testRunner.runTest(argv[argIdx])) {
-                std::cerr << "Test '" << argv[argIdx] << "' not found.\n";
-            }
-
+            testNames.emplace_back(argv[argIdx]);
             ++argIdx;
         }
+
+        testRunner.runTests(testNames);
     } else {
         testRunner.runAllTests();
     }

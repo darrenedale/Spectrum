@@ -25,44 +25,44 @@ std::optional<TestClass> TestFileReader::nextTest()
     }
 
     skipEmptyLines();
-    auto description = readDescription();
+    auto name = readName();
 
-    if (!description) {
-        // failed to read description
-        std::cerr << "Failed reading description for test\n";
+    if (!name) {
+        // failed to read name
+        std::cerr << "Failed reading name for test\n";
         return {};
     }
 
     State state;
 
     if (!readRegisterPairs(state)) {
-        std::cerr << "Failed reading register pairs for test " << *description << "\n";
+        std::cerr << "Failed reading register pairs for test " << *name << "\n";
         return {};
     }
 
     std::size_t tStates;
 
     if (!readRegistersFlagsTStates(state, tStates)) {
-        std::cerr << "Failed reading registers, flags and t-states for test " << *description << "\n";
+        std::cerr << "Failed reading registers, flags and t-states for test " << *name << "\n";
         return {};
     }
 
     auto memory = readMemoryBlocks();
 
     if (!memory) {
-        std::cerr << "Failed reading memory block for test " << *description << "\n";
+        std::cerr << "Failed reading memory block for test " << *name << "\n";
         return {};
     }
 
     state.memory = std::move(*memory);
 
     if (!readEndOfTestMarker()) {
-        std::cerr << "Failed reading end of test marker for test " << *description << "\n";
+        std::cerr << "Failed reading end of test marker for test " << *name << "\n";
         return {};
     }
 
     skipEmptyLines();
-    return Test(std::move(*description), tStates, std::move(state));
+    return Test(std::move(*name), tStates, std::move(state));
 }
 
 bool TestFileReader::readEndOfTestMarker()

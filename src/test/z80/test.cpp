@@ -8,8 +8,8 @@
 
 using TestClass = Test::Z80::Test;
 
-TestClass::Test(std::string description, std::size_t tStates, std::optional<State> initialState)
-: m_description(std::move(description)),
+TestClass::Test(std::string name, std::size_t tStates, std::optional<State> initialState)
+: m_name(std::move(name)),
   m_tStates(tStates)
 {
     if (initialState) {

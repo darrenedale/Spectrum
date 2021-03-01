@@ -45,7 +45,7 @@ namespace Test::Z80
 
         void skipEmptyLines();
         std::optional<std::string> readLine();
-        std::optional<std::string> readDescription();
+        std::optional<std::string> readName();
         bool readRegisterPairs(State &);
         bool readRegistersFlagsTStates(State &, std::size_t &);
         std::optional<std::vector<MemoryBlock>> readMemoryBlocks();

@@ -7,6 +7,8 @@
 
 #include "runner.h"
 
+using namespace Test::Z80;
+
 namespace
 {
     std::string formatByte(::Z80::UnsignedByte byte)
@@ -38,9 +40,101 @@ namespace
         out << std::hex << word;
         return out.str();
     }
-}
 
-using namespace Test::Z80;
+    void logFailures(const Expectation::Failures & failures)
+    {
+        std::cout << failures.size() << " failure(s)\n";
+        auto fill = std::cout.fill();
+        auto width = std::cout.width();
+        std::cout << std::setfill('0');
+
+        for (const auto & failure : failures) {
+            switch (failure.type) {
+                case Expectation::FailureType::AfIncorrect:
+                    std::cout << "- AF register pair incorrect: expected 0x" << std::hex << std::setw(4) << std::any_cast<::Z80::Z80::UnsignedWord>(failure.expected) << ", found 0x" << std::setw(4) << std::any_cast<::Z80::Z80::UnsignedWord>(failure.actual) << ".\n";
+                    break;
+
+                case Expectation::FailureType::BcIncorrect:
+                    std::cout << "- BC register pair incorrect: expected 0x" << std::hex << std::setw(4) << std::any_cast<::Z80::Z80::UnsignedWord>(failure.expected) << ", found 0x" << std::setw(4) << std::any_cast<::Z80::Z80::UnsignedWord>(failure.actual) << ".\n";
+                    break;
+
+                case Expectation::FailureType::DeIncorrect:
+                    std::cout << "- DE register pair incorrect: expected 0x" << std::hex << std::setw(4) << std::any_cast<::Z80::Z80::UnsignedWord>(failure.expected) << ", found 0x" << std::setw(4) << std::any_cast<::Z80::Z80::UnsignedWord>(failure.actual) << ".\n";
+                    break;
+
+                case Expectation::FailureType::HlIncorrect:
+                    std::cout << "- HL register pair incorrect: expected 0x" << std::hex << std::setw(4) << std::any_cast<::Z80::Z80::UnsignedWord>(failure.expected) << ", found 0x" << std::setw(4) << std::any_cast<::Z80::Z80::UnsignedWord>(failure.actual) << ".\n";
+                    break;
+
+                case Expectation::FailureType::IxIncorrect:
+                    std::cout << "- IX register incorrect: expected 0x" << std::hex << std::setw(4) << std::any_cast<::Z80::Z80::UnsignedWord>(failure.expected) << ", found 0x" << std::setw(4) << std::any_cast<::Z80::Z80::UnsignedWord>(failure.actual) << ".\n";
+                    break;
+
+                case Expectation::FailureType::IyIncorrect:
+                    std::cout << "- IY register incorrect: expected 0x" << std::hex << std::setw(4) << std::any_cast<::Z80::Z80::UnsignedWord>(failure.expected) << ", found 0x" << std::setw(4) << std::any_cast<::Z80::Z80::UnsignedWord>(failure.actual) << ".\n";
+                    break;
+
+                case Expectation::FailureType::AfShadowIncorrect:
+                    std::cout << "- AF' register pair incorrect: expected 0x" << std::hex << std::setw(4) << std::any_cast<::Z80::Z80::UnsignedWord>(failure.expected) << ", found 0x" << std::setw(4) << std::any_cast<::Z80::Z80::UnsignedWord>(failure.actual) << ".\n";
+                    break;
+
+                case Expectation::FailureType::BcShadowIncorrect:
+                    std::cout << "- BC' register pair incorrect: expected 0x" << std::hex << std::setw(4) << std::any_cast<::Z80::Z80::UnsignedWord>(failure.expected) << ", found 0x" << std::setw(4) << std::any_cast<::Z80::Z80::UnsignedWord>(failure.actual) << ".\n";
+                    break;
+
+                case Expectation::FailureType::DeShadowIncorrect:
+                    std::cout << "- DE' register pair incorrect: expected 0x" << std::hex << std::setw(4) << std::any_cast<::Z80::Z80::UnsignedWord>(failure.expected) << ", found 0x" << std::setw(4) << std::any_cast<::Z80::Z80::UnsignedWord>(failure.actual) << ".\n";
+                    break;
+
+                case Expectation::FailureType::HlShadowIncorrect:
+                    std::cout << "- HL' register pair incorrect: expected 0x" << std::hex << std::setw(4) << std::any_cast<::Z80::Z80::UnsignedWord>(failure.expected) << ", found 0x" << std::setw(4) << std::any_cast<::Z80::Z80::UnsignedWord>(failure.actual) << ".\n";
+                    break;
+
+                case Expectation::FailureType::IIncorrect:
+                    std::cout << "- I register incorrect: expected 0x" << std::hex << std::setw(2) << static_cast<int>(std::any_cast<::Z80::Z80::UnsignedByte>(failure.expected)) << ", found 0x" << std::setw(2) << static_cast<int>(std::any_cast<::Z80::Z80::UnsignedByte>(failure.actual)) << ".\n";
+                    break;
+
+                case Expectation::FailureType::RIncorrect:
+                    std::cout << "- R register incorrect: expected 0x" << std::hex << std::setw(2) << static_cast<int>(any_cast<::Z80::Z80::UnsignedByte>(failure.expected)) << ", found 0x" << std::setw(2) << static_cast<int>(std::any_cast<::Z80::Z80::UnsignedByte>(failure.actual)) << ".\n";
+                    break;
+
+                case Expectation::FailureType::Iff1Incorrect:
+                    std::cout << "- IFF1 incorrect: expected " << std::boolalpha << std::any_cast<std::size_t>(failure.expected) << ", found " << std::any_cast<std::size_t>(failure.actual) << ".\n";
+                    break;
+
+                case Expectation::FailureType::Iff2Incorrect:
+                    std::cout << "- IFF2 incorrect: expected " << std::boolalpha << std::any_cast<std::size_t>(failure.expected) << ", found " << std::any_cast<std::size_t>(failure.actual) << ".\n";
+                    break;
+
+                case Expectation::FailureType::InterruptModeIncorrect:
+                    std::cout << "- interrupt mode incorrect: expected " << std::dec << std::setw(1) << std::any_cast<std::size_t>(failure.expected) << ", found " << std::any_cast<std::size_t>(failure.actual) << ".\n";
+                    break;
+
+                case Expectation::FailureType::MemoryIncorrect:
+                    std::cout << "- memory state incorrect: " << failure.message << ".\n";
+                    break;
+
+                case Expectation::FailureType::TStatesIncorrect:
+                    std::cout << "- t-states incorrect: expected " << std::dec << std::setw(0) << std::any_cast<std::size_t>(failure.expected) << ", found " << std::any_cast<std::size_t>(failure.actual) << ".\n";
+                    break;
+            }
+        }
+
+        std::cout.fill(fill);
+        std::cout.width(width);
+    }
+
+    int checkOutcome(const Expectation::Failures & failures)
+    {
+        if (failures.empty()) {
+            std::cout << "passed.\n";
+        } else {
+            logFailures(failures);
+        }
+
+        return failures.size();
+    }
+}
 
 Runner::Runner(std::string testFileBaseName)
 : Runner(testFileBaseName, new ::Z80::Z80(new UnsignedByte[65536], 65536))
@@ -69,93 +163,7 @@ Runner::~Runner()
     }
 };
 
-namespace
-{
-
-    void logFailures(const Expectation::Failures & failures)
-    {
-        std::cout << failures.size() << " failure(s)\n";
-
-        for (const auto & failure : failures) {
-            switch (failure) {
-                case ExpectationFailure::AfIncorrect:
-                    std::cout << "- Incorrect AF register pair state found.\n";
-                    break;
-
-                case ExpectationFailure::BcIncorrect:
-                    std::cout << "- Incorrect BC register pair state found.\n";
-                    break;
-
-                case ExpectationFailure::DeIncorrect:
-                    std::cout << "- Incorrect DE register pair state found.\n";
-                    break;
-
-                case ExpectationFailure::HlIncorrect:
-                    std::cout << "- Incorrect HL register pair state found.\n";
-                    break;
-
-                case ExpectationFailure::IxIncorrect:
-                    std::cout << "- Incorrect IX register state found.\n";
-                    break;
-
-                case ExpectationFailure::IyIncorrect:
-                    std::cout << "- Incorrect IY register state found.\n";
-                    break;
-
-                case ExpectationFailure::AfShadowIncorrect:
-                    std::cout << "- Incorrect AF' register pair state found.\n";
-                    break;
-
-                case ExpectationFailure::BcShadowIncorrect:
-                    std::cout << "- Incorrect BC' register pair state found.\n";
-                    break;
-
-                case ExpectationFailure::DeShadowIncorrect:
-                    std::cout << "- Incorrect DE' register pair state found.\n";
-                    break;
-
-                case ExpectationFailure::HlShadowIncorrect:
-                    std::cout << "- Incorrect HL' register pair state found.\n";
-                    break;
-
-                case ExpectationFailure::IIncorrect:
-                    std::cout << "- Incorrect I register state found.\n";
-                    break;
-
-                case ExpectationFailure::RIncorrect:
-                    std::cout << "- Incorrect R register state found.\n";
-                    break;
-
-                case ExpectationFailure::Iff1Incorrect:
-                    std::cout << "- Incorrect IFF1 state found.\n";
-                    break;
-
-                case ExpectationFailure::Iff2Incorrect:
-                    std::cout << "- Incorrect IFF2 state found.\n";
-                    break;
-
-                case ExpectationFailure::InterruptModeIncorrect:
-                    std::cout << "- Incorrect interrupt mode found.\n";
-                    break;
-
-                case ExpectationFailure::MemoryIncorrect:
-                    std::cout << "- Expected memory state not found.\n";
-                    break;
-            }
-        }
-    }
-
-    void checkOutcome(const Expectation::Failures & failures)
-    {
-        if (failures.empty()) {
-            std::cout << "passed.\n";
-        } else {
-            logFailures(failures);
-        }
-    }
-}
-
-void Runner::runNextTest()
+int Runner::runNextTest()
 {
     if (!m_testsRead) {
         m_tests.readTests();
@@ -164,13 +172,13 @@ void Runner::runNextTest()
     auto * testCase = m_tests.nextTestCase();
 
     if (!testCase) {
-        return;
+        return -1;
     }
 
-    runTest(*testCase);
+    return runTest(*testCase);
 }
 
-void Runner::runAllTests()
+std::tuple<int, int> Runner::runAllTests()
 {
     if (!m_testsRead) {
         m_tests.readTests();
@@ -178,9 +186,23 @@ void Runner::runAllTests()
         m_tests.reset();
     }
 
+    int failureCount = 0;
+    int testCount = 0;
+
     while (m_tests.hasMoreTestCases()) {
-        runNextTest();
+        failureCount += runNextTest();
+        ++testCount;
     };
+
+    if (0 == testCount) {
+        std::cout << "No tests executed.\n";
+    } else if (0 == failureCount) {
+        std::cout << "All " << testCount << " test(s) passed.\n";
+    } else {
+        std::cout << failureCount << "failure(s) in " << testCount << " test(s).\n";
+    }
+
+    return {testCount, failureCount};
 }
 
 void Runner::outputZ80State(std::ostream & stream) const
@@ -200,6 +222,12 @@ void Runner::outputZ80State(std::ostream & stream) const
     stream << "         " << (cpu.iff1() ? '1' : '0') << "    " << (cpu.iff2() ? '1' : '0') << "   " << cpu.interruptMode() << '\n';
 }
 
+/**
+ * Run a single test by name.
+ *
+ * @param description
+ * @return
+ */
 bool Runner::runTest(const std::string & description)
 {
     if (!m_testsRead) {
@@ -212,23 +240,71 @@ bool Runner::runTest(const std::string & description)
         return false;
     }
 
-    runTest(testCase->second);
+    auto failureCount = runTest(testCase->second);
+
+    if (0 == failureCount) {
+        std::cout << "Test passed.\n";
+    } else {
+        std::cout << failureCount << "failure(s) in 1 test.\n";
+    }
+
     return true;
 }
 
 /**
+ * Run a single test by name.
+ *
+ * @param description
+ * @return
+ */
+std::tuple<int, int> Runner::runTests(const std::vector<std::string> & tests)
+{
+    if (!m_testsRead) {
+        m_tests.readTests();
+    }
+
+    int failureCount = 0;
+    int testCount = 0;
+
+    for (const auto & name : tests) {
+        const auto & testCase = m_tests.testCases().find(name);
+
+        if (testCase == m_tests.testCases().cend()) {
+            std::cerr << "Test named '" << name << "' not found.\n";
+            continue;
+        }
+
+        failureCount += runTest(testCase->second);
+        ++testCount;
+    }
+
+    if (0 == testCount) {
+        std::cout << "No tests executed.\n";
+    } else if (0 == failureCount) {
+        std::cout << "All " << testCount << " test(s) passed.\n";
+    } else {
+        std::cout << failureCount << " failure(s) in " << testCount << " test(s).\n";
+    }
+
+    return {testCount, failureCount};
+}
+
+/**
+ * Internal helper to run a specific test.
+ *
  * NOTE Event expectations are not checked since the Z80 emulator intentionally does not attempt to be cycle-exact. The
  * overall time spent on a set of instructions is, however, checked.
  *
  * @param testCase
  */
-void Runner::runTest(const TestBattery::TestCase & testCase)
+int Runner::runTest(const TestBattery::TestCase & testCase)
 {
     // perform the test
     auto & test = testCase.test;
+    int failureCount = 0;
 
     std::cout << "============================================================\n";
-    std::cout << "Test: " << test.description() << "\n";
+    std::cout << "Test: " << test.name() << "\n";
     std::cout << "------------------------------------------------------------\n";
     test.setupZ80(cpu());
     test.setupMemory(cpu().memory());
@@ -249,20 +325,22 @@ void Runner::runTest(const TestBattery::TestCase & testCase)
     } else {
         auto & expectation = *(testCase.expectation);
         std::cout << "Register pairs: ";
-        checkOutcome(expectation.checkRegisterPairs(cpu()));
+        failureCount += checkOutcome(expectation.checkRegisterPairs(cpu()));
         std::cout << "Shadow register pairs: ";
-        checkOutcome(expectation.checkShadowRegisterPairs(cpu()));
+        failureCount += checkOutcome(expectation.checkShadowRegisterPairs(cpu()));
         std::cout << "Registers: ";
-        checkOutcome(expectation.checkRegisters(cpu()));
+        failureCount += checkOutcome(expectation.checkRegisters(cpu()));
         std::cout << "Interrupt Flip-Flops: ";
-        checkOutcome(expectation.checkInterruptFlipFlops(cpu()));
+        failureCount += checkOutcome(expectation.checkInterruptFlipFlops(cpu()));
         std::cout << "Interrupt mode: ";
-        checkOutcome(expectation.checkInterruptMode(cpu()));
+        failureCount += checkOutcome(expectation.checkInterruptMode(cpu()));
         std::cout << "Memory: ";
-        checkOutcome(expectation.checkMemory(cpu()));
-        // TODO check t-states
+        failureCount += checkOutcome(expectation.checkMemory(cpu()));
+        std::cout << "T-states: ";
+        failureCount += checkOutcome(expectation.checkTStates(tStates));
     }
 
     std::cout << "============================================================\n";
     std::cout << '\n' << std::flush;
+    return failureCount;
 }
