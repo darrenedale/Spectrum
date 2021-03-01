@@ -215,8 +215,8 @@ void Runner::outputZ80State(std::ostream & stream) const
     stream << "Shadow " << formatWord(registers.afShadow) << ' ' << formatWord(registers.bcShadow) << ' ' << formatWord(registers.deShadow) << ' ' << formatWord(registers.hlShadow) << '\n';
 
     stream << "\n        A  F  B  C  D  E  H  L  I  R\n";
-    stream << "       " << formatByte(registers.a()) << ' ' << formatByte(registers.f()) << ' ' << formatByte(registers.b()) << ' ' << formatByte(registers.c()) << ' ' << formatByte(registers.d()) << ' '  << formatByte(registers.e()) << ' ' << formatByte(registers.h()) << ' ' << formatByte(registers.l()) << ' ' << formatByte(registers.i) << ' ' << formatByte(registers.r) << '\n';
-    stream << "Shadow " << formatByte(registers.aShadow()) << ' ' << formatByte(registers.fShadow()) << ' ' << formatByte(registers.bShadow()) << ' ' << formatByte(registers.cShadow()) << ' ' << formatByte(registers.dShadow()) << ' '  << formatByte(registers.eShadow()) << ' ' << formatByte(registers.hShadow()) << ' ' << formatByte(registers.lShadow()) << '\n';
+    stream << "       " << formatByte(registers.a) << ' ' << formatByte(registers.f) << ' ' << formatByte(registers.b) << ' ' << formatByte(registers.c) << ' ' << formatByte(registers.d) << ' '  << formatByte(registers.e) << ' ' << formatByte(registers.h) << ' ' << formatByte(registers.l) << ' ' << formatByte(registers.i) << ' ' << formatByte(registers.r) << '\n';
+    stream << "Shadow " << formatByte(registers.aShadow) << ' ' << formatByte(registers.fShadow) << ' ' << formatByte(registers.bShadow) << ' ' << formatByte(registers.cShadow) << ' ' << formatByte(registers.dShadow) << ' '  << formatByte(registers.eShadow) << ' ' << formatByte(registers.hShadow) << ' ' << formatByte(registers.lShadow) << '\n';
 
     stream << "\n       IFF1 IFF2 IM\n";
     stream << "         " << (cpu.iff1() ? '1' : '0') << "    " << (cpu.iff2() ? '1' : '0') << "   " << cpu.interruptMode() << '\n';

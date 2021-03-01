@@ -565,51 +565,51 @@ namespace Z80 {
         }
 
         inline bool cFlag() const {
-            return m_registers.f() & Z80_FLAG_C_MASK;
+            return m_registers.f & Z80_FLAG_C_MASK;
         }
 
         inline bool zFlag() const {
-            return m_registers.f() & Z80_FLAG_Z_MASK;
+            return m_registers.f & Z80_FLAG_Z_MASK;
         }
 
         inline bool sFlag() const {
-            return m_registers.f() & Z80_FLAG_S_MASK;
+            return m_registers.f & Z80_FLAG_S_MASK;
         }
 
         inline bool pFlag() const {
-            return m_registers.f() & Z80_FLAG_P_MASK;
+            return m_registers.f & Z80_FLAG_P_MASK;
         }
 
         inline bool nFlag() const {
-            return m_registers.f() & Z80_FLAG_N_MASK;
+            return m_registers.f & Z80_FLAG_N_MASK;
         }
 
         inline bool hFlag() const {
-            return m_registers.f() & Z80_FLAG_H_MASK;
+            return m_registers.f & Z80_FLAG_H_MASK;
         }
 
         inline bool cShadowFlag() const {
-            return  m_registers.fShadow() & Z80_FLAG_C_MASK;
+            return  m_registers.fShadow & Z80_FLAG_C_MASK;
         }
 
         inline bool zShadowFlag() const {
-            return  m_registers.fShadow() & Z80_FLAG_Z_MASK;
+            return  m_registers.fShadow & Z80_FLAG_Z_MASK;
         }
 
         inline bool sShadowFlag() const {
-            return  m_registers.fShadow() & Z80_FLAG_S_MASK;
+            return  m_registers.fShadow & Z80_FLAG_S_MASK;
         }
 
         inline bool pShadowFlag() const {
-            return  m_registers.fShadow() & Z80_FLAG_P_MASK;
+            return  m_registers.fShadow & Z80_FLAG_P_MASK;
         }
 
         inline bool nShadowFlag() const {
-            return  m_registers.fShadow() & Z80_FLAG_N_MASK;
+            return  m_registers.fShadow & Z80_FLAG_N_MASK;
         }
 
         inline bool hShadowFlag() const {
-            return  m_registers.fShadow() & Z80_FLAG_H_MASK;
+            return  m_registers.fShadow & Z80_FLAG_H_MASK;
         }
 
         inline bool carryFlag() const {
@@ -832,7 +832,7 @@ namespace Z80 {
 //
 //        /* 8-bit components of 16-bit registers - set up to point to the correct byte in the 16-bit register in the constructor */
 //        UnsignedByte *m_a;
-//        UnsignedByte m_registers.f();
+//        UnsignedByte m_registers.f;
 //        UnsignedByte *m_b;
 //        UnsignedByte *m_c;
 //        UnsignedByte *m_d;
@@ -844,7 +844,7 @@ namespace Z80 {
 //        UnsignedByte *m_iyh;
 //        UnsignedByte *m_iyl;
 //        UnsignedByte *m_ashadow;
-//        UnsignedByte m_registers.f()shadow;
+//        UnsignedByte m_registers.fshadow;
 //        UnsignedByte *m_bshadow;
 //        UnsignedByte *m_cshadow;
 //        UnsignedByte *m_dshadow;
