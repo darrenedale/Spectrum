@@ -745,7 +745,15 @@ namespace Z80 {
          * @param addr The address to write the first byte of the 16-bit value. The address is given in host byte order.
          * @param value The 16-bit value to write, in host byte order.
          */
-        void pokeUnsignedWord(int addr, UnsignedWord value);
+        void pokeHostWord(int addr, UnsignedWord value);
+
+        /**
+         * Write a 16-bit value to the Z80 memory.
+         *
+         * @param addr The address to write the first byte of the 16-bit value. The address is given in host byte order.
+         * @param value The 16-bit value to write, in Z80 byte order.
+         */
+        void pokeZ80Word(int addr, UnsignedWord value);
 
         /**
          * Write a 16-bit value to the Z80 memory.

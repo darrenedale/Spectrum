@@ -4,10 +4,13 @@
 
 #include <cstring>
 #include <sstream>
+#include <iomanip>
 
 #include "expectation.h"
 
 using namespace Test::Z80;
+
+using Z80Cpu = ::Z80::Z80;
 
 Expectation::Expectation(std::string name, std::size_t tStates, Events events, State expectedState)
 : m_name(std::move(name)),
@@ -23,7 +26,7 @@ Expectation & Expectation::operator=(const Expectation & other) = default;
 Expectation & Expectation::operator=(Expectation && other) noexcept = default;
 Expectation::~Expectation() = default;
 
-Expectation::Failures Expectation::checkRegisterPairs(::Z80::Z80 & cpu) const
+Expectation::Failures Expectation::checkRegisterPairs(Z80Cpu & cpu) const
 {
     Failures ret;
     auto & registers = cpu.registers();
@@ -55,7 +58,7 @@ Expectation::Failures Expectation::checkRegisterPairs(::Z80::Z80 & cpu) const
     return ret;
 }
 
-Expectation::Failures Expectation::checkShadowRegisterPairs(::Z80::Z80 & cpu) const
+Expectation::Failures Expectation::checkShadowRegisterPairs(Z80Cpu & cpu) const
 {
     Failures ret;
     auto & registers = cpu.registers();
@@ -79,7 +82,7 @@ Expectation::Failures Expectation::checkShadowRegisterPairs(::Z80::Z80 & cpu) co
     return ret;
 }
 
-Expectation::Failures Expectation::checkRegisters(::Z80::Z80 & cpu) const
+Expectation::Failures Expectation::checkRegisters(Z80Cpu & cpu) const
 {
     Failures ret;
     auto & registers = cpu.registers();
@@ -95,7 +98,7 @@ Expectation::Failures Expectation::checkRegisters(::Z80::Z80 & cpu) const
     return ret;
 }
 
-Expectation::Failures Expectation::checkInterruptFlipFlops(::Z80::Z80 & cpu) const
+Expectation::Failures Expectation::checkInterruptFlipFlops(Z80Cpu & cpu) const
 {
     Failures ret;
 
@@ -110,7 +113,7 @@ Expectation::Failures Expectation::checkInterruptFlipFlops(::Z80::Z80 & cpu) con
     return ret;
 }
 
-Expectation::Failures Expectation::checkInterruptMode(::Z80::Z80 & cpu) const
+Expectation::Failures Expectation::checkInterruptMode(Z80Cpu & cpu) const
 {
     Failures ret;
 
@@ -121,27 +124,22 @@ Expectation::Failures Expectation::checkInterruptMode(::Z80::Z80 & cpu) const
     return ret;
 }
 
-Expectation::Failures Expectation::checkMemory(::Z80::Z80 & cpu) const
+Expectation::Failures Expectation::checkMemory(Z80Cpu & cpu) const
 {
     Failures ret;
     auto * memory = cpu.memory();
     auto blockIdx = 1;
 
     for (const auto & block : m_expectedState.memory) {
-        for (auto idx = 0; idx < block.data.size(); ++idx) {
+        for (int idx = 0; idx < block.data.size(); ++idx) {
             if (memory[block.address + idx] != block.data[idx]) {
-                std::string msg;
-
-                {
-                    std::ostringstream out(msg);
-                    out << "Expected byte 0x" << std::hex << static_cast<int>(block.data[idx])
-                        << " at 0x" << static_cast<int>(block.address + idx)
-                        << " (" << static_cast<int>(block.address) << " + 0x" << idx << ")"
-                        << "; found byte 0x" << static_cast<int>(memory[block.address + idx])
-                        << " [defined in expectation memory block #" << blockIdx << "]";
-                }
-
-                ret.push_back({FailureType::MemoryIncorrect, block.data[idx], memory[block.address + idx], msg});
+                std::ostringstream out;
+                out << "Expected byte 0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<int>(block.data[idx])
+                    << " at 0x" << std::setw(4) << static_cast<int>(block.address + idx)
+                    << " (0x" << std::setw(4) << static_cast<int>(block.address) << " + 0x" << std::setw(2) << idx << ")"
+                    << "; found byte 0x" << std::setw(2) << static_cast<int>(memory[block.address + idx])
+                    << " [defined in expectation memory block #" << std::dec << std::setw(0) << blockIdx << "]" << std::flush;
+                ret.push_back({FailureType::MemoryIncorrect, block.data[idx], memory[block.address + idx], out.str()});
             }
         }
 
@@ -157,6 +155,18 @@ Expectation::Failures Expectation::checkTStates(const size_t & tStates) const
 
     if (tStates != this->tStates()) {
         ret.push_back({FailureType::TStatesIncorrect, this->tStates(), tStates, {}});
+    }
+
+    return ret;
+}
+
+Expectation::Failures Expectation::checkMemptr(Z80Cpu & cpu) const
+{
+    Failures ret;
+    auto & registers = cpu.registers();
+
+    if (registers.memptr != m_expectedState.memptr) {
+        ret.push_back({FailureType::MemptrIncorrect, m_expectedState.memptr, registers.memptr, {}});
     }
 
     return ret;

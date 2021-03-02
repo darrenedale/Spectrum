@@ -24,6 +24,16 @@ namespace Test::Z80
         void operator=(Runner && other) = delete;
         virtual ~Runner();
 
+        void setOnlyOutputFailedTests(bool only)
+        {
+            m_onlyOutputFailedTests = only;
+        }
+
+        bool onlyOutputFailedTests() const
+        {
+            return m_onlyOutputFailedTests;
+        }
+
         const ::Z80::Z80 & cpu() const
         {
             return *m_cpu;
@@ -74,7 +84,7 @@ namespace Test::Z80
         bool m_borrowedCpu;
         bool m_testsRead;
         TestBattery m_tests;
-
+        bool m_onlyOutputFailedTests;
     };
 }
 

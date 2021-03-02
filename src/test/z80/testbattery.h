@@ -62,14 +62,14 @@ namespace Test::Z80
             if (!m_currentTestCase) {
                 m_currentTestCase = m_tests.cbegin();
             } else {
-                ++(*m_currentTestCase);
+                (*m_currentTestCase)++;
             }
 
             if (*m_currentTestCase == m_tests.cend()) {
                 return nullptr;
             }
 
-            return &(m_currentTestCase.value()->second);
+            return &((*m_currentTestCase)->second);
         }
 
     private:

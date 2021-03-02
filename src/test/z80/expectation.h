@@ -36,6 +36,7 @@ namespace Test::Z80
             BcShadowIncorrect,
             DeShadowIncorrect,
             HlShadowIncorrect,
+            MemptrIncorrect,
             IIncorrect,
             RIncorrect,
             Iff1Incorrect,
@@ -77,6 +78,7 @@ namespace Test::Z80
         Failures checkRegisters(::Z80::Z80 & cpu) const;
         Failures checkInterruptFlipFlops(::Z80::Z80 & cpu) const;
         Failures checkInterruptMode(::Z80::Z80 & cpu) const;
+        Failures checkMemptr(::Z80::Z80 & cpu) const;
         Failures checkMemory(::Z80::Z80 & cpu) const;
         Failures checkTStates(const std::size_t & tStates) const;
 

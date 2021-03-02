@@ -1,0 +1,120 @@
+// test sets for Z80
+
+// run test program in spectrum/tests/z80 with args 'tests' and the test names from the 
+// appropriate line, e.g.
+//
+//    cd spectrum/tests/z80
+//    z80-test tests 20_1 20_2 21 22 23 24 25 26 27 27_1 28_2 28_1 29 2a 2b 2c 2d 2e 2f
+//
+// NOTE
+//  The z80-tests command is unlikely to be in the PATH, you'll need to use the path
+//  to the location where it has been built from the spectrum sources (see
+//  spectrum/CMakeLists.txt)
+//
+// NOTE
+//  The first three lines of tests have been run and are known to pass.
+
+00 01 02 02_1 03 04 05 06 07 08 09 0a 0a_1 0b 0c 0d 0e 0f
+10 11 12 13 14 15 16 17 18 19 1a 1b 1c 1d 1e 1f
+20_1 20_2 21 22 23 24 25 26 27_1 27 28_1 28_2 29 2a 2b 2c 2d 2e 2f
+30_1 30_2 31 32 32_1 33 34 35 36 37_1 37_2 37_3 37 38_1 38_2 39 3a 3b 3c 3d 3e 3f
+40 41 42 43 44 45 46 47 48 49 4a 4b 4c 4d 4e 4f
+50 51 52 53 54 55 56 57 58 59 5a 5b 5c 5d 5e 5f
+60 61 62 63 64 65 66 67 68 69 6a 6b 6c 6d 6e 6f
+70 71 72 73 74 75 76 77 78 79 7a 7b 7c 7d 7e 7f
+80 81 82 83 84 85 86 87 88 89 8a 8b 8c 8d 8e 8f
+90 91 92 93 94 95 96 97 98 99 9a 9b 9c 9d 9e 9f
+a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 aa ab ac ad ae af
+b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 ba bb bc bd be bf
+c0_1 c0_2 c1 c2_1 c2_2 c3 c4_1 c4_2 c5 c6 c7 c8_1 c8_2 c9 ca_1 ca_2 cc_1 cc_2 cd ce cf d0_1
+d0_2 d1 d2_1 d2_2 d3_1 d3_2 d3_3 d3_4 d3 d4_1 d4_2 d5 d6 d7 d8_1 d8_2 d9 da_1 da_2 db_1 db_2 db_3 db dc_1 dc_2 de df
+e0_1 e0_2 e1 e2_1 e2_2 e3 e4_1 e4_2 e5 e6 e7 e8_1 e8_2 e9 ea_1 ea_2 eb ec_1 ec_2 ee ef
+f0_1 f0_2 f1 f2_1 f2_2 f3 f4_1 f4_2 f5 f6 f7 f8_1 f8_2 f9 fa_1 fa_2 fb fc_1 fc_2 fe ff
+
+cb00 cb01 cb02 cb03 cb04 cb05 cb06 cb07 cb08 cb09 cb0a cb0b cb0c cb0d cb0e cb0f
+cb10 cb11 cb12 cb13 cb14 cb15 cb16 cb17 cb18 cb19 cb1a cb1b cb1c cb1d cb1e cb1f
+cb20 cb21 cb22 cb23 cb24 cb25 cb26 cb27 cb28 cb29 cb2a cb2b cb2c cb2d cb2e cb2f
+cb30 cb31 cb32 cb33 cb34 cb35 cb36 cb37 cb38 cb39 cb3a cb3b cb3c cb3d cb3e cb3f
+cb40 cb41 cb42 cb43 cb44 cb45 cb46 cb46_1 cb46_2 cb46_3 cb46_4 cb46_5 cb47_1 cb47 cb48 cb49 cb4a cb4b cb4c cb4d cb4e cb4f_1 cb4f
+cb50 cb51 cb52 cb53 cb54 cb55 cb56 cb57_1 cb57 cb58 cb59 cb5a cb5b cb5c cb5d cb5e cb5f_1 cb5f
+cb60 cb61 cb62 cb63 cb64 cb65 cb66 cb67_1 cb67 cb68 cb69 cb6a cb6b cb6c cb6d cb6e cb6f_1 cb6f
+cb70 cb71 cb72 cb73 cb74 cb75 cb76 cb77_1 cb77 cb78 cb79 cb7a cb7b cb7c cb7d cb7e cb7f_1 cb7f
+cb80 cb81 cb82 cb83 cb84 cb85 cb86 cb87 cb88 cb89 cb8a cb8b cb8c cb8d cb8e cb8f
+cb90 cb91 cb92 cb93 cb94 cb95 cb96 cb97 cb98 cb99 cb9a cb9b cb9c cb9d cb9e cb9f
+cba0 cba1 cba2 cba3 cba4 cba5 cba6 cba7 cba8 cba9 cbaa cbab cbac cbad cbae cbaf
+cbb0 cbb1 cbb2 cbb3 cbb4 cbb5 cbb6 cbb7 cbb8 cbb9 cbba cbbb cbbc cbbd cbbe cbbf
+cbc0 cbc1 cbc2 cbc3 cbc4 cbc5 cbc6 cbc7 cbc8 cbc9 cbca cbcb cbcc cbcd cbce cbcf
+cbd0 cbd1 cbd2 cbd3 cbd4 cbd5 cbd6 cbd7 cbd8 cbd9 cbda cbdb cbdc cbdd cbde cbdf
+cbe0 cbe1 cbe2 cbe3 cbe4 cbe5 cbe6 cbe7 cbe8 cbe9 cbea cbeb cbec cbed cbee cbef
+cbf0 cbf1 cbf2 cbf3 cbf4 cbf5 cbf6 cbf7 cbf8 cbf9 cbfa cbfb cbfc cbfd cbfe cbff
+
+dd00 dd09
+dd19
+dd21 dd22 dd23 dd24 dd25 dd26 dd29 dd2a dd2b dd2c dd2d dd2e
+dd34 dd35 dd36 dd39
+dd44 dd45 dd46 dd4c dd4d dd4e
+dd54 dd55 dd56 dd5c dd5d dd5e
+dd60 dd61 dd62 dd63 dd64 dd65 dd66 dd67 dd68 dd69 dd6a dd6b dd6c dd6d dd6e dd6f
+dd70 dd71 dd72 dd73 dd74 dd75 dd77 dd7c dd7d dd7e
+dd84 dd85 dd86 dd8c dd8d dd8e
+dd94 dd95 dd96 dd9c dd9d dd9e
+dda4 dda5 dda6 ddac ddad ddae
+ddb4 ddb5 ddb6 ddbc ddbd ddbe
+dde1 dde3 dde5 dde9 ddf9
+
+ddcb00 ddcb01 ddcb02 ddcb03 ddcb04 ddcb05 ddcb06 ddcb07 ddcb08 ddcb09 ddcb0a ddcb0b ddcb0c ddcb0d ddcb0e ddcb0f
+ddcb10 ddcb11 ddcb12 ddcb13 ddcb14 ddcb15 ddcb16 ddcb17 ddcb18 ddcb19 ddcb1a ddcb1b ddcb1c ddcb1d ddcb1e ddcb1f
+ddcb20 ddcb21 ddcb22 ddcb23 ddcb24 ddcb25 ddcb26 ddcb27 ddcb28 ddcb29 ddcb2a ddcb2b ddcb2c ddcb2d ddcb2e ddcb2f
+ddcb30 ddcb31 ddcb32 ddcb33 ddcb34 ddcb35 ddcb36 ddcb37 ddcb38 ddcb39 ddcb3a ddcb3b ddcb3c ddcb3d ddcb3e ddcb3f
+ddcb40 ddcb41 ddcb42 ddcb43 ddcb44 ddcb45 ddcb46 ddcb47 ddcb48 ddcb49 ddcb4a ddcb4b ddcb4c ddcb4d ddcb4e ddcb4f
+ddcb50 ddcb51 ddcb52 ddcb53 ddcb54 ddcb55 ddcb56 ddcb57 ddcb58 ddcb59 ddcb5a ddcb5b ddcb5c ddcb5d ddcb5e ddcb5f
+ddcb60 ddcb61 ddcb62 ddcb63 ddcb64 ddcb65 ddcb66 ddcb67 ddcb68 ddcb69 ddcb6a ddcb6b ddcb6c ddcb6d ddcb6e ddcb6f
+ddcb70 ddcb71 ddcb72 ddcb73 ddcb74 ddcb75 ddcb76 ddcb77 ddcb78 ddcb79 ddcb7a ddcb7b ddcb7c ddcb7d ddcb7e ddcb7f
+ddcb80 ddcb81 ddcb82 ddcb83 ddcb84 ddcb85 ddcb86 ddcb87 ddcb88 ddcb89 ddcb8a ddcb8b ddcb8c ddcb8d ddcb8e ddcb8f
+ddcb90 ddcb91 ddcb92 ddcb93 ddcb94 ddcb95 ddcb96 ddcb97 ddcb98 ddcb99 ddcb9a ddcb9b ddcb9c ddcb9d ddcb9e ddcb9f
+ddcba0 ddcba1 ddcba2 ddcba3 ddcba4 ddcba5 ddcba6 ddcba7 ddcba8 ddcba9 ddcbaa ddcbab ddcbac ddcbad ddcbae ddcbaf
+ddcbb0 ddcbb1 ddcbb2 ddcbb3 ddcbb4 ddcbb5 ddcbb6 ddcbb7 ddcbb8 ddcbb9 ddcbba ddcbbb ddcbbc ddcbbd ddcbbe ddcbbf
+ddcbc0 ddcbc1 ddcbc2 ddcbc3 ddcbc4 ddcbc5 ddcbc6 ddcbc7 ddcbc8 ddcbc9 ddcbca ddcbcb ddcbcc ddcbcd ddcbce ddcbcf
+ddcbd0 ddcbd1 ddcbd2 ddcbd3 ddcbd4 ddcbd5 ddcbd6 ddcbd7 ddcbd8 ddcbd9 ddcbda ddcbdb ddcbdc ddcbdd ddcbde ddcbdf
+ddcbe0 ddcbe1 ddcbe2 ddcbe3 ddcbe4 ddcbe5 ddcbe6 ddcbe7 ddcbe8 ddcbe9 ddcbea ddcbeb ddcbec ddcbed ddcbee ddcbef
+ddcbf0 ddcbf1 ddcbf2 ddcbf3 ddcbf4 ddcbf5 ddcbf6 ddcbf7 ddcbf8 ddcbf9 ddcbfa ddcbfb ddcbfc ddcbfd ddcbfe ddcbff
+ddfd00
+
+ed40 ed41 ed42 ed43 ed44 ed45 ed46 ed47 ed48 ed49 ed4a ed4b ed4c ed4d ed4e ed4f
+ed50 ed51 ed52 ed53 ed54 ed55 ed56 ed57 ed58 ed59 ed5a ed5b ed5c ed5d ed5e ed5f
+ed60 ed61 ed62 ed63 ed64 ed65 ed66 ed67 ed68 ed69 ed6a ed6b ed6c ed6d ed6e ed6f
+ed70 ed71 ed72 ed73 ed74 ed75 ed76 ed78 ed79 ed7a ed7b ed7c ed7d ed7e
+eda0 eda1 eda2 eda2_01 eda2_02 eda2_03 eda3 eda3_01 eda3_02 eda3_03 eda3_04 eda3_05 eda3_06 eda3_07 eda3_08 eda3_09 eda3_10 eda3_11 eda8 eda9 edaa edaa_01 edaa_02 edaa_03 edab edab_01 edab_02
+edb0 edb0_1 edb0_2 edb1 edb1_1 edb1_2 edb2 edb2_1 edb3 edb3_1 edb8 edb8_1 edb8_2 edb9 edb9_1 edb9_2 edba edba_1 edbb edbb_1
+
+fd09
+fd19
+fd21 fd22 fd23 fd24 fd25 fd26 fd29 fd2a fd2b fd2c fd2d fd2e
+fd34 fd35 fd36 fd39
+fd44 fd45 fd46 fd4c fd4d fd4e
+fd54 fd55 fd56 fd5c fd5d fd5e
+fd60 fd61 fd62 fd63 fd64 fd65 fd66 fd67 fd68 fd69 fd6a fd6b fd6c fd6d fd6e fd6f
+fd70 fd71 fd72 fd73 fd74 fd75 fd77 fd7c fd7d fd7e
+fd84 fd85 fd86 fd8c fd8d fd8e
+fd94 fd95 fd96 fd9c fd9d fd9e
+fda4 fda5 fda6 fdac fdad fdae
+fdb4 fdb5 fdb6 fdbc fdbd fdbe
+fde1 fde3 fde5 fde9
+fdf9
+
+fdcb00 fdcb01 fdcb02 fdcb03 fdcb04 fdcb05 fdcb06 fdcb07 fdcb08 fdcb09 fdcb0a fdcb0b fdcb0c fdcb0d fdcb0e fdcb0f
+fdcb10 fdcb11 fdcb12 fdcb13 fdcb14 fdcb15 fdcb16 fdcb17 fdcb18 fdcb19 fdcb1a fdcb1b fdcb1c fdcb1d fdcb1e fdcb1f
+fdcb20 fdcb21 fdcb22 fdcb23 fdcb24 fdcb25 fdcb26 fdcb27 fdcb28 fdcb29 fdcb2a fdcb2b fdcb2c fdcb2d fdcb2e fdcb2f
+fdcb30 fdcb31 fdcb32 fdcb33 fdcb34 fdcb35 fdcb36 fdcb37 fdcb38 fdcb39 fdcb3a fdcb3b fdcb3c fdcb3d fdcb3e fdcb3f
+fdcb40 fdcb41 fdcb42 fdcb43 fdcb44 fdcb45 fdcb46 fdcb47 fdcb48 fdcb49 fdcb4a fdcb4b fdcb4c fdcb4d fdcb4e fdcb4f
+fdcb50 fdcb51 fdcb52 fdcb53 fdcb54 fdcb55 fdcb56 fdcb57 fdcb58 fdcb59 fdcb5a fdcb5b fdcb5c fdcb5d fdcb5e fdcb5f
+fdcb60 fdcb61 fdcb62 fdcb63 fdcb64 fdcb65 fdcb66 fdcb67 fdcb68 fdcb69 fdcb6a fdcb6b fdcb6c fdcb6d fdcb6e fdcb6f
+fdcb70 fdcb71 fdcb72 fdcb73 fdcb74 fdcb75 fdcb76 fdcb77 fdcb78 fdcb79 fdcb7a fdcb7b fdcb7c fdcb7d fdcb7e fdcb7f
+fdcb80 fdcb81 fdcb82 fdcb83 fdcb84 fdcb85 fdcb86 fdcb87 fdcb88 fdcb89 fdcb8a fdcb8b fdcb8c fdcb8d fdcb8e fdcb8f
+fdcb90 fdcb91 fdcb92 fdcb93 fdcb94 fdcb95 fdcb96 fdcb97 fdcb98 fdcb99 fdcb9a fdcb9b fdcb9c fdcb9d fdcb9e fdcb9f
+fdcba0 fdcba1 fdcba2 fdcba3 fdcba4 fdcba5 fdcba6 fdcba7 fdcba8 fdcba9 fdcbaa fdcbab fdcbac fdcbad fdcbae fdcbaf
+fdcbb0 fdcbb1 fdcbb2 fdcbb3 fdcbb4 fdcbb5 fdcbb6 fdcbb7 fdcbb8 fdcbb9 fdcbba fdcbbb fdcbbc fdcbbd fdcbbe fdcbbf
+fdcbc0 fdcbc1 fdcbc2 fdcbc3 fdcbc4 fdcbc5 fdcbc6 fdcbc7 fdcbc8 fdcbc9 fdcbca fdcbcb fdcbcc fdcbcd fdcbce fdcbcf
+fdcbd0 fdcbd1 fdcbd2 fdcbd3 fdcbd4 fdcbd5 fdcbd6 fdcbd7 fdcbd8 fdcbd9 fdcbda fdcbdb fdcbdc fdcbdd fdcbde fdcbdf
+fdcbe0 fdcbe1 fdcbe2 fdcbe3 fdcbe4 fdcbe5 fdcbe6 fdcbe7 fdcbe8 fdcbe9 fdcbea fdcbeb fdcbec fdcbed fdcbee fdcbef
+fdcbf0 fdcbf1 fdcbf2 fdcbf3 fdcbf4 fdcbf5 fdcbf6 fdcbf7 fdcbf8 fdcbf9 fdcbfa fdcbfb fdcbfc fdcbfd fdcbfe fdcbff
