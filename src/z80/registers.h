@@ -222,6 +222,12 @@ namespace Z80
         UnsignedByte & hShadow = (*(reinterpret_cast<UnsignedByte *>(&hlShadow) + (ByteOrderMatch ? 1 : 0)));
         UnsignedByte & lShadow = (*(reinterpret_cast<UnsignedByte *>(&hlShadow) + (ByteOrderMatch ? 0 : 1)));
 
+        UnsignedByte & pcH = (*(reinterpret_cast<UnsignedByte *>(&pc) + (ByteOrderMatch ? 1 : 0)));
+        UnsignedByte & pcL = (*(reinterpret_cast<UnsignedByte *>(&pc) + (ByteOrderMatch ? 0 : 1)));
+
+        UnsignedByte & spH = (*(reinterpret_cast<UnsignedByte *>(&sp) + (ByteOrderMatch ? 1 : 0)));
+        UnsignedByte & spL = (*(reinterpret_cast<UnsignedByte *>(&sp) + (ByteOrderMatch ? 0 : 1)));
+
         UnsignedByte & memptrH = (*(reinterpret_cast<UnsignedByte *>(&memptr) + (ByteOrderMatch ? 1 : 0)));
         UnsignedByte & memptrL = (*(reinterpret_cast<UnsignedByte *>(&memptr) + (ByteOrderMatch ? 0 : 1)));
 
