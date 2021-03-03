@@ -28,6 +28,9 @@ namespace Spectrum
          explicit MainWindow(QWidget * = nullptr);
          ~MainWindow() override;
 
+        void saveScreenshot(const QString & fileName) const;
+
+        void loadSnapshot(const QString & fileName);
         void saveSnapshot(const QString & fileName) const;
 
         inline Spectrum & spectrum()
@@ -45,8 +48,9 @@ namespace Spectrum
 	    void closeEvent(QCloseEvent *) override;
 
         void startPauseClicked();
-        void snapshotTriggered();
-        void updateSpectrumDisplay(const QImage &);
+        void saveScreenshotTriggered();
+        void loadSnapshotTriggered();
+        void saveSnapshotTriggered();
 
     private:
         void createWidgets();
@@ -56,8 +60,9 @@ namespace Spectrum
         Spectrum m_spectrum;
         QSpectrumDisplay m_display;
         std::unique_ptr<ImageWidget> m_displayWidget;
+        QAction * m_load;
         QAction * m_startPause;
-        QAction * m_snapshot;
+        QAction * m_screenshot;
         QAction * m_reset;
         QAction * m_debug;
         QAction * m_debugStep;

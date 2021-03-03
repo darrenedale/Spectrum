@@ -1,6 +1,7 @@
 #ifndef Z80_Z80_H
 #define Z80_Z80_H
 
+#include <cassert>
 #include <cstdint>
 #include <bit>
 
@@ -332,12 +333,27 @@ namespace Z80 {
             return registerValue(Register8::LShadow);
         }
 
+        inline void setInterruptMode(std::uint8_t mode) {
+            assert(mode < 3);
+            m_interruptMode = mode;
+        }
+
         inline int interruptMode() const {
             return m_interruptMode;
         }
 
+        inline void setIff1(bool iff)
+        {
+            m_iff1 = iff;
+        }
+
         inline bool iff1() const {
             return m_iff1;
+        }
+
+        inline void setIff2(bool iff)
+        {
+            m_iff2 = iff;
         }
 
         inline bool iff2() const {
@@ -545,14 +561,6 @@ namespace Z80 {
 
         void setLShadow(UnsignedByte value) {
             setRegisterValue(Register8::LShadow, value);
-        }
-
-        inline void setIff1(bool iff1) {
-            m_iff1 = iff1;
-        }
-
-        inline void setIff2(bool iff2) {
-            m_iff2 = iff2;
         }
 
         inline int ramSize() const {
