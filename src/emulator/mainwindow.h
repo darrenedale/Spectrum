@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <QMainWindow>
+#include <QTimer>
 
 #include "spectrum.h"
 #include "../qt/ui/qspectrumdisplay.h"
@@ -63,6 +64,7 @@ namespace Spectrum
         QSlider * m_emulationSpeedSlider;
         QSpinBox * m_emulationSpeedSpin;
         QSpectrumDebugWindow * m_debugWindow;
+        QTimer m_displayRefreshTimer;
 	};
 }
 

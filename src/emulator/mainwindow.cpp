@@ -29,13 +29,22 @@ MainWindow::MainWindow(QWidget * parent)
   m_debugStep(nullptr),
   m_emulationSpeedSlider(nullptr),
   m_emulationSpeedSpin(nullptr),
-  m_debugWindow(nullptr)
+  m_debugWindow(nullptr),
+  m_displayRefreshTimer(nullptr)
 {
+    // update screen at 100 FPS
+    m_displayRefreshTimer.setTimerType(Qt::TimerType::PreciseTimer);
+    m_displayRefreshTimer.setInterval(10);
+    m_displayRefreshTimer.callOnTimeout([this]() {
+        m_displayWidget->setImage(m_display.image());
+    });
+
 	createWidgets();
 	m_spectrum.addDisplayDevice(&m_display);
 	setCentralWidget(m_displayWidget.get());
 	connectWidgets();
 	m_spectrumThread->start();
+	m_displayRefreshTimer.start();
 }
 
 MainWindow::~MainWindow()
@@ -92,7 +101,6 @@ void MainWindow::connectWidgets()
 	connect(m_debugStep, &QAction::triggered, m_spectrumThread.get(), &SpectrumThread::step, Qt::QueuedConnection);
 	connect(m_reset, &QAction::triggered, m_spectrumThread.get(), &SpectrumThread::reset, Qt::QueuedConnection);
 	connect(m_snapshot, &QAction::triggered, this, &MainWindow::snapshotTriggered);
-	connect(m_spectrumThread.get(), &SpectrumThread::debugStepTaken, m_debugWindow, &QSpectrumDebugWindow::updateStateDisplay, Qt::QueuedConnection);
 
 	connect(m_spectrumThread.get(), &SpectrumThread::started, [this]() {
 	    m_startPause->setIcon(QIcon::fromTheme("media-playback-pause"));
@@ -101,8 +109,6 @@ void MainWindow::connectWidgets()
 	connect(m_spectrumThread.get(), &SpectrumThread::finished, [this]() {
 	    m_startPause->setIcon(QIcon::fromTheme("media-playback-start"));
 	});
-
-	connect(&m_display, &QSpectrumDisplay::displayUpdated, this, &MainWindow::updateSpectrumDisplay, Qt::QueuedConnection);
 }
 
 void MainWindow::updateSpectrumDisplay(const QImage & image)
@@ -119,9 +125,11 @@ void MainWindow::startPauseClicked()
 {
 	if (m_spectrumThread->paused()) {
         m_spectrumThread->resume();
+        m_displayRefreshTimer.start();
         m_startPause->setIcon(QIcon::fromTheme("media-playback-pause"));
     } else {
         m_spectrumThread->pause();
+        m_displayRefreshTimer.stop();
         m_startPause->setIcon(QIcon::fromTheme("media-playback-start"));
     }
 }

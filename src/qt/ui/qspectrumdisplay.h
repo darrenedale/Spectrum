@@ -10,14 +10,10 @@
 namespace Spectrum
 {
 	class QSpectrumDisplay
-	:	public QObject,
-	    public SpectrumDisplayDevice
+	:   public SpectrumDisplayDevice
 	{
-    Q_OBJECT
-
     public:
-        explicit QSpectrumDisplay(QObject * owner = nullptr);
-        ~QSpectrumDisplay() override;
+        QSpectrumDisplay();
 
         QImage & image()
         {
@@ -31,9 +27,6 @@ namespace Spectrum
 
         void setBorder(Colour, bool = false) override;
         void redrawDisplay(const uint8_t *) override;
-
-    Q_SIGNALS:
-	    void displayUpdated(const QImage &);
 
 	protected:
         static constexpr int fullWidth();

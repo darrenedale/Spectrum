@@ -83,7 +83,6 @@ namespace Spectrum
                 m_nmiCycleCounter %= nmiThreshold;
 
                 // TODO pause based on requested execution speed
-                std::this_thread::sleep_for(50ms);
             }
 
             instructionCount--;

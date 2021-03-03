@@ -100,4 +100,5 @@ void SpectrumThread::quit()
     QMutexLocker locker(&m_threadLock);
     m_pause = false;
     m_quit = true;
+    m_waitCondition.wakeOne();
 }
