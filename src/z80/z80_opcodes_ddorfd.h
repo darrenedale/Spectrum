@@ -6,6 +6,8 @@
  * executor and add to the returned byte size. this saves code duplication, but
  * care will need to be taken that an infinite recursion does not take place
  * where the two execution methods continually call one another */
+
+
 #define Z80__DD_OR_FD__NOP				0x00
 #define Z80__DD_OR_FD__LD__BC__NN				0x01
 #define Z80__DD_OR_FD__LD__INDIRECT_BC__A				0x02
@@ -268,7 +270,7 @@
 #define Z80__DD_OR_FD__RST__20				0xe7
 
 #define Z80__DD_OR_FD__RET__PE				0xe8
-#define Z80__DD_OR_FD__JP__INDIRECT_IX_OR_IY				0xe9
+#define Z80__DD_OR_FD__JP__IX_OR_IY				0xe9
 #define Z80__DD_OR_FD__JP__PE__NN				0xea
 #define Z80__DD_OR_FD__EX__DE__HL				0xeb
 #define Z80__DD_OR_FD__CALL__PE__NN				0xec

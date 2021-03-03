@@ -232,9 +232,12 @@ m_registers.memptr = m_registers.pc
 /* context switching instructions
  *
  * FLAGS: no flags are modified.
- * TODO: check result against known working implementation.
  */
-#define Z80__EX__REG16__REG16(src, dest) {Z80::Z80::UnsignedWord __mytmp = (dest); (dest) = (src); (src) = __mytmp; }
+#define Z80__EX__REG16__REG16(src, dest) {  \
+    UnsignedWord tmpWord = (dest);\
+    (dest) = (src);                         \
+    (src) = tmpWord;                        \
+}
 #define Z80__EX__INDIRECT_REG16__REG16(src, dest) {\
     UnsignedWord tmpWord = peekUnsignedWord((src));\
     pokeHostWord((src), (dest));                   \
@@ -290,7 +293,6 @@ m_registers.memptr = m_registers.pc
 #define Z80__ADC__REG8__REG8(dest,src) Z80__ADC__REG8__N((dest), (src));
 #define Z80__ADC__REG8__INDIRECT_REG16(dest,src) Z80__ADC__REG8__N((dest), peekUnsigned(src))
 #define Z80__ADC__REG16__REG16(dest,src) { UnsignedWord oldValue = (dest); (dest) += (src) + (Z80_FLAG_C_ISSET ? 1 : 0); Z80_FLAG_N_CLEAR; Z80_FLAG_Z_UPDATE(0 == (dest)); Z80_FLAG_S_UPDATE((dest) & 0x8000); Z80_FLAG_P_UPDATE((dest) < oldValue); Z80_FLAG_C_UPDATE((dest) < oldValue); Z80_FLAG_H_UPDATE(Z80_CHECK_16BIT_HALFCARRY_10_TO_11(oldValue,(dest))); }
-#define Z80__ADC__REG8__INDRIECT_REG16_D(dest, reg, d) { UnsignedByte oldValue = (dest); UnsignedWord addr = (reg) + (d); (dest) += (peekUnsigned(addr)) + (Z80_FLAG_C_ISSET ? 1 : 0); Z80_FLAG_N_CLEAR; Z80_FLAG_Z_UPDATE(0 == (dest)); Z80_FLAG_S_UPDATE((dest) & 0x80); Z80_FLAG_P_UPDATE((dest) < oldValue); Z80_FLAG_C_UPDATE((dest) < oldValue); Z80_FLAG_H_UPDATE(Z80_CHECK_8BIT_HALFCARRY(oldValue,(dest))); }
 #define Z80__ADC__REG8__INDIRECT_REG16_D(dest, reg, d) Z80__ADC__REG8__N((dest), peekUnsigned((reg) + (d)))
 
 /* subtraction instructions
@@ -377,9 +379,10 @@ Z80_FLAG_S_UPDATE((reg) & 0x80); \
 Z80_FLAG_F3_UPDATE((reg) & Z80_FLAG_F3_MASK); \
 Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
 
-#define Z80__INC__INDIRECT_REG16(reg) Z80__INC__REG8(*(m_ram + (reg))) /*{ UnsignedByte oldValue = peekUnsigned(reg); pokeUnsigned((reg), peekUnsigned(reg) + 1); Z80_FLAG_P_UPDATE((reg) < oldValue); Z80_FLAG_C_UPDATE((reg) < oldValue); Z80_FLAG_H_UPDATE(0x0f == (oldValue & 0x8f)); Z80_FLAG_N_CLEAR; Z80_FLAG_Z_UPDATE(0 == (reg)); Z80_FLAG_S_UPDATE((reg) & 0x80); } */
+#define Z80__INC__INDIRECT_REG16(reg) Z80__INC__REG8(*(m_ram + (reg)))
 #define Z80__INC__REG16(reg) (reg)++;
-#define Z80__INC__INDIRECT_REG16_D(reg, d) (*(m_ram + (reg) + (d)))++;/*{ UnsignedWord addr = (reg) + (d); pokeUnsigned(addr, peekUnsigned(addr) + 1); }*/
+// TODO memptr
+#define Z80__INC__INDIRECT_REG16_D(reg, d) Z80__INC__REG8(*(m_ram + (reg) + (d)))
 
 /* decrement instructions
  *
@@ -403,7 +406,8 @@ Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
 
 #define Z80__DEC__INDIRECT_REG16(reg) Z80__DEC__REG8(*(m_ram + (reg)))
 #define Z80__DEC__REG16(reg) (reg)--;
-#define Z80__DEC__INDIRECT_REG16_D(reg, d) (*(m_ram + (reg) + (d)))--; /*{ UnsignedWord addr = (reg) + (d); pokeUnsigned(addr, peekUnsigned(addr) - 1); }*/
+// TODO memptr
+#define Z80__DEC__INDIRECT_REG16_D(reg, d) Z80__DEC__REG8(*(m_ram + (reg) + (d)));
 
 /* negation instruction
  *
@@ -492,8 +496,27 @@ Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
  * TODO: check flags against known working implementation.
  * TODO: check result against known working implementation.
  */
-#define Z80__RLC__REG8(reg) { bool bit = (reg) & 0x80; (reg) <<= 1; if (bit) { (reg) |= 0x01; Z80_FLAG_C_SET; } else { (reg) &= 0xfe; Z80_FLAG_C_CLEAR; } Z80_FLAG_H_CLEAR;  Z80_FLAG_N_CLEAR; Z80_FLAG_P_UPDATE(isEvenParity(reg)); Z80_FLAG_S_DEFAULTBEHAVIOUR; Z80_FLAG_Z_DEFAULTBEHAVIOUR; }
-#define Z80__RLC__INDIRECT_REG16(reg) { UnsignedByte v = peekUnsigned(reg); bool bit = v & 0x80; v <<= 1; if (bit) { v |= 0x01; Z80_FLAG_C_SET; } else { v &= 0xfe; Z80_FLAG_C_CLEAR; }; pokeUnsigned((reg), v); Z80_FLAG_H_CLEAR; Z80_FLAG_N_CLEAR; Z80_FLAG_P_UPDATE(isEvenParity(v)); Z80_FLAG_S_DEFAULTBEHAVIOUR; Z80_FLAG_Z_DEFAULTBEHAVIOUR; }
+#define Z80__RLC__REG8(reg) {            \
+    bool tmpBit = (reg) & 0x80;          \
+    (reg) <<= 1;                         \
+                                         \
+    if (tmpBit) {                        \
+        (reg) |= 0x01;                   \
+        Z80_FLAG_C_SET;                  \
+    } else {                             \
+        (reg) &= 0xfe;                   \
+        Z80_FLAG_C_CLEAR;                \
+    }                                    \
+    Z80_FLAG_H_CLEAR;                    \
+    Z80_FLAG_N_CLEAR;                    \
+    Z80_FLAG_P_UPDATE(isEvenParity(reg));\
+    Z80_FLAGS_S53_UPDATE((reg));         \
+    Z80_FLAG_Z_UPDATE(0 == (reg));       \
+}
+#define Z80__RLC__INDIRECT_REG16(reg) {     \
+    UnsignedByte & tmpValue = memory()[reg];\
+    Z80__RLC__REG8(tmpValue);               \
+}
 #define Z80__RLC__INDIRECT_REG16_D(reg,d) Z80__RLC__INDIRECT_REG16((reg) + (d))
 #define Z80__RLC__INDIRECT_REG16_D__REG8(reg16,d,reg8) Z80__RLC__INDIRECT_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
 
@@ -505,8 +528,28 @@ Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
  * TODO: check flags against known working implementation.
  * TODO: check result against known working implementation.
  */
-#define Z80__RRC__REG8(reg) { bool bit = (reg) & 0x01; (reg) >>= 1; if (bit) { (reg) |= 0x80; Z80_FLAG_C_SET; } else { (reg) &= 0x7f; Z80_FLAG_C_CLEAR; } Z80_FLAG_H_CLEAR;  Z80_FLAG_N_CLEAR; Z80_FLAG_P_UPDATE(isEvenParity(reg)); Z80_FLAG_S_DEFAULTBEHAVIOUR; Z80_FLAG_Z_DEFAULTBEHAVIOUR; }
-#define Z80__RRC__INDIRECT_REG16(reg) { UnsignedByte v = peekUnsigned(reg); bool bit = v & 0x01; v >>= 1; if (bit) { v |= 0x80; Z80_FLAG_C_SET; } else { v &= 0x7f; Z80_FLAG_C_CLEAR; }; pokeUnsigned((reg), v); Z80_FLAG_H_CLEAR; Z80_FLAG_N_CLEAR; Z80_FLAG_P_UPDATE(isEvenParity(v)); Z80_FLAG_S_DEFAULTBEHAVIOUR; Z80_FLAG_Z_DEFAULTBEHAVIOUR; }
+#define Z80__RRC__REG8(reg) { \
+    bool bit = (reg) & 0x01;      \
+    (reg) >>= 1;                  \
+                                  \
+    if (bit) {                    \
+        (reg) |= 0x80;            \
+        Z80_FLAG_C_SET;           \
+    } else {                      \
+        (reg) &= 0x7f;            \
+        Z80_FLAG_C_CLEAR;         \
+    }                             \
+                                  \
+    Z80_FLAG_H_CLEAR;             \
+    Z80_FLAG_N_CLEAR;             \
+    Z80_FLAG_P_UPDATE(isEvenParity(reg));\
+    Z80_FLAGS_S53_UPDATE((reg));         \
+    Z80_FLAG_Z_UPDATE(0 == (reg));       \
+}
+#define Z80__RRC__INDIRECT_REG16(reg) {\
+    UnsignedByte & tmpValue = memory()[reg]; \
+    Z80__RRC__REG8(tmpValue);          \
+}
 #define Z80__RRC__INDIRECT_REG16_D(reg,d) Z80__RRC__INDIRECT_REG16((reg) + (d))
 #define Z80__RRC__INDIRECT_REG16_D__REG8(reg16,d,reg8) Z80__RRC__INDIRECT_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
 
@@ -518,32 +561,32 @@ Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
  *
  * FLAGS: H and N cleared, P is parity, C modified directly by
  * instruction, S and Z as defined
- * TODO: check flags against known working implementation.
- * TODO: check result against known working implementation.
  */
- #define Z80__RL__REG8(reg) {\
-	bool bit = (reg) & 0x80;\
-	(reg) <<= 1; \
-\
-	/* copy carry flag into bit 1 */\
-	if (Z80_FLAG_C_ISSET) (reg) |= 0x01;\
-	else (reg) &= 0xfe;\
-\
-	/* copy old bit 7 into carry flag */\
-	Z80_FLAG_C_UPDATE(bit);\
-\
-	Z80_FLAG_H_CLEAR;\
-	Z80_FLAG_N_CLEAR;\
+ #define Z80__RL__REG8(reg) {     \
+	bool bit = (reg) & 0x80;      \
+	(reg) <<= 1;                  \
+	                              \
+	if (Z80_FLAG_C_ISSET) {       \
+        (reg) |= 0x01;            \
+    } else {                      \
+        (reg) &= 0xfe;            \
+    }                             \
+                                  \
+	Z80_FLAG_C_UPDATE(bit);       \
+	Z80_FLAG_H_CLEAR;             \
+	Z80_FLAG_N_CLEAR;             \
 	Z80_FLAG_P_UPDATE(isEvenParity(reg));\
-	Z80_FLAG_S_UPDATE((reg) & 0x80);\
+	Z80_FLAGS_S53_UPDATE((reg));  \
 	Z80_FLAG_Z_UPDATE(0 == (reg));\
 }
 
 /*
  * re-use RL instruction for 8-bit reg to do the actual work
- * TODO: check result against known working implementation.
  */
-#define Z80__RL__INDIRECT_REG16(reg) { UnsignedByte v = peekUnsigned(reg); Z80__RL__REG8(v); pokeUnsigned(reg, v); }
+#define Z80__RL__INDIRECT_REG16(reg) {      \
+    UnsignedByte & tmpValue = memory()[reg];\
+    Z80__RL__REG8(tmpValue);                \
+}
 #define Z80__RL__INDIRECT_REG16_D(reg,d) Z80__RL__INDIRECT_REG16((reg) + (d))
 #define Z80__RL__INDIRECT_REG16_D__REG8(reg16,d,reg8) Z80__RL__INDIRECT_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
 
@@ -555,37 +598,28 @@ Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
  *
  * FLAGS: H and N cleared, P is parity, C modified directly by
  * instruction, S and Z as defined
- *
- * TODO: check flags against known working implementation.
- * TODO: check result against known working implementation.
  */
- #define Z80__RR__REG8(reg) \
-{\
-	bool bit = (reg) & 0x01;\
-	(reg) >>= 1;            \
-                            \
-	/* copy carry flag into bit 7 */\
-	if (Z80_FLAG_C_ISSET) { \
-        (reg) |= 0x80;      \
-    } else {                \
-        (reg) &= 0x7f;      \
-    }\
-\
-	/* copy old bit 0 into carry flag */\
-	Z80_FLAG_C_UPDATE(bit);\
-\
-	Z80_FLAG_H_CLEAR;\
-	Z80_FLAG_N_CLEAR;\
+ #define Z80__RR__REG8(reg) {     \
+	bool tmpBit = (reg) & 0x01;   \
+	(reg) >>= 1;                  \
+                                  \
+	if (Z80_FLAG_C_ISSET) {       \
+        (reg) |= 0x80;            \
+    } else {                      \
+        (reg) &= 0x7f;            \
+    }                             \
+                                  \
+	Z80_FLAG_C_UPDATE(tmpBit);    \
+	Z80_FLAG_H_CLEAR;             \
+	Z80_FLAG_N_CLEAR;             \
 	Z80_FLAG_P_UPDATE(isEvenParity(reg));\
-	Z80_FLAG_S_UPDATE((reg) & 0x80);\
+	Z80_FLAGS_S53_UPDATE((reg));  \
 	Z80_FLAG_Z_UPDATE(0 == (reg));\
 }
-
-/*
- * re-use RR instruction for 8-bit reg to do the actual work
- * TODO: check result against known working implementation.
- */
-#define Z80__RR__INDIRECT_REG16(reg) { UnsignedByte v = peekUnsigned(reg); Z80__RR__REG8(v); pokeUnsigned((reg), v); }
+#define Z80__RR__INDIRECT_REG16(reg) {      \
+    UnsignedByte & tmpValue = memory()[reg];\
+    Z80__RR__REG8(tmpValue);                \
+}
 #define Z80__RR__INDIRECT_REG16_D(reg,d) Z80__RR__INDIRECT_REG16((reg) + (d))
 #define Z80__RR__INDIRECT_REG16_D__REG8(reg16,d,reg8) Z80__RR__INDIRECT_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
 
@@ -595,23 +629,19 @@ Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
  * TODO: check flags against known working implementation.
  * TODO: check result against known working implementation.
  */
-#define Z80__SLA__REG8(reg) {\
-	Z80_FLAG_C_UPDATE((reg) & 0x80);\
-\
-	(reg) <<= 1;\
-\
-	Z80_FLAG_H_CLEAR;\
-	Z80_FLAG_N_CLEAR;\
+#define Z80__SLA__REG8(reg) {            \
+	Z80_FLAG_C_UPDATE((reg) & 0x80);     \
+	(reg) <<= 1;                         \
+	Z80_FLAG_H_CLEAR;                    \
+	Z80_FLAG_N_CLEAR;                    \
 	Z80_FLAG_P_UPDATE(isEvenParity(reg));\
-	Z80_FLAG_S_UPDATE((reg) & 0x80);\
-	Z80_FLAG_Z_UPDATE(0 == (reg));\
+	Z80_FLAGS_S53_UPDATE((reg));         \
+	Z80_FLAG_Z_UPDATE(0 == (reg));       \
 }
-
-/*
- * re-use SLA instruction for 8-bit reg to do the actual work
- * TODO: check result against known working implementation.
- */
-#define Z80__SLA__INDIRECT_REG16(reg) { UnsignedByte v = peekUnsigned(reg); Z80__SLA__REG8(v); pokeUnsigned((reg), v); }
+#define Z80__SLA__INDIRECT_REG16(reg) {     \
+    UnsignedByte & tmpValue = memory()[reg];\
+    Z80__SLA__REG8(tmpValue);               \
+}
 #define Z80__SLA__INDIRECT_REG16_D(reg,d) Z80__SLA__INDIRECT_REG16((reg) + (d))
 #define Z80__SLA__INDIRECT_REG16_D__REG8(reg16,d,reg8) Z80__SLA__INDIRECT_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
 
@@ -621,23 +651,19 @@ Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
  * TODO: check flags against known working implementation.
  * TODO: check result against known working implementation.
  */
-#define Z80__SRA__REG8(reg) {\
-	Z80_FLAG_C_UPDATE((reg) & 0x01);\
-\
-	(reg) >>= 1;\
-\
-	Z80_FLAG_H_CLEAR;\
-	Z80_FLAG_N_CLEAR;\
+#define Z80__SRA__REG8(reg) {            \
+	Z80_FLAG_C_UPDATE((reg) & 0x01);     \
+    (reg) = ((reg) & 0x80) | ((reg) >>= 1);\
+	Z80_FLAG_H_CLEAR;                    \
+	Z80_FLAG_N_CLEAR;                    \
 	Z80_FLAG_P_UPDATE(isEvenParity(reg));\
-	Z80_FLAG_S_UPDATE((reg) & 0x80);\
-	Z80_FLAG_Z_UPDATE(0 == (reg));\
+	Z80_FLAGS_S53_UPDATE((reg));         \
+	Z80_FLAG_Z_UPDATE(0 == (reg));       \
 }
-
-/*
- * re-use SRA instruction for 8-bit reg to do the actual work
- * TODO: check result against known working implementation.
- */
-#define Z80__SRA__INDIRECT_REG16(reg) { UnsignedByte v = peekUnsigned(reg); Z80__SRA__REG8(v); pokeUnsigned((reg), v); }
+#define Z80__SRA__INDIRECT_REG16(reg) {     \
+    UnsignedByte & tmpValue = memory()[reg];\
+    Z80__SRA__REG8(tmpValue);               \
+}
 #define Z80__SRA__INDIRECT_REG16_D(reg,d) Z80__SRA__INDIRECT_REG16((reg) + (d))
 #define Z80__SRA__INDIRECT_REG16_D__REG8(reg16,d,reg8) Z80__SRA__INDIRECT_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
 
@@ -650,23 +676,19 @@ Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
  * TODO: check flags against known working implementation.
  * TODO: check result against known working implementation.
  */
-#define Z80__SLL__REG8(reg) {\
-	Z80_FLAG_C_UPDATE((reg) & 0x80);\
-\
-	(reg) <<= 1;\
-	(reg) |= 0x01;\
-\
-	Z80_FLAG_H_CLEAR;\
-	Z80_FLAG_N_CLEAR;\
+#define Z80__SLL__REG8(reg) {            \
+	Z80_FLAG_C_UPDATE((reg) & 0x80);     \
+    (reg) = 0x01 | ((reg) << 1);         \
+	Z80_FLAG_H_CLEAR;                    \
+	Z80_FLAG_N_CLEAR;                    \
 	Z80_FLAG_P_UPDATE(isEvenParity(reg));\
-	Z80_FLAG_S_UPDATE((reg) & 0x80);\
-	Z80_FLAG_Z_UPDATE(0 == (reg));\
+	Z80_FLAGS_S53_UPDATE((reg));  \
+	Z80_FLAG_Z_UPDATE(0 == (reg));       \
 }
-
-/* reuse Z80__SLL__REG8() to do the actual work
- * TODO: check result against known working implementation.
- */
-#define Z80__SLL__INDIRECT_REG16(reg) { UnsignedByte v = peekUnsigned(reg); Z80__SLL__REG8(v); pokeUnsigned((reg), v); }
+#define Z80__SLL__INDIRECT_REG16(reg) {     \
+    UnsignedByte & tmpValue = memory()[reg];\
+    Z80__SLL__REG8(tmpValue);               \
+}
 #define Z80__SLL__INDIRECT_REG16_D(reg,d) Z80__SLL__INDIRECT_REG16((reg) + (d))
 #define Z80__SLL__INDIRECT_REG16_D__REG8(reg16,d,reg8) Z80__SLL__INDIRECT_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
 
@@ -679,21 +701,19 @@ Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
  * TODO: check flags against known working implementation.
  * TODO: check result against known working implementation.
  */
-#define Z80__SRL__REG8(reg) {\
+#define Z80__SRL__REG8(reg) {       \
 	Z80_FLAG_C_UPDATE((reg) & 0x01);\
-\
-	(reg) >>= 1;\
-	(reg) |= 0x80;\
-\
-	Z80_FLAG_H_CLEAR;\
-	Z80_FLAG_N_CLEAR;\
+	(reg) >>= 1;                    \
+	Z80_FLAG_H_CLEAR;               \
+	Z80_FLAG_N_CLEAR;               \
 	Z80_FLAG_P_UPDATE(isEvenParity(reg));\
-	Z80_FLAG_S_UPDATE((reg) & 0x80);\
-	Z80_FLAG_Z_UPDATE(0 == (reg));\
+	Z80_FLAGS_S53_UPDATE((reg));    \
+	Z80_FLAG_Z_UPDATE(0 == (reg));  \
 }
-
-/* reuse Z80__SRL__REG8 to do the actual work */
-#define Z80__SRL__INDIRECT_REG16(reg) { UnsignedByte v = peekUnsigned(reg); Z80__SRL__REG8(v); pokeUnsigned((reg), v); }
+#define Z80__SRL__INDIRECT_REG16(reg) { \
+    UnsignedByte & tmpValue = memory()[reg];\
+    Z80__SRL__REG8(tmpValue);               \
+}
 #define Z80__SRL__INDIRECT_REG16_D(reg,d) Z80__SRL__INDIRECT_REG16((reg) + (d))
 #define Z80__SRL__INDIRECT_REG16_D__REG8(reg16,d,reg8) Z80__SRL__INDIRECT_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
 
@@ -703,8 +723,20 @@ Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
  * TODO: check flags against known working implementation.
  * TODO: check result against known working implementation.
  */
-#define Z80__BIT__N__REG8(n,reg) Z80_FLAG_Z_UPDATE(0 != ((reg) & (1 << n))); Z80_FLAG_P_UPDATE(Z80_FLAG_Z_ISSET); Z80_FLAG_N_CLEAR; Z80_FLAG_H_SET; Z80_FLAG_S_UPDATE((n) != 7 ? false : !Z80_FLAG_Z_ISSET);
-#define Z80__BIT__N__INDIRECT_REG16(n,reg) Z80__BIT__N__REG8(n,peekUnsigned(reg));
+#define Z80__BIT__N__REG8(n,reg) \
+Z80_FLAG_Z_UPDATE(0 == ((reg) & (0x01 << n))); \
+Z80_FLAG_P_UPDATE(Z80_FLAG_Z_ISSET);        \
+Z80_FLAG_N_CLEAR;                \
+Z80_FLAG_H_SET;                  \
+Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);\
+Z80_FLAG_F3_UPDATE((reg) & Z80_FLAG_F3_MASK);\
+Z80_FLAG_S_UPDATE((n) == 7 && (reg) & Z80_FLAG_S_MASK);
+
+#define Z80__BIT__N__INDIRECT_REG16(n,reg) \
+Z80__BIT__N__REG8(n,peekUnsigned(reg));    \
+Z80_FLAG_F5_UPDATE(m_registers.memptrH & Z80_FLAG_F5_MASK);\
+Z80_FLAG_F3_UPDATE(m_registers.memptrH & Z80_FLAG_F3_MASK);
+
 #define Z80__BIT__N__INDIRECT_REG16_D(n,reg,d) Z80__BIT__N__INDIRECT_REG16(n,(reg) + (d))
 #define Z80__BIT__N__INDIRECT_REG16_D__REG8(n,reg16,d,reg8) Z80__BIT__N__INDIRECT_REG16(n,(reg16) + (d)); /* anything to do with (reg8)? */
 
@@ -918,17 +950,12 @@ void Z80::Z80::init()
 #include "z80_plain_opcode_cycles.inc"
 #include "z80_cb_opcode_cycles.inc"
 #include "z80_ed_opcode_cycles.inc"
-//#include "z80_dd_opcode_cycles.inc"
-//#include "z80_fd_opcode_cycles.inc"
+#include "z80_ddorfd_opcode_cycles.inc"
 
 	/* set up instruction byte sizes */
 #include "z80_plain_opcode_sizes.inc"
 	/* all 0xcb opcodes are 2 bytes in size */
 #include "z80_ed_opcode_sizes.inc"
-//#include "z80_dd_opcode_sizes.inc"
-//#include "z80_fd_opcode_sizes.inc"
-	/* all 0xdd 0xcb opcodes are 2 bytes in size */
-	/* all 0xfd 0xcb opcodes are 2 bytes in size */
 }
 
 
@@ -1065,18 +1092,10 @@ bool Z80::Z80::execute(const Z80::Z80::UnsignedByte * instruction, bool doPc, in
 
 		case Z80__PLAIN__PREFIX__DD:
 			ret = executeDdOrFdInstruction(m_registers.ix, instruction + 1, &doPc, cycles, size);
-
-            if (ret) {
-                ++m_registers.r;
-            }
 			break;
 
 		case Z80__PLAIN__PREFIX__FD:
 			ret = executeDdOrFdInstruction(m_registers.iy, instruction + 1, &doPc, cycles, size);
-
-            if (ret) {
-                ++m_registers.r;
-            }
 			break;
 
 		default:
@@ -1302,7 +1321,6 @@ bool Z80::Z80::executePlainInstruction(const Z80::Z80::UnsignedByte * instructio
 
 		case Z80__PLAIN__JR__d:						// 0x18
 			m_registers.pc += SignedByte(*(instruction + 1));
-//			Z80_DONT_UPDATE_PC;
 			Z80_USE_JUMP_CYCLE_COST;
 			break;
 
@@ -2818,7 +2836,7 @@ bool Z80::Z80::executeCbInstruction(const Z80::Z80::UnsignedByte * instruction, 
 			break;
 
 		case Z80__CB__BIT__0__INDIRECT_HL:		/* 0xcb 0x46 */
-			Z80__BIT__N__INDIRECT_REG16(0, m_registers.hl);
+            Z80__BIT__N__INDIRECT_REG16(0, m_registers.hl);
 			break;
 
 		case Z80__CB__BIT__0__A:		/* 0xcb 0x47 */
@@ -2914,7 +2932,7 @@ bool Z80::Z80::executeCbInstruction(const Z80::Z80::UnsignedByte * instruction, 
 			break;
 
 		case Z80__CB__BIT__3__INDIRECT_HL:		/* 0xcb 0x5e */
-			Z80__BIT__N__INDIRECT_REG16(3, m_registers.a);
+			Z80__BIT__N__INDIRECT_REG16(3, m_registers.hl);
 			break;
 
 		case Z80__CB__BIT__3__A:		/* 0xcb 0x5f */
@@ -4954,7 +4972,7 @@ bool Z80::Z80::executeDdOrFdInstruction(Z80::Z80::UnsignedWord & reg, const Z80:
 			break;
 
 		case Z80__DD_OR_FD__ADC__A__INDIRECT_IX_d_OR_IY_d: /*  0x8e */
-			Z80__ADC__REG8__INDRIECT_REG16_D(m_registers.a, reg, SignedByte(*(instruction + 1)));
+			Z80__ADC__REG8__INDIRECT_REG16_D(m_registers.a, reg, SignedByte(*(instruction + 1)));
 			break;
 
 		case Z80__DD_OR_FD__SUB__IXH_OR_IYH: /*  0x94 */
@@ -5034,12 +5052,16 @@ bool Z80::Z80::executeDdOrFdInstruction(Z80::Z80::UnsignedWord & reg, const Z80:
 			break;
 
 		case Z80__DD_OR_FD__EX__INDIRECT_SP__IX_OR_IY: /*  0xe3 */
-			Z80__EX__REG16__REG16(m_registers.sp, reg);
+			Z80__EX__INDIRECT_REG16__REG16(m_registers.sp, reg);
 			break;
 
-		case Z80__DD_OR_FD__JP__INDIRECT_IX_OR_IY: /*  0xe9 */
-			m_registers.pc = Z80::Z80::z80ToHostByteOrder(peekUnsignedWord(reg));
-			Z80_USE_JUMP_CYCLE_COST;
+        case Z80__DD_OR_FD__PUSH__IX_OR_IY: /*  0xe5 */
+            Z80__PUSH__REG16(reg);
+            break;
+
+		case Z80__DD_OR_FD__JP__IX_OR_IY: /*  0xe9 */
+		    // NOTE unlike the plain E9 that uses (HL) this IS NOT INDIRECT and is just JP IX or JP IY
+			m_registers.pc = reg;
 			Z80_DONT_UPDATE_PC;
 			break;
 
@@ -5224,7 +5246,6 @@ bool Z80::Z80::executeDdOrFdInstruction(Z80::Z80::UnsignedWord & reg, const Z80:
 		case Z80__DD_OR_FD__RET__PO: /*  0xe0 */
 		case Z80__DD_OR_FD__JP__PO__NN: /*  0xe2 */
 		case Z80__DD_OR_FD__CALL__PO__NN: /*  0xe4 */
-		case Z80__DD_OR_FD__PUSH__IX_OR_IY: /*  0xe5 */
 		case Z80__DD_OR_FD__AND__N: /*  0xe6 */
 		case Z80__DD_OR_FD__RST__20: /*  0xe7 */
 
@@ -5256,7 +5277,11 @@ bool Z80::Z80::executeDdOrFdInstruction(Z80::Z80::UnsignedWord & reg, const Z80:
 			/* these are all (expensive) replicas of plain instructions, so defer
 			 * to the plain opcode executor method */
 			bool ret = executePlainInstruction(instruction + 1, doPc, cycles, size);
-			if (size) *size += 1;
+
+			if (size) {
+			    *size += 1;
+			}
+
 			return ret;
 		}
 	}
@@ -5269,6 +5294,7 @@ bool Z80::Z80::executeDdOrFdInstruction(Z80::Z80::UnsignedWord & reg, const Z80:
 	    *size = DdOrFdOpcodeSize[*instruction];
 	}
 
+	++m_registers.r;
 	return true;
 }
 

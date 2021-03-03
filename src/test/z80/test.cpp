@@ -26,21 +26,25 @@ TestClass::~Test() = default;
 void TestClass::setupZ80(::Z80::Z80 & cpu) const
 {
     cpu.reset();
-    cpu.setAf(m_initialState.af);
-    cpu.setBc(m_initialState.bc);
-    cpu.setDe(m_initialState.de);
-    cpu.setHl(m_initialState.hl);
-    cpu.setAfShadow(m_initialState.afShadow);
-    cpu.setBcShadow(m_initialState.bcShadow);
-    cpu.setDeShadow(m_initialState.deShadow);
-    cpu.setHlShadow(m_initialState.hlShadow);
-    cpu.setIx(m_initialState.ix);
-    cpu.setIy(m_initialState.iy);
-    cpu.setSp(m_initialState.sp);
-    cpu.setPc(m_initialState.pc);
+    auto & registers = cpu.registers();
 
-    cpu.setI(m_initialState.i);
-    cpu.setR(m_initialState.r);
+    registers.af = m_initialState.af;
+    registers.bc = m_initialState.bc;
+    registers.de = m_initialState.de;
+    registers.hl = m_initialState.hl;
+    registers.afShadow = m_initialState.afShadow;
+    registers.bcShadow = m_initialState.bcShadow;
+    registers.deShadow = m_initialState.deShadow;
+    registers.hlShadow = m_initialState.hlShadow;
+    registers.ix = m_initialState.ix;
+    registers.iy = m_initialState.iy;
+    registers.sp = m_initialState.sp;
+    registers.pc = m_initialState.pc;
+
+    registers.memptr = m_initialState.memptr;
+
+    registers.i = m_initialState.i;
+    registers.r = m_initialState.r;
 
     cpu.setIff1(m_initialState.iff1);
     cpu.setIff2(m_initialState.iff2);

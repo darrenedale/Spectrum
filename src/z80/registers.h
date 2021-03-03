@@ -209,10 +209,10 @@ namespace Z80
         UnsignedByte & e = (*(reinterpret_cast<UnsignedByte *>(&de) + (ByteOrderMatch ? 0 : 1)));
         UnsignedByte & h = (*(reinterpret_cast<UnsignedByte *>(&hl) + (ByteOrderMatch ? 1 : 0)));
         UnsignedByte & l = (*(reinterpret_cast<UnsignedByte *>(&hl) + (ByteOrderMatch ? 0 : 1)));
-        UnsignedByte & ixl = (*(reinterpret_cast<UnsignedByte *>(&ix) + (ByteOrderMatch ? 1 : 0)));
-        UnsignedByte & ixh = (*(reinterpret_cast<UnsignedByte *>(&ix) + (ByteOrderMatch ? 0 : 1)));
-        UnsignedByte & iyl = (*(reinterpret_cast<UnsignedByte *>(&iy) + (ByteOrderMatch ? 1 : 0)));
-        UnsignedByte & iyh = (*(reinterpret_cast<UnsignedByte *>(&iy) + (ByteOrderMatch ? 0 : 1)));
+        UnsignedByte & ixh = (*(reinterpret_cast<UnsignedByte *>(&ix) + (ByteOrderMatch ? 1 : 0)));
+        UnsignedByte & ixl = (*(reinterpret_cast<UnsignedByte *>(&ix) + (ByteOrderMatch ? 0 : 1)));
+        UnsignedByte & iyh = (*(reinterpret_cast<UnsignedByte *>(&iy) + (ByteOrderMatch ? 1 : 0)));
+        UnsignedByte & iyl = (*(reinterpret_cast<UnsignedByte *>(&iy) + (ByteOrderMatch ? 0 : 1)));
         UnsignedByte & aShadow = (*(reinterpret_cast<UnsignedByte *>(&afShadow) + (ByteOrderMatch ? 1 : 0)));
         UnsignedByte & fShadow = (*(reinterpret_cast<UnsignedByte *>(&afShadow) + (ByteOrderMatch ? 0 : 1)));
         UnsignedByte & bShadow = (*(reinterpret_cast<UnsignedByte *>(&bcShadow) + (ByteOrderMatch ? 1 : 0)));
@@ -221,6 +221,9 @@ namespace Z80
         UnsignedByte & eShadow = (*(reinterpret_cast<UnsignedByte *>(&deShadow) + (ByteOrderMatch ? 0 : 1)));
         UnsignedByte & hShadow = (*(reinterpret_cast<UnsignedByte *>(&hlShadow) + (ByteOrderMatch ? 1 : 0)));
         UnsignedByte & lShadow = (*(reinterpret_cast<UnsignedByte *>(&hlShadow) + (ByteOrderMatch ? 0 : 1)));
+
+        UnsignedByte & memptrH = (*(reinterpret_cast<UnsignedByte *>(&memptr) + (ByteOrderMatch ? 1 : 0)));
+        UnsignedByte & memptrL = (*(reinterpret_cast<UnsignedByte *>(&memptr) + (ByteOrderMatch ? 0 : 1)));
 
         RegisterZ80Endian afZ80 = {af};
         RegisterZ80Endian bcZ80 = {bc};

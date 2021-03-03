@@ -822,44 +822,6 @@ namespace Z80 {
 
         Registers m_registers;
 
-        /* Registers */
-//        UnsignedWord m_af;
-//        UnsignedWord m_bc;
-//        UnsignedWord m_de;
-//        UnsignedWord m_hl;
-//        UnsignedWord m_sp;
-//        UnsignedWord m_pc;
-//        UnsignedWord m_ix;
-//        UnsignedWord m_iy;
-//        UnsignedByte m_i;
-//        UnsignedByte m_r;
-//        UnsignedWord m_afshadow;
-//        UnsignedWord m_bcshadow;
-//        UnsignedWord m_deshadow;
-//        UnsignedWord m_hlshadow;
-//
-//        /* 8-bit components of 16-bit registers - set up to point to the correct byte in the 16-bit register in the constructor */
-//        UnsignedByte *m_a;
-//        UnsignedByte m_registers.f;
-//        UnsignedByte *m_b;
-//        UnsignedByte *m_c;
-//        UnsignedByte *m_d;
-//        UnsignedByte *m_e;
-//        UnsignedByte *m_h;
-//        UnsignedByte *m_l;
-//        UnsignedByte *m_ixh;
-//        UnsignedByte *m_ixl;
-//        UnsignedByte *m_iyh;
-//        UnsignedByte *m_iyl;
-//        UnsignedByte *m_ashadow;
-//        UnsignedByte m_registers.fshadow;
-//        UnsignedByte *m_bshadow;
-//        UnsignedByte *m_cshadow;
-//        UnsignedByte *m_dshadow;
-//        UnsignedByte *m_eshadow;
-//        UnsignedByte *m_hshadow;
-//        UnsignedByte *m_lshadow;
-
         // memory
         Z80::UnsignedByte *m_ram;
         int m_ramSize;
