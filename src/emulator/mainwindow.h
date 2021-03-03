@@ -51,6 +51,7 @@ namespace Spectrum
         void saveScreenshotTriggered();
         void loadSnapshotTriggered();
         void saveSnapshotTriggered();
+        void emulationSpeedChanged(int);
 
     private:
         void createWidgets();

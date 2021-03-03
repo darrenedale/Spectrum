@@ -5,6 +5,7 @@
 
 #include <QToolBar>
 #include <QAction>
+#include <QLabel>
 #include <QSlider>
 #include <QSpinBox>
 #include <QFileDialog>
@@ -80,22 +81,27 @@ MainWindow::~MainWindow()
 void MainWindow::createWidgets()
 {
 	QToolBar * myToolBar = addToolBar(QStringLiteral("Main"));
-	m_load = myToolBar->addAction(QIcon::fromTheme("document-open"), tr("Load Snapshot"));
+	m_load = myToolBar->addAction(QIcon::fromTheme(QStringLiteral("document-open")), tr("Load Snapshot"));
 	myToolBar->addSeparator();
-	m_startPause = myToolBar->addAction(QIcon::fromTheme("media-playback-start"), tr("Start/Pause"));
+	m_startPause = myToolBar->addAction(QIcon::fromTheme(QStringLiteral("media-playback-start")), tr("Start/Pause"));
 	m_reset = myToolBar->addAction(tr("Reset"));
 	m_debug = myToolBar->addAction(tr("Debug"));
 	m_debug->setCheckable(true);
-	m_debugStep = myToolBar->addAction(QIcon::fromTheme("debug-step-instruction"), tr("Step"));
-    m_screenshot = myToolBar->addAction(QIcon::fromTheme("image"), tr("Screenshot"));
-	myToolBar->addSeparator();
+	m_debugStep = myToolBar->addAction(QIcon::fromTheme(QStringLiteral("debug-step-instruction")), tr("Step"));
+    m_screenshot = myToolBar->addAction(QIcon::fromTheme(QStringLiteral("image")), tr("Screenshot"));
+
+    myToolBar = addToolBar(QStringLiteral("Speed"));
+    myToolBar->addWidget(new QLabel(tr("Speed")));
 	m_emulationSpeedSlider = new QSlider(Qt::Horizontal);
 	m_emulationSpeedSlider->setMinimum(0);
-	m_emulationSpeedSlider->setMaximum(1000);
+	m_emulationSpeedSlider->setMaximum(10);
+	m_emulationSpeedSlider->setValue(1);
 	myToolBar->addWidget(m_emulationSpeedSlider);
 	m_emulationSpeedSpin = new QSpinBox();
 	m_emulationSpeedSpin->setMinimum(0);
-	m_emulationSpeedSpin->setMaximum(1000);
+	m_emulationSpeedSpin->setMaximum(10);
+	m_emulationSpeedSpin->setValue(1);
+	m_emulationSpeedSpin->setSuffix(QStringLiteral("x"));
 	m_emulationSpeedSpin->setSpecialValueText(tr("Unlimited"));
 	myToolBar->addWidget(m_emulationSpeedSpin);
 
@@ -106,6 +112,8 @@ void MainWindow::connectWidgets()
 {
 	connect(m_emulationSpeedSlider, &QSlider::valueChanged, m_emulationSpeedSpin, &QSpinBox::setValue);
 	connect(m_emulationSpeedSpin, qOverload<int>(&QSpinBox::valueChanged), m_emulationSpeedSlider, &QSlider::setValue);
+
+	connect(m_emulationSpeedSlider, &QSlider::valueChanged, this, &MainWindow::emulationSpeedChanged);
 
 	connect(m_load, &QAction::triggered, this, &MainWindow::loadSnapshotTriggered);
 	connect(m_startPause, &QAction::triggered, this, &MainWindow::startPauseClicked);
@@ -215,37 +223,23 @@ void MainWindow::loadSnapshot(const QString & fileName)
     auto * ram = m_spectrum.memory() + 16384;
     auto & cpu = *(m_spectrum.z80());
     auto & registers = cpu.registers();
+    auto * byte = buffer;
 
-    std::istringstream in(std::string(buffer, sizeof(buffer)));
-    
-    for (auto & reg : {&registers.i, &registers.hShadow, &registers.lShadow, &registers.dShadow, &registers.eShadow, &registers.bShadow, &registers.cShadow, &registers.aShadow, &registers.fShadow, &registers.h, &registers.l, &registers.d, &registers.e, &registers.b, &registers.c, &registers.iyh, &registers.iyl, &registers.ixh, &registers.ixl}) {
-        Z80::UnsignedByte value = in.get();
-        *reg = value;
+    for (auto & reg : {&registers.i, &registers.lShadow, &registers.hShadow, &registers.eShadow, &registers.dShadow, &registers.cShadow, &registers.bShadow, &registers.fShadow, &registers.aShadow, &registers.l, &registers.h, &registers.e, &registers.d, &registers.c, &registers.b, &registers.iyl, &registers.iyh, &registers.ixl, &registers.ixh}) {
+        *reg = *(byte++);
     }
 
-    cpu.setIff2(in.get() & 0x02);
-    registers.r = in.get();
-    registers.af = Z80::Z80::z80ToHostByteOrder(in.get() << 8 | in.get());
-    registers.sp = Z80::Z80::z80ToHostByteOrder(in.get() << 8 | in.get());
-    std::uint8_t im = in.get();
+    bool iff = *(byte++) & 0x04;
+    cpu.setIff1(iff);
+    cpu.setIff2(iff);
 
-    if (2 < im) {
-        // TODO display invalid SNA file message
-        std::cout << "Invalid IM " << (im + '0') << " in .sna file\n";
-        return;
+    for (auto & reg : {&registers.r, &registers.f, &registers.a, &registers.spL, &registers.spH}) {
+        *reg = *(byte++);
     }
 
-    cpu.setInterruptMode(im);
-    auto border = in.get();
-
-    if (7 < border) {
-        // TODO display invalid SNA file message
-        std::cout << "Invalid border " << (border + '0') << " in .sna file\n";
-        return;
-    }
-
-    m_display.setBorder(static_cast<SpectrumDisplayDevice::Colour>(border));
-    std::memcpy(ram, buffer + 27, 0xc000);
+    cpu.setInterruptMode(*(byte++) & 0x03);
+    m_display.setBorder(static_cast<SpectrumDisplayDevice::Colour>(*(byte++) & 0x07));
+    std::memcpy(ram, byte, 0xc000);
 
     // update the display
     Z80::UnsignedByte retn[2] = {0xed, 0x45};
@@ -275,4 +269,14 @@ void MainWindow::loadSnapshotTriggered()
     }
 
     loadSnapshot(fileName);
+}
+
+void MainWindow::emulationSpeedChanged(int speed)
+{
+    if (0 == speed) {
+        m_spectrum.setExecutionSpeedConstrained(false);
+    } else {
+        m_spectrum.setExecutionSpeedConstrained(true);
+        m_spectrum.z80()->setClockSpeed(Spectrum::DefaultClockSpeed * speed);
+    }
 }

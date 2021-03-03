@@ -19,6 +19,8 @@ namespace Spectrum {
     :	public Computer<>
     {
 		public:
+            static constexpr const int DefaultClockSpeed = 3500000;
+
 			explicit Spectrum(int = 65536, uint8_t * mem = nullptr);
 			~Spectrum() override;
 
@@ -45,6 +47,28 @@ namespace Spectrum {
 			virtual void reset();
 			virtual void run(int instructionCount);
 
+			/**
+			 * If set, the Spectrum will be constrained to run no faster than the clock speed set.
+			 *
+			 * If not set, it will run as fast as the host CPU will allow.
+			 *
+			 * @param constraint
+			 */
+			void setExecutionSpeedConstrained(bool constrain)
+            {
+			    m_constrainExecutionSpeed = constrain;
+            }
+
+            /**
+             * Check whether the Spectrum is running at approximately the speed determined by the clock speed.
+             *
+             * @return
+             */
+            bool executionSpeedConstrained() const
+            {
+			    return m_constrainExecutionSpeed;
+            }
+
 			void addDisplayDevice( SpectrumDisplayDevice * dev )
 			{
 				m_displayDevices.push_back(dev);
@@ -68,6 +92,7 @@ namespace Spectrum {
 
 		private:
 			int m_nmiCycleCounter;
+			bool m_constrainExecutionSpeed;
 			std::vector<SpectrumDisplayDevice *> m_displayDevices;
     };
 }

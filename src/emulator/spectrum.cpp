@@ -69,8 +69,12 @@ namespace Spectrum
 
     void Spectrum::run(int instructionCount)
     {
+        using namespace std::chrono;
         using namespace std::chrono_literals;
+
         assert(z80());
+
+        static steady_clock::time_point lastNmi = steady_clock::now();
         int nmiThreshold = z80()->clockSpeed() / 50;
 
         while (0 < instructionCount) {
@@ -82,7 +86,17 @@ namespace Spectrum
                 refreshDisplays();
                 m_nmiCycleCounter %= nmiThreshold;
 
-                // TODO pause based on requested execution speed
+                if (m_constrainExecutionSpeed) {
+                    // pause based on requested execution speed
+                    auto actualNmiInterval = steady_clock::now() - lastNmi;
+
+                    if (actualNmiInterval < 20ms) {
+                        auto sleepFor = 20ms - actualNmiInterval;
+                        std::this_thread::sleep_for(sleepFor);
+                    }
+
+                    lastNmi = steady_clock::now();
+                }
             }
 
             instructionCount--;
