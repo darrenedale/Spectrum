@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cstdint>
 #include <bit>
+#include <set>
 
 #include "../cpu.h"
 #include "registers.h"
@@ -40,6 +41,13 @@ namespace Z80 {
         typedef std::int8_t SignedByte;
         typedef std::int16_t SignedWord;
 
+        enum class InterruptMode : std::uint8_t
+        {
+            IM0 = 0,
+            IM1,
+            IM2,
+        };
+
         enum class Register16 {
             AF, BC, DE, HL,
             IX, IY,
@@ -65,7 +73,8 @@ namespace Z80 {
             return (((v & 0xff00) >> 8) & 0x00ff) | (((v & 0x00ff) << 8) & 0xff00);
         }
 
-        static inline UnsignedWord z80ToHostByteOrder(UnsignedWord v) {
+        static inline UnsignedWord z80ToHostByteOrder(UnsignedWord v)
+        {
             if (Z80ByteOrder == HostByteOrder) {
                 return v;
             }
@@ -73,7 +82,8 @@ namespace Z80 {
             return swapByteOrder(v);
         }
 
-        static inline UnsignedWord hostToZ80ByteOrder(UnsignedWord v) {
+        static inline UnsignedWord hostToZ80ByteOrder(UnsignedWord v)
+        {
             if (Z80ByteOrder == HostByteOrder) {
                 return v;
             }
@@ -85,7 +95,8 @@ namespace Z80 {
 
         static inline bool isEvenParity(UnsignedWord v);
 
-        bool isValid() const {
+        bool isValid() const
+        {
             return m_ram;
         }
 
@@ -333,12 +344,13 @@ namespace Z80 {
             return registerValue(Register8::LShadow);
         }
 
-        inline void setInterruptMode(std::uint8_t mode) {
-            assert(mode < 3);
+        inline void setInterruptMode(InterruptMode mode)
+        {
             m_interruptMode = mode;
         }
 
-        inline int interruptMode() const {
+        inline InterruptMode interruptMode() const
+        {
             return m_interruptMode;
         }
 
@@ -775,18 +787,10 @@ namespace Z80 {
 
         void start();
 
-        bool connectIODevice(Z80::UnsignedWord port, Z80IODevice *device);
+        bool connectIODevice(Z80IODevice * device);
+        void disconnectIODevice(Z80IODevice * device);
 
-        void disconnectIODevice(Z80::UnsignedWord port, Z80IODevice *device);
-
-        /* call this to put an instruction in the Z80 CPU before calling
-         * interrupt() if the IO device is using Mode 0 interrupts. the
-         * instruction is copied so it can be deallocated if required immediately
-         * after the call */
-        void setInterruptMode0Instruction(Z80::UnsignedByte *instructions, int bytes);
-
-        void interrupt();
-
+        void interrupt(UnsignedWord data = 0x0000);
         void nmi();
 
         bool load(unsigned char *data, int addr, int length);
@@ -819,11 +823,6 @@ namespace Z80 {
 
 
     private:
-        struct IODeviceConnection {
-            Z80IODevice *device;
-            int port;
-        };
-
         /* NEVER call this method more than once. most subclasses will never need
          * to call it as the Z80 constructor makes sure the call is made */
         void init();
@@ -833,11 +832,13 @@ namespace Z80 {
         // memory
         Z80::UnsignedByte *m_ram;
         int m_ramSize;
-        bool m_nmiPending;
-        bool m_interruptRequested;
         bool m_iff1;
         bool m_iff2;
-        std::uint8_t m_interruptMode;
+        InterruptMode m_interruptMode;
+        bool m_nmiPending;
+        bool m_interruptRequested;
+        Z80::UnsignedWord m_interruptData;
+
         unsigned int m_plain_opcode_cycles[256];
 
         // 16-bit opcodes starting 0xdd and 0xfd use the IX and IY registers respectively for identical instructions, so
@@ -852,10 +853,7 @@ namespace Z80 {
         unsigned int m_fd_opcode_size[256];
         unsigned int m_ed_opcode_size[256];
         unsigned long long m_clockSpeed;    /* clock speed in Hz */
-        IODeviceConnection **m_ioDeviceConnections;
-        int m_ioDeviceCount;
-        int m_ioDeviceCapacity;
-        Z80::UnsignedByte m_interruptMode0Instruction[16];    /* cache for instructions placed by IO devices when IM is 0 */
+        std::set<Z80IODevice *> m_ioDevices;
     };
 }
 

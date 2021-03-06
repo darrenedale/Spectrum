@@ -235,16 +235,23 @@ namespace Z80
         RegisterZ80Endian bcZ80 = {bc};
         RegisterZ80Endian deZ80 = {de};
         RegisterZ80Endian hlZ80 = {hl};
-        RegisterZ80Endian spZ80 = {sp};
+        RegisterZ80Endian ixZ80 = {ix};
+        RegisterZ80Endian iyZ80 = {iy};
         RegisterZ80Endian pcZ80 = {pc};
+        RegisterZ80Endian spZ80 = {sp};
+
         RegisterZ80Endian afShadowZ80 = {afShadow};
         RegisterZ80Endian bcShadowZ80 = {bcShadow};
         RegisterZ80Endian deShadowZ80 = {deShadow};
         RegisterZ80Endian hlShadowZ80 = {hlShadow};
 
+        RegisterZ80Endian memptrZ80 = {memptr};
+
         void reset()
         {
             bc = de = hl = pc = bcShadow = deShadow = hlShadow = ix = iy = 0x0000;
+            // TODO i, r
+            // TODO memptr
             af = afShadow = sp = 0xffff;
         }
     };

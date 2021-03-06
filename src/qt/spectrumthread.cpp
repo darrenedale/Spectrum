@@ -18,7 +18,6 @@ SpectrumThread::SpectrumThread(Spectrum & spectrum, QObject * parent )
 	m_spectrum(spectrum),
 	m_pause(false),
 	m_quit(false),
-	m_debugMode(false),
 	m_step(false)
 {
 }
@@ -55,8 +54,8 @@ void SpectrumThread::run()
         m_spectrum.run((m_pause && m_step ? 1 : DefaultInstructionCount));
         m_spectrumLock.unlock();
 
-        if (m_debugMode) {
-            Q_EMIT debugStepTaken();
+        if (m_step) {
+            Q_EMIT stepped();
         }
 
         m_step = false;
@@ -67,12 +66,7 @@ void SpectrumThread::pause()
 {
     QMutexLocker locker(&m_threadLock);
 	m_pause = true;
-}
-
-void SpectrumThread::setDebugMode(bool on)
-{
-    QMutexLocker locker(&m_threadLock);
-	m_debugMode = on;
+    Q_EMIT paused();
 }
 
 void SpectrumThread::step()
@@ -87,6 +81,7 @@ void SpectrumThread::resume()
     QMutexLocker locker(&m_threadLock);
 	m_pause = false;
 	m_waitCondition.wakeOne();
+    Q_EMIT resumed();
 }
 
 void SpectrumThread::reset()

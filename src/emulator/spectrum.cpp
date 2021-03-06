@@ -7,6 +7,7 @@
 #include <QThread>
 
 #include "spectrumdisplaydevice.h"
+#include "spectrumkeyboard.h"
 #include "../z80/z80.h"
 
 namespace
@@ -51,7 +52,7 @@ namespace Spectrum
             return;
         }
 
-        m_nmiCycleCounter = 0;
+        m_interruptCycleCounter = 0;
         z80->reset();
     }
 
@@ -74,28 +75,29 @@ namespace Spectrum
 
         assert(z80());
 
-        static steady_clock::time_point lastNmi = steady_clock::now();
-        int nmiThreshold = z80()->clockSpeed() / 50;
+        static steady_clock::time_point lastInterrupt = steady_clock::now();
+        // TODO spectrum refresh is not exactly 50FPS
+        int interruptThreshold = z80()->clockSpeed() / 50;
 
         while (0 < instructionCount) {
-            m_nmiCycleCounter += z80()->fetchExecuteCycle();
+            m_interruptCycleCounter += z80()->fetchExecuteCycle();
 
             // check nmi counter against threshold and raise NMI in CPU if required
-            if (m_nmiCycleCounter > nmiThreshold) {
-                z80()->nmi();
+            if (m_interruptCycleCounter > interruptThreshold) {
+                z80()->interrupt();
                 refreshDisplays();
-                m_nmiCycleCounter %= nmiThreshold;
+                m_interruptCycleCounter %= interruptThreshold;
 
                 if (m_constrainExecutionSpeed) {
                     // pause based on requested execution speed
-                    auto actualNmiInterval = steady_clock::now() - lastNmi;
+                    auto actualInterruptInterval = steady_clock::now() - lastInterrupt;
 
-                    if (actualNmiInterval < 20ms) {
-                        auto sleepFor = 20ms - actualNmiInterval;
+                    if (actualInterruptInterval < 20ms) {
+                        auto sleepFor = 20ms - actualInterruptInterval;
                         std::this_thread::sleep_for(sleepFor);
                     }
 
-                    lastNmi = steady_clock::now();
+                    lastInterrupt = steady_clock::now();
                 }
             }
 
@@ -129,5 +131,31 @@ namespace Spectrum
         }
 
         return true;
+    }
+
+    void Spectrum::setKeyboard(SpectrumKeyboard * keyboard)
+    {
+        auto * cpu = z80();
+
+        if (cpu && m_keyboard) {
+            cpu->disconnectIODevice(m_keyboard);
+        }
+
+        m_keyboard = keyboard;
+
+        if (cpu && keyboard) {
+            cpu->connectIODevice(m_keyboard);
+        }
+    }
+
+    void Spectrum::addDisplayDevice(SpectrumDisplayDevice * dev)
+    {
+        assert(dev);
+        m_displayDevices.push_back(dev);
+        auto * cpu = z80();
+
+        if (cpu) {
+            cpu->connectIODevice(dev);
+        }
     }
 }

@@ -761,11 +761,65 @@ Z80_FLAG_F3_UPDATE(m_registers.memptrH & Z80_FLAG_F3_MASK);
  */
 #define Z80__RETI Z80__POP__REG16(m_registers.pc); /* TODO signal IO device that interrupt has finished */
 
-/* TODO: */
-//OUT (REG8),REG8
-//OUT (n),REG8
-//IN REG8,(REG8)
-//IN REG8,(n)
+// port is 8-bit and is the LSB for the 16-bit port. the MSB is from A
+#define Z80__OUT__INDIRECT_REG8__REG8(port,value) {    \
+    UnsignedWord tmpPort = ((port) & 0xff | (m_registers.b << 8)); \
+                                                       \
+    for (auto * device : m_ioDevices) {                \
+        if (!device->checkWritePort(tmpPort)) {        \
+            continue;                                  \
+        }                                              \
+                                                       \
+        device->writeByte(tmpPort, (value));           \
+    }                                                  \
+                                                       \
+    m_registers.memptr = tmpPort + 1;                  \
+}
+
+#define Z80__OUT__INDIRECT_N__REG8(port,value) {       \
+    UnsignedWord tmpPort = ((port) & 0xff | (m_registers.a << 8)); \
+                                                       \
+    for (auto * device : m_ioDevices) {                \
+        if (!device->checkWritePort(tmpPort)) {        \
+            continue;                                  \
+        }                                              \
+                                                       \
+        device->writeByte(tmpPort, (value));           \
+    }                                                  \
+                                                       \
+    m_registers.memptr = tmpPort + 1;                  \
+}
+
+#define Z80__IN__REG8__INDIRECT_REG8(dest,port) {    \
+    UnsignedWord tmpPort = ((port) & 0xff) | (m_registers.b << 8); \
+                                                     \
+    for (auto * device : m_ioDevices) {              \
+        if (!device->checkReadPort(tmpPort)) {       \
+            continue;                                \
+        }                                            \
+                                                     \
+        (dest) = device->readByte(tmpPort);          \
+    }                                                \
+                                                     \
+    m_registers.memptr = tmpPort + 1;                \
+    Z80_FLAG_H_CLEAR;                                \
+    Z80_FLAG_N_CLEAR;                                \
+    Z80_FLAG_Z_UPDATE(0 == (dest));                  \
+    Z80_FLAGS_S53_UPDATE((dest));                    \
+    Z80_FLAG_P_UPDATE(isEvenParity((dest)));         \
+}\
+
+#define Z80__IN__REG8__INDIRECT_N(dest,port) {       \
+    UnsignedWord tmpPort = ((port) & 0xff) | (m_registers.a << 8); \
+                                                     \
+    for (auto * device : m_ioDevices) {              \
+        if (!device->checkReadPort(tmpPort)) {       \
+            continue;                                \
+        }                                            \
+                                                     \
+        (dest) = device->readByte(tmpPort);          \
+    }                                                \
+}
 
 namespace
 {
@@ -795,43 +849,6 @@ constexpr const unsigned int Z80::Z80::DdOrFdOpcodeSize[256] = {
 
 Z80::Z80::Z80(unsigned char * mem, int memSize)
 : Cpu(mem, memSize),
-	// the 16-bit registers are all 16-bit scalar variables. I and R are 8-bit and are 8-bit scalar variables
-//	m_af(0),
-//  m_bc(0),
-//  m_de(0),
-//  m_hl(0),
-//  m_sp(0),
-//  m_pc(0),
-//  m_ix(0),
-//  m_iy(0),
-//  m_i(0),
-//  m_r(0),
-//  m_afshadow(0),
-//  m_bcshadow(0),
-//  m_deshadow(0),
-//  m_hlshadow(0),
-//	// the 8-bit registers are all pointers to the appropriate 8 bits of the 16-bit register - these are initialised,
-//	// taking into account host endianness, in init()
-//	m_a(nullptr),
-//  m_f(nullptr),
-//  m_b(nullptr),
-//  m_c(nullptr),
-//  m_d(nullptr),
-//  m_e(nullptr),
-//  m_h(nullptr),
-//  m_l(nullptr),
-//  m_ixh(nullptr),
-//  m_ixl(nullptr),
-//  m_iyh(nullptr),
-//  m_iyl(nullptr),
-//  m_ashadow(nullptr),
-//  m_fshadow(nullptr),
-//  m_bshadow(nullptr),
-//  m_cshadow(nullptr),
-//  m_dshadow(nullptr),
-//  m_eshadow(nullptr),
-//  m_hshadow(nullptr),
-//  m_lshadow(nullptr),
   m_ram(mem),
   m_ramSize(memSize),
   m_clockSpeed(DefaultClockSpeed),
@@ -839,11 +856,7 @@ Z80::Z80::Z80(unsigned char * mem, int memSize)
   m_interruptRequested(false),
   m_iff1(false),
   m_iff2(false),
-  m_interruptMode(0),
-  m_ioDeviceConnections(nullptr),
-  m_ioDeviceCount(0),
-  m_ioDeviceCapacity(0),
-  m_interruptMode0Instruction{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+  m_interruptMode(InterruptMode::IM0)
 {
 	init();
 }
@@ -857,18 +870,6 @@ bool Z80::Z80::isEvenParity(Z80::Z80::UnsignedByte v)
 	};
 
 	return parityLut[v];
-
-//	int c = 0;
-//	UnsignedByte mask = 1;
-
-//	/* count the 1s in the binary representation */
-//	for(int i = 0; i < 8; ++i) {
-//		if (v & mask) c++;
-//		mask <<= 1;
-//	}
-
-//	/* return true if there's an even number of 1s */
-//	return !(c % 2);
 }
 
 
@@ -879,72 +880,13 @@ bool Z80::Z80::isEvenParity(Z80::Z80::UnsignedWord v)
 	};
 
 	return parityLut[v];
-
-//	int c = 0;
-//	UnsignedByte mask = 1;
-
-//	/* count the 1s in the binary representation */
-//	for(int i = 0; i < 16; ++i) {
-//		if (v & mask) c++;
-//		mask <<= 1;
-//	}
-
-//	/* return true if there's an even number of 1s */
-//	return !(c % 2);
 }
 
 
 void Z80::Z80::init()
 {
-//	if (HostByteOrder == Z80ByteOrder) {
-//        m_a = (Z80::Z80::UnsignedByte *) &m_af;
-//        m_f = m_a + 1;
-//        m_b = (Z80::Z80::UnsignedByte *) &m_bc;
-//        m_c = m_b + 1;
-//        m_d = (Z80::Z80::UnsignedByte *) &m_de;
-//        m_e = m_d + 1;
-//        m_h = (Z80::Z80::UnsignedByte *) &m_hl;
-//        m_l = m_h + 1;
-//        m_ixh = (Z80::Z80::UnsignedByte *) &m_ix;
-//        m_ixl = m_ixl + 1;
-//        m_iyh = (Z80::Z80::UnsignedByte *) &m_iy;
-//        m_iyl = m_iyl + 1;
-//        m_ashadow = (Z80::Z80::UnsignedByte *) &m_afshadow;
-//        m_fshadow = m_ashadow + 1;
-//        m_bshadow = (Z80::Z80::UnsignedByte *) &m_bcshadow;
-//        m_cshadow = m_bshadow + 1;
-//        m_dshadow = (Z80::Z80::UnsignedByte *) &m_deshadow;
-//        m_eshadow = m_dshadow + 1;
-//        m_hshadow = (Z80::Z80::UnsignedByte *) &m_hlshadow;
-//        m_lshadow = m_hshadow + 1;
-//	} else {
-//        m_f = (Z80::Z80::UnsignedByte *) &m_af;
-//        m_a = m_f + 1;
-//        m_c = (Z80::Z80::UnsignedByte *) &m_bc;
-//        m_b = m_c + 1;
-//        m_e = (Z80::Z80::UnsignedByte *) &m_de;
-//        m_d = m_e + 1;
-//        m_l = (Z80::Z80::UnsignedByte *) &m_hl;
-//        m_h = m_l + 1;
-//        m_ixl = (Z80::Z80::UnsignedByte *) &m_ix;
-//        m_ixh = m_ixl + 1;
-//        m_iyl = (Z80::Z80::UnsignedByte *) &m_iy;
-//        m_iyh = m_iyl + 1;
-//        m_fshadow = (Z80::Z80::UnsignedByte *) &m_afshadow;
-//        m_ashadow = m_fshadow + 1;
-//        m_cshadow = (Z80::Z80::UnsignedByte *) &m_bcshadow;
-//        m_bshadow = m_cshadow + 1;
-//        m_eshadow = (Z80::Z80::UnsignedByte *) &m_deshadow;
-//        m_dshadow = m_eshadow + 1;
-//        m_lshadow = (Z80::Z80::UnsignedByte *) &m_hlshadow;
-//        m_hshadow = m_lshadow + 1;
-//	}
-
-	/* set IO up device connections */
-	m_ioDeviceCount = 0;
-	m_ioDeviceCapacity = 100;
-	m_ioDeviceConnections = (IODeviceConnection **) malloc(sizeof(IODeviceConnection *) * m_ioDeviceCapacity);
-	*m_interruptMode0Instruction = 0;
+    m_interruptMode = InterruptMode::IM0;
+	m_interruptData = 0x0000;
 
 	/* set up opcode cycle costs */
 #include "z80_plain_opcode_cycles.inc"
@@ -959,40 +901,31 @@ void Z80::Z80::init()
 }
 
 
-bool Z80::Z80::connectIODevice(Z80::Z80::UnsignedWord port, Z80IODevice * device)
+bool Z80::Z80::connectIODevice(Z80IODevice * device)
 {
-	if (m_ioDeviceCount >= m_ioDeviceCapacity) {
-		m_ioDeviceCapacity += 100;
-		m_ioDeviceConnections = (IODeviceConnection **) std::realloc(m_ioDeviceConnections, sizeof(IODeviceConnection *) * m_ioDeviceCapacity);
-	}
-
-	IODeviceConnection * myDevice = m_ioDeviceConnections[m_ioDeviceCount++] = new IODeviceConnection();
-	myDevice->device = device;
-	myDevice->port = port;
+    m_ioDevices.insert(device);
 	device->setCpu(this);
 	return true;
 }
 
-void Z80::Z80::disconnectIODevice(Z80::Z80::UnsignedWord port, Z80IODevice * device) {
-	for(int i = 0; i < m_ioDeviceCount; ++i) {
-		if (m_ioDeviceConnections[i]->device == device && m_ioDeviceConnections[i]->port == port) {
-			m_ioDeviceConnections[i]->device->setCpu(0);
-			delete m_ioDeviceConnections[i];
-			--m_ioDeviceCount;
+void Z80::Z80::disconnectIODevice(Z80IODevice * device)
+{
+    const auto deviceIterator = m_ioDevices.find(device);
 
-			for(int j = i; j < m_ioDeviceCount; ++j)
-				m_ioDeviceConnections[j] = m_ioDeviceConnections[j + 1];
-		}
-	}
-}
-
-void Z80::Z80::setInterruptMode0Instruction(Z80::Z80::UnsignedByte * instructions, int bytes) {
-	for(int i = 0; i < bytes; ++i) {
-        m_interruptMode0Instruction[i] = instructions[i];
+    if (m_ioDevices.cend() == deviceIterator) {
+        return;
     }
+
+    if (device->cpu() == this) {
+        device->setCpu(nullptr);
+    }
+
+    m_ioDevices.erase(deviceIterator);
 }
 
-void Z80::Z80::interrupt() {
+void Z80::Z80::interrupt(UnsignedWord data)
+{
+    m_interruptData = data;
 	m_interruptRequested = true;
 }
 
@@ -1122,38 +1055,47 @@ int Z80::Z80::fetchExecuteCycle()
 	int cycles = 0;
 	int size = 0;
 
+	// TODO technically interrupts occur at the end of instruction processing
 	if (m_nmiPending) {
-		/* do the interrupt */
+		// do the interrupt
 		m_iff2 = m_iff1;
 		m_iff1 = false;
-		Z80__PUSH__REG16(m_registers.pcZ80);
+		Z80__PUSH__REG16(m_registers.pc);
 		m_registers.pc = 0x0066;
 		m_nmiPending = false;
+		cycles += 11;
 	}
 
 	if (m_iff1 && m_interruptRequested) {
-		/* process maskable interrupts */
+		// process maskable interrupts
 		switch(m_interruptMode) {
-			case 0:
+			case InterruptMode::IM0:
 				m_iff1 = m_iff2 = false;
 				// TODO if the instruction is a call or RST, push PC onto stack
 				if (false/* is_call_or_rst */) {
-				    Z80__PUSH__REG16(m_registers.pcZ80);
+				    Z80__PUSH__REG16(m_registers.pc);
 				}
 
 				/* execute the instruction */
-				execute(m_interruptMode0Instruction, false);
+				execute(reinterpret_cast<UnsignedByte *>(&m_interruptData), false);
 				// clear the instruction cache - actually just turns it into a NOP
-				*m_interruptMode0Instruction = 0;
+				m_interruptData = 0x0000;
 				break;
 
-			case 1:
+		    case InterruptMode::IM1:
 				m_iff1 = m_iff2 = false;
-				Z80__PUSH__REG16(m_registers.pcZ80);
+				Z80__PUSH__REG16(m_registers.pc);
                 m_registers.pc = 0x0038;
+                cycles += 13;
 				break;
 
-			case 2:
+		    case InterruptMode::IM2:
+                m_iff1 = m_iff2 = false;
+                Z80__PUSH__REG16(m_registers.pc);
+                m_registers.pc = 0x0038;
+			    // TODO read interrupt vector from data bus
+			    // TODO set PC to location of interrupt routine
+                cycles += 19;
 				break;
 		}
 
@@ -1489,11 +1431,11 @@ bool Z80::Z80::executePlainInstruction(const Z80::Z80::UnsignedByte * instructio
 			break;
 
 		case Z80__PLAIN__LD__SP__NN:				// 0x31
-			Z80__LD__REG16__NN(m_registers.sp, Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG16__NN(m_registers.sp, z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
 			break;
 
 		case Z80__PLAIN__LD__INDIRECT_NN__A:		// 0x32
-			Z80__LD__INDIRECT_NN__REG8(Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_registers.a);
+			Z80__LD__INDIRECT_NN__REG8(z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_registers.a);
 			break;
 
 		case Z80__PLAIN__INC__SP:					// 0x33
@@ -2216,8 +2158,8 @@ bool Z80::Z80::executePlainInstruction(const Z80::Z80::UnsignedByte * instructio
 			break;
 
 		case Z80__PLAIN__OUT__INDIRECT_N__A:		// 0xd3
-			/* FLAGS: all preserved */
-			/* TODO */
+            Z80__OUT__INDIRECT_N__REG8(*(instruction + 1), m_registers.a);
+            m_registers.memptr = m_registers.bc + 1;
 			break;
 
 		case Z80__PLAIN__CALL__NC__NN:				// 0xd4
@@ -2272,8 +2214,7 @@ bool Z80::Z80::executePlainInstruction(const Z80::Z80::UnsignedByte * instructio
 			break;
 
 		case Z80__PLAIN__IN__A__INDIRECT_N:		// 0xdb
-			/* FLAGS: all preserved */
-			/* TODO */
+            Z80__IN__REG8__INDIRECT_N(m_registers.a, *(instruction + 1));
 			break;
 
 		case Z80__PLAIN__CALL__C__NN:				// 0xdc
@@ -3797,13 +3738,11 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 			break;
 
 		case Z80__ED__IN__B__INDIRECT_C:
-			/* FLAGS: all preserved */
-			/* TODO */
+            Z80__IN__REG8__INDIRECT_REG8(m_registers.b, m_registers.c);
 			break;
 
 		case Z80__ED__OUT__INDIRECT_C__B:
-			/* FLAGS: all preserved */
-			/* TODO */
+            Z80__OUT__INDIRECT_REG8__REG8(m_registers.c, m_registers.b);
 			break;
 
 		case Z80__ED__SBC__HL__BC:					/* 0xed 0x42 */
@@ -3834,17 +3773,15 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 			break;
 
 		case Z80__ED__IM__0:
-			m_interruptMode = 0;
+			m_interruptMode = InterruptMode::IM0;
 			break;
 
 		case Z80__ED__IN__C__INDIRECT_C:
-			/* FLAGS: all preserved */
-			/* TODO */
+            Z80__IN__REG8__INDIRECT_REG8(m_registers.c, m_registers.c);
 			break;
 
 		case Z80__ED__OUT__INDIRECT_C__C:
-			/* FLAGS: all preserved */
-			/* TODO */
+            Z80__OUT__INDIRECT_REG8__REG8(m_registers.c, m_registers.c);
 			break;
 
 		case Z80__ED__ADC__HL__BC:
@@ -3867,17 +3804,15 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 		case Z80__ED__IM__0__0XED__0X4E:	/* 0xed 0x4e */
 			/* non-standard instruction; not guaranteed that this is the instruction
 			 * in all versions of the Z80 */
-			m_interruptMode = 0;
+			m_interruptMode = InterruptMode::IM0;
 			break;
 
 		case Z80__ED__IN__D__INDIRECT_C:
-			/* FLAGS: all preserved */
-			/* TODO */
+            Z80__IN__REG8__INDIRECT_REG8(m_registers.d, m_registers.c);
 			break;
 
 		case Z80__ED__OUT__INDIRECT_C__D:
-			/* FLAGS: all preserved */
-			/* TODO */
+            Z80__OUT__INDIRECT_REG8__REG8(m_registers.c, m_registers.d);
 			break;
 
 		case Z80__ED__SBC__HL__DE:
@@ -3898,7 +3833,7 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 			break;
 
 		case Z80__ED__IM__1:					/* 0xed 0x56 */
-			m_interruptMode = 1;
+			m_interruptMode = InterruptMode::IM1;
 			break;
 
 		case Z80__ED__LD__A__I:				/* 0xed 0x57 */
@@ -3911,13 +3846,11 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 			break;
 
 		case Z80__ED__IN__E__INDIRECT_C:
-			/* FLAGS: all preserved */
-			/* TODO */
+            Z80__IN__REG8__INDIRECT_REG8(m_registers.e, m_registers.c);
 			break;
 
 		case Z80__ED__OUT__INDIRECT_C__E:
-			/* FLAGS: all preserved */
-			/* TODO */
+            Z80__OUT__INDIRECT_REG8__REG8(m_registers.c, m_registers.e);
 			break;
 
 		case Z80__ED__ADC__HL__DE:
@@ -3938,7 +3871,7 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 			break;
 
 		case Z80__ED__IM__2:					/* 0xed 0x5e */
-			m_interruptMode = 2;
+			m_interruptMode = InterruptMode::IM2;
 			break;
 
 		case Z80__ED__LD__A__R:
@@ -3951,13 +3884,11 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 			break;
 
 		case Z80__ED__IN__H__INDIRECT_C:	/* 0xed 0x60 */
-			/* FLAGS: all preserved */
-			/* TODO */
+            Z80__IN__REG8__INDIRECT_REG8(m_registers.h, m_registers.c);
 			break;
 
 		case Z80__ED__OUT__INDIRECT_C__H:
-			/* FLAGS: all preserved */
-			/* TODO */
+            Z80__OUT__INDIRECT_REG8__REG8(m_registers.c, m_registers.h);
 			break;
 
 		case Z80__ED__SBC__HL__HL:			/* 0xed 0x62 */
@@ -3980,7 +3911,7 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 		case Z80__ED__IM__0__0XED__0X66:		/* 0xed 0x66 */
 			/* non-standard instruction; not guaranteed that this is the instruction
 			 * in all versions of the Z80 */
-			m_interruptMode = 0;
+			m_interruptMode = InterruptMode::IM0;
 			break;
 
 		case Z80__ED__RRD:
@@ -4011,13 +3942,11 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 			break;
 
 		case Z80__ED__IN__L__INDIRECT_C:
-			/* FLAGS: all preserved */
-			/* TODO */
+            Z80__IN__REG8__INDIRECT_REG8(m_registers.l, m_registers.c);
 			break;
 
 		case Z80__ED__OUT__INDIRECT_C__L:
-			/* FLAGS: all preserved */
-			/* TODO */
+            Z80__OUT__INDIRECT_REG8__REG8(m_registers.c, m_registers.l);
 			break;
 
 		case Z80__ED__ADC__HL__HL:
@@ -4040,7 +3969,7 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 		case Z80__ED__IM__0__0XED__0X6E:		/* 0xed 0x6e */
 			/* non-standard instruction; not guaranteed that this is the instruction
 			 * in all versions of the Z80 */
-			m_interruptMode = 0;
+			m_interruptMode = InterruptMode::IM0;
 			break;
 
 		case Z80__ED__RLD:
@@ -4077,9 +4006,8 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 			/* TODO */
 			break;
 
-		case Z80__ED__OUT__INDIRECT_C__0:
-			/* FLAGS: all preserved */
-			/* TODO */
+		case Z80__ED__OUT__INDIRECT_C__0:   	/* 0xed 0x71 */
+            Z80__OUT__INDIRECT_REG8__REG8(m_registers.c, 0);
 			break;
 
 		case Z80__ED__SBC__HL__SP:
@@ -4102,35 +4030,33 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 		case Z80__ED__IM__1__0XED__0X76:		/* 0xed 0x76 */
 			/* non-standard instruction; not guaranteed that this is the instruction
 			 * in all versions of the Z80 */
-			m_interruptMode = 1;
+			m_interruptMode = InterruptMode::IM1;
 			break;
 
-		case Z80__ED__NOP__0XED__0x77:	/* 0xed 0x77 */
+		case Z80__ED__NOP__0XED__0x77:	        /* 0xed 0x77 */
 			break;
 
-		case Z80__ED__IN__A__INDIRECT_C:
-			/* FLAGS: all preserved */
-			/* TODO */
+		case Z80__ED__IN__A__INDIRECT_C:   	    /* 0xed 0x78 */
+            Z80__IN__REG8__INDIRECT_REG8(m_registers.a, m_registers.c);
 			break;
 
-		case Z80__ED__OUT__INDIRECT_C__A:
-			/* FLAGS: all preserved */
-			/* TODO */
+		case Z80__ED__OUT__INDIRECT_C__A:   	/* 0xed 0x79 */
+            Z80__OUT__INDIRECT_REG8__REG8(m_registers.c, m_registers.a);
 			break;
 
-		case Z80__ED__ADC__HL__SP:
+		case Z80__ED__ADC__HL__SP:   	        /* 0xed 0x7a */
 			Z80__ADC__REG16__REG16(m_registers.hl, m_registers.sp);
 			break;
 
-		case Z80__ED__LD__SP__INDIRECT_NN:
+		case Z80__ED__LD__SP__INDIRECT_NN:   	/* 0xed 0x7b */
 			Z80__LD__REG16__INDIRECT_NN(m_registers.sp, Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
 			break;
 
-		case Z80__ED__NEG__0XED__0X7C:		/* 0xed 0x7c */
+		case Z80__ED__NEG__0XED__0X7C:	    	/* 0xed 0x7c */
 			Z80_NEG;
 			break;
 
-		case Z80__ED__RETI__0XED__0X7D:		/* 0xed 0x7d */
+		case Z80__ED__RETI__0XED__0X7D:	    	/* 0xed 0x7d */
 			Z80__RETI;
 			Z80_DONT_UPDATE_PC;
 			break;
@@ -4138,7 +4064,7 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 		case Z80__ED__IM__2__0XED__0X7E:		/* 0xed 0x7e */
 			/* non-standard instruction; not guaranteed that this is the instruction
 			 * in all versions of the Z80 */
-			m_interruptMode = 2;
+			m_interruptMode = InterruptMode::IM2;
 			break;
 
 		case Z80__ED__NOP__0XED__0X7F:

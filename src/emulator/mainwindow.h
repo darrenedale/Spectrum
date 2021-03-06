@@ -1,23 +1,22 @@
 #ifndef SPECTRUM_EMULATOR_MAINWINDOW_H
 #define SPECTRUM_EMULATOR_MAINWINDOW_H
 
-#include <memory>
 #include <QMainWindow>
+#include <QAction>
+#include <QSlider>
+#include <QSpinBox>
 #include <QTimer>
 
 #include "spectrum.h"
 #include "../qt/ui/qspectrumdisplay.h"
-
-class QAction;
-class QSlider;
-class QSpinBox;
-class ImageWidget;
+#include "../qt/ui/qspectrumdebugwindow.h"
+#include "../qt/ui/imagewidget.h"
+#include "../qt/qspectrumkeyboard.h"
+#include "../qt/spectrumthread.h"
 
 namespace Spectrum
 {
 	class QSpectrumDisplay;
-	class SpectrumThread;
-	class QSpectrumDebugWindow;
 
 	class MainWindow
 	:	public QMainWindow {
@@ -43,33 +42,47 @@ namespace Spectrum
             return m_spectrum;
         }
 
-	protected:
-	    void showEvent(QShowEvent *) override;
-	    void closeEvent(QCloseEvent *) override;
+        bool eventFilter(QObject *, QEvent *) override;
 
-        void startPauseClicked();
+	protected:
+        void showEvent(QShowEvent *) override;
+	    void closeEvent(QCloseEvent *) override;
+        void refreshSpectrumDisplay();
+
+    private:
+        void createToolbars();
+        void connectSignals();
+
+        void pauseResumeTriggered();
         void saveScreenshotTriggered();
         void loadSnapshotTriggered();
         void saveSnapshotTriggered();
         void emulationSpeedChanged(int);
+        void stepTriggered();
+        void debugTriggered();
 
-    private:
-        void createWidgets();
-        void connectWidgets();
+        void threadPaused();
+        void threadResumed();
+        void threadStepped();
 
-        std::unique_ptr<SpectrumThread> m_spectrumThread;
+        void debugWindowHidden();
+        void debugWindowShown();
+
         Spectrum m_spectrum;
+        SpectrumThread m_spectrumThread;
+        QSpectrumKeyboard m_keyboard;
         QSpectrumDisplay m_display;
-        std::unique_ptr<ImageWidget> m_displayWidget;
-        QAction * m_load;
-        QAction * m_startPause;
-        QAction * m_screenshot;
-        QAction * m_reset;
-        QAction * m_debug;
-        QAction * m_debugStep;
-        QSlider * m_emulationSpeedSlider;
-        QSpinBox * m_emulationSpeedSpin;
-        QSpectrumDebugWindow * m_debugWindow;
+        ImageWidget m_displayWidget;
+        QAction m_load;
+        QAction m_pauseResume;
+        QAction m_refreshScreen;
+        QAction m_screenshot;
+        QAction m_reset;
+        QAction m_debug;
+        QAction m_debugStep;
+        QSlider m_emulationSpeedSlider;
+        QSpinBox m_emulationSpeedSpin;
+        QSpectrumDebugWindow m_debugWindow;
         QTimer m_displayRefreshTimer;
 	};
 }

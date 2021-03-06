@@ -27,25 +27,21 @@ namespace Spectrum {
 				return m_spectrum;
 			}
 
-			inline bool paused() const
+			inline bool isPaused() const
             {
 			    return m_pause;
             }
 
-			inline bool debugMode() const
-            {
-			    return m_debugMode;
-            }
-
 		Q_SIGNALS:
-			void debugStepTaken();
+	        void paused();
+	        void resumed();
+			void stepped();
 
 		public Q_SLOTS:
 			void pause();
 			void reset();
 			void resume();
 			void quit();
-			void setDebugMode(bool);
 			void step();
 
 		protected:
@@ -58,7 +54,6 @@ namespace Spectrum {
 			Spectrum & m_spectrum;
 			bool m_pause;
 			bool m_quit;
-			bool m_debugMode;
 			bool m_step;
 	};
 }

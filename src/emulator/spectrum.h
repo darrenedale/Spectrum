@@ -12,8 +12,10 @@
 #define SPECTRUM_OFFSET_DISPLAYFILE 0x4000
 #define SPECTRUM_DISPLAYFILE_SIZE 6912
 
-namespace Spectrum {
+namespace Spectrum
+{
 	class SpectrumDisplayDevice;
+	class SpectrumKeyboard;
 
 	class Spectrum
     :	public Computer<>
@@ -31,7 +33,7 @@ namespace Spectrum {
 
 			inline int nmiCounter() const
 			{
-				return m_nmiCycleCounter;
+				return m_interruptCycleCounter;
 			}
 
 			std::uint8_t * displayMemory() const
@@ -69,10 +71,7 @@ namespace Spectrum {
 			    return m_constrainExecutionSpeed;
             }
 
-			void addDisplayDevice( SpectrumDisplayDevice * dev )
-			{
-				m_displayDevices.push_back(dev);
-			}
+			void addDisplayDevice(SpectrumDisplayDevice * dev);
 
 			void removeDisplayDevice(SpectrumDisplayDevice * dev)
 			{
@@ -85,15 +84,23 @@ namespace Spectrum {
 				m_displayDevices.erase(pos, pos);
 			}
 
+			void setKeyboard(SpectrumKeyboard * keyboard);
+
+            [[nodiscard]] SpectrumKeyboard * keyboard() const
+            {
+                return m_keyboard;
+            }
+
 		protected:
 	        void clearMemory() const;
 			bool loadRom(const std::string & fileName) const;
 			inline void refreshDisplays() const;
 
 		private:
-			int m_nmiCycleCounter;
+			int m_interruptCycleCounter;
 			bool m_constrainExecutionSpeed;
 			std::vector<SpectrumDisplayDevice *> m_displayDevices;
+            SpectrumKeyboard * m_keyboard;
     };
 }
 

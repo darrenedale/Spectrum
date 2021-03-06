@@ -2,13 +2,17 @@
 
 #include <QSpinBox>
 #include <QLineEdit>
+#include <QGroupBox>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QLabel>
+#include <QToolBar>
 #include <QSettings>
 
+#include "../spectrumthread.h"
 #include "../../emulator/spectrum.h"
 #include "../../z80/z80.h"
+#include "registerpairwidget.h"
 
 using namespace Spectrum;
 
@@ -17,254 +21,209 @@ QSpectrumDebugWindow::QSpectrumDebugWindow( QWidget * parent )
 {
 }
 
-QSpectrumDebugWindow::QSpectrumDebugWindow( Spectrum * spectrum, QWidget * parent )
-:	QWidget(parent),
-	m_spectrum(spectrum),
-	m_af(nullptr),
-	m_bc(nullptr),
-	m_de(nullptr),
-	m_hl(nullptr),
-	m_ix(nullptr),
-	m_iy(nullptr),
-	m_afshadow(nullptr),
-	m_bcshadow(nullptr),
-	m_deshadow(nullptr),
-	m_hlshadow(nullptr),
-	m_pc(nullptr),
-	m_sp(nullptr),
-	m_a(nullptr),
-	m_b(nullptr),
-	m_c(nullptr),
-	m_d(nullptr),
-	m_e(nullptr),
-	m_h(nullptr),
-	m_l(nullptr),
-	m_ashadow(nullptr),
-	m_bshadow(nullptr),
-	m_cshadow(nullptr),
-	m_dshadow(nullptr),
-	m_eshadow(nullptr),
-	m_hshadow(nullptr),
-	m_lshadow(nullptr),
-	m_ixh(nullptr),
-	m_ixl(nullptr),
-	m_iyh(nullptr),
-	m_iyl(nullptr),
-	m_instruction(nullptr) {
-	createWidgets();
+QSpectrumDebugWindow::QSpectrumDebugWindow(SpectrumThread * thread, QWidget * parent )
+: QMainWindow(parent),
+  m_thread(thread),
+  m_af(QStringLiteral("AF")),
+  m_bc(QStringLiteral("BC")),
+  m_de(QStringLiteral("DE")),
+  m_hl(QStringLiteral("HL")),
+  m_ix(QStringLiteral("IX")),
+  m_iy(QStringLiteral("IY")),
+  m_afshadow(QStringLiteral("AF'")),
+  m_bcshadow(QStringLiteral("BC'")),
+  m_deshadow(QStringLiteral("DE'")),
+  m_hlshadow(QStringLiteral("HL'")),
+  m_pc(4),
+  m_sp(4),
+  m_flags(),
+  m_shadowFlags(),
+  m_memoryWidget(thread->spectrum()),
+  m_memoryPc(),
+  m_memorySp(),
+  m_step(QIcon::fromTheme(QStringLiteral("debug-step-instruction")), tr("Step")),
+  m_pauseResume(QIcon::fromTheme(QStringLiteral("media-playback-play")), tr("Resume")),
+  m_refresh(QIcon::fromTheme(QStringLiteral("view-refresh")), tr("Refresh"))
+{
+    m_pc.setMinimum(0);
+    m_pc.setMaximum(0xffff);
+    m_sp.setMinimum(0);
+    m_sp.setMaximum(0xffff);
+
+    m_memoryPc.setText(QStringLiteral("PC"));
+    m_memorySp.setText(QStringLiteral("SP"));
+
+    QFont widgetFont = m_af.font();
+    widgetFont.setPointSizeF(widgetFont.pointSizeF() * 0.85);
+
+    for (auto * widget : {&m_af, &m_bc, &m_de, &m_hl, &m_ix, &m_iy, &m_afshadow, &m_bcshadow, &m_deshadow, &m_hlshadow, }) {
+        widget->setFont(widgetFont);
+    }
+
+    m_flags.setFont(widgetFont);
+    m_shadowFlags.setFont(widgetFont);
+    m_pc.setFont(widgetFont);
+    m_sp.setFont(widgetFont);
+
+    setWindowTitle(tr("Spectrum Debugger"));
+    createToolbars();
+    layoutWidget();
+
+	connect(m_thread, &SpectrumThread::paused, this, &QSpectrumDebugWindow::threadPaused, Qt::UniqueConnection);
+	connect(m_thread, &SpectrumThread::resumed, this, &QSpectrumDebugWindow::threadResumed, Qt::UniqueConnection);
+
 	connectWidgets();
 }
 
-QSpinBox * QSpectrumDebugWindow::createRegisterSpinBox(int bits) const
+void QSpectrumDebugWindow::createToolbars()
 {
-	auto * ret = new QSpinBox();
-	ret->setMinimum(0);
-	ret->setMaximum((1 << bits) - 1);
-	connect(ret, qOverload<int>(&QSpinBox::valueChanged), this, &QSpectrumDebugWindow::setRegister);
-	return ret;
+    auto * toolbar = addToolBar(tr("Debug"));
+    toolbar->addAction(&m_pauseResume);
+    toolbar->addAction(&m_step);
+    toolbar->addSeparator();
+    toolbar->addAction(&m_refresh);
 }
 
-void QSpectrumDebugWindow::createWidgets()
+void QSpectrumDebugWindow::layoutWidget()
 {
-	m_af = createRegisterSpinBox(16);
-	m_bc = createRegisterSpinBox(16);
-	m_de = createRegisterSpinBox(16);
-	m_hl = createRegisterSpinBox(16);
-	m_ix = createRegisterSpinBox(16);
-	m_iy = createRegisterSpinBox(16);
-	m_afshadow = createRegisterSpinBox(16);
-	m_bcshadow = createRegisterSpinBox(16);
-	m_deshadow = createRegisterSpinBox(16);
-	m_hlshadow = createRegisterSpinBox(16);
-	m_pc = createRegisterSpinBox(16);
-	m_sp = createRegisterSpinBox(16);
-	m_a = createRegisterSpinBox(8);
-	m_b = createRegisterSpinBox(8);
-	m_c = createRegisterSpinBox(8);
-	m_d = createRegisterSpinBox(8);
-	m_e = createRegisterSpinBox(8);
-	m_h = createRegisterSpinBox(8);
-	m_l = createRegisterSpinBox(8);
-	m_ashadow = createRegisterSpinBox(8);
-	m_bshadow = createRegisterSpinBox(8);
-	m_cshadow = createRegisterSpinBox(8);
-	m_dshadow = createRegisterSpinBox(8);
-	m_eshadow = createRegisterSpinBox(8);
-	m_hshadow = createRegisterSpinBox(8);
-	m_lshadow = createRegisterSpinBox(8);
-	m_ixh = createRegisterSpinBox(8);
-	m_ixl = createRegisterSpinBox(8);
-	m_iyh = createRegisterSpinBox(8);
-	m_iyl = createRegisterSpinBox(8);
-	m_instruction = new QLineEdit();
+	// registers
+	auto * plainRegisters = new QGroupBox(tr("Registers"));
+	auto * plainRegistersLayout = new QVBoxLayout();
+	QLabel * tmpLabel;
 
-	/*
-	 * layout
-	 */
-	auto * plainRegisters = new QHBoxLayout();
-	auto * shadowRegisters = new QHBoxLayout();
-	QLabel * myLabel;
+	plainRegistersLayout->addWidget(&m_af);
+	plainRegistersLayout->addWidget(&m_bc);
+	plainRegistersLayout->addWidget(&m_de);
+	plainRegistersLayout->addWidget(&m_hl);
+	plainRegistersLayout->addWidget(&m_ix);
+	plainRegistersLayout->addWidget(&m_iy);
 
-	/* normal registers */
-	myLabel = new QLabel("A");
-	myLabel->setBuddy(m_a);
-	plainRegisters->addWidget(myLabel);
-	plainRegisters->addWidget(m_a);
+	auto * flagsLayout = new QHBoxLayout();
+    tmpLabel = new QLabel("Flags");
+    tmpLabel->setBuddy(&m_flags);
+    tmpLabel->setFont(m_flags.font());
+	flagsLayout->addWidget(tmpLabel);
+	flagsLayout->addWidget(&m_flags);
+	flagsLayout->addStretch(10);
+	plainRegistersLayout->addLayout(flagsLayout);
 
-	myLabel = new QLabel("B");
-	myLabel->setBuddy(m_b);
-	plainRegisters->addWidget(myLabel);
-	plainRegisters->addWidget(m_b);
+	plainRegistersLayout->addStretch(10);
+	plainRegisters->setLayout(plainRegistersLayout);
 
-	myLabel = new QLabel("C");
-	myLabel->setBuddy(m_c);
-	plainRegisters->addWidget(myLabel);
-	plainRegisters->addWidget(m_c);
+	// program counter and stack pointer
+    auto * pointers = new QGroupBox(tr("Pointers"));
+    auto * pointersLayout = new QVBoxLayout();
 
-	myLabel = new QLabel("D");
-	myLabel->setBuddy(m_d);
-	plainRegisters->addWidget(myLabel);
-	plainRegisters->addWidget(m_d);
+    auto * regLayout = new QHBoxLayout();
+    tmpLabel = new QLabel("SP");
+    tmpLabel->setBuddy(&m_sp);
+    tmpLabel->setFont(m_sp.font());
+    tmpLabel->setMinimumHeight(m_sp.minimumHeight());
+    regLayout->addWidget(tmpLabel);
+    regLayout->addWidget(&m_sp);
+    pointersLayout->addLayout(regLayout);
 
-	myLabel = new QLabel("E");
-	myLabel->setBuddy(m_e);
-	plainRegisters->addWidget(myLabel);
-	plainRegisters->addWidget(m_e);
+    regLayout = new QHBoxLayout();
+    tmpLabel = new QLabel("PC");
+    tmpLabel->setBuddy(&m_pc);
+    tmpLabel->setFont(m_pc.font());
+    tmpLabel->setMinimumHeight(m_pc.minimumHeight());
+    regLayout->addWidget(tmpLabel);
+    regLayout->addWidget(&m_pc);
+    pointersLayout->addLayout(regLayout);
+    pointers->setLayout(pointersLayout);
 
-	myLabel = new QLabel("H");
-	myLabel->setBuddy(m_h);
-	plainRegisters->addWidget(myLabel);
-	plainRegisters->addWidget(m_h);
+	// shadow registers
+    auto * shadowRegisters = new QGroupBox(tr("Shadow registers"));
+    auto * shadowRegistersLayout = new QVBoxLayout();
 
-	myLabel = new QLabel("L");
-	myLabel->setBuddy(m_l);
-	plainRegisters->addWidget(myLabel);
-	plainRegisters->addWidget(m_l);
+	shadowRegistersLayout->addWidget(&m_afshadow);
+	shadowRegistersLayout->addWidget(&m_bcshadow);
+	shadowRegistersLayout->addWidget(&m_deshadow);
+	shadowRegistersLayout->addWidget(&m_hlshadow);
 
-	myLabel = new QLabel("AF");
-	myLabel->setBuddy(m_af);
-	plainRegisters->addWidget(myLabel);
-	plainRegisters->addWidget(m_af);
+    flagsLayout = new QHBoxLayout();
+    tmpLabel = new QLabel("Flags");
+    tmpLabel->setBuddy(&m_shadowFlags);
+    tmpLabel->setFont(m_shadowFlags.font());
+    flagsLayout->addWidget(tmpLabel);
+    flagsLayout->addWidget(&m_shadowFlags);
+    flagsLayout->addStretch(10);
+    shadowRegistersLayout->addLayout(flagsLayout);
 
-	myLabel = new QLabel("BC");
-	myLabel->setBuddy(m_bc);
-	plainRegisters->addWidget(myLabel);
-	plainRegisters->addWidget(m_bc);
+    shadowRegistersLayout->addStretch(10);
+    shadowRegisters->setLayout(shadowRegistersLayout);
 
-	myLabel = new QLabel("DE");
-	myLabel->setBuddy(m_de);
-	plainRegisters->addWidget(myLabel);
-	plainRegisters->addWidget(m_de);
+    auto * memory = new QGroupBox(tr("Memory"));
+    auto * memoryLayout = new QVBoxLayout();
+    memoryLayout->addWidget(&m_memoryWidget);
+    memory->setLayout(memoryLayout);
+    auto * tmpLayout = new QHBoxLayout();
+    tmpLayout->addStretch(10);
+    tmpLayout->addWidget(&m_memoryPc);
+    tmpLayout->addWidget(&m_memorySp);
+    memoryLayout->addLayout(tmpLayout);
 
-	myLabel = new QLabel("IX");
-	myLabel->setBuddy(m_ix);
-	plainRegisters->addWidget(myLabel);
-	plainRegisters->addWidget(m_ix);
+	auto * mainLayout = new QHBoxLayout();
+    mainLayout->addWidget(plainRegisters);
+    auto * rightLayout = new QVBoxLayout();
+    rightLayout->addWidget(shadowRegisters);
+    rightLayout->addWidget(pointers);
+    mainLayout->addLayout(rightLayout);
+    mainLayout->addWidget(memory);
 
-	myLabel = new QLabel("IY");
-	myLabel->setBuddy(m_iy);
-	plainRegisters->addWidget(myLabel);
-	plainRegisters->addWidget(m_iy);
-
-	myLabel = new QLabel("HL");
-	myLabel->setBuddy(m_hl);
-	plainRegisters->addWidget(myLabel);
-	plainRegisters->addWidget(m_hl);
-
-	myLabel = new QLabel("SP");
-	myLabel->setBuddy(m_sp);
-	plainRegisters->addWidget(myLabel);
-	plainRegisters->addWidget(m_sp);
-
-	myLabel = new QLabel("PC");
-	myLabel->setBuddy(m_pc);
-	plainRegisters->addWidget(myLabel);
-	plainRegisters->addWidget(m_pc);
-
-	/* shadow registers */
-	myLabel = new QLabel("A'");
-	myLabel->setBuddy(m_ashadow);
-	shadowRegisters->addWidget(myLabel);
-	shadowRegisters->addWidget(m_ashadow);
-
-	myLabel = new QLabel("B'");
-	myLabel->setBuddy(m_bshadow);
-	shadowRegisters->addWidget(myLabel);
-	shadowRegisters->addWidget(m_bshadow);
-
-	myLabel = new QLabel("C'");
-	myLabel->setBuddy(m_cshadow);
-	shadowRegisters->addWidget(myLabel);
-	shadowRegisters->addWidget(m_cshadow);
-
-	myLabel = new QLabel("D'");
-	myLabel->setBuddy(m_dshadow);
-	shadowRegisters->addWidget(myLabel);
-	shadowRegisters->addWidget(m_dshadow);
-
-	myLabel = new QLabel("E'");
-	myLabel->setBuddy(m_eshadow);
-	shadowRegisters->addWidget(myLabel);
-	shadowRegisters->addWidget(m_eshadow);
-
-	myLabel = new QLabel("H'");
-	myLabel->setBuddy(m_hshadow);
-	shadowRegisters->addWidget(myLabel);
-	shadowRegisters->addWidget(m_hshadow);
-
-	myLabel = new QLabel("L'");
-	myLabel->setBuddy(m_lshadow);
-	shadowRegisters->addWidget(myLabel);
-	shadowRegisters->addWidget(m_lshadow);
-
-	myLabel = new QLabel("AF'");
-	myLabel->setBuddy(m_afshadow);
-	shadowRegisters->addWidget(myLabel);
-	shadowRegisters->addWidget(m_afshadow);
-
-	myLabel = new QLabel("BC'");
-	myLabel->setBuddy(m_bcshadow);
-	shadowRegisters->addWidget(myLabel);
-	shadowRegisters->addWidget(m_bcshadow);
-
-	myLabel = new QLabel("DE'");
-	myLabel->setBuddy(m_deshadow);
-	shadowRegisters->addWidget(myLabel);
-	shadowRegisters->addWidget(m_deshadow);
-
-	myLabel = new QLabel("IX");
-	myLabel->setBuddy(m_ix);
-	shadowRegisters->addWidget(myLabel);
-	shadowRegisters->addWidget(m_ix);
-
-	myLabel = new QLabel("IY");
-	myLabel->setBuddy(m_iy);
-	shadowRegisters->addWidget(myLabel);
-	shadowRegisters->addWidget(m_iy);
-
-	myLabel = new QLabel("HL'");
-	myLabel->setBuddy(m_hlshadow);
-	shadowRegisters->addWidget(myLabel);
-	shadowRegisters->addWidget(m_hlshadow);
-
-	auto * myLayout = new QVBoxLayout();
-	myLayout->addLayout(plainRegisters);
-	myLayout->addLayout(shadowRegisters);
-	myLayout->addWidget(m_instruction);
-
-	setLayout(myLayout);
+    auto * centralWidget = new QWidget();
+    centralWidget->setLayout(mainLayout);
+    setCentralWidget(centralWidget);
 }
 
 void QSpectrumDebugWindow::connectWidgets()
 {
+    connect(&m_pauseResume, &QAction::triggered, this, &QSpectrumDebugWindow::pauseResumeTriggered);
+    connect(&m_refresh, &QAction::triggered, this, &QSpectrumDebugWindow::updateStateDisplay);
+    connect(&m_step, &QAction::triggered, this, &QSpectrumDebugWindow::stepTriggered);
+
+    connect(&m_memoryPc, &QToolButton::clicked, this, &QSpectrumDebugWindow::scrollMemoryToPcTriggered);
+    connect(&m_memorySp, &QToolButton::clicked, this, &QSpectrumDebugWindow::scrollMemoryToSpTriggered);
+
+    for (auto * widget : {&m_af, &m_bc, &m_de, &m_hl, &m_ix, &m_iy, &m_afshadow, &m_bcshadow, &m_deshadow, &m_hlshadow, }) {
+        connect(widget, &RegisterPairWidget::valueChanged, [this, widget]() {
+            assert(m_thread);
+            auto * cpu = m_thread->spectrum().z80();
+            assert(cpu);
+            auto & registers = cpu->registers();
+
+            if(widget == &m_af) registers.af = widget->value();
+            else if(widget == &m_bc) registers.bc = widget->value();
+            else if(widget == &m_de) registers.de = widget->value();
+            else if(widget == &m_hl) registers.hl = widget->value();
+            else if(widget == &m_ix) registers.ix = widget->value();
+            else if(widget == &m_iy) registers.iy = widget->value();
+            else if(widget == &m_afshadow) registers.afShadow = widget->value();
+            else if(widget == &m_bcshadow) registers.bcShadow = widget->value();
+            else if(widget == &m_deshadow) registers.deShadow = widget->value();
+            else if(widget == &m_hlshadow) registers.hlShadow = widget->value();
+        });
+    }
+
+    for (auto * widget : {&m_sp, &m_pc, }) {
+        connect(widget, &QSpinBox::editingFinished, [this, widget]() {
+            assert(m_thread);
+            auto * cpu = m_thread->spectrum().z80();
+            assert(cpu);
+            auto & registers = cpu->registers();
+            if(widget == &m_pc) registers.pc = widget->value();
+            else if(widget == &m_sp) registers.sp = widget->value();
+        });
+    }
 }
 
 void QSpectrumDebugWindow::closeEvent(QCloseEvent * ev)
 {
     QSettings settings;
-    settings.beginGroup("debugwindow");
-    settings.setValue("position", pos());
-    settings.setValue("size", size());
+    settings.beginGroup(QStringLiteral("debugwindow"));
+    settings.setValue(QStringLiteral("position"), pos());
+    settings.setValue(QStringLiteral("size"), size());
     settings.endGroup();
     QWidget::closeEvent(ev);
 }
@@ -272,100 +231,84 @@ void QSpectrumDebugWindow::closeEvent(QCloseEvent * ev)
 void QSpectrumDebugWindow::showEvent(QShowEvent * ev)
 {
     QSettings settings;
-    settings.beginGroup("debugwindow");
+    settings.beginGroup(QStringLiteral("debugwindow"));
     setGeometry({settings.value(QStringLiteral("position")).toPoint(), settings.value(QStringLiteral("size")).toSize()});
     settings.endGroup();
 }
 
-void QSpectrumDebugWindow::setRegister(int value)
-{
-	if (!m_spectrum) {
-	    return;
-	}
-
-	auto * cpu = m_spectrum->z80();
-
-	if(!cpu) {
-        return;
-    }
-
-    if(sender() == m_af) cpu->setAf(value);
-    else if(sender() == m_bc) cpu->setBc(value);
-    else if(sender() == m_de) cpu->setDe(value);
-    else if(sender() == m_hl) cpu->setHl(value);
-    else if(sender() == m_ix) cpu->setIx(value);
-    else if(sender() == m_iy) cpu->setIy(value);
-    else if(sender() == m_afshadow) cpu->setAfShadow(value);
-    else if(sender() == m_bcshadow) cpu->setBcShadow(value);
-    else if(sender() == m_deshadow) cpu->setDeShadow(value);
-    else if(sender() == m_hlshadow) cpu->setHlShadow(value);
-    else if(sender() == m_pc) cpu->setPc(value);
-    else if(sender() == m_sp) cpu->setSp(value);
-    else if(sender() == m_a) cpu->setA(value);
-    else if(sender() == m_b) cpu->setB(value);
-    else if(sender() == m_c) cpu->setC(value);
-    else if(sender() == m_d) cpu->setD(value);
-    else if(sender() == m_e) cpu->setE(value);
-    else if(sender() == m_h) cpu->setH(value);
-    else if(sender() == m_l) cpu->setL(value);
-    else if(sender() == m_ashadow) cpu->setAShadow(value);
-    else if(sender() == m_bshadow) cpu->setBShadow(value);
-    else if(sender() == m_cshadow) cpu->setCShadow(value);
-    else if(sender() == m_dshadow) cpu->setDShadow(value);
-    else if(sender() == m_eshadow) cpu->setEShadow(value);
-    else if(sender() == m_hshadow) cpu->setHShadow(value);
-    else if(sender() == m_lshadow) cpu->setLShadow(value);
-//		else if(sender() == m_ixh) cpu->setIxh(value);
-//		else if(sender() == m_ixl) cpu->seIxl(value);
-//		else if(sender() == m_iyh) cpu->setIyh(value);
-//		else if(sender() == m_iyl) cpu->setIyl(value);
-}
-
 void QSpectrumDebugWindow::updateStateDisplay()
 {
-	if(!m_spectrum) {
-	    return;
-	}
-
-	auto * cpu = m_spectrum->z80();
-
-	if (!cpu) {
-	    return;
-	}
-
-	m_af->setValue(cpu->afRegisterValue());
-	m_bc->setValue(cpu->bcRegisterValue());
-	m_de->setValue(cpu->deRegisterValue());
-	m_hl->setValue(cpu->hlRegisterValue());
-	m_ix->setValue(cpu->ixRegisterValue());
-	m_iy->setValue(cpu->iyRegisterValue());
-	m_afshadow->setValue(cpu->afShadowRegisterValue());
-	m_bcshadow->setValue(cpu->bcShadowRegisterValue());
-	m_deshadow->setValue(cpu->deShadowRegisterValue());
-	m_hlshadow->setValue(cpu->hlShadowRegisterValue());
-	m_pc->setValue(cpu->pc());
-	m_sp->setValue(cpu->stackPointer());
-	m_a->setValue(cpu->aRegisterValue());
-	m_b->setValue(cpu->bRegisterValue());
-	m_c->setValue(cpu->cRegisterValue());
-	m_d->setValue(cpu->dRegisterValue());
-	m_e->setValue(cpu->eRegisterValue());
-	m_h->setValue(cpu->hRegisterValue());
-	m_l->setValue(cpu->lRegisterValue());
-	m_ashadow->setValue(cpu->aShadowRegisterValue());
-	m_bshadow->setValue(cpu->bShadowRegisterValue());
-	m_cshadow->setValue(cpu->cShadowRegisterValue());
-	m_dshadow->setValue(cpu->dShadowRegisterValue());
-	m_eshadow->setValue(cpu->eShadowRegisterValue());
-	m_hshadow->setValue(cpu->hShadowRegisterValue());
-	m_lshadow->setValue(cpu->lShadowRegisterValue());
-	m_ixh->setValue(cpu->ixhRegisterValue());
-	m_ixl->setValue(cpu->ixlRegisterValue());
-	m_iyh->setValue(cpu->iyhRegisterValue());
-	m_iyl->setValue(cpu->iylRegisterValue());
+    assert(m_thread);
+	auto * cpu = m_thread->spectrum().z80();
+	assert(cpu);
+	auto & registers = cpu->registers();
+	m_af.setValue(registers.af);
+	m_bc.setValue(registers.bc);
+	m_de.setValue(registers.de);
+	m_hl.setValue(registers.hl);
+	m_ix.setValue(registers.ix);
+	m_iy.setValue(registers.iy);
+	m_afshadow.setValue(registers.afShadow);
+	m_bcshadow.setValue(registers.bcShadow);
+	m_deshadow.setValue(registers.deShadow);
+	m_hlshadow.setValue(registers.hlShadow);
+	m_pc.setValue(registers.pc);
+	m_sp.setValue(registers.sp);
+	m_flags.setAllFlags(registers.f);
+	m_shadowFlags.setAllFlags(registers.fShadow);
 }
 
-void QSpectrumDebugWindow::setMemoryDisplayStart(int address)
+void QSpectrumDebugWindow::pauseResumeTriggered()
 {
+    assert(m_thread);
 
+    if (m_thread->isPaused()) {
+        m_thread->resume();
+    } else {
+        m_thread->pause();
+    }
+}
+
+void QSpectrumDebugWindow::stepTriggered()
+{
+    assert(m_thread);
+    m_thread->step();
+}
+
+void QSpectrumDebugWindow::threadPaused()
+{
+    m_pauseResume.setIcon(QIcon::fromTheme(QStringLiteral("media-playback-start")));
+    m_pauseResume.setText(tr("Resume"));
+
+    // TODO enable widgets
+    centralWidget()->setEnabled(true);
+    m_step.setEnabled(true);
+    updateStateDisplay();
+    connect(m_thread, &SpectrumThread::stepped, this, &QSpectrumDebugWindow::threadStepped, Qt::UniqueConnection);
+}
+
+void QSpectrumDebugWindow::threadResumed()
+{
+    m_pauseResume.setIcon(QIcon::fromTheme(QStringLiteral("media-playback-pause")));
+    m_pauseResume.setText(tr("Pause"));
+
+    // TODO disable widgets
+    centralWidget()->setEnabled(false);
+    m_step.setEnabled(false);
+    disconnect(m_thread, &SpectrumThread::stepped, this, &QSpectrumDebugWindow::threadStepped);
+}
+
+void QSpectrumDebugWindow::threadStepped()
+{
+    updateStateDisplay();
+}
+
+void QSpectrumDebugWindow::scrollMemoryToPcTriggered()
+{
+    m_memoryWidget.scrollToAddress(m_pc.value());
+}
+
+void QSpectrumDebugWindow::scrollMemoryToSpTriggered()
+{
+    m_memoryWidget.scrollToAddress(m_sp.value());
 }
