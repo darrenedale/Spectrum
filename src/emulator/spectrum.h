@@ -9,9 +9,6 @@
 #include "../computer.h"
 #include "../z80/z80.h"
 
-#define SPECTRUM_OFFSET_DISPLAYFILE 0x4000
-#define SPECTRUM_DISPLAYFILE_SIZE 6912
-
 namespace Spectrum
 {
 	class SpectrumDisplayDevice;
@@ -21,6 +18,8 @@ namespace Spectrum
     :	public Computer<>
     {
 		public:
+            static constexpr const int DisplayMemoryOffset = 0x4000;
+            static constexpr const int DisplayMemorySize = 6912;
             static constexpr const int DefaultClockSpeed = 3500000;
 
 			explicit Spectrum(int = 65536, uint8_t * mem = nullptr);
@@ -38,12 +37,12 @@ namespace Spectrum
 
 			std::uint8_t * displayMemory() const
 			{
-				return memory() + SPECTRUM_OFFSET_DISPLAYFILE;
+				return memory() + DisplayMemoryOffset;
 			}
 
 			int displayMemorySize() const
 			{
-				return SPECTRUM_DISPLAYFILE_SIZE;
+				return DisplayMemorySize;
 			}
 
 			virtual void reset();
@@ -91,10 +90,11 @@ namespace Spectrum
                 return m_keyboard;
             }
 
+			inline void refreshDisplays() const;
+
 		protected:
 	        void clearMemory() const;
 			bool loadRom(const std::string & fileName) const;
-			inline void refreshDisplays() const;
 
 		private:
 			int m_interruptCycleCounter;

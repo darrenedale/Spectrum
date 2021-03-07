@@ -30,6 +30,10 @@ namespace Spectrum
         void operator=(MemoryWidget &&) = delete;
         ~MemoryWidget() override;
 
+        void setHighlight(Z80::UnsignedWord address, const QColor & foregroupd, const QColor & background);
+        void removeHighlight(Z80::UnsignedWord address);
+        void clearHighlights();
+
         void scrollToAddress(Z80::UnsignedWord addr);
 
         QWidget * takeWidget() = delete;

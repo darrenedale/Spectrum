@@ -236,6 +236,8 @@ void QSpectrumDebugWindow::showEvent(QShowEvent * ev)
     settings.endGroup();
 }
 
+#include <iostream>
+
 void QSpectrumDebugWindow::updateStateDisplay()
 {
     assert(m_thread);
@@ -256,6 +258,10 @@ void QSpectrumDebugWindow::updateStateDisplay()
 	m_sp.setValue(registers.sp);
 	m_flags.setAllFlags(registers.f);
 	m_shadowFlags.setAllFlags(registers.fShadow);
+	m_memoryWidget.clearHighlights();
+	m_memoryWidget.setHighlight(m_pc.value(), qRgb(0x80, 0xe0, 0x80), qRgba(0, 0, 0, 0.0));
+	m_memoryWidget.setHighlight(m_sp.value(), qRgb(0x80, 0x80, 0xe0), qRgba(0, 0, 0, 0.0));
+	m_memoryWidget.update();
 }
 
 void QSpectrumDebugWindow::pauseResumeTriggered()

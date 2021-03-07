@@ -27,9 +27,10 @@ namespace Spectrum
          explicit MainWindow(QWidget * = nullptr);
          ~MainWindow() override;
 
-        void saveScreenshot(const QString & fileName) const;
+        void saveScreenshot(const QString & fileName);
 
-        void loadSnapshot(const QString & fileName);
+        void loadSnaSnapshot(const QString & fileName);
+        void loadZ80Snapshot(const QString & fileName);
         void saveSnapshot(const QString & fileName) const;
 
         inline Spectrum & spectrum()
@@ -68,6 +69,8 @@ namespace Spectrum
         void debugWindowHidden();
         void debugWindowShown();
 
+        QString m_lastSnapshotLoadDir;
+        QString m_lastScreenshotDir;
         Spectrum m_spectrum;
         SpectrumThread m_spectrumThread;
         QSpectrumKeyboard m_keyboard;
@@ -76,7 +79,7 @@ namespace Spectrum
         QAction m_load;
         QAction m_pauseResume;
         QAction m_refreshScreen;
-        QAction m_screenshot;
+        QAction m_saveScreenshot;
         QAction m_reset;
         QAction m_debug;
         QAction m_debugStep;

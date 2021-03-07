@@ -6,7 +6,7 @@
 #define SPECTRUM_QSPECTRUMKEYBOARD_H
 
 #include <QObject>
-#include <optional>
+#include <vector>
 
 #include "../emulator/spectrumkeyboard.h"
 
@@ -17,7 +17,7 @@ namespace Spectrum
       public QObject
     {
     protected:
-        [[nodiscard]] std::optional<SpectrumKeyboard::Key> mapQtKey(Qt::Key) const;
+        [[nodiscard]] std::vector<SpectrumKeyboard::Key> mapQtKey(Qt::Key) const;
 
         bool eventFilter(QObject *, QEvent *) override;
     };
