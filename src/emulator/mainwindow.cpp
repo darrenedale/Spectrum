@@ -47,7 +47,8 @@ MainWindow::MainWindow(QWidget * parent)
     m_spectrum.setKeyboard(&m_keyboard);
     installEventFilter(&m_keyboard);
     m_debugWindow.installEventFilter(this);
-    m_pauseResume.setShortcut(Qt::Key::Key_Control + Qt::Key::Key_P);
+    m_load.setShortcut(Qt::Key::Key_Control + Qt::Key::Key_O);
+    m_pauseResume.setShortcuts({Qt::Key::Key_Pause, Qt::Key::Key_Control + Qt::Key_P,});
     m_debug.setShortcut(Qt::Key::Key_Control + Qt::Key::Key_D);
     m_debug.setCheckable(true);
     m_debugStep.setShortcut(Qt::Key::Key_Space);

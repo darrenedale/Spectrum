@@ -20,9 +20,7 @@ bool QSpectrumKeyboard::eventFilter(QObject * target, QEvent * event)
 
                 if (!keys.empty()) {
                     for (const auto & key : keys) {
-                        if (!keyState(key)) {
-                            setKeyDown(key);
-                        }
+                        setKeyDown(key);
                     }
                 }
             }
@@ -50,10 +48,14 @@ std::vector<SpectrumKeyboard::Key> QSpectrumKeyboard::mapQtKey(Qt::Key key) cons
     // TODO configurable mapping
     // TODO mapping single keys to key combinations (e.g. to enter extended mode, graphics mode, ...)
     switch (key) {
+        case Qt::Key::Key_Backspace:
+            return {SpectrumKeyboard::Key::CapsShift, SpectrumKeyboard::Key::Num0};
+
         case Qt::Key::Key_Shift:
             return {SpectrumKeyboard::Key::CapsShift};
 
-        case Qt::Key::Key_Control:
+        case Qt::Key::Key_Alt:
+        case Qt::Key::Key_AltGr:
             return {SpectrumKeyboard::Key::SymbolShift};
 
         case Qt::Key::Key_Enter:

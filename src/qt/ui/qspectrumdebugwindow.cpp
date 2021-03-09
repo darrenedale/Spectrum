@@ -36,6 +36,9 @@ QSpectrumDebugWindow::QSpectrumDebugWindow(SpectrumThread * thread, QWidget * pa
   m_hlshadow(QStringLiteral("HL'")),
   m_pc(4),
   m_sp(4),
+  m_i(2),
+  m_r(2),
+  m_im(),
   m_flags(),
   m_shadowFlags(),
   m_memoryWidget(thread->spectrum()),
@@ -49,6 +52,14 @@ QSpectrumDebugWindow::QSpectrumDebugWindow(SpectrumThread * thread, QWidget * pa
     m_pc.setMaximum(0xffff);
     m_sp.setMinimum(0);
     m_sp.setMaximum(0xffff);
+
+    m_i.setMinimum(0);
+    m_i.setMaximum(0xff);
+    m_r.setMinimum(0);
+    m_r.setMaximum(0xff);
+
+    m_im.setMinimum(0);
+    m_im.setMaximum(2);
 
     m_memoryPc.setText(QStringLiteral("PC"));
     m_memorySp.setText(QStringLiteral("SP"));
@@ -110,6 +121,24 @@ void QSpectrumDebugWindow::layoutWidget()
 	plainRegistersLayout->addStretch(10);
 	plainRegisters->setLayout(plainRegistersLayout);
 
+	// interrupts and instruction counter
+	auto * interrupts = new QGroupBox(tr("Interrupts/Refresh"));
+	auto * interruptsLayout =  new QHBoxLayout();
+	tmpLabel = new QLabel(tr("Mode"));
+	tmpLabel->setBuddy(&m_im);
+    interruptsLayout->addWidget(tmpLabel, 0);
+    interruptsLayout->addWidget(&m_im, 10);
+	tmpLabel = new QLabel(tr("I"));
+	tmpLabel->setBuddy(&m_i);
+    interruptsLayout->addWidget(tmpLabel, 0);
+    interruptsLayout->addWidget(&m_i, 10);
+	tmpLabel = new QLabel(tr("R"));
+	tmpLabel->setBuddy(&m_r);
+    interruptsLayout->addWidget(tmpLabel, 0);
+    interruptsLayout->addWidget(&m_r, 10);
+
+	interrupts->setLayout(interruptsLayout);
+
 	// program counter and stack pointer
     auto * pointers = new QGroupBox(tr("Pointers"));
     auto * pointersLayout = new QVBoxLayout();
@@ -165,10 +194,13 @@ void QSpectrumDebugWindow::layoutWidget()
     memoryLayout->addLayout(tmpLayout);
 
 	auto * mainLayout = new QHBoxLayout();
-    mainLayout->addWidget(plainRegisters);
+    auto * leftLayout = new QVBoxLayout();
+    leftLayout->addWidget(plainRegisters);
+    leftLayout->addWidget(interrupts);
     auto * rightLayout = new QVBoxLayout();
     rightLayout->addWidget(shadowRegisters);
     rightLayout->addWidget(pointers);
+    mainLayout->addLayout(leftLayout);
     mainLayout->addLayout(rightLayout);
     mainLayout->addWidget(memory);
 
@@ -206,7 +238,7 @@ void QSpectrumDebugWindow::connectWidgets()
         });
     }
 
-    for (auto * widget : {&m_sp, &m_pc, }) {
+    for (auto * widget : {&m_sp, &m_pc, &m_i, &m_r, }) {
         connect(widget, &QSpinBox::editingFinished, [this, widget]() {
             assert(m_thread);
             auto * cpu = m_thread->spectrum().z80();
@@ -214,8 +246,17 @@ void QSpectrumDebugWindow::connectWidgets()
             auto & registers = cpu->registers();
             if(widget == &m_pc) registers.pc = widget->value();
             else if(widget == &m_sp) registers.sp = widget->value();
+            else if(widget == &m_i) registers.i = widget->value();
+            else if(widget == &m_r) registers.r = widget->value();
         });
     }
+
+    connect(&m_im, qOverload<int>(&QSpinBox::valueChanged), [this](int value) {
+        assert(m_thread);
+        auto * cpu = m_thread->spectrum().z80();
+        assert(cpu);
+        cpu->setInterruptMode(static_cast<::Z80::Z80::InterruptMode>(value));
+    });
 }
 
 void QSpectrumDebugWindow::closeEvent(QCloseEvent * ev)
@@ -236,8 +277,6 @@ void QSpectrumDebugWindow::showEvent(QShowEvent * ev)
     settings.endGroup();
 }
 
-#include <iostream>
-
 void QSpectrumDebugWindow::updateStateDisplay()
 {
     assert(m_thread);
@@ -256,6 +295,9 @@ void QSpectrumDebugWindow::updateStateDisplay()
 	m_hlshadow.setValue(registers.hlShadow);
 	m_pc.setValue(registers.pc);
 	m_sp.setValue(registers.sp);
+	m_im.setValue(static_cast<int>(cpu->interruptMode()));
+	m_i.setValue(registers.i);
+	m_r.setValue(registers.r);
 	m_flags.setAllFlags(registers.f);
 	m_shadowFlags.setAllFlags(registers.fShadow);
 	m_memoryWidget.clearHighlights();
@@ -285,8 +327,6 @@ void QSpectrumDebugWindow::threadPaused()
 {
     m_pauseResume.setIcon(QIcon::fromTheme(QStringLiteral("media-playback-start")));
     m_pauseResume.setText(tr("Resume"));
-
-    // TODO enable widgets
     centralWidget()->setEnabled(true);
     m_step.setEnabled(true);
     updateStateDisplay();
@@ -297,8 +337,6 @@ void QSpectrumDebugWindow::threadResumed()
 {
     m_pauseResume.setIcon(QIcon::fromTheme(QStringLiteral("media-playback-pause")));
     m_pauseResume.setText(tr("Pause"));
-
-    // TODO disable widgets
     centralWidget()->setEnabled(false);
     m_step.setEnabled(false);
     disconnect(m_thread, &SpectrumThread::stepped, this, &QSpectrumDebugWindow::threadStepped);

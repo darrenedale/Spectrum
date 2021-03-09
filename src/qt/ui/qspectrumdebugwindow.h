@@ -59,6 +59,9 @@ namespace Spectrum
         RegisterPairWidget m_hlshadow;
         HexSpinBox m_sp;
         HexSpinBox m_pc;
+        QSpinBox m_im;
+        HexSpinBox m_i;
+        HexSpinBox m_r;
         FlagsWidget m_flags;
         FlagsWidget m_shadowFlags;
         MemoryWidget m_memoryWidget;
