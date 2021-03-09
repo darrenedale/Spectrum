@@ -128,7 +128,7 @@ m_ed_opcode_cycles[Z80__ED__SBC__HL__HL] = 15;
 m_ed_opcode_cycles[Z80__ED__LD__INDIRECT_NN__HL] = 20;
 m_ed_opcode_cycles[Z80__ED__NEG__0XED__0X64] = 8;
 m_ed_opcode_cycles[Z80__ED__RETN__0XED__0X65] = 14;
-m_ed_opcode_cycles[Z80__ED__IM__0__0XED__0X66] = 4;
+m_ed_opcode_cycles[Z80__ED__IM__0__0XED__0X66] = 8;
 m_ed_opcode_cycles[Z80__ED__RRD] = 18;
 
 m_ed_opcode_cycles[Z80__ED__IN__L__INDIRECT_C] = 12;

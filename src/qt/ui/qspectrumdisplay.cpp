@@ -43,6 +43,9 @@ QSpectrumDisplay::QSpectrumDisplay()
 
 void QSpectrumDisplay::redrawDisplay(const uint8_t * displayMemory)
 {
+    ++m_frameCounter;
+    bool flashInvert = m_frameCounter & 0x20;
+
 #if defined(QSPECTRUMDISPLAY_USEPAINTER)
     QPainter painter(&image());
 #else
@@ -58,6 +61,16 @@ void QSpectrumDisplay::redrawDisplay(const uint8_t * displayMemory)
             std::uint8_t attr = displayMemory[AttributesOffset + static_cast<std::size_t>(std::floor(y / 8)) * 32 + xByte];
             std::uint8_t mask = 0b10000000;
             std::size_t colourIndex;
+            std::uint8_t ink;
+            std::uint8_t paper;
+
+            if (flashInvert && isFlashing(attr)) {
+                ink = static_cast<std::size_t>(isFlashing(attr) && flashInvert ? paperColour(attr) :  inkColour(attr));
+                paper = static_cast<std::size_t>(isFlashing(attr) && flashInvert ? inkColour(attr) :  paperColour(attr));
+            } else {
+                ink = static_cast<std::size_t>(isFlashing(attr) && flashInvert ? paperColour(attr) :  inkColour(attr));
+                paper = static_cast<std::size_t>(isFlashing(attr) && flashInvert ? inkColour(attr) :  paperColour(attr));
+            }
 
             for (int bit = 0; bit < 8; ++bit) {
 #if defined(QSPECTRUMDISPLAY_USEPAINTER)
@@ -70,9 +83,9 @@ void QSpectrumDisplay::redrawDisplay(const uint8_t * displayMemory)
                 painter.drawPoint(static_cast<int>(xByte * 8 + bit), static_cast<int>(y));
 #else
                 if (displayMemory[addr] & mask) {
-                    colourIndex = static_cast<std::size_t>(inkColour(attr));
+                    colourIndex = ink;
                 } else {
-                    colourIndex = static_cast<std::size_t>(paperColour(attr));
+                    colourIndex = paper;
                 }
 
                 if (isBright(attr)) {

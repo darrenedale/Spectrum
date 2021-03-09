@@ -102,6 +102,7 @@ void QSpectrumDebugWindow::layoutWidget()
 	auto * plainRegistersLayout = new QVBoxLayout();
 	QLabel * tmpLabel;
 
+	plainRegistersLayout->setSpacing(2);
 	plainRegistersLayout->addWidget(&m_af);
 	plainRegistersLayout->addWidget(&m_bc);
 	plainRegistersLayout->addWidget(&m_de);
@@ -166,6 +167,7 @@ void QSpectrumDebugWindow::layoutWidget()
     auto * shadowRegisters = new QGroupBox(tr("Shadow registers"));
     auto * shadowRegistersLayout = new QVBoxLayout();
 
+    plainRegistersLayout->setSpacing(2);
 	shadowRegistersLayout->addWidget(&m_afshadow);
 	shadowRegistersLayout->addWidget(&m_bcshadow);
 	shadowRegistersLayout->addWidget(&m_deshadow);

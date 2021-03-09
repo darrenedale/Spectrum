@@ -34,6 +34,7 @@ namespace Spectrum
 
 	private:
 	    QImage m_image;
+	    std::uint8_t m_frameCounter;
     };
 }
 

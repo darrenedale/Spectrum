@@ -44,6 +44,7 @@ MainWindow::MainWindow(QWidget * parent)
   m_debugWindow(&m_spectrumThread),
   m_displayRefreshTimer(nullptr)
 {
+    m_spectrum.setExecutionSpeedConstrained(true);
     m_spectrum.setKeyboard(&m_keyboard);
     installEventFilter(&m_keyboard);
     m_debugWindow.installEventFilter(this);
@@ -148,6 +149,7 @@ void MainWindow::closeEvent(QCloseEvent * ev)
     settings.setValue("size", size());
     settings.setValue("lastSnapshotLoadDir", m_lastSnapshotLoadDir);
     settings.setValue("lastScreenshotDir", m_lastScreenshotDir);
+    settings.setValue("emulationSpeed", m_emulationSpeedSlider.value());
     settings.endGroup();
     m_debugWindow.close();
     QWidget::closeEvent(ev);
@@ -156,10 +158,18 @@ void MainWindow::closeEvent(QCloseEvent * ev)
 void MainWindow::showEvent(QShowEvent * ev)
 {
     QSettings settings;
+    bool ok;
     settings.beginGroup("mainwindow");
     setGeometry({settings.value(QStringLiteral("position")).toPoint(), settings.value(QStringLiteral("size")).toSize()});
     m_lastSnapshotLoadDir = settings.value(QStringLiteral("lastSnapshotLoadDir")).toString();
     m_lastScreenshotDir = settings.value(QStringLiteral("lastScreenshotDir")).toString();
+    auto speed = settings.value(QStringLiteral("emulationSpeed"), 1).toInt(&ok);
+
+    if (!ok) {
+        speed = 1;
+    }
+
+    m_emulationSpeedSlider.setValue(speed);
     settings.endGroup();
 }
 
