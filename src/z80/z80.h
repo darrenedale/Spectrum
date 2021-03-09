@@ -795,7 +795,7 @@ namespace Z80 {
 
         bool load(unsigned char *data, int addr, int length);
 
-        bool execute(const UnsignedByte *instruction, bool doPc = true, int *cycles = 0, int *size = 0);
+        bool execute(const UnsignedByte *instruction, bool doPc = true, int *tStates = 0, int *size = 0);
 
         /* fetches and executes a single instruction, returns the cycle cost */
         int fetchExecuteCycle();
@@ -817,7 +817,7 @@ namespace Z80 {
         bool executeDdOrFdInstruction(UnsignedWord &reg, const UnsignedByte *instruction, bool *doPc = nullptr,
                                       int *cycles = nullptr, int *size = nullptr);
 
-        bool executeDdcbOrFdcbInstruction(UnsignedWord &reg, const UnsignedByte *instruction, int *cycles = nullptr,
+        bool executeDdcbOrFdcbInstruction(UnsignedWord &reg, const UnsignedByte *instruction, int *tStates = nullptr,
                                           int *size = nullptr);
 //		bool executeFdInstruction( const UnsignedByte * instruction, bool * doPc = 0, int * cycles = 0, int * size = 0 );
 
@@ -843,7 +843,7 @@ namespace Z80 {
 
         // 16-bit opcodes starting 0xdd and 0xfd use the IX and IY registers respectively for identical instructions, so
         // their opcode costs are identical
-        // TODO all 0xddcb or 0xfdcb opcodes are 4 bytes and consume 23 cycles except BIT instructions which are 20
+        unsigned int m_ddorfd_cb_opcode_cycles[256];
         unsigned int m_ddorfd_opcode_cycles[256];
         unsigned int m_fd_opcode_cycles[256];
         unsigned int m_ed_opcode_cycles[256];

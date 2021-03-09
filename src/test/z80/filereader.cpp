@@ -83,13 +83,13 @@ std::optional<bool> FileReader::parseFlag(char byte)
     }
 }
 
-std::optional<std::uint8_t> FileReader::parseInterruptMode(char byte)
+std::optional<InterruptMode> FileReader::parseInterruptMode(char byte)
 {
     switch (byte) {
         case '0':
         case '1':
         case '2':
-            return byte - '0';
+            return static_cast<InterruptMode>(byte - '0');
 
         default:
             std::cerr << "Invalid interrupt mode: " << byte << "\n";

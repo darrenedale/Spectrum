@@ -14,6 +14,7 @@ namespace Test::Z80
 {
     using UnsignedByte = ::Z80::UnsignedByte;
     using UnsignedWord = ::Z80::UnsignedWord;
+    using InterruptMode = ::Z80::Z80::InterruptMode;
 
     struct State
     {
@@ -35,7 +36,7 @@ namespace Test::Z80
         UnsignedByte r;
         bool iff1;
         bool iff2;
-        std::uint8_t im;
+        InterruptMode im;
         bool halted;
 
         std::vector<MemoryBlock> memory;

@@ -102,15 +102,15 @@ namespace
                     break;
 
                 case Expectation::FailureType::Iff1Incorrect:
-                    std::cout << "- IFF1 incorrect: expected " << std::boolalpha << std::any_cast<std::size_t>(failure.expected) << ", found " << std::any_cast<std::size_t>(failure.actual) << ".\n";
+                    std::cout << "- IFF1 incorrect: expected " << std::boolalpha << std::any_cast<bool>(failure.expected) << ", found " << std::any_cast<bool>(failure.actual) << ".\n";
                     break;
 
                 case Expectation::FailureType::Iff2Incorrect:
-                    std::cout << "- IFF2 incorrect: expected " << std::boolalpha << std::any_cast<std::size_t>(failure.expected) << ", found " << std::any_cast<std::size_t>(failure.actual) << ".\n";
+                    std::cout << "- IFF2 incorrect: expected " << std::boolalpha << std::any_cast<bool>(failure.expected) << ", found " << std::any_cast<bool>(failure.actual) << ".\n";
                     break;
 
                 case Expectation::FailureType::InterruptModeIncorrect:
-                    std::cout << "- interrupt mode incorrect: expected " << std::setw(1) << std::any_cast<std::size_t>(failure.expected) << ", found " << std::any_cast<std::size_t>(failure.actual) << ".\n";
+                    std::cout << "- interrupt mode incorrect: expected " << std::setw(1) << static_cast<std::uint16_t>(std::any_cast<InterruptMode>(failure.expected)) << ", found " << static_cast<std::uint16_t>(std::any_cast<InterruptMode>(failure.actual)) << ".\n";
                     break;
 
                 case Expectation::FailureType::MemoryIncorrect:
@@ -230,7 +230,7 @@ void Runner::outputZ80State(std::ostream & stream) const
     stream << "Shadow " << formatByte(registers.aShadow) << ' ' << formatByte(registers.fShadow) << ' ' << formatByte(registers.bShadow) << ' ' << formatByte(registers.cShadow) << ' ' << formatByte(registers.dShadow) << ' '  << formatByte(registers.eShadow) << ' ' << formatByte(registers.hShadow) << ' ' << formatByte(registers.lShadow) << '\n';
 
     stream << "\n       IFF1 IFF2 IM\n";
-    stream << "         " << (cpu.iff1() ? '1' : '0') << "    " << (cpu.iff2() ? '1' : '0') << "   " << cpu.interruptMode() << '\n';
+    stream << "         " << (cpu.iff1() ? '1' : '0') << "    " << (cpu.iff2() ? '1' : '0') << "   " << static_cast<std::uint16_t>(cpu.interruptMode()) << '\n';
 }
 
 /**

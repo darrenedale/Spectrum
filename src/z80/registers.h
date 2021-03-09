@@ -249,10 +249,20 @@ namespace Z80
 
         void reset()
         {
-            bc = de = hl = pc = bcShadow = deShadow = hlShadow = ix = iy = 0x0000;
-            // TODO i, r
+            af = 0xffff;
+            bc = 0x0000;
+            de = 0x0000;
+            hl = 0x0000;
+            ix = 0x0000;
+            iy = 0x0000;
+            afShadow = 0xffff;
+            bcShadow = 0x0000;
+            deShadow = 0x0000;
+            i = 0;
+            r = 0;
+            pc = 0x0000;
+            sp = 0xffff;
             // TODO memptr
-            af = afShadow = sp = 0xffff;
         }
     };
 

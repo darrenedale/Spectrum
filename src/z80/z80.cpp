@@ -84,7 +84,7 @@
 
 /* default behaviour of flags after an operation on a 16-bit register */
 #define Z80_FLAG_Z_DEFAULTBEHAVIOUR16 Z80_FLAG_Z_UPDATE(0 == m_registers.hl);
-#define Z80_FLAG_S_DEFAULTBEHAVIOUR16 Z80_FLAG_S_UPDATE(0x80 & m_registers.hl);
+#define Z80_FLAG_S_DEFAULTBEHAVIOUR16 Z80_FLAG_S_UPDATE(0x8000 & m_registers.hl);
 
 #define Z80_FLAG_P_OVERFLOW Z80_FLAG_P_UPDATE()
 
@@ -130,15 +130,39 @@
     Z80_FLAG_P_UPDATE(tmpOverflow == 3 || tmpOverflow == 4);\
 }
 
+/* update P/V flag for 16-bit overflow during addition */
+#define Z80_FLAG_P_UPDATE_OVERFLOW16_ADD(orig,delta,result) \
+{                                                         \
+    UnsignedByte tmpOverflow = (                          \
+        (((result) & 0x8000) >> 13)                       \
+        | (((delta) & 0x8000) >> 14)                      \
+        | (((orig) & 0x8000) >> 15)                       \
+    );                                                    \
+                                                          \
+    Z80_FLAG_P_UPDATE(tmpOverflow == 3 || tmpOverflow == 4);\
+}
+
 /* update P/V flag for 8-bit overflow during subtraction */
 #define Z80_FLAG_P_UPDATE_OVERFLOW_SUB(orig,delta,result) \
-{                                                        \
-    UnsignedByte tmpOverflow = (                         \
-        (((result) & 0b10000000) >> 5)                   \
-        | (((delta) & 0b10000000) >> 6)                   \
-        | (((orig) & 0b10000000) >> 7)                   \
-    );                                                   \
-                                                         \
+{                                                         \
+    UnsignedByte tmpOverflow = (                          \
+        (((result) & 0x80) >> 5)                          \
+        | (((delta) & 0x80) >> 6)                         \
+        | (((orig) & 0x80) >> 7)                          \
+    );                                                    \
+                                                          \
+    Z80_FLAG_P_UPDATE(tmpOverflow == 1 || tmpOverflow == 6);\
+}
+
+/* update P/V flag for 16-bit overflow during subtraction */
+#define Z80_FLAG_P_UPDATE_OVERFLOW16_SUB(orig,delta,result) \
+{                                                           \
+    UnsignedByte tmpOverflow = (                            \
+        (((result) & 0x8000) >> 13)                         \
+        | (((delta) & 0x8000) >> 14)                        \
+        | (((orig) & 0x8000) >> 15)                         \
+    );                                                      \
+                                                            \
     Z80_FLAG_P_UPDATE(tmpOverflow == 1 || tmpOverflow == 6);\
 }
 
@@ -274,7 +298,6 @@ m_registers.memptr = m_registers.pc
  * FLAGS (16-bit): P is overflow, N is cleared, H indicates carry from bit10 to
  * bit11, others by definition.
  *
- * TODO: 16-bit flags
  * TODO: check flags against known working implementation.
  * TODO: check result against known working implementation.
  */
@@ -292,7 +315,20 @@ m_registers.memptr = m_registers.pc
 }
 #define Z80__ADC__REG8__REG8(dest,src) Z80__ADC__REG8__N((dest), (src));
 #define Z80__ADC__REG8__INDIRECT_REG16(dest,src) Z80__ADC__REG8__N((dest), peekUnsigned(src))
-#define Z80__ADC__REG16__REG16(dest,src) { UnsignedWord oldValue = (dest); (dest) += (src) + (Z80_FLAG_C_ISSET ? 1 : 0); Z80_FLAG_N_CLEAR; Z80_FLAG_Z_UPDATE(0 == (dest)); Z80_FLAG_S_UPDATE((dest) & 0x8000); Z80_FLAG_P_UPDATE((dest) < oldValue); Z80_FLAG_C_UPDATE((dest) < oldValue); Z80_FLAG_H_UPDATE(Z80_CHECK_16BIT_HALFCARRY_10_TO_11(oldValue,(dest))); }
+#define Z80__ADC__REG16__REG16(dest,src) { \
+    UnsignedWord tmpOldValue = (dest);            \
+    UnsignedWord tmpAdd = (src);                    \
+    std::uint32_t tmpResult = (dest) + tmpAdd + (Z80_FLAG_C_ISSET ? 1 : 0);\
+    (dest) = tmpResult & 0xffff;                  \
+    Z80_FLAG_N_CLEAR;                             \
+    Z80_FLAG_Z_UPDATE(0 == (dest));               \
+    Z80_FLAGS_S53_UPDATE(((dest) & 0xff00) >> 8); \
+    Z80_FLAG_P_UPDATE_OVERFLOW16_ADD(tmpOldValue, tmpAdd, (dest));      \
+    Z80_FLAG_C_UPDATE(tmpResult & 0x00010000);    \
+    /* check for carry between bits 11 and 12 - exactly the same as half-carry flag for 8-bit ADC, except we're
+     * working with the high byte */              \
+    Z80_FLAG_H_UPDATE_ADD(static_cast<UnsignedByte>((tmpOldValue & 0xff00) >> 8), static_cast<UnsignedByte>((tmpAdd & 0xff00) >> 8), static_cast<UnsignedByte>((tmpResult & 0xff00) >> 8));\
+}
 #define Z80__ADC__REG8__INDIRECT_REG16_D(dest, reg, d) Z80__ADC__REG8__N((dest), peekUnsigned((reg) + (d)))
 
 /* subtraction instructions
@@ -324,7 +360,6 @@ m_registers.memptr = m_registers.pc
  * FLAGS (16-bit): P is overflow, N is set, H indicates carry from bit10 to
  * bit11, others by definition.
  *
- * TODO: 16-bit flags
  * TODO: check flags against known working implementation.
  * TODO: check result against known working implementation.
  */
@@ -343,15 +378,19 @@ m_registers.memptr = m_registers.pc
 #define Z80__SBC__REG8__REG8(dest,src) Z80__SBC__REG8__N((dest), (src))
 #define Z80__SBC__REG8__INDIRECT_REG16(dest,src) Z80__SBC__REG8__N((dest),peekUnsigned(src))
 
-#define Z80__SBC__REG16__REG16(dest, src) { \
-    UnsignedWord oldValue = (dest);         \
-    (dest) -= ((src) + (Z80_FLAG_C_ISSET ? 1 : 0)); \
-    Z80_FLAG_N_SET;                         \
-    Z80_FLAG_Z_UPDATE(0 == (dest));         \
-    Z80_FLAG_S_DEFAULTBEHAVIOUR16;          \
-    Z80_FLAG_P_UPDATE((dest) > oldValue);   \
-    Z80_FLAG_C_UPDATE((dest) > oldValue);   \
-    Z80_FLAG_H_UPDATE(Z80_CHECK_16BIT_HALFCARRY_10_TO_11(oldValue, (dest))); \
+#define Z80__SBC__REG16__REG16(dest, src) {     \
+    UnsignedWord tmpOldValue = (dest);          \
+    UnsignedWord tmpSub = (src);                \
+    std::uint32_t tmpResult = (dest) - tmpSub - (Z80_FLAG_C_ISSET ? 1 : 0); \
+    (dest) = tmpResult & 0xffff;                \
+    Z80_FLAG_N_SET;                             \
+    Z80_FLAG_Z_UPDATE(0 == (dest));             \
+    Z80_FLAGS_S53_UPDATE(((dest) & 0xff00) >> 8); \
+    Z80_FLAG_P_UPDATE_OVERFLOW16_SUB(tmpOldValue, tmpSub, (dest));    \
+    Z80_FLAG_C_UPDATE((dest) > tmpOldValue);    \
+    /* check for carry between bits 11 and 12 - exactly the same as half-carry flag for 8-bit SBC, except we're
+     * working with the high byte */ \
+   Z80_FLAG_H_UPDATE_SUB(static_cast<UnsignedByte>((tmpOldValue & 0xff00) >> 8), static_cast<UnsignedByte>((tmpSub & 0xff00) >> 8), static_cast<UnsignedByte>((tmpResult & 0xff00) >> 8));\
 }
 
 #define Z80__SBC__REG8__INDIRECT_REG16_D(dest,reg,d) Z80__SBC__REG8__N((dest), peekUnsigned((reg) + (d)))
@@ -420,11 +459,18 @@ Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
  * result in an overflow: 128 is the only value that can be represented -ve
  * but not +ve (i.e. the range of an 8-bit twos-complement integer is -128 to
  * 127).
- *
- * TODO: check flags against known working implementation.
- * TODO: check result against known working implementation.
  */
-#define Z80_NEG { UnsignedByte oldValue = m_registers.a; m_registers.a = 0 - (m_registers.a); Z80_FLAG_S_UPDATE((m_registers.a) & 0x80); Z80_FLAG_Z_DEFAULTBEHAVIOUR; Z80_FLAG_H_UPDATE(Z80_CHECK_8BIT_HALFCARRY(oldValue, m_registers.a)); Z80_FLAG_C_UPDATE(oldValue == 0); Z80_FLAG_P_UPDATE(SignedByte(oldValue) == -128); Z80_FLAG_N_SET; }
+#define Z80_NEG                                       \
+{                                                     \
+UnsignedByte tmpOldValue = m_registers.a;             \
+m_registers.a = 0 - (m_registers.a);                  \
+Z80_FLAG_Z_DEFAULTBEHAVIOUR;                          \
+Z80_FLAG_H_UPDATE_SUB(0, tmpOldValue, m_registers.a); \
+Z80_FLAG_C_UPDATE(0x00 != tmpOldValue);               \
+Z80_FLAG_P_UPDATE(0x80 == tmpOldValue);               \
+Z80_FLAGS_S53_UPDATE(m_registers.a);                  \
+Z80_FLAG_N_SET;                                       \
+}
 
 /* compare instructions
  *
@@ -476,7 +522,9 @@ Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
 #define Z80__SET__N__REG8(n,reg) (reg) |= (1 << (n))
 #define Z80__SET__N__INDIRECT_REG16(n,reg) pokeUnsigned((reg), peekUnsigned((reg)) | (1 << (n)))
 #define Z80__SET__N__INDIRECT_REG16_D(n,reg,d) Z80__SET__N__INDIRECT_REG16(n,(reg) + (d))
-#define Z80__SET__N__INDIRECT_REG16_D__REG8(n,reg16,d,reg8) Z80__SET__N__INDIRECT_REG16(n, (reg16) + (d)); /* anything to do with (reg8)? */
+#define Z80__SET__N__INDIRECT_REG16_D__REG8(n,reg16,d,reg8) \
+Z80__SET__N__INDIRECT_REG16_D(n, (reg16), (d)); \
+(reg8) = peekUnsigned((reg16) + (d));
 
 /*
  * FLAGS: all preserved
@@ -485,7 +533,9 @@ Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
 #define Z80__RES__N__REG8(n,reg) (reg) &= ~(1 << (n))
 #define Z80__RES__N__INDIRECT_REG16(n,reg) pokeUnsigned((reg), peekUnsigned((reg)) & ~(1 << (n)))
 #define Z80__RES__N__INDIRECT_REG16_D(n,reg,d) Z80__RES__N__INDIRECT_REG16(n,(reg) + (d))
-#define Z80__RES__N__INDIRECT_REG16_D__REG8(n,reg16,d,reg8) Z80__RES__N__INDIRECT_REG16(n,(reg16) + (d)); /* anything to do with (reg8)? */
+#define Z80__RES__N__INDIRECT_REG16_D__REG8(n,reg16,d,reg8) \
+Z80__RES__N__INDIRECT_REG16_D(n,(reg16),(d));               \
+(reg8) = peekUnsigned((reg16) + (d))
 
 /* bit shift and rotation instructions */
 /* rotate left with carry instructons
@@ -737,8 +787,9 @@ Z80__BIT__N__REG8(n,peekUnsigned(reg));    \
 Z80_FLAG_F5_UPDATE(m_registers.memptrH & Z80_FLAG_F5_MASK);\
 Z80_FLAG_F3_UPDATE(m_registers.memptrH & Z80_FLAG_F3_MASK);
 
-#define Z80__BIT__N__INDIRECT_REG16_D(n,reg,d) Z80__BIT__N__INDIRECT_REG16(n,(reg) + (d))
-#define Z80__BIT__N__INDIRECT_REG16_D__REG8(n,reg16,d,reg8) Z80__BIT__N__INDIRECT_REG16(n,(reg16) + (d)); /* anything to do with (reg8)? */
+#define Z80__BIT__N__INDIRECT_REG16_D(n,reg,d) \
+m_registers.memptr = ((reg) + (d)); \
+Z80__BIT__N__INDIRECT_REG16(n,m_registers.memptr);
 
 /* nmi handler return instruction
  *
@@ -759,7 +810,10 @@ Z80_FLAG_F3_UPDATE(m_registers.memptrH & Z80_FLAG_F3_MASK);
  * FLAGS: all preserved.
  * TODO: check result against known working implementation.
  */
-#define Z80__RETI Z80__POP__REG16(m_registers.pc); /* TODO signal IO device that interrupt has finished */
+#define Z80__RETI \
+Z80__POP__REG16(m_registers.pc); \
+m_iff1 = m_iff2;                 \
+/* TODO signal IO device that interrupt has finished */
 
 // port is 8-bit and is the LSB for the 16-bit port. the MSB is from A
 #define Z80__OUT__INDIRECT_REG8__REG8(port,value) {    \
@@ -807,7 +861,24 @@ Z80_FLAG_F3_UPDATE(m_registers.memptrH & Z80_FLAG_F3_MASK);
     Z80_FLAG_Z_UPDATE(0 == (dest));                  \
     Z80_FLAGS_S53_UPDATE((dest));                    \
     Z80_FLAG_P_UPDATE(isEvenParity((dest)));         \
-}\
+}
+
+#define Z80__IN__REG8__INDIRECT_REG16(dest,port) {   \
+    for (auto * device : m_ioDevices) {              \
+        if (!device->checkReadPort((port))) {        \
+            continue;                                \
+        }                                            \
+                                                     \
+        (dest) = device->readByte((port));           \
+    }                                                \
+                                                     \
+    m_registers.memptr = (port) + 1;                 \
+    Z80_FLAG_H_CLEAR;                                \
+    Z80_FLAG_N_CLEAR;                                \
+    Z80_FLAG_Z_UPDATE(0 == (dest));                  \
+    Z80_FLAGS_S53_UPDATE((dest));                    \
+    Z80_FLAG_P_UPDATE(isEvenParity((dest)));         \
+}
 
 #define Z80__IN__REG8__INDIRECT_N(dest,port) {       \
     UnsignedWord tmpPort = ((port) & 0xff) | (m_registers.a << 8); \
@@ -893,6 +964,7 @@ void Z80::Z80::init()
 #include "z80_cb_opcode_cycles.inc"
 #include "z80_ed_opcode_cycles.inc"
 #include "z80_ddorfd_opcode_cycles.inc"
+#include "z80_ddorfd_cb_opcode_cycles.inc"
 
 	/* set up instruction byte sizes */
 #include "z80_plain_opcode_sizes.inc"
@@ -936,6 +1008,7 @@ void Z80::Z80::nmi()
 
 void Z80::Z80::reset()
 {
+    m_interruptMode = InterruptMode::IM0;
 	m_iff1 = m_iff2 = false;
 	m_nmiPending = false;
 	m_registers.reset();
@@ -993,7 +1066,7 @@ void Z80::Z80::pokeZ80Word(int addr, UnsignedWord value)
     *(m_ram + addr + 1) = bytes[1];
 }
 
-bool Z80::Z80::execute(const Z80::Z80::UnsignedByte * instruction, bool doPc, int * cycles, int * size)
+bool Z80::Z80::execute(const Z80::Z80::UnsignedByte * instruction, bool doPc, int * tStates, int * size)
 {
 	static int dummySize;
 
@@ -1004,47 +1077,49 @@ bool Z80::Z80::execute(const Z80::Z80::UnsignedByte * instruction, bool doPc, in
 	    size = &dummySize;
 	}
 
+    ++m_registers.r;
+
 	switch (*instruction) {
 		case Z80__PLAIN__PREFIX__CB:
-			/* no 0xcb instructions modify PC directly so this method never needs
-			 * to override this request */
-			ret = executeCbInstruction(instruction + 1, cycles, size);
-
-            if (ret) {
-                ++m_registers.r;
-            }
+            ++m_registers.r;
+			// no 0xcb instructions modify PC directly so this method never needs to forcibly suppress update of the PC
+			ret = executeCbInstruction(instruction + 1, tStates, size);
 			break;
 
 		case Z80__PLAIN__PREFIX__ED:
-			ret = executeEdInstruction(instruction + 1, &doPc, cycles, size);
-
-            if (ret) {
-                ++m_registers.r;
-            }
+            ++m_registers.r;
+		    // some jumps and rets need to directly modify the PC
+			ret = executeEdInstruction(instruction + 1, &doPc, tStates, size);
 			break;
 
 		case Z80__PLAIN__PREFIX__DD:
-			ret = executeDdOrFdInstruction(m_registers.ix, instruction + 1, &doPc, cycles, size);
+            ++m_registers.r;
+		    // instructions that work with IX
+            // some jumps and rets need to directly modify the PC
+            // no 0xdd instructions modify R directly so this method never needs to forcibly suppress update of R
+			ret = executeDdOrFdInstruction(m_registers.ix, instruction + 1, &doPc, tStates, size);
 			break;
 
 		case Z80__PLAIN__PREFIX__FD:
-			ret = executeDdOrFdInstruction(m_registers.iy, instruction + 1, &doPc, cycles, size);
+            ++m_registers.r;
+            // instructions that work with IY
+            // some jumps and rets need to directly modify the PC
+            // no 0xfd instructions modify R directly so this method never needs to forcibly suppress update of R
+			ret = executeDdOrFdInstruction(m_registers.iy, instruction + 1, &doPc, tStates, size);
 			break;
 
 		default:
-			ret = executePlainInstruction(instruction, &doPc, cycles, size);
+            // some jumps and rets need to directly modify the PC
+            // no plain instructions modify R directly so this method never needs to forcibly suppress update of R
+			ret = executePlainInstruction(instruction, &doPc, tStates, size);
 			break;
 	}
 
-	/* doPc is altered by the instruction execution method to be false if a jump
-	 * was taken or the PC was otherwise directly affected by the instruction */
-	if (ret) {
-	    ++m_registers.r;
-
-	    if (doPc) {
-            m_registers.pc += *size;
-        }
-	}
+	// doPc is set to false by the instruction execution method if a jump was taken or the PC was otherwise directly
+	// affected by the instruction
+	if (ret && doPc) {
+        m_registers.pc += *size;
+    }
 
 	return ret;
 }
@@ -1052,25 +1127,25 @@ bool Z80::Z80::execute(const Z80::Z80::UnsignedByte * instruction, bool doPc, in
 
 int Z80::Z80::fetchExecuteCycle()
 {
-	int cycles = 0;
+	int tStates = 0;
 	int size = 0;
 
 	// TODO technically interrupts occur at the end of instruction processing
 	if (m_nmiPending) {
-		// do the interrupt
 		m_iff2 = m_iff1;
 		m_iff1 = false;
 		Z80__PUSH__REG16(m_registers.pc);
 		m_registers.pc = 0x0066;
 		m_nmiPending = false;
-		cycles += 11;
+        tStates += 11;
 	}
 
 	if (m_iff1 && m_interruptRequested) {
-		// process maskable interrupts
+		// process maskable interrupt
+        m_iff1 = m_iff2 = false;
+
 		switch(m_interruptMode) {
 			case InterruptMode::IM0:
-				m_iff1 = m_iff2 = false;
 				// TODO if the instruction is a call or RST, push PC onto stack
 				if (false/* is_call_or_rst */) {
 				    Z80__PUSH__REG16(m_registers.pc);
@@ -1083,27 +1158,25 @@ int Z80::Z80::fetchExecuteCycle()
 				break;
 
 		    case InterruptMode::IM1:
-				m_iff1 = m_iff2 = false;
 				Z80__PUSH__REG16(m_registers.pc);
                 m_registers.pc = 0x0038;
-                cycles += 13;
+                tStates += 13;
 				break;
 
 		    case InterruptMode::IM2:
-                m_iff1 = m_iff2 = false;
                 Z80__PUSH__REG16(m_registers.pc);
                 m_registers.pc = 0x0038;
 			    // TODO read interrupt vector from data bus
 			    // TODO set PC to location of interrupt routine
-                cycles += 19;
+                tStates += 19;
 				break;
 		}
 
 		m_interruptRequested = false;
 	}
 
-	execute(m_ram + m_registers.pc, true, &cycles, &size);
-	return cycles;
+	execute(m_ram + m_registers.pc, true, &tStates, &size);
+	return tStates;
 }
 
 
@@ -3746,21 +3819,11 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 			break;
 
 		case Z80__ED__SBC__HL__BC:					/* 0xed 0x42 */
-//        {
-//            UnsignedWord oldValue = (m_registers.hl);
-//            (m_registers.hl) -= ((m_registers.bc) + (Z80_FLAG_C_ISSET ? 1 : 0));
-//            Z80_FLAG_N_SET;
-//            Z80_FLAG_Z_UPDATE(0 == (m_registers.hl));
-//            Z80_FLAG_S_DEFAULTBEHAVIOUR16;
-//            Z80_FLAG_P_UPDATE((m_registers.hl) > oldValue);
-//            Z80_FLAG_C_UPDATE((m_registers.hl) > oldValue);
-//            Z80_FLAG_H_UPDATE(Z80_CHECK_16BIT_HALFCARRY_10_TO_11(oldValue, (m_registers.hl)));
-//        }
             Z80__SBC__REG16__REG16(m_registers.hl, m_registers.bc);
 			break;
 
 		case Z80__ED__LD__INDIRECT_NN__BC:		/* 0xed 0x43 */
-			Z80__LD__INDIRECT_NN__REG16(Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_registers.bc);
+			Z80__LD__INDIRECT_NN__REG16(z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_registers.bc);
 			break;
 
 		case Z80__ED__NEG:							/* 0xed 0x44 */
@@ -3772,15 +3835,19 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 			Z80_DONT_UPDATE_PC;
 			break;
 
-		case Z80__ED__IM__0:
+		case Z80__ED__IM__0:			/* 0xed 0x46 */
 			m_interruptMode = InterruptMode::IM0;
 			break;
 
-		case Z80__ED__IN__C__INDIRECT_C:
-            Z80__IN__REG8__INDIRECT_REG8(m_registers.c, m_registers.c);
+        case Z80__ED__LD__I__A:				/* 0xed 0x47 */
+            Z80__LD__REG8__REG8(m_registers.i, m_registers.a);
+            break;
+
+		case Z80__ED__IN__C__INDIRECT_C:        /* 0xed 0x48 */
+            Z80__IN__REG8__INDIRECT_REG16(m_registers.c, m_registers.bc);
 			break;
 
-		case Z80__ED__OUT__INDIRECT_C__C:
+		case Z80__ED__OUT__INDIRECT_C__C:        /* 0xed 0x49 */
             Z80__OUT__INDIRECT_REG8__REG8(m_registers.c, m_registers.c);
 			break;
 
@@ -3806,6 +3873,10 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 			 * in all versions of the Z80 */
 			m_interruptMode = InterruptMode::IM0;
 			break;
+
+        case Z80__ED__LD__R__A:				/* 0xed 0x4f */
+            Z80__LD__REG8__REG8(m_registers.r, m_registers.a);
+            break;
 
 		case Z80__ED__IN__D__INDIRECT_C:
             Z80__IN__REG8__INDIRECT_REG8(m_registers.d, m_registers.c);
@@ -3838,10 +3909,10 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 
 		case Z80__ED__LD__A__I:				/* 0xed 0x57 */
 			Z80__LD__REG8__REG8(m_registers.a, m_registers.i);
-			Z80_FLAG_S_DEFAULTBEHAVIOUR;
+			Z80_FLAGS_S53_UPDATE(m_registers.a);
 			Z80_FLAG_Z_DEFAULTBEHAVIOUR;
 			Z80_FLAG_H_CLEAR;
-			Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a));
+			Z80_FLAG_P_UPDATE(m_iff2);
 			Z80_FLAG_N_CLEAR;
 			break;
 
@@ -3874,12 +3945,13 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 			m_interruptMode = InterruptMode::IM2;
 			break;
 
-		case Z80__ED__LD__A__R:
+		case Z80__ED__LD__A__R:                  /* 0xed 0x5f */
 			Z80__LD__REG8__REG8(m_registers.a, m_registers.r);
-			Z80_FLAG_S_DEFAULTBEHAVIOUR;
+			// NOTE carry flag is unmodified
+			Z80_FLAGS_S53_UPDATE(m_registers.a);
 			Z80_FLAG_Z_DEFAULTBEHAVIOUR;
 			Z80_FLAG_H_CLEAR;
-			Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a));
+			Z80_FLAG_P_UPDATE(m_iff2);
 			Z80_FLAG_N_CLEAR;
 			break;
 
@@ -3994,10 +4066,9 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 
 				Z80_FLAG_H_CLEAR;
 				Z80_FLAG_N_CLEAR;
-				/* should this be set according to A or both A and (HL) ? */
 				Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a));
 				Z80_FLAG_Z_DEFAULTBEHAVIOUR;
-				Z80_FLAG_S_DEFAULTBEHAVIOUR;
+				Z80_FLAGS_S53_UPDATE(m_registers.a);
 			}
 			break;
 
@@ -4167,14 +4238,18 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 			break;
 
 		case Z80__ED__LDI:
-			/* FLAGS: H and N are cleared, S, Z and C are preserved, P is unknown */
-			pokeUnsigned(m_registers.de, peekUnsigned(m_registers.hl));
-			m_registers.de++;
-			m_registers.hl++;
-			m_registers.bc--;
-			Z80_FLAG_H_CLEAR;
-			Z80_FLAG_N_CLEAR;
-			/* TODO flag P */
+		    {
+		        auto tmpByte = peekUnsigned(m_registers.hl);
+                pokeUnsigned(m_registers.de, tmpByte);
+                m_registers.de++;
+                m_registers.hl++;
+                m_registers.bc--;
+                Z80_FLAG_H_CLEAR;
+                Z80_FLAG_N_CLEAR;
+                Z80_FLAG_P_UPDATE(0 != m_registers.bc);
+                Z80_FLAG_F5_UPDATE(tmpByte & (Z80_FLAG_F5_MASK >> 4));
+                Z80_FLAG_F3_UPDATE(tmpByte & Z80_FLAG_F3_MASK);
+            }
 			break;
 
 		case Z80__ED__CPI:
@@ -4574,40 +4649,6 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 			break;
 
 		case Z80__ED__NOP__0XED__0XFF:
-			break;
-
-		case Z80__ED__LD__I__A:				/* 0xed 0x47 */
-			Z80__LD__REG8__REG8(m_registers.i, m_registers.a);
-			/* Z80__LD__REG8__REG8() preserves all flags because all but 2 8-bit
-			 * LD instructions don't alter any flags. LD I,A and LD R,A both alter
-			 * flags thus:
-			 * C is preserved, H and N are reset, Z and S are flipped(?) and P is
-			 * set if interrupts are enabled
-			 *
-			 * This means we do the flags manually here.
-			 */
-			Z80_FLAG_N_CLEAR;
-			Z80_FLAG_H_CLEAR;
-			Z80_FLAG_Z_UPDATE(!Z80_FLAG_Z_ISSET);
-			Z80_FLAG_S_UPDATE(!Z80_FLAG_S_ISSET);
-			Z80_FLAG_P_UPDATE(m_iff1);
-			break;
-
-		case Z80__ED__LD__R__A:				/* 0xed 0x4f */
-			Z80__LD__REG8__REG8(m_registers.r, m_registers.a);
-			/* Z80__LD__REG8__REG8() preserves all flags because all but 2 8-bit
-			 * LD instructions don't alter any flags. LD I,A and LD R,A both alter
-			 * flags thus:
-			 * C is preserved, H and N are reset, Z and S are flipped(?) and P is
-			 * set if interrupts are enabled
-			 *
-			 * This means we do the flags manually here.
-			 */
-			Z80_FLAG_N_CLEAR;
-			Z80_FLAG_H_CLEAR;
-			Z80_FLAG_Z_UPDATE(!Z80_FLAG_Z_ISSET);
-			Z80_FLAG_S_UPDATE(!Z80_FLAG_S_ISSET);
-			Z80_FLAG_P_UPDATE(m_iff1);
 			break;
 
 		default:
@@ -5225,13 +5266,14 @@ bool Z80::Z80::executeDdOrFdInstruction(Z80::Z80::UnsignedWord & reg, const Z80:
 }
 
 
-bool Z80::Z80::executeDdcbOrFdcbInstruction(Z80::Z80::UnsignedWord & reg, const Z80::Z80::UnsignedByte * instruction, int * cycles, int * size)
+bool Z80::Z80::executeDdcbOrFdcbInstruction(Z80::Z80::UnsignedWord & reg, const Z80::Z80::UnsignedByte * instruction, int * tStates, int * size)
 {
-	/* NOTE these opcodes are of the form 0xdd 0xcb DD II or 0xfd 0xcb DD II
-	 * where II is the opcode and DD is the offset to use with IX or IY */
+	// NOTE these opcodes are of the form 0xdd 0xcb DD II or 0xfd 0xcb DD II where II is the 8-bit opcode and DD is the
+	// 8-bit 2s-complement offset to use with IX or IY
 	SignedByte d(*(instruction));
+	auto opcodeByte = *(instruction + 1);
 
-	switch(*(instruction + 1)) {
+	switch(opcodeByte) {
 		case Z80__DD_OR_FD__CB__RLC__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x00 */
 			Z80__RLC__INDIRECT_REG16_D__REG8(reg, d, m_registers.b);
 			break;
@@ -5488,261 +5530,96 @@ bool Z80::Z80::executeDdcbOrFdcbInstruction(Z80::Z80::UnsignedWord & reg, const 
 			Z80__SRL__INDIRECT_REG16_D__REG8(reg, d, m_registers.a);
 			break;
 
-		/* BIT opcodes */
+		// BIT opcodes
+		// These are all the (IX/IY) + d equivalents of the 0xcb BIT opcodes that work with specific reg8s, except that
+		// these versions don't use the reg8, so they're all just the BIT opcode on the memory offset - i.e. 8 identical
+		// opcodes for each bit position
 		case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x40 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.b);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x41 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.c);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x42 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.d);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x43 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.e);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x44 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.h);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x45 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.l);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x46 */
+		case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x47 */
 			Z80__BIT__N__INDIRECT_REG16_D(0, reg, d);
 			break;
 
-		case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x47 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(0, reg, d, m_registers.a);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x48 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.b);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x49 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.c);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x4a */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.d);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x4b */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.e);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x4c */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.h);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x4d */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.l);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x4e */
+		case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x4f */
 			Z80__BIT__N__INDIRECT_REG16_D(1, reg, d);
 			break;
 
-		case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x4f */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(1, reg, d, m_registers.a);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x50 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.b);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x51 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.c);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x52 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.d);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x53 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.e);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x54 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.h);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x55 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.l);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x56 */
+		case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x57 */
 			Z80__BIT__N__INDIRECT_REG16_D(2, reg, d);
 			break;
 
-		case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x57 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(2, reg, d, m_registers.a);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x58 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.b);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x59 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.c);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x5a */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.d);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x5b */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.e);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x5c */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.h);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x5d */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.l);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x5e */
+		case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x5f */
 			Z80__BIT__N__INDIRECT_REG16_D(3, reg, d);
 			break;
 
-		case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x5f */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(3, reg, d, m_registers.a);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x60 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.b);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x61 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.c);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x62 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.d);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x63 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.e);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x64 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.h);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x65 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.l);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x66 */
+		case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x67 */
 			Z80__BIT__N__INDIRECT_REG16_D(4, reg, d);
 			break;
 
-		case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x67 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(4, reg, d, m_registers.a);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x68 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.b);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x69 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.c);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x6a */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.d);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x6b */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.e);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x6c */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.h);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x6d */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.l);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x6e */
+		case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x6f */
 			Z80__BIT__N__INDIRECT_REG16_D(5, reg, d);
 			break;
 
-		case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x6f */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(5, reg, d, m_registers.a);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x70 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.b);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x71 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.c);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x72 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.d);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x73 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.e);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x74 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.h);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x75 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.l);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x76 */
+		case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x77 */
 			Z80__BIT__N__INDIRECT_REG16_D(6, reg, d);
 			break;
 
-		case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x77 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(6, reg, d, m_registers.a);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__B:		/* 0xdd/0xfd 0xcb 0x78 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.b);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__C:		/* 0xdd/0xfd 0xcb 0x79 */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.c);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__D:		/* 0xdd/0xfd 0xcb 0x7a */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.d);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__E:		/* 0xdd/0xfd 0xcb 0x7b */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.e);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0x7c */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.h);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0x7d */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.l);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d:		/* 0xdd/0xfd 0xcb 0x7e */
-			Z80__BIT__N__INDIRECT_REG16_D(7, reg, d);
-			break;
-
 		case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0x7f */
-			Z80__BIT__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.a);
+			Z80__BIT__N__INDIRECT_REG16_D(7, reg, d);
 			break;
 
 		/* RES opcodes */
@@ -6246,10 +6123,22 @@ bool Z80::Z80::executeDdcbOrFdcbInstruction(Z80::Z80::UnsignedWord & reg, const 
 		case Z80__DD_OR_FD__CB__SET__7__INDIRECT_IX_d_OR_IY_d__H:		/* 0xdd/0xfd 0xcb 0xfc */
 			Z80__SET__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.h);
 			break;
+
+	    case Z80__DD_OR_FD__CB__SET__7__INDIRECT_IX_d_OR_IY_d__L:		/* 0xdd/0xfd 0xcb 0xfd */
+            Z80__SET__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.l);
+            break;
+
+	    case Z80__DD_OR_FD__CB__SET__7__INDIRECT_IX_d_OR_IY_d:			/* 0xdd/0xfd 0xcb 0xfe */
+            Z80__SET__N__INDIRECT_REG16_D(7, reg, d);
+            break;
+
+	    case Z80__DD_OR_FD__CB__SET__7__INDIRECT_IX_d_OR_IY_d__A:		/* 0xdd/0xfd 0xcb 0xff */
+            Z80__SET__N__INDIRECT_REG16_D__REG8(7, reg, d, m_registers.a);
+            break;
 	}
 
-	if (cycles) {
-	    *cycles = 23;
+	if (tStates) {
+	    *tStates = m_ddorfd_cb_opcode_cycles[opcodeByte];
 	}
 
 	if (size) {

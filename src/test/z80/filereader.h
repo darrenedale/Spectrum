@@ -41,7 +41,7 @@ namespace Test::Z80
         static std::optional<::Z80::UnsignedWord> parseWord(char[4]);
         static std::optional<::Z80::UnsignedByte> parseByte(char[2]);
         static std::optional<bool> parseFlag(char);
-        static std::optional<std::uint8_t> parseInterruptMode(char);
+        static std::optional<InterruptMode> parseInterruptMode(char);
 
         void skipEmptyLines();
         std::optional<std::string> readLine();
