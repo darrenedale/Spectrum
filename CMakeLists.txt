@@ -57,7 +57,7 @@ add_executable(
         src/cpu.cpp
         src/z80/z80.cpp
         src/z80/z80iodevice.cpp
-)
+        src/test/z80/testiodevice.h)
 
 set_target_properties(
         spectrum z80interpreter screenview z80-test

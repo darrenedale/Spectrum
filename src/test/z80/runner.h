@@ -5,10 +5,12 @@
 #ifndef SPECTRUM_TEST_Z80_RUNNER_H
 #define SPECTRUM_TEST_Z80_RUNNER_H
 
+#include <memory>
 #include <string>
 #include <optional>
 
 #include "testbattery.h"
+#include "testiodevice.h"
 
 namespace Test::Z80
 {
@@ -81,6 +83,7 @@ namespace Test::Z80
 
     private:
         ::Z80::Z80 * m_cpu;
+        std::unique_ptr<TestIoDevice> m_ioDevice;
         bool m_borrowedCpu;
         bool m_testsRead;
         TestBattery m_tests;

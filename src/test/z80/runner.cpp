@@ -148,6 +148,8 @@ Runner::Runner(std::string testFileBaseName)
 : Runner(testFileBaseName, new ::Z80::Z80(new UnsignedByte[65536], 65536))
 {
     m_borrowedCpu = false;
+    m_ioDevice = std::make_unique<TestIoDevice>();
+    m_cpu->connectIODevice(m_ioDevice.get());
 }
 
 Runner::Runner(std::string testFileBaseName, ::Z80::Z80 & cpu)
