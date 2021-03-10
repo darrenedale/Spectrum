@@ -14,16 +14,15 @@
 #include <cassert>
 
 #include "z80.h"
-#include "z80iodevice.h"
-#include "z80_opcodes.h"
+#include "iodevice.h"
+#include "invalidopcode.h"
+#include "opcodes.h"
 
 #define Z80_UNUSED(x) ((void) (x));
 
-// downcast values to Z80 data types
-#define Z80_CUBYTE(v) UnsignedByte((v) & 0x00ff)
-#define Z80_CBYTE(v) SignedByte((v) & 0x00ff)
-#define Z80_CUWORD(v) UnsignedWord((v) & 0x0000ffff)
-#define Z80_CWORD(v) SignedWord((v) & 0x0000ffff)
+// cast values to Z80 data types
+#define Z80_CUBYTE(v) static_cast<UnsignedByte>((v) & 0x00ff)
+#define Z80_CUWORD(v) static_cast<UnsignedWord>((v) & 0x0000ffff)
 
 #define Z80_FLAG_C_SET (m_registers.f |= Z80_FLAG_C_MASK)
 #define Z80_FLAG_Z_SET (m_registers.f |= Z80_FLAG_Z_MASK)
@@ -141,15 +140,14 @@
  * directly changes the PC - e.g. JP, JR, DJNZ, RET, CALL etc. */
 #define Z80_DONT_UPDATE_PC if (doPc) *doPc = false;
 #define Z80_USE_JUMP_CYCLE_COST useJumpCycleCost = true;
-#define Z80_INVALID_INSTRUCTION if (cycles) *cycles = 0; if (size) *size = 0; return false;
 
-/* macros to fetch opcode cycle costs. most non-jump opcodes
+/* macros to fetch opcode t-state costs. most non-jump opcodes
 	don't actually need to use these. for conditional jump opcodes,
 	the cost if the jump is taken is stored in the rightmost 16
 	bits; the cost if the jump is not taken is stored in the
 	leftmost 16 bits */
-#define Z80_CYCLES_JUMP(cycles) (((cycles) & 0xffff0000) >> 16)
-#define Z80_CYCLES_NOJUMP(cycles) ((cycles) & 0x0000ffff)
+#define Z80_TSTATES_JUMP(tStates) (((tStates) & 0xffff0000) >> 16)
+#define Z80_TSTATES_NOJUMP(tStates) ((tStates) & 0x0000ffff)
 
 /*
  * macros implementing common instruction semantics using different combinations of like operands
@@ -157,7 +155,7 @@
 
 /* data loading instructions
  *
- * FLAGS: no flags are modified, except when I (0xed 0x47) or R (oxed 0x4f) is
+ * FLAGS: no flags are modified, except when I (0xed 0x47) or R (0xed 0x4f) is
  * loaded from A, in which case C is preserved, H and N are reset, Z and S are
  * flipped(?) and P is set if interrupts are enabled. these cases are handled in
  * the code in the fetch-execute cycle.
@@ -773,36 +771,54 @@ m_iff1 = m_iff2;                 \
     Z80__READ_IO_DEVICES((dest), tmpPort);           \
 }
 
+using UnsignedByte = ::Z80::UnsignedByte;
+using UnsignedWord = ::Z80::UnsignedWord;
+using SignedByte = ::Z80::SignedByte;
+using SignedWord = ::Z80::SignedWord;
+
 namespace
 {
     constexpr const int DefaultClockSpeed = 3500000;
 }
 
-constexpr const unsigned int Z80::Z80::DdOrFdOpcodeSize[256] = {
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 4, 4, 2, 2, 2, 3, 2, 2, 2, 4, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 3, 3, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 3, 2,
-    2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 3, 2,
-    2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 3, 2,
-    3, 3, 3, 3, 3, 3, 2, 3, 2, 2, 2, 2, 2, 2, 3, 2,
-
-    2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 3, 2,
-    2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 3, 2,
-    2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 3, 2,
-    2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 3, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2	/* 0xcd */, 2, 2, 2, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
+constexpr const int Z80::Z80::PlainOpcodeSizes[256] = {
+#include "includes/z80_plain_opcode_sizes.inc"
 };
 
+// NOTE all 0xcb opcodes are 2 bytes in size
+
+constexpr const int Z80::Z80::EdOpcodeSizes[256] = {
+#include "includes/z80_ed_opcode_sizes.inc"
+};
+
+constexpr const int Z80::Z80::DdOrFdOpcodeSizes[256] = {
+#include "includes/z80_ddorfd_opcode_sizes.inc"
+};
+
+constexpr const int Z80::Z80::PlainOpcodeTStates[256] = {
+#include "includes/z80_plain_opcode_tstates.inc"
+};
+
+constexpr const int Z80::Z80::CbOpcodeTStates[256] = {
+#include "includes/z80_cb_opcode_tstates.inc"
+};
+
+constexpr const int Z80::Z80::EdOpcodeTStates[256] = {
+#include "includes/z80_ed_opcode_tstates.inc"
+};
+
+constexpr const int Z80::Z80::DdOrFdOpcodeTStates[256] = {
+#include "includes/z80_ddorfd_opcode_tstates.inc"
+};
+
+constexpr const int Z80::Z80::DdCbOrFdCbOpcodeTStates[256] = {
+#include "includes/z80_ddorfd_cb_opcode_tstates.inc"
+};
 
 Z80::Z80::Z80(unsigned char * mem, int memSize)
 : Cpu(mem, memSize),
-  m_ram(mem),
-  m_ramSize(memSize),
+  m_memory(mem),
+  m_memorySize(memSize),
   m_clockSpeed(DefaultClockSpeed),
   m_nmiPending(false),
   m_interruptRequested(false),
@@ -810,61 +826,29 @@ Z80::Z80::Z80(unsigned char * mem, int memSize)
   m_iff2(false),
   m_interruptMode(InterruptMode::IM0)
 {
-	init();
+    m_interruptMode = InterruptMode::IM0;
+    m_interruptData = 0x00;
 }
 
 Z80::Z80::~Z80() = default;
 
 bool Z80::Z80::isEvenParity(UnsignedByte value)
 {
-	static bool parityLut[256] = {
-        true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
-        false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
-        false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
-        true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
-        false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
-        true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
-        true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
-        false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
-        false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
-        true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
-        true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
-        false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
-        true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
-        false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
-        false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
-        true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
+	static bool parity[256] = {
+#include "includes/8bit_parity.inc"
 	};
 
-	return parityLut[value];
+	return parity[value];
 }
 
-void Z80::Z80::init()
-{
-    m_interruptMode = InterruptMode::IM0;
-	m_interruptData = 0x00;
-
-	/* set up opcode t-state costs */
-#include "z80_plain_opcode_cycles.inc"
-#include "z80_cb_opcode_cycles.inc"
-#include "z80_ed_opcode_cycles.inc"
-#include "z80_ddorfd_opcode_cycles.inc"
-#include "z80_ddorfd_cb_opcode_cycles.inc"
-
-	/* set up instruction byte sizes */
-#include "z80_plain_opcode_sizes.inc"
-	/* all 0xcb opcodes are 2 bytes in size */
-#include "z80_ed_opcode_sizes.inc"
-}
-
-bool Z80::Z80::connectIODevice(Z80IODevice * device)
+bool Z80::Z80::connectIODevice(IODevice * device)
 {
     m_ioDevices.insert(device);
 	device->setCpu(this);
 	return true;
 }
 
-void Z80::Z80::disconnectIODevice(Z80IODevice * device)
+void Z80::Z80::disconnectIODevice(IODevice * device)
 {
     const auto deviceIterator = m_ioDevices.find(device);
 
@@ -917,14 +901,14 @@ void Z80::Z80::reset()
  */
 void Z80::Z80::pokeHostWord(int addr, UnsignedWord value)
 {
-	if (0 > addr || m_ramSize <= addr) {
+	if (0 > addr || m_memorySize <= addr) {
 	    return;
 	}
 
 	value = hostToZ80ByteOrder(value);
 	auto * bytes = reinterpret_cast<UnsignedByte *>(&value);
-	*(m_ram + addr) = bytes[0];
-	*(m_ram + addr + 1) = bytes[1];
+	*(m_memory + addr) = bytes[0];
+	*(m_memory + addr + 1) = bytes[1];
 }
 
 /**
@@ -944,21 +928,20 @@ void Z80::Z80::pokeHostWord(int addr, UnsignedWord value)
  */
 void Z80::Z80::pokeZ80Word(int addr, UnsignedWord value)
 {
-	if (0 > addr || m_ramSize <= addr) {
+	if (0 > addr || m_memorySize <= addr) {
 	    return;
 	}
 
     auto * bytes = reinterpret_cast<UnsignedByte *>(&value);
-    *(m_ram + addr) = bytes[0];
-    *(m_ram + addr + 1) = bytes[1];
+    *(m_memory + addr) = bytes[0];
+    *(m_memory + addr + 1) = bytes[1];
 }
 
-bool Z80::Z80::execute(const Z80::Z80::UnsignedByte * instruction, bool doPc, int * tStates, int * size)
+void Z80::Z80::execute(const UnsignedByte * instruction, bool doPc, int * tStates, int * size)
 {
 	static int dummySize;
 
 	assert(instruction);
-	bool ret;
 
 	if (!size) {
 	    size = &dummySize;
@@ -970,45 +953,40 @@ bool Z80::Z80::execute(const Z80::Z80::UnsignedByte * instruction, bool doPc, in
 		case Z80__PLAIN__PREFIX__CB:
             ++m_registers.r;
 			// no 0xcb instructions modify PC directly so this method never needs to forcibly suppress update of the PC
-			ret = executeCbInstruction(instruction + 1, tStates, size);
+			executeCbInstruction(instruction + 1, tStates, size);
 			break;
 
 		case Z80__PLAIN__PREFIX__ED:
             ++m_registers.r;
 		    // some jumps and rets need to directly modify the PC
-			ret = executeEdInstruction(instruction + 1, &doPc, tStates, size);
+			executeEdInstruction(instruction + 1, &doPc, tStates, size);
 			break;
 
 		case Z80__PLAIN__PREFIX__DD:
             ++m_registers.r;
 		    // instructions that work with IX
             // some jumps and rets need to directly modify the PC
-            // no 0xdd instructions modify R directly so this method never needs to forcibly suppress update of R
-			ret = executeDdOrFdInstruction(m_registers.ix, instruction + 1, &doPc, tStates, size);
+			executeDdOrFdInstruction(m_registers.ix, instruction + 1, &doPc, tStates, size);
 			break;
 
 		case Z80__PLAIN__PREFIX__FD:
             ++m_registers.r;
             // instructions that work with IY
             // some jumps and rets need to directly modify the PC
-            // no 0xfd instructions modify R directly so this method never needs to forcibly suppress update of R
-			ret = executeDdOrFdInstruction(m_registers.iy, instruction + 1, &doPc, tStates, size);
+			executeDdOrFdInstruction(m_registers.iy, instruction + 1, &doPc, tStates, size);
 			break;
 
 		default:
             // some jumps and rets need to directly modify the PC
-            // no plain instructions modify R directly so this method never needs to forcibly suppress update of R
-			ret = executePlainInstruction(instruction, &doPc, tStates, size);
+			executePlainInstruction(instruction, &doPc, tStates, size);
 			break;
 	}
 
 	// doPc is set to false by the instruction execution method if a jump was taken or the PC was otherwise directly
 	// affected by the instruction
-	if (ret && doPc) {
+	if (doPc) {
         m_registers.pc += *size;
     }
-
-	return ret;
 }
 
 int Z80::Z80::fetchExecuteCycle()
@@ -1068,18 +1046,18 @@ int Z80::Z80::fetchExecuteCycle()
 		m_interruptRequested = false;
 	}
 
-	execute(m_ram + m_registers.pc, true, &tStates, &size);
+	execute(m_memory + m_registers.pc, true, &tStates, &size);
 	return tStates;
 }
 
 
-bool Z80::Z80::executePlainInstruction(const Z80::Z80::UnsignedByte * instruction, bool * doPc, int * cycles, int * size)
+void Z80::Z80::executePlainInstruction(const UnsignedByte * instruction, bool * doPc, int * tStates, int * size)
 {
 	bool useJumpCycleCost = false;
 
 	switch(*instruction) {
 		case Z80__PLAIN__NOP:							// 0x00
-			/* nothing to do, just consume some cycles */
+			/* nothing to do, just consume some tStates */
 			break;
 
 		case Z80__PLAIN__LD__BC__NN:					// 0x01
@@ -2010,8 +1988,8 @@ bool Z80::Z80::executePlainInstruction(const Z80::Z80::UnsignedByte * instructio
             m_registers.memptr = z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
 			m_registers.pc = m_registers.memptr;
 			Z80_DONT_UPDATE_PC;
-			// NOTE don't set the jumped indicator because there's no different cycle cost - the jump always takes
-			//  place, so the base cost in cycles is all that's used
+			// NOTE don't set the jumped indicator because there's no different t-state cost - the jump always takes
+			//  place, so the base cost in t-states is all that's used
 			break;
 
 		case Z80__PLAIN__CALL__NZ__NN:				// 0xc4
@@ -2050,8 +2028,8 @@ bool Z80::Z80::executePlainInstruction(const Z80::Z80::UnsignedByte * instructio
 		case Z80__PLAIN__RET:							// 0xc9
 			Z80__POP__REG16(m_registers.pc);
 			Z80_DONT_UPDATE_PC;
-            // NOTE don't set the jumped indicator because there's no different cycle cost - the jump always takes
-            //  place, so the base cost in cycles is all that's used
+            // NOTE don't set the jumped indicator because there's no different t-state cost - the jump always takes
+            //  place, so the base cost in t-states is all that's used
 			break;
 
 		case Z80__PLAIN__JP__Z__NN:					// 0xca
@@ -2068,7 +2046,7 @@ bool Z80::Z80::executePlainInstruction(const Z80::Z80::UnsignedByte * instructio
 			break;
 
 		case Z80__PLAIN__PREFIX__CB:				// 0xcb
-			std::cerr << "executePlainInstruction() called with opcode 0xcb. such an opcode should be handled by executeCbInstruction()" << std::endl;
+			std::cerr << "executePlainInstruction() called with opcode 0xcb. such an opcode should be handled by executeCbInstruction()" << "\n";
 			break;
 
 		case Z80__PLAIN__CALL__Z__NN:				// 0xcc
@@ -2195,7 +2173,7 @@ bool Z80::Z80::executePlainInstruction(const Z80::Z80::UnsignedByte * instructio
 			break;
 
 		case Z80__PLAIN__PREFIX__DD:				// 0xdd
-			std::cerr << "executePlainInstruction() called with opcode 0xdd. such an opcode should be handled by executeDdInstruction()" << std::endl;
+			std::cerr << "executePlainInstruction() called with opcode 0xdd. such an opcode should be handled by executeDdInstruction()" << "\n";
 			break;
 
 		case Z80__PLAIN__SBC__A__N:					// 0xde
@@ -2275,8 +2253,8 @@ bool Z80::Z80::executePlainInstruction(const Z80::Z80::UnsignedByte * instructio
 		case Z80__PLAIN__JP__INDIRECT_HL:			// 0xe9
 			m_registers.pc = m_registers.hl;
 			Z80_DONT_UPDATE_PC;
-            // NOTE don't set the jumped indicator because there's no different cycle cost - the jump always takes
-            //  place, so the base cost in cycles is all that's used
+            // NOTE don't set the jumped indicator because there's no different t-state cost - the jump always takes
+            //  place, so the base cost in t-states is all that's used
 			break;
 
 		case Z80__PLAIN__JP__PE__NN:				// 0xea
@@ -2311,7 +2289,7 @@ bool Z80::Z80::executePlainInstruction(const Z80::Z80::UnsignedByte * instructio
 
 		case Z80__PLAIN__PREFIX__ED:				// 0xed
 			/* should never happen */
-			std::cerr << "executePlainInstruction() called with opcode 0xed. such an opcode should be handled by executeEdInstruction()" << std::endl;
+			std::cerr << "executePlainInstruction() called with opcode 0xed. such an opcode should be handled by executeEdInstruction()" << "\n";
 			break;
 
 		case Z80__PLAIN__XOR__N:						// 0xee
@@ -2425,7 +2403,7 @@ bool Z80::Z80::executePlainInstruction(const Z80::Z80::UnsignedByte * instructio
 			break;
 
 		case Z80__PLAIN__PREFIX__FD:				// 0xfd
-			std::cerr << "executePlainInstruction() called with opcode 0xfd. such an opcode should be handled by executeFdInstruction()" << std::endl;
+			std::cerr << "executePlainInstruction() called with opcode 0xfd. such an opcode should be handled by executeFdInstruction()" << "\n";
 			break;
 
 		case Z80__PLAIN__CP__N:						// 0xfe
@@ -2438,26 +2416,22 @@ bool Z80::Z80::executePlainInstruction(const Z80::Z80::UnsignedByte * instructio
 			break;
 
 		default:
-            // TODO we should throw here - it should never happen
-			std::cerr << "unhandled opcode: 0x" << std::hex << (*instruction) << std::endl;
-			Z80_INVALID_INSTRUCTION;
-			break;
+			std::cerr << "unexpected opcode: 0x" << std::hex << (*instruction) << "\n";
+            throw InvalidOpcode({*instruction}, m_registers.pc);
 	}
 
-	if (cycles) {
-	    *cycles = static_cast<int>(useJumpCycleCost ? Z80_CYCLES_JUMP(m_plain_opcode_cycles[*instruction]) : Z80_CYCLES_NOJUMP(m_plain_opcode_cycles[*instruction]));
+	if (tStates) {
+	    *tStates = static_cast<int>(useJumpCycleCost ? Z80_TSTATES_JUMP(PlainOpcodeTStates[*instruction]) : Z80_TSTATES_NOJUMP(PlainOpcodeTStates[*instruction]));
 	}
 
 	if (size) {
-	    *size = static_cast<int>(m_plain_opcode_size[*instruction]);
+	    *size = static_cast<int>(PlainOpcodeSizes[*instruction]);
 	}
-
-	return true;
 }
 
 
 // no 0xcb instructions directly modify the PC so we don't need to receive the (bool *) doPc parameter to indicate this
-bool Z80::Z80::executeCbInstruction(const Z80::Z80::UnsignedByte * instruction, int * cycles, int * size)
+void Z80::Z80::executeCbInstruction(const UnsignedByte * instruction, int * tStates, int * size)
 {
 	bool useJumpCycleCost = false;
 
@@ -3490,25 +3464,21 @@ bool Z80::Z80::executeCbInstruction(const Z80::Z80::UnsignedByte * instruction, 
 			break;
 
 		default:
-            // TODO we should throw here - it should never happen
-			std::cerr << "unhandled opcode: 0xcb 0x" << std::hex << (*instruction) << std::endl;
-			Z80_INVALID_INSTRUCTION;
-			break;
+            std::cerr << "unexpected opcode: 0xcb 0x" << std::hex << (*instruction) << "\n";
+            throw InvalidOpcode({0xcb, *instruction}, m_registers.pc);
 	}
 
-	if (cycles) {
-	    *cycles = (useJumpCycleCost ? Z80_CYCLES_JUMP(m_cb_opcode_cycles[*instruction]) : Z80_CYCLES_NOJUMP(m_cb_opcode_cycles[*instruction]));
+	if (tStates) {
+	    *tStates = (useJumpCycleCost ? Z80_TSTATES_JUMP(CbOpcodeTStates[*instruction]) : Z80_TSTATES_NOJUMP(CbOpcodeTStates[*instruction]));
 	}
 
 	if (size) {
 	    *size = 2;
 	}
-
-	return true;
 }
 
 
-bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, bool * doPc, int * cycles, int * size)
+void Z80::Z80::executeEdInstruction(const UnsignedByte * instruction, bool * doPc, int * tStates, int * size)
 {
 	bool useJumpCycleCost = false;
 
@@ -4361,32 +4331,27 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 			break;
 
 		default:
-		    // TODO we should throw here - it should never happen
-			std::cerr << "unhandled opcode: 0xed 0x" << std::hex << (*instruction) << std::endl;
-			Z80_INVALID_INSTRUCTION;
-			break;
+            std::cerr << "unexpected opcode: 0xed 0x" << std::hex << (*instruction) << "\n";
+            throw InvalidOpcode({0xed, *instruction}, m_registers.pc);
 	}
 
-	if (cycles) {
-	    *cycles = (useJumpCycleCost ? Z80_CYCLES_JUMP(m_ed_opcode_cycles[*instruction]) : Z80_CYCLES_NOJUMP(m_ed_opcode_cycles[*instruction]));
+	if (tStates) {
+	    *tStates = (useJumpCycleCost ? Z80_TSTATES_JUMP(EdOpcodeTStates[*instruction]) : Z80_TSTATES_NOJUMP(EdOpcodeTStates[*instruction]));
 	}
 
 	if (size) {
-	    *size = m_ed_opcode_size[*instruction];
+	    *size = EdOpcodeSizes[*instruction];
 	}
-
-	return true;
 }
 
 
-bool Z80::Z80::executeDdOrFdInstruction(Z80::Z80::UnsignedWord & reg, const Z80::Z80::UnsignedByte * instruction, bool * doPc, int * cycles, int * size)
+void Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, const UnsignedByte * instruction, bool * doPc, int * tStates, int * size)
 {
-	Z80_UNUSED(doPc);
 	bool useJumpCycleCost = false;
 
 	// work out which high and low reg pointers to use
-	Z80::Z80::UnsignedByte * regHigh;
-	Z80::Z80::UnsignedByte * regLow;
+	UnsignedByte * regHigh;
+	UnsignedByte * regLow;
 
 	if (&reg == &m_registers.ix) {
 		regHigh = &(m_registers.ixh);
@@ -4747,7 +4712,7 @@ bool Z80::Z80::executeDdOrFdInstruction(Z80::Z80::UnsignedWord & reg, const Z80:
 			break;
 
 		case Z80__DD_OR_FD__PREFIX__CB: /*  0xcb */
-			return executeDdcbOrFdcbInstruction(reg, instruction + 1, cycles, size);
+			return executeDdcbOrFdcbInstruction(reg, instruction + 1, tStates, size);
 
 		/* the following are all (expensive) replicas of plain instructions, so
 		 * defer to the plain opcode executor method */
@@ -4916,7 +4881,6 @@ bool Z80::Z80::executeDdOrFdInstruction(Z80::Z80::UnsignedWord & reg, const Z80:
 		case Z80__DD_OR_FD__JP__C__NN:          // 0xda
 		case Z80__DD_OR_FD__IN__A__INDIRECT_N:  // 0xdb
 		case Z80__DD_OR_FD__CALL__C__NN:        // 0xdc
-		case Z80__DD_OR_FD__PREFIX__DD:         // 0xdd
 		case Z80__DD_OR_FD__SBC__A__N:          // 0xde
 		case Z80__DD_OR_FD__RST__18:            // 0xdf
 
@@ -4949,46 +4913,48 @@ bool Z80::Z80::executeDdOrFdInstruction(Z80::Z80::UnsignedWord & reg, const Z80:
 		case Z80__DD_OR_FD__CALL__M__NN:        // 0xfc
 		case Z80__DD_OR_FD__CP__N:              // 0xfe
 		case Z80__DD_OR_FD__RST__38:            // 0xff
-		{
-			/* these are all (expensive) replicas of plain instructions, so defer
-			 * to the plain opcode executor method */
-			bool ret = execute(instruction + 1, doPc, cycles, size);
-
-			if (size) {
-			    *size += 1;
-			}
-
-			return ret;
-		}
-
-        case Z80__DD_OR_FD__PREFIX__FD: /*  0xfd */
-        {
-            // this is an (expensive) replica of the extension instructions, so defer to the plain opcode executor
-            --m_registers.r;
-            bool ret = executePlainInstruction(instruction + 1, doPc, cycles, size);
-
-            if (size) {
-                *size += 1;
+            {
+                // these are (expensive) replicas of plain instructions, so defer to the plain opcode executor method
+                executePlainInstruction(instruction + 1, doPc, tStates, size);
+    
+                if (size) {
+                    *size += 1;
+                }
             }
+            break;
 
-            return ret;
-        }
-
+        case Z80__DD_OR_FD__PREFIX__DD:         // 0xdd
+        case Z80__DD_OR_FD__PREFIX__FD:         // 0xfd
+            {
+                // this is an (expensive) replica of the extension instruction
+                --m_registers.r;
+                executeDdOrFdInstruction(reg, instruction + 1, doPc, tStates, size);
+    
+                if (size) {
+                    *size += 1;
+                }
+            }
+            break;
+	    
+	    default:
+            {
+                UnsignedByte prefix = (&reg == &m_registers.ix ? 0xdd : 0xfd); 
+                std::cerr << "unexpected opcode: 0x" << std::hex << prefix << " 0x" << (*instruction) << "\n";
+                throw InvalidOpcode({prefix, *instruction}, m_registers.pc);
+            }
     }
 
-	if (cycles) {
-	    *cycles = (useJumpCycleCost ? Z80_CYCLES_JUMP(m_ddorfd_opcode_cycles[*instruction]) : Z80_CYCLES_NOJUMP(m_ddorfd_opcode_cycles[*instruction]));
+	if (tStates) {
+	    *tStates = (useJumpCycleCost ? Z80_TSTATES_JUMP(DdOrFdOpcodeTStates[*instruction]) : Z80_TSTATES_NOJUMP(DdOrFdOpcodeTStates[*instruction]));
 	}
 
 	if (size) {
-	    *size = DdOrFdOpcodeSize[*instruction];
+	    *size = DdOrFdOpcodeSizes[*instruction];
 	}
-
-	return true;
 }
 
 
-bool Z80::Z80::executeDdcbOrFdcbInstruction(Z80::Z80::UnsignedWord & reg, const Z80::Z80::UnsignedByte * instruction, int * tStates, int * size)
+void Z80::Z80::executeDdcbOrFdcbInstruction(UnsignedWord & reg, const UnsignedByte * instruction, int * tStates, int * size)
 {
 	// NOTE these opcodes are of the form 0xdd 0xcb DD II or 0xfd 0xcb DD II where II is the 8-bit opcode and DD is the
 	// 8-bit 2s-complement offset to use with IX or IY
@@ -5860,17 +5826,15 @@ bool Z80::Z80::executeDdcbOrFdcbInstruction(Z80::Z80::UnsignedWord & reg, const 
 	}
 
 	if (tStates) {
-	    *tStates = m_ddorfd_cb_opcode_cycles[opcodeByte];
+	    *tStates = DdCbOrFdCbOpcodeTStates[opcodeByte];
 	}
 
 	if (size) {
 	    *size = 4;
 	}
-
-	return true;
 }
 
-Z80::Z80::UnsignedWord Z80::Z80::registerValue(Register16 reg) const
+UnsignedWord Z80::Z80::registerValue(Register16 reg) const
 {
 	switch (reg) {
         case Register16::AF: return m_registers.af;
@@ -5890,7 +5854,7 @@ Z80::Z80::UnsignedWord Z80::Z80::registerValue(Register16 reg) const
 	return 0;
 }
 
-Z80::Z80::UnsignedWord Z80::Z80::registerValueZ80(Register16 reg) const
+UnsignedWord Z80::Z80::registerValueZ80(Register16 reg) const
 {
 	switch (reg) {
         case Register16::AF: return hostToZ80ByteOrder(m_registers.af);
@@ -5910,7 +5874,7 @@ Z80::Z80::UnsignedWord Z80::Z80::registerValueZ80(Register16 reg) const
 	return 0;
 }
 
-Z80::Z80::UnsignedByte Z80::Z80::registerValue(Register8 reg) const
+UnsignedByte Z80::Z80::registerValue(Register8 reg) const
 {
 	switch (reg) {
 		case Register8::A: return m_registers.a;
@@ -5942,7 +5906,7 @@ Z80::Z80::UnsignedByte Z80::Z80::registerValue(Register8 reg) const
 	return 0;
 }
 
-void Z80::Z80::setRegisterValue(Register16 reg, Z80::Z80::UnsignedWord value)
+void Z80::Z80::setRegisterValue(Register16 reg, UnsignedWord value)
 {
 	switch (reg) {
         case Register16::AF: m_registers.af = value; break;
@@ -5960,7 +5924,7 @@ void Z80::Z80::setRegisterValue(Register16 reg, Z80::Z80::UnsignedWord value)
 	}
 }
 
-void Z80::Z80::setRegisterValueZ80(Register16 reg, Z80::Z80::UnsignedWord value)
+void Z80::Z80::setRegisterValueZ80(Register16 reg, UnsignedWord value)
 {
 	switch (reg) {
         case Register16::AF: m_registers.af = z80ToHostByteOrder(value); break;
@@ -5978,7 +5942,7 @@ void Z80::Z80::setRegisterValueZ80(Register16 reg, Z80::Z80::UnsignedWord value)
 	}
 }
 
-void Z80::Z80::setRegisterValue(Register8 reg, Z80::Z80::UnsignedByte value)
+void Z80::Z80::setRegisterValue(Register8 reg, UnsignedByte value)
 {
 	switch (reg) {
 		case Register8::A: m_registers.a = value; break;
@@ -6006,26 +5970,26 @@ void Z80::Z80::setRegisterValue(Register8 reg, Z80::Z80::UnsignedByte value)
 	}
 }
 
-Z80::Z80::UnsignedWord Z80::Z80::peekUnsignedWord(int addr) const
+UnsignedWord Z80::Z80::peekUnsignedWord(int addr) const
 {
     // TODO make an assertion instead
-	if (addr < 0 || addr >= (m_ramSize - 1)) {
+	if (addr < 0 || addr >= (m_memorySize - 1)) {
 	    return 0;
 	}
 
 	if (HostByteOrder == Z80ByteOrder) {
-        return m_ram[addr + 1] << 8 | m_ram[addr];
+        return m_memory[addr + 1] << 8 | m_memory[addr];
     }
 
-    return (m_ram[addr] << 8) | m_ram[addr + 1];
+    return (m_memory[addr] << 8) | m_memory[addr + 1];
 }
 
-Z80::Z80::UnsignedWord Z80::Z80::peekUnsignedWordZ80(int addr) const
+UnsignedWord Z80::Z80::peekUnsignedWordZ80(int addr) const
 {
     // TODO make an assertion instead
-	if (addr < 0 || addr >= (m_ramSize - 1)) {
+	if (addr < 0 || addr >= (m_memorySize - 1)) {
 	    return 0;
 	}
 
-    return m_ram[addr + 1] << 8 | m_ram[addr];
+    return m_memory[addr + 1] << 8 | m_memory[addr];
 }

@@ -5,7 +5,7 @@
 #ifndef SPECTRUM_TEST_Z80_TESTIODEVICE_H
 #define SPECTRUM_TEST_Z80_TESTIODEVICE_H
 
-#include "../../z80/z80iodevice.h"
+#include "../../z80/iodevice.h"
 
 namespace Test::Z80
 {
@@ -15,7 +15,7 @@ namespace Test::Z80
      * Listens on all ports, returns the high byte of the port for reads, does nothing for writes.
      */
     class TestIoDevice
-    : public ::Z80::Z80IODevice
+    : public ::Z80::IODevice
     {
     using UnsignedWord = ::Z80::UnsignedWord;
     using UnsignedByte = ::Z80::UnsignedByte;

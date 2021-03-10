@@ -8,9 +8,7 @@
 
 #include "../cpu.h"
 #include "registers.h"
-
-#define Z80_DEFAULT_RAM_SIZE = 65536
-#define Z80_MHZ(n) (n * 1000000.0)
+#include "types.h"
 
 #define Z80_FLAG_C_BIT 0
 #define Z80_FLAG_Z_BIT 6
@@ -21,25 +19,26 @@
 #define Z80_FLAG_F3_BIT 3
 #define Z80_FLAG_F5_BIT 5
 
-#define Z80_FLAG_C_MASK (1 << Z80_FLAG_C_BIT)
-#define Z80_FLAG_Z_MASK (1 << Z80_FLAG_Z_BIT)
-#define Z80_FLAG_P_MASK (1 << Z80_FLAG_P_BIT)
-#define Z80_FLAG_S_MASK (1 << Z80_FLAG_S_BIT)
-#define Z80_FLAG_N_MASK (1 << Z80_FLAG_N_BIT)
-#define Z80_FLAG_H_MASK (1 << Z80_FLAG_H_BIT)
-#define Z80_FLAG_F3_MASK (1 << Z80_FLAG_F3_BIT)
-#define Z80_FLAG_F5_MASK (1 << Z80_FLAG_F5_BIT)
+#define Z80_FLAG_C_MASK (0x01 << Z80_FLAG_C_BIT)
+#define Z80_FLAG_Z_MASK (0x01 << Z80_FLAG_Z_BIT)
+#define Z80_FLAG_P_MASK (0x01 << Z80_FLAG_P_BIT)
+#define Z80_FLAG_S_MASK (0x01 << Z80_FLAG_S_BIT)
+#define Z80_FLAG_N_MASK (0x01 << Z80_FLAG_N_BIT)
+#define Z80_FLAG_H_MASK (0x01 << Z80_FLAG_H_BIT)
+#define Z80_FLAG_F3_MASK (0x01 << Z80_FLAG_F3_BIT)
+#define Z80_FLAG_F5_MASK (0x01 << Z80_FLAG_F5_BIT)
 
-namespace Z80 {
-    class Z80IODevice;
+namespace Z80
+{
+    class IODevice;
 
     class Z80
-            : public Cpu {
+    : public Cpu {
     public:
-        typedef std::uint8_t UnsignedByte;
-        typedef std::uint16_t UnsignedWord;
-        typedef std::int8_t SignedByte;
-        typedef std::int16_t SignedWord;
+        using UnsignedByte = ::Z80::UnsignedByte;
+        using UnsignedWord = ::Z80::UnsignedWord;
+        using SignedByte = ::Z80::SignedByte;
+        using SignedWord = ::Z80::SignedWord;
 
         enum class InterruptMode : std::uint8_t
         {
@@ -48,14 +47,16 @@ namespace Z80 {
             IM2,
         };
 
-        enum class Register16 {
+        enum class Register16 : std::uint8_t
+        {
             AF, BC, DE, HL,
             IX, IY,
             SP, PC,
             AFShadow, BCShadow, DEShadow, HLShadow
         };
 
-        enum class Register8 {
+        enum class Register8 : std::uint8_t
+        {
             A, F, B, C, D, E, H, L,
             IXH, IXL, IYH, IYL,
             I, R,
@@ -65,12 +66,12 @@ namespace Z80 {
         static constexpr const std::endian Z80ByteOrder = std::endian::little;
         static constexpr const std::endian HostByteOrder = std::endian::native;
 
-        Z80(std::uint8_t *mem, int memSize);
+        Z80(UnsignedByte * memory, int memorySize);
 
         ~Z80() override;
 
-        static inline UnsignedWord swapByteOrder(UnsignedWord v) {
-            return (((v & 0xff00) >> 8) & 0x00ff) | (((v & 0x00ff) << 8) & 0xff00);
+        static inline UnsignedWord swapByteOrder(UnsignedWord value) {
+            return (((value & 0xff00) >> 8) & 0x00ff) | (((value & 0x00ff) << 8) & 0xff00);
         }
 
         static inline UnsignedWord z80ToHostByteOrder(UnsignedWord v)
@@ -93,20 +94,26 @@ namespace Z80 {
 
         static inline bool isEvenParity(UnsignedByte v);
 
-        static inline bool isEvenParity(UnsignedWord v);
-
-        bool isValid() const
+        [[nodiscard]] bool isValid() const
         {
-            return m_ram;
+            return m_memory;
         }
 
-        /* Register getters */
+        [[nodiscard]] inline int ramSize() const {
+            return m_memorySize;
+        }
+
+        [[nodiscard]] inline UnsignedByte * memory() const {
+            return m_memory;
+        }
+
+        // Register getters
         Registers & registers()
         {
             return m_registers;
         }
 
-        const Registers & registers() const
+        [[nodiscard]] const Registers & registers() const
         {
             return m_registers;
         }
@@ -117,7 +124,7 @@ namespace Z80 {
          * @param reg
          * @return
          */
-        UnsignedWord registerValue(Register16 reg) const;
+        [[nodiscard]] UnsignedWord registerValue(Register16 reg) const;
 
         /**
          * Retrieve the value of a register pair in Z80 byte order.
@@ -125,7 +132,7 @@ namespace Z80 {
          * @param reg
          * @return
          */
-        UnsignedWord registerValueZ80(Register16 reg) const;
+        [[nodiscard]] UnsignedWord registerValueZ80(Register16 reg) const;
 
         /**
          * Retrieve a register value.
@@ -135,7 +142,7 @@ namespace Z80 {
          * @param reg
          * @return
          */
-        UnsignedByte registerValue(Register8 reg) const;
+        [[nodiscard]] UnsignedByte registerValue(Register8 reg) const;
 
         /* 16-bit registers */
         inline UnsignedWord afRegisterValue() const {
@@ -404,303 +411,387 @@ namespace Z80 {
         void setRegisterValue(Register8 reg, UnsignedByte value);
 
         // set 16-bit register values using values in host byte order
-        // the values are converted to Z80 byte order before they are set
-        void setAf(UnsignedWord value) {
-            setRegisterValue(Register16::AF, value);
+        inline void setAf(UnsignedWord value)
+        {
+            m_registers.af = value;
         }
 
-        void setBc(UnsignedWord value) {
-            setRegisterValue(Register16::BC, value);
+        inline void setBc(UnsignedWord value)
+        {
+            m_registers.bc = value;
         }
 
-        void setDe(UnsignedWord value) {
-            setRegisterValue(Register16::DE, value);
+        inline void setDe(UnsignedWord value)
+        {
+            m_registers.de = value;
         }
 
-        void setHl(UnsignedWord value) {
-            setRegisterValue(Register16::HL, value);
+        inline void setHl(UnsignedWord value)
+        {
+            m_registers.hl = value;
         }
 
-        void setSp(UnsignedWord value) {
-            setRegisterValue(Register16::SP, value);
+        inline void setSp(UnsignedWord value)
+        {
+            m_registers.sp = value;
         }
 
-        void setPc(UnsignedWord value) {
-            setRegisterValue(Register16::PC, value);
+        inline void setPc(UnsignedWord value)
+        {
+            m_registers.pc = value;
         }
 
-        void setIx(UnsignedWord value) {
-            setRegisterValue(Register16::IX, value);
+        inline void setIx(UnsignedWord value)
+        {
+            m_registers.ix = value;
         }
 
-        void setIy(UnsignedWord value) {
-            setRegisterValue(Register16::IY, value);
+        inline void setIy(UnsignedWord value)
+        {
+            m_registers.iy = value;
         }
 
-        void setAfShadow(UnsignedWord value) {
-            setRegisterValue(Register16::AFShadow, value);
+        inline void setAfShadow(UnsignedWord value)
+        {
+            m_registers.afShadow = value;
         }
 
-        void setBcShadow(UnsignedWord value) {
-            setRegisterValue(Register16::BCShadow, value);
+        inline void setBcShadow(UnsignedWord value)
+        {
+            m_registers.bcShadow = value;
         }
 
-        void setDeShadow(UnsignedWord value) {
-            setRegisterValue(Register16::DEShadow, value);
+        inline void setDeShadow(UnsignedWord value)
+        {
+            m_registers.deShadow = value;
         }
 
-        void setHlShadow(UnsignedWord value) {
-            setRegisterValue(Register16::HLShadow, value);
+        inline void setHlShadow(UnsignedWord value)
+        {
+            m_registers.hlShadow = value;
         }
 
         // set 16-bit register pairs using values in Z80 byte order
-        void setAfZ80(UnsignedWord value) {
-            setRegisterValueZ80(Register16::AF, value);
+        inline void setAfZ80(UnsignedWord value)
+        {
+            m_registers.af = z80ToHostByteOrder(value);
         }
 
-        void setBcZ80(UnsignedWord value) {
-            setRegisterValueZ80(Register16::BC, value);
+        inline void setBcZ80(UnsignedWord value)
+        {
+            m_registers.bc = z80ToHostByteOrder(value);
         }
 
-        void setDeZ80(UnsignedWord value) {
-            setRegisterValueZ80(Register16::DE, value);
+        inline void setDeZ80(UnsignedWord value)
+        {
+            m_registers.de = z80ToHostByteOrder(value);
         }
 
-        void setHlZ80(UnsignedWord value) {
-            setRegisterValueZ80(Register16::HL, value);
+        inline void setHlZ80(UnsignedWord value)
+        {
+            m_registers.hl = z80ToHostByteOrder(value);
         }
 
-        void setSpZ80(UnsignedWord value) {
-            setRegisterValueZ80(Register16::SP, value);
+        inline void setSpZ80(UnsignedWord value)
+        {
+            m_registers.sp = z80ToHostByteOrder(value);
         }
 
-        void setPcZ80(UnsignedWord value) {
-            setRegisterValueZ80(Register16::PC, value);
+        inline void setPcZ80(UnsignedWord value)
+        {
+            m_registers.pc = z80ToHostByteOrder(value);
         }
 
-        void setIxZ80(UnsignedWord value) {
-            setRegisterValueZ80(Register16::IX, value);
+        inline void setIxZ80(UnsignedWord value)
+        {
+            m_registers.ix = z80ToHostByteOrder(value);
         }
 
-        void setIyZ80(UnsignedWord value) {
-            setRegisterValueZ80(Register16::IY, value);
+        inline void setIyZ80(UnsignedWord value)
+        {
+            m_registers.iy = z80ToHostByteOrder(value);
         }
 
-        void setAfShadowZ80(UnsignedWord value) {
-            setRegisterValueZ80(Register16::AFShadow, value);
+        inline void setAfShadowZ80(UnsignedWord value)
+        {
+            m_registers.afShadow = z80ToHostByteOrder(value);
         }
 
-        void setBcShadowZ80(UnsignedWord value) {
-            setRegisterValueZ80(Register16::BCShadow, value);
+        inline void setBcShadowZ80(UnsignedWord value)
+        {
+            m_registers.bcShadow = z80ToHostByteOrder(value);
         }
 
-        void setDeShadowZ80(UnsignedWord value) {
-            setRegisterValueZ80(Register16::DEShadow, value);
+        inline void setDeShadowZ80(UnsignedWord value)
+        {
+            m_registers.deShadow = z80ToHostByteOrder(value);
         }
 
-        void setHlShadowZ80(UnsignedWord value) {
-            setRegisterValueZ80(Register16::HLShadow, value);
+        inline void setHlShadowZ80(UnsignedWord value)
+        {
+            m_registers.hlShadow = z80ToHostByteOrder(value);
         }
 
         /* 8-bit Registers */
-        void setA(UnsignedByte value) {
-            setRegisterValue(Register8::A, value);
+        inline void setA(UnsignedByte value)
+        {
+            m_registers.a = value;
         }
 
-        void setF(UnsignedByte value) {
-            setRegisterValue(Register8::F, value);
+        inline void setF(UnsignedByte value)
+        {
+            m_registers.f = value;
         }
 
-        void setB(UnsignedByte value) {
-            setRegisterValue(Register8::B, value);
+        inline void setB(UnsignedByte value)
+        {
+            m_registers.b = value;
         }
 
-        void setC(UnsignedByte value) {
-            setRegisterValue(Register8::C, value);
+        inline void setC(UnsignedByte value)
+        {
+            m_registers.c = value;
         }
 
-        void setD(UnsignedByte value) {
-            setRegisterValue(Register8::D, value);
+        inline void setD(UnsignedByte value)
+        {
+            m_registers.d = value;
         }
 
-        void setE(UnsignedByte value) {
-            setRegisterValue(Register8::E, value);
+        inline void setE(UnsignedByte value)
+        {
+            m_registers.e = value;
         }
 
-        void setH(UnsignedByte value) {
-            setRegisterValue(Register8::H, value);
+        inline void setH(UnsignedByte value)
+        {
+            m_registers.h = value;
         }
 
-        void setL(UnsignedByte value) {
-            setRegisterValue(Register8::L, value);
+        inline void setL(UnsignedByte value)
+        {
+            m_registers.l = value;
         }
 
-        void setI(UnsignedByte value) {
-            setRegisterValue(Register8::I, value);
+        inline void setI(UnsignedByte value)
+        {
+            m_registers.i = value;
         }
 
-        void setR(UnsignedByte value) {
-            setRegisterValue(Register8::R, value);
+        inline void setR(UnsignedByte value)
+        {
+            m_registers.r = value;
         }
 
-        void setAShadow(UnsignedByte value) {
-            setRegisterValue(Register8::AShadow, value);
+        inline void setAShadow(UnsignedByte value)
+        {
+            m_registers.aShadow = value;
         }
 
-        void setFShadow(UnsignedByte value) {
-            setRegisterValue(Register8::FShadow, value);
+        inline void setFShadow(UnsignedByte value)
+        {
+            m_registers.fShadow = value;
         }
 
-        void setBShadow(UnsignedByte value) {
-            setRegisterValue(Register8::BShadow, value);
+        inline void setBShadow(UnsignedByte value)
+        {
+            m_registers.bShadow = value;
         }
 
-        void setCShadow(UnsignedByte value) {
-            setRegisterValue(Register8::CShadow, value);
+        inline void setCShadow(UnsignedByte value)
+        {
+            m_registers.cShadow = value;
         }
 
-        void setDShadow(UnsignedByte value) {
-            setRegisterValue(Register8::DShadow, value);
+        inline void setDShadow(UnsignedByte value)
+        {
+            m_registers.dShadow = value;
         }
 
-        void setEShadow(UnsignedByte value) {
-            setRegisterValue(Register8::EShadow, value);
+        inline void setEShadow(UnsignedByte value)
+        {
+            m_registers.eShadow = value;
         }
 
-        void setHShadow(UnsignedByte value) {
-            setRegisterValue(Register8::HShadow, value);
+        inline void setHShadow(UnsignedByte value)
+        {
+            m_registers.hShadow = value;
         }
 
-        void setLShadow(UnsignedByte value) {
-            setRegisterValue(Register8::LShadow, value);
+        inline void setLShadow(UnsignedByte value)
+        {
+            m_registers.lShadow = value;
         }
 
-        inline int ramSize() const {
-            return m_ramSize;
+        //
+        // query flag states
+        //
+        /**
+         * True if all flag bits from the mask are set, false otherwise.
+         *
+         * @tparam mask 
+         * @return 
+         */
+        template <UnsignedByte mask>
+        [[nodiscard]] inline bool checkFlags() const
+        {
+            return mask == (m_registers.f & mask);
+        }
+        
+        [[nodiscard]] inline bool cFlag() const
+        {
+            return checkFlags<Z80_FLAG_C_MASK>();
         }
 
-        /* memory access methods - values provided in host byte order */
-        inline Z80::UnsignedByte *memory() const {
-            return m_ram;
+        [[nodiscard]] inline bool zFlag() const
+        {
+            return checkFlags<Z80_FLAG_Z_MASK>();
         }
 
-        inline bool cFlag() const {
-            return m_registers.f & Z80_FLAG_C_MASK;
+        [[nodiscard]] inline bool sFlag() const
+        {
+            return checkFlags<Z80_FLAG_S_MASK>();
         }
 
-        inline bool zFlag() const {
-            return m_registers.f & Z80_FLAG_Z_MASK;
+        [[nodiscard]] inline bool pFlag() const
+        {
+            return checkFlags<Z80_FLAG_P_MASK>();
         }
 
-        inline bool sFlag() const {
-            return m_registers.f & Z80_FLAG_S_MASK;
+        [[nodiscard]] inline bool nFlag() const
+        {
+            return checkFlags<Z80_FLAG_N_MASK>();
         }
 
-        inline bool pFlag() const {
-            return m_registers.f & Z80_FLAG_P_MASK;
+        [[nodiscard]] inline bool hFlag() const
+        {
+            return checkFlags<Z80_FLAG_H_MASK>();
+        }
+        
+        template <UnsignedByte mask>
+        [[nodiscard]] inline bool checkShadowFlags() const
+        {
+            return m_registers.fShadow & mask;
+        }
+        
+        [[nodiscard]] inline bool cShadowFlag() const
+        {
+            return checkShadowFlags<Z80_FLAG_C_MASK>();
         }
 
-        inline bool nFlag() const {
-            return m_registers.f & Z80_FLAG_N_MASK;
+        [[nodiscard]] inline bool zShadowFlag() const
+        {
+            return checkShadowFlags<Z80_FLAG_Z_MASK>();
         }
 
-        inline bool hFlag() const {
-            return m_registers.f & Z80_FLAG_H_MASK;
+        [[nodiscard]] inline bool sShadowFlag() const
+        {
+            return checkShadowFlags<Z80_FLAG_S_MASK>();
         }
 
-        inline bool cShadowFlag() const {
-            return  m_registers.fShadow & Z80_FLAG_C_MASK;
+        [[nodiscard]] inline bool pShadowFlag() const
+        {
+            return checkShadowFlags<Z80_FLAG_P_MASK>();
         }
 
-        inline bool zShadowFlag() const {
-            return  m_registers.fShadow & Z80_FLAG_Z_MASK;
+        [[nodiscard]] inline bool nShadowFlag() const
+        {
+            return checkShadowFlags<Z80_FLAG_N_MASK>();
         }
 
-        inline bool sShadowFlag() const {
-            return  m_registers.fShadow & Z80_FLAG_S_MASK;
+        [[nodiscard]] inline bool hShadowFlag() const
+        {
+            return checkShadowFlags<Z80_FLAG_H_MASK>();
         }
 
-        inline bool pShadowFlag() const {
-            return  m_registers.fShadow & Z80_FLAG_P_MASK;
-        }
-
-        inline bool nShadowFlag() const {
-            return  m_registers.fShadow & Z80_FLAG_N_MASK;
-        }
-
-        inline bool hShadowFlag() const {
-            return  m_registers.fShadow & Z80_FLAG_H_MASK;
-        }
-
-        inline bool carryFlag() const {
+        // convenience aliases
+        [[nodiscard]] inline bool carryFlag() const
+        {
             return cFlag();
         }
 
-        inline bool zeroFlag() const {
+        [[nodiscard]] inline bool zeroFlag() const
+        {
             return zFlag();
         }
 
-        inline bool signFlag() const {
+        [[nodiscard]] inline bool signFlag() const
+        {
             return sFlag();
         }
 
-        inline bool parityFlag() const {
+        [[nodiscard]] inline bool parityFlag() const
+        {
             return pFlag();
         }
 
-        inline bool vFlag() const {
+        [[nodiscard]] inline bool vFlag() const
+        {
             return pFlag();
         }
 
-        inline bool overflowFlag() const {
+        [[nodiscard]] inline bool overflowFlag() const
+        {
             return pFlag();
         }
 
-        inline bool pvFlag() const {
+        [[nodiscard]] inline bool pvFlag() const
+        {
             return pFlag();
         }
 
-        inline bool negationFlag() const {
+        [[nodiscard]] inline bool negationFlag() const
+        {
             return nFlag();
         }
 
-        inline bool halfcarryFlag() const {
+        [[nodiscard]] inline bool halfcarryFlag() const
+        {
             return hFlag();
         }
 
-        inline bool carryShadowFlag() const {
+        [[nodiscard]] inline bool carryShadowFlag() const
+        {
             return cShadowFlag();
         }
 
-        inline bool zeroShadowFlag() const {
+        [[nodiscard]] inline bool zeroShadowFlag() const
+        {
             return zShadowFlag();
         }
 
-        inline bool signShadowFlag() const {
+        [[nodiscard]] inline bool signShadowFlag() const
+        {
             return sShadowFlag();
         }
 
-        inline bool parityShadowFlag() const {
+        [[nodiscard]] inline bool parityShadowFlag() const
+        {
             return pShadowFlag();
         }
 
-        inline bool vShadowFlag() const {
+        [[nodiscard]] inline bool vShadowFlag() const
+        {
             return pShadowFlag();
         }
 
-        inline bool overflowShadowFlag() const {
+        [[nodiscard]] inline bool overflowShadowFlag() const
+        {
             return pShadowFlag();
         }
 
-        inline bool pvShadowFlag() const {
+        [[nodiscard]] inline bool pvShadowFlag() const
+        {
             return pShadowFlag();
         }
 
-        inline bool negationShadowFlag() const {
+        [[nodiscard]] inline bool negationShadowFlag() const
+        {
             return nShadowFlag();
         }
 
-        inline bool halfcarryShadowFlag() const {
+        [[nodiscard]] inline bool halfcarryShadowFlag() const
+        {
             return hShadowFlag();
         }
 
@@ -711,12 +802,13 @@ namespace Z80 {
          *
          * @return
          */
-        inline UnsignedByte peekUnsigned(int addr) const {
-            if (addr < 0 || addr >= m_ramSize) {
+        [[nodiscard]] inline UnsignedByte peekUnsigned(int addr) const
+        {
+            if (addr < 0 || addr >= m_memorySize) {
                 return 0;
             }
 
-            return m_ram[addr];
+            return m_memory[addr];
         }
 
         /**
@@ -728,7 +820,7 @@ namespace Z80 {
          *
          * @return
          */
-        UnsignedWord peekUnsignedWord(int addr) const;
+        [[nodiscard]] UnsignedWord peekUnsignedWord(int addr) const;
 
         /**
          * Fetch a 16-bit value from the Z80 memory.
@@ -739,10 +831,10 @@ namespace Z80 {
          *
          * @return
          */
-        UnsignedWord peekUnsignedWordZ80(int addr) const;
+        [[nodiscard]] UnsignedWord peekUnsignedWordZ80(int addr) const;
 
         inline SignedByte peekSigned(int addr) const {
-            return SignedByte(peekUnsigned(addr));
+            return static_cast<SignedByte>(peekUnsigned(addr));
         }
 
         /**
@@ -752,11 +844,11 @@ namespace Z80 {
          * @param value
          */
         inline void pokeUnsigned(int addr, UnsignedByte value) {
-            if (addr < 0 || addr > m_ramSize) {
+            if (addr < 0 || addr > m_memorySize) {
                 return;
             }
 
-            m_ram[addr] = value;
+            m_memory[addr] = value;
         }
 
         /**
@@ -775,84 +867,64 @@ namespace Z80 {
          */
         void pokeZ80Word(int addr, UnsignedWord value);
 
-        /**
-         * Write a 16-bit value to the Z80 memory.
-         *
-         * @param addr The address to write the first byte of the 16-bit value. The address is given in host byte order.
-         * @param value The 16-bit value to write, in Z80 byte order.
-         */
-        void pokeUnsignedWordZ80(int addr, UnsignedWord value);
-
         void reset();
 
-        void start();
+        bool connectIODevice(IODevice * device);
+        void disconnectIODevice(IODevice * device);
 
-        bool connectIODevice(Z80IODevice * device);
-        void disconnectIODevice(Z80IODevice * device);
-
-        void interrupt(UnsignedByte data = 0x00);
         void nmi();
+        void interrupt(UnsignedByte data = 0x00);
 
-        bool load(unsigned char *data, int addr, int length);
+        void execute(const UnsignedByte *instruction, bool doPc = true, int *tStates = 0, int *size = 0);
 
-        bool execute(const UnsignedByte *instruction, bool doPc = true, int *tStates = 0, int *size = 0);
-
-        /* fetches and executes a single instruction, returns the cycle cost */
+        // fetches and executes a single instruction, returns the number of t-states
         int fetchExecuteCycle();
 
     protected:
-        /* doPc is altered to be false if the instruction is a jump that is taken;
-         * cycles is filled with clock cycles consumed; size is filled with byte
-         * size of instruction and operands; doPc is set to false if the
-         * instruction has modified the PC. returns true if execution of
-         * instruction was successful, false otherwise */
-        bool executePlainInstruction(const UnsignedByte *instruction, bool *doPc = nullptr, int *cycles = nullptr,
+        // doPc is altered to be false if the instruction is a jump that is taken; tStates is filled with clock cycles
+        // consumed; size is filled with byte size of instruction and operands; doPc is set to false if the instruction
+        // has modified the PC. returns true if execution of instruction was successful, false otherwise
+        void executePlainInstruction(const UnsignedByte *instruction, bool *doPc = nullptr, int *tStates = nullptr,
                                      int *size = nullptr);
 
-        bool executeCbInstruction(const UnsignedByte *instruction, int *cycles = nullptr, int *size = nullptr);
+        void executeCbInstruction(const UnsignedByte *instruction, int *tStates = nullptr, int *size = nullptr);
 
-        bool executeEdInstruction(const UnsignedByte *instruction, bool *doPc = nullptr, int *cycles = nullptr,
+        void executeEdInstruction(const UnsignedByte *instruction, bool *doPc = nullptr, int *tStates = nullptr,
                                   int *size = nullptr);
 
-        bool executeDdOrFdInstruction(UnsignedWord &reg, const UnsignedByte *instruction, bool *doPc = nullptr,
-                                      int *cycles = nullptr, int *size = nullptr);
+        void executeDdOrFdInstruction(UnsignedWord &reg, const UnsignedByte *instruction, bool *doPc = nullptr,
+                                      int *tStates = nullptr, int *size = nullptr);
 
-        bool executeDdcbOrFdcbInstruction(UnsignedWord &reg, const UnsignedByte *instruction, int *tStates = nullptr,
+        void executeDdcbOrFdcbInstruction(UnsignedWord &reg, const UnsignedByte *instruction, int *tStates = nullptr,
                                           int *size = nullptr);
-//		bool executeFdInstruction( const UnsignedByte * instruction, bool * doPc = 0, int * cycles = 0, int * size = 0 );
-
 
     private:
-        /* NEVER call this method more than once. most subclasses will never need
-         * to call it as the Z80 constructor makes sure the call is made */
-        void init();
+        static const int PlainOpcodeTStates[256];
+        static const int CbOpcodeTStates[256];
+        static const int DdOrFdOpcodeTStates[256];
+        static const int EdOpcodeTStates[256];
+        static const int DdCbOrFdCbOpcodeTStates[256];
+
+        static const int PlainOpcodeSizes[256];
+        static const int DdOrFdOpcodeSizes[256];
+        static const int EdOpcodeSizes[256];
 
         Registers m_registers;
 
         // memory
-        Z80::UnsignedByte *m_ram;
-        int m_ramSize;
+        UnsignedByte * m_memory;
+        int m_memorySize;
+
+        // interrupt handling
         bool m_iff1;
         bool m_iff2;
         InterruptMode m_interruptMode;
         bool m_nmiPending;
         bool m_interruptRequested;
-        Z80::UnsignedByte m_interruptData;
-
-        // TODO make these static
-        unsigned int m_plain_opcode_cycles[256];
-        unsigned int m_cb_opcode_cycles[256];
-        unsigned int m_ed_opcode_cycles[256];
-        unsigned int m_ddorfd_opcode_cycles[256];
-        unsigned int m_ddorfd_cb_opcode_cycles[256];
-
-        // TODO make these static
-        unsigned int m_plain_opcode_size[256];
-        static const unsigned int DdOrFdOpcodeSize[256];
-        unsigned int m_ed_opcode_size[256];
+        UnsignedByte m_interruptData;
 
         unsigned long long m_clockSpeed;    /* clock speed in Hz */
-        std::set<Z80IODevice *> m_ioDevices;
+        std::set<IODevice *> m_ioDevices;
     };
 }
 

@@ -1,0 +1,18 @@
+// array of even parity for 8-bit values from 0 to 255
+
+true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
+false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
+false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
+true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
+false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
+true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
+true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
+false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
+false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
+true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
+true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
+false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
+true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
+false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
+false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
+true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
