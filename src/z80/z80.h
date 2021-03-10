@@ -790,7 +790,7 @@ namespace Z80 {
         bool connectIODevice(Z80IODevice * device);
         void disconnectIODevice(Z80IODevice * device);
 
-        void interrupt(UnsignedWord data = 0x0000);
+        void interrupt(UnsignedByte data = 0x00);
         void nmi();
 
         bool load(unsigned char *data, int addr, int length);
@@ -837,21 +837,20 @@ namespace Z80 {
         InterruptMode m_interruptMode;
         bool m_nmiPending;
         bool m_interruptRequested;
-        Z80::UnsignedWord m_interruptData;
+        Z80::UnsignedByte m_interruptData;
 
+        // TODO make these static
         unsigned int m_plain_opcode_cycles[256];
-
-        // 16-bit opcodes starting 0xdd and 0xfd use the IX and IY registers respectively for identical instructions, so
-        // their opcode costs are identical
-        unsigned int m_ddorfd_cb_opcode_cycles[256];
-        unsigned int m_ddorfd_opcode_cycles[256];
-        unsigned int m_fd_opcode_cycles[256];
-        unsigned int m_ed_opcode_cycles[256];
         unsigned int m_cb_opcode_cycles[256];
+        unsigned int m_ed_opcode_cycles[256];
+        unsigned int m_ddorfd_opcode_cycles[256];
+        unsigned int m_ddorfd_cb_opcode_cycles[256];
+
+        // TODO make these static
         unsigned int m_plain_opcode_size[256];
         static const unsigned int DdOrFdOpcodeSize[256];
-        unsigned int m_fd_opcode_size[256];
         unsigned int m_ed_opcode_size[256];
+
         unsigned long long m_clockSpeed;    /* clock speed in Hz */
         std::set<Z80IODevice *> m_ioDevices;
     };

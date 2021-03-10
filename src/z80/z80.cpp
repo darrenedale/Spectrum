@@ -8,30 +8,22 @@
  * This emulation is based on interpretation. There is no dynamic compilation and no cross-assembly.
  *
  * \todo
- * - IX and IY register instructions (0xdd and 0xfd)
  * - interrupt modes 0 and 2
- * - all IN and OUT instructions
- * - architecture to connect "devices" to IN and OUT ports.
  */
-#include "z80.h"
-
-#include "z80iodevice.h"
-//#include "../types.h"
-#include "z80_opcodes.h"
-#include <cstdlib>
 #include <iostream>
 #include <cassert>
 
+#include "z80.h"
+#include "z80iodevice.h"
+#include "z80_opcodes.h"
+
 #define Z80_UNUSED(x) ((void) (x));
 
-#define Z80_TICK_DURATION 50 /* 1/n seconds */
-#define Z80_TICK_CYCLE_THRESHOLD (clockSpeed() / Z80_TICK_DURATION)
-
 // downcast values to Z80 data types
-#define Z80_CUBYTE(v) Z80::Z80::UnsignedByte((v) & 0x00ff)
-#define Z80_CBYTE(v) Z80::Z80::SignedByte((v) & 0x00ff)
-#define Z80_CUWORD(v) Z80::Z80::UnsignedWord((v) & 0x0000ffff)
-#define Z80_CWORD(v) Z80::Z80::SignedWord((v) & 0x0000ffff)
+#define Z80_CUBYTE(v) UnsignedByte((v) & 0x00ff)
+#define Z80_CBYTE(v) SignedByte((v) & 0x00ff)
+#define Z80_CUWORD(v) UnsignedWord((v) & 0x0000ffff)
+#define Z80_CWORD(v) SignedWord((v) & 0x0000ffff)
 
 #define Z80_FLAG_C_SET (m_registers.f |= Z80_FLAG_C_MASK)
 #define Z80_FLAG_Z_SET (m_registers.f |= Z80_FLAG_Z_MASK)
@@ -60,7 +52,7 @@
 #define Z80_FLAG_F3_UPDATE(cond) if (cond) Z80_FLAG_F3_SET; else Z80_FLAG_F3_CLEAR
 #define Z80_FLAG_F5_UPDATE(cond) if (cond) Z80_FLAG_F5_SET; else Z80_FLAG_F5_CLEAR
 
-// TODO very often S, 5 and 3 flags are simply set to the same bits as the result (usually reg A)
+// very often S, 5 and 3 flags are simply set to the same bits as the result (usually reg A)
 #define Z80_FLAGS_S53_UPDATE(byte) (m_registers.f = (m_registers.f & 0b01010111) | ((byte) & 0b10101000))
 
 #define Z80_FLAG_C_ISSET (0 != (m_registers.f & Z80_FLAG_C_MASK))
@@ -72,89 +64,67 @@
 #define Z80_FLAG_F3_ISSET (0 != (m_registers.f & Z80_FLAG_F3_MASK))
 #define Z80_FLAG_F5_ISSET (0 != (m_registers.f & Z80_FLAG_F5_MASK))
 
-/* default behaviour of flags after an operation on an 8-bit register */
-#define Z80_FLAG_Z_DEFAULTBEHAVIOUR Z80_FLAG_Z_UPDATE(0 == m_registers.a);
-#define Z80_FLAG_S_DEFAULTBEHAVIOUR Z80_FLAG_S_UPDATE(0x80 & m_registers.a);
-#define Z80_FLAG_F5_DEFAULTBEHAVIOUR
-#define Z80_FLAG_P_DEFAULTBEHAVIOUR
-#define Z80_FLAG_F3_DEFAULTBEHAVIOUR
-#define Z80_FLAG_N_DEFAULTBEHAVIOUR
-#define Z80_FLAG_H_DEFAULTBEHAVIOUR
-#define Z80_FLAG_C_DEFAULTBEHAVIOUR
-
-/* default behaviour of flags after an operation on a 16-bit register */
-#define Z80_FLAG_Z_DEFAULTBEHAVIOUR16 Z80_FLAG_Z_UPDATE(0 == m_registers.hl);
-#define Z80_FLAG_S_DEFAULTBEHAVIOUR16 Z80_FLAG_S_UPDATE(0x8000 & m_registers.hl);
-
-#define Z80_FLAG_P_OVERFLOW Z80_FLAG_P_UPDATE()
-
-/* checks for carry from bit 3 to it 4 */
-#define Z80_CHECK_8BIT_HALFCARRY(before,after) ((before) <= 0x0f && (after) > 0x0f)
-/* checks for carry from bit 10 to bit 11 */
-#define Z80_CHECK_16BIT_HALFCARRY_10_TO_11(before,after) ((before) <= 0x07ff && (after) > 0x07ff)
-#define Z80_CHECK_16BIT_HALFCARRY_11_TO_12(before,after) ((before) <= 0x0fff && (after) > 0x0fff)
-
-/* update P/V flag for 8-bit overflow during addition */
+// update H flag for 4-bit overflow during addition 
 #define Z80_FLAG_H_UPDATE_ADD(orig,delta,result) \
-{                                               \
-    UnsignedByte tmpHalfCarry = (               \
-        (((result) & 0b00001000) >> 1)          \
+{                                                \
+    UnsignedByte tmpHalfCarry = (                \
+        (((result) & 0b00001000) >> 1)           \
         | (((delta) & 0b00001000) >> 2)          \
-        | (((orig) & 0b00001000) >> 3)          \
-    );                                          \
-                                                \
+        | (((orig) & 0b00001000) >> 3)           \
+    );                                           \
+                                                 \
     Z80_FLAG_H_UPDATE(tmpHalfCarry == 1 || tmpHalfCarry == 2 || tmpHalfCarry == 3 || tmpHalfCarry == 7);\
 }
 
-/* update P/V flag for 8-bit overflow during subtraction */
+// update H flag for 4-bit overflow during subtraction 
 #define Z80_FLAG_H_UPDATE_SUB(orig,delta,result) \
-{                                               \
-    UnsignedByte tmpHalfCarry = (               \
-        (((result) & 0b00001000) >> 1)          \
+{                                                \
+    UnsignedByte tmpHalfCarry = (                \
+        (((result) & 0b00001000) >> 1)           \
         | (((delta) & 0b00001000) >> 2)          \
-        | (((orig) & 0b00001000) >> 3)          \
-    );                                          \
-                                                \
+        | (((orig) & 0b00001000) >> 3)           \
+    );                                           \
+                                                 \
     Z80_FLAG_H_UPDATE(tmpHalfCarry == 2 || tmpHalfCarry == 4 || tmpHalfCarry == 6 || tmpHalfCarry == 7);\
 }
 
-/* update P/V flag for 8-bit overflow during addition */
-#define Z80_FLAG_P_UPDATE_OVERFLOW_ADD(orig,delta,result) \
-{                                                        \
-    UnsignedByte tmpOverflow = (                         \
-        (((result) & 0b10000000) >> 5)                   \
-        | (((delta) & 0b10000000) >> 6)                   \
-        | (((orig) & 0b10000000) >> 7)                   \
-    );                                                   \
-                                                         \
+// update P/V flag for 8-bit overflow during addition 
+#define Z80_FLAG_P_UPDATE_OVERFLOW_ADD(orig,delta,result)   \
+{                                                           \
+    UnsignedByte tmpOverflow = (                            \
+        (((result) & 0b10000000) >> 5)                      \
+        | (((delta) & 0b10000000) >> 6)                     \
+        | (((orig) & 0b10000000) >> 7)                      \
+    );                                                      \
+                                                            \
     Z80_FLAG_P_UPDATE(tmpOverflow == 3 || tmpOverflow == 4);\
 }
 
-/* update P/V flag for 16-bit overflow during addition */
+// update P/V flag for 16-bit overflow during addition
 #define Z80_FLAG_P_UPDATE_OVERFLOW16_ADD(orig,delta,result) \
-{                                                         \
-    UnsignedByte tmpOverflow = (                          \
-        (((result) & 0x8000) >> 13)                       \
-        | (((delta) & 0x8000) >> 14)                      \
-        | (((orig) & 0x8000) >> 15)                       \
-    );                                                    \
-                                                          \
+{                                                           \
+    UnsignedByte tmpOverflow = (                            \
+        (((result) & 0x8000) >> 13)                         \
+        | (((delta) & 0x8000) >> 14)                        \
+        | (((orig) & 0x8000) >> 15)                         \
+    );                                                      \
+                                                            \
     Z80_FLAG_P_UPDATE(tmpOverflow == 3 || tmpOverflow == 4);\
 }
 
-/* update P/V flag for 8-bit overflow during subtraction */
-#define Z80_FLAG_P_UPDATE_OVERFLOW_SUB(orig,delta,result) \
-{                                                         \
-    UnsignedByte tmpOverflow = (                          \
-        (((result) & 0x80) >> 5)                          \
-        | (((delta) & 0x80) >> 6)                         \
-        | (((orig) & 0x80) >> 7)                          \
-    );                                                    \
-                                                          \
+// update P/V flag for 8-bit overflow during subtraction
+#define Z80_FLAG_P_UPDATE_OVERFLOW_SUB(orig,delta,result)   \
+{                                                           \
+    UnsignedByte tmpOverflow = (                            \
+        (((result) & 0x80) >> 5)                            \
+        | (((delta) & 0x80) >> 6)                           \
+        | (((orig) & 0x80) >> 7)                            \
+    );                                                      \
+                                                            \
     Z80_FLAG_P_UPDATE(tmpOverflow == 1 || tmpOverflow == 6);\
 }
 
-/* update P/V flag for 16-bit overflow during subtraction */
+// update P/V flag for 16-bit overflow during subtraction
 #define Z80_FLAG_P_UPDATE_OVERFLOW16_SUB(orig,delta,result) \
 {                                                           \
     UnsignedByte tmpOverflow = (                            \
@@ -182,11 +152,7 @@
 #define Z80_CYCLES_NOJUMP(cycles) ((cycles) & 0x0000ffff)
 
 /*
- * macros implementing common instruction semantics using different combinations
- * of like operands
- *
- * TODO to check results and flags, make an interpreter based on the HOB java
- * code and use that as comparison base.
+ * macros implementing common instruction semantics using different combinations of like operands
  */
 
 /* data loading instructions
@@ -195,34 +161,28 @@
  * loaded from A, in which case C is preserved, H and N are reset, Z and S are
  * flipped(?) and P is set if interrupts are enabled. these cases are handled in
  * the code in the fetch-execute cycle.
- *
- * TODO: check result against known working implementation.
  */
 #define Z80__LD__REG8__N(dest, n) ((dest) = (n))
 #define Z80__LD__REG8__REG8(dest, src) ((dest) = (src))
 
 /*
  * nn (the memory address to retrieve) MUST be in HOST byte order
- * TODO: check result against known working implementation.
  */
 #define Z80__LD__REG8__INDIRECT_NN(dest, nn) ((dest) = peekUnsigned(nn))
 #define Z80__LD__REG8__INDIRECT_REG16(dest, src) ((dest) = peekUnsigned((src)))
 
 /*
  * nn MUST be in HOST byte order
- * TODO: check result against known working implementation.
  */
 #define Z80__LD__REG16__NN(dest, nn) ((dest) = (nn))
 #define Z80__LD__REG16__REG16(dest, src) ((dest) = (src))
 
 /*
- * TODO: check result against known working implementation.
  */
 #define Z80__LD__INDIRECT_REG16__REG8(dest, src) pokeUnsigned((dest), (src))
 
 /*
  * nn (the memory address to load) MUST be in HOST byte order
- * TODO: check result against known working implementation.
  */
 #define Z80__LD__INDIRECT_NN__REG16(nn, src) { auto __tmpAddr = (nn); pokeHostWord(__tmpAddr, (src)); m_registers.memptr = hostToZ80ByteOrder(__tmpAddr); }
 
@@ -234,7 +194,6 @@
 
 /*
  * nn (the memory address to load) MUST be in HOST byte order
- * TODO: check result against known working implementation.
  */
 #define Z80__LD__INDIRECT_NN__REG8(nn, src) (pokeUnsigned(nn, (src)))
 #define Z80__LD__INDIRECT_REG16_D__N(reg, d, n) Z80__LD__INDIRECT_REG16__N(((reg) + (d)), (n));
@@ -246,61 +205,48 @@
  * addr can be 0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30 or 0x38
  *
  * FLAGS: no flags are modified.
- * TODO: check result against known working implementation.
  */
-#define Z80__RST__N(addr) \
+#define Z80__RST__N(addr)             \
 Z80__PUSH__REG16(m_registers.pc + 1); \
-m_registers.pc = (addr); \
+m_registers.pc = (addr);              \
 m_registers.memptr = m_registers.pc
 
 /* context switching instructions
  *
  * FLAGS: no flags are modified.
  */
-#define Z80__EX__REG16__REG16(src, dest) {  \
-    UnsignedWord tmpWord = (dest);\
+#define Z80__EX__REG16__REG16(src, dest)    \
+{                                           \
+    UnsignedWord tmpWord = (dest);          \
     (dest) = (src);                         \
     (src) = tmpWord;                        \
 }
+
 #define Z80__EX__INDIRECT_REG16__REG16(src, dest) {\
     UnsignedWord tmpWord = peekUnsignedWord((src));\
     pokeHostWord((src), (dest));                   \
     (dest) = tmpWord;                              \
 }
 
-/* stack instructions
- *
- * FLAGS: no flags are modified.
- * TODO: check result against known working implementation.
- */
+//
+// stack instructions
+//
 #define Z80__POP__REG16(reg) {(reg) = peekUnsignedWord(m_registers.sp); m_registers.sp += 2;}
 #define Z80__PUSH__REG16(reg) {m_registers.sp -= 2; pokeHostWord(m_registers.sp, (reg));}
 
-/* addition instructions
- *
- * FLAGS (8-bit): N is cleared, P is overflow, others by definition.
- * FLAGS (16-bit): S, Z and P preserved, H indicates carry from bit11 to bit12,
- * N is cleared, C by definition.
- *
- * NOTE: flags checked against known working implementation.
- * TODO: check result against known working implementation.
- */
+//
+// addition instructions
+//
 #define Z80__ADD__REG8__N(dest,n) { UnsignedWord res = Z80_CUBYTE(dest) + Z80_CUBYTE(n); Z80_FLAG_P_UPDATE((((dest) ^ ~(n)) & ((dest) ^ Z80_CUBYTE(res)) & 0x80) != 0); Z80_FLAG_N_CLEAR; Z80_FLAG_Z_UPDATE(0 == (res & 0x00ff)); Z80_FLAG_S_UPDATE((res) & 0x0080); Z80_FLAG_C_UPDATE(res & 0x0100); Z80_FLAG_H_UPDATE(((dest) ^ (n) ^ Z80_CUBYTE(res)) & 0x10); Z80_FLAG_F3_UPDATE(Z80_CUBYTE(res) & 0x20); Z80_FLAG_F5_UPDATE(Z80_CUBYTE(res) & 0x08); (dest) = Z80_CUBYTE(res); Z80_FLAG_F3_UPDATE(m_registers.a & Z80_FLAG_F3_MASK); Z80_FLAG_F5_UPDATE(m_registers.a & Z80_FLAG_F5_MASK); }
 #define Z80__ADD__REG8__REG8(dest,src) Z80__ADD__REG8__N(dest,src)
 #define Z80__ADD__REG8__INDIRECT_REG16(dest,src) Z80__ADD__REG8__N(dest,(*(m_ram + (src))))
 #define Z80__ADD__REG16__REG16(dest,src) { unsigned long res = (dest) + (src); Z80_FLAG_H_UPDATE((Z80_CUWORD(res) ^ (dest) ^ (src)) & 0x1000); Z80_FLAG_N_CLEAR; Z80_FLAG_C_UPDATE(res & 0x10000); (dest) = Z80_CUWORD(res); Z80_FLAG_F5_UPDATE((dest) & 0x2000); Z80_FLAG_F3_UPDATE((dest) & 0x0800); }
 #define Z80__ADD__REG8__INDIRECT_REG16_D(dest, reg, d) Z80__ADD__REG8__N((dest),(*(m_ram + (reg) + (d))))
 
-/* addition with carry instructions
- * dest = dest + src + carry
- *
- * FLAGS (8-bit): P is overflow, N is cleared, others by definition.
- * FLAGS (16-bit): P is overflow, N is cleared, H indicates carry from bit10 to
- * bit11, others by definition.
- *
- * TODO: check flags against known working implementation.
- * TODO: check result against known working implementation.
- */
+//
+// addition with carry instructions
+// dest = dest + src + carry
+//
 #define Z80__ADC__REG8__N(dest,n) {      \
     UnsignedByte tmpOldValue = (dest);   \
     UnsignedByte tmpAdd = (n);           \
@@ -313,8 +259,10 @@ m_registers.memptr = m_registers.pc
     Z80_FLAGS_S53_UPDATE((dest));        \
     Z80_FLAG_Z_UPDATE(0 == (dest));      \
 }
+
 #define Z80__ADC__REG8__REG8(dest,src) Z80__ADC__REG8__N((dest), (src));
 #define Z80__ADC__REG8__INDIRECT_REG16(dest,src) Z80__ADC__REG8__N((dest), peekUnsigned(src))
+
 #define Z80__ADC__REG16__REG16(dest,src) { \
     UnsignedWord tmpOldValue = (dest);            \
     UnsignedWord tmpAdd = (src);                    \
@@ -329,14 +277,14 @@ m_registers.memptr = m_registers.pc
      * working with the high byte */              \
     Z80_FLAG_H_UPDATE_ADD(static_cast<UnsignedByte>((tmpOldValue & 0xff00) >> 8), static_cast<UnsignedByte>((tmpAdd & 0xff00) >> 8), static_cast<UnsignedByte>((tmpResult & 0xff00) >> 8));\
 }
+
 #define Z80__ADC__REG8__INDIRECT_REG16_D(dest, reg, d) Z80__ADC__REG8__N((dest), peekUnsigned((reg) + (d)))
 
-/* subtraction instructions
- *
- * FLAGS: N is set, P is overflow, others by definition
- * TODO: check flags against known working implementation.
- * TODO: check result against known working implementation.
- */
+//
+// subtraction instructions
+//
+// FLAGS: N is set, P is overflow, others by definition
+//
 #define Z80__SUB__N(n) { \
     UnsignedByte tmpOldValue = m_registers.a;   \
     UnsignedByte tmpSub = (n);           \
@@ -349,20 +297,15 @@ m_registers.memptr = m_registers.pc
     Z80_FLAGS_S53_UPDATE(m_registers.a);\
     Z80_FLAG_Z_UPDATE(0 == m_registers.a);      \
 }
+
 #define Z80__SUB__REG8(reg) Z80__SUB__N(reg)
 #define Z80__SUB__INDIRECT_REG16(reg) { UnsignedByte v = peekUnsigned(reg); Z80__SUB__N(v) }
 #define Z80__SUB__INDIRECT_REG16_D(reg,d) Z80__SUB__N(peekUnsigned((reg) + (d)))
 
-/* subtraction with carry instructions
- * dest = dest - src - carry
- *
- * FLAGS (8-bit): P is overflow, N is set, others by definition.
- * FLAGS (16-bit): P is overflow, N is set, H indicates carry from bit10 to
- * bit11, others by definition.
- *
- * TODO: check flags against known working implementation.
- * TODO: check result against known working implementation.
- */
+//
+// subtraction with carry instructions
+// dest = dest - src - carry
+//
 #define Z80__SBC__REG8__N(dest,n) { \
     UnsignedByte tmpOldValue = (dest);\
     UnsignedByte tmpSub = (n);            \
@@ -375,6 +318,7 @@ m_registers.memptr = m_registers.pc
     Z80_FLAGS_S53_UPDATE((dest));  \
     Z80_FLAG_Z_UPDATE(0 == (dest));\
 }
+
 #define Z80__SBC__REG8__REG8(dest,src) Z80__SBC__REG8__N((dest), (src))
 #define Z80__SBC__REG8__INDIRECT_REG16(dest,src) Z80__SBC__REG8__N((dest),peekUnsigned(src))
 
@@ -395,19 +339,9 @@ m_registers.memptr = m_registers.pc
 
 #define Z80__SBC__REG8__INDIRECT_REG16_D(dest,reg,d) Z80__SBC__REG8__N((dest), peekUnsigned((reg) + (d)))
 
-/* increment instructions
- *
- * FLAGS (8-bit): C preserved, P is overflow, others by definition
- * FLAGS (16-bit): no flags are modified
- *
- * halfcarry flag update checks whether the incremented value has bits 3, 2, 1
- * and 0 set (i.e. all four least significant bits), and bit 7 cleared (the sign
- * bit) which are the only situations in which an increment of an 8-bit signed
- * twos-complement integer carries a bit over from bit3 to bit4.
- *
- * TODO: check flags against known working implementation.
- * TODO: check result against known working implementation.
- */
+//
+// increment instructions
+//
 #define Z80__INC__REG8(reg) \
 (reg)++;                    \
 Z80_FLAG_H_UPDATE(0 == (0x0f & (reg))); \
@@ -423,16 +357,9 @@ Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
 // TODO memptr
 #define Z80__INC__INDIRECT_REG16_D(reg, d) Z80__INC__REG8(*(m_ram + (reg) + (d)))
 
-/* decrement instructions
- *
- * FLAGS (8-bit): C preserved, P is overflow, others by definition
- * FLAGS (16-bit): no flags are modified
- *
- * halfcarry flag update checks whether the decremented value has bits 7, 3, 2
- * and 1 set (i.e. all four least significant bits and the sign bit), which are
- * the only situations in which a decrement of an 8-bit signed twos-complement
- * integer carries a bit over from bit3 to bit4.
- */
+//
+// decrement instructions
+//
 #define Z80__DEC__REG8(reg) \
 Z80_FLAG_H_UPDATE(0 == (0x0f & (reg))); \
 (reg)--;                    \
@@ -448,39 +375,30 @@ Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
 // TODO memptr
 #define Z80__DEC__INDIRECT_REG16_D(reg, d) Z80__DEC__REG8(*(m_ram + (reg) + (d)));
 
-/* negation instruction
- *
- * there is only one negation instruction, but it has several opcodes (most of
- * which are unofficial), so a macro is provided for a common implementation.
- *
- * FLAGS: P is overflow, N is set, others by definition
- *
- * the H and C flag updates work on the basis that only a value of -128 can
- * result in an overflow: 128 is the only value that can be represented -ve
- * but not +ve (i.e. the range of an 8-bit twos-complement integer is -128 to
- * 127).
- */
+//
+// negation instruction
+//
+// there is only one negation instruction, but it has several opcodes (most of
+// which are unofficial), so a macro is provided for a common implementation.
+//
 #define Z80_NEG                                       \
 {                                                     \
-UnsignedByte tmpOldValue = m_registers.a;             \
-m_registers.a = 0 - (m_registers.a);                  \
-Z80_FLAG_Z_DEFAULTBEHAVIOUR;                          \
-Z80_FLAG_H_UPDATE_SUB(0, tmpOldValue, m_registers.a); \
-Z80_FLAG_C_UPDATE(0x00 != tmpOldValue);               \
-Z80_FLAG_P_UPDATE(0x80 == tmpOldValue);               \
-Z80_FLAGS_S53_UPDATE(m_registers.a);                  \
-Z80_FLAG_N_SET;                                       \
+    UnsignedByte tmpOldValue = m_registers.a;         \
+    m_registers.a = 0 - (m_registers.a);              \
+    Z80_FLAG_Z_UPDATE(0 == m_registers.a);            \
+    Z80_FLAG_H_UPDATE_SUB(0, tmpOldValue, m_registers.a); \
+    Z80_FLAG_C_UPDATE(0x00 != tmpOldValue);           \
+    Z80_FLAG_P_UPDATE(0x80 == tmpOldValue);           \
+    Z80_FLAGS_S53_UPDATE(m_registers.a);              \
+    Z80_FLAG_N_SET;                                   \
 }
 
-/* compare instructions
- *
- * These instructions are mostly identical to SUB instruction, except that the result
- * is discarded rather than loaded into A and the handling of flags F5 and F3 differs.
- *
- * FLAGS: V is overflow, N is set, others by definition
- * NOTE Flags F3 and F5 are set according to the bits in the OPERAND (i.e. what A is being compared to) not A or the
- *  result of subtracting from A
- */
+//
+// compare instructions
+//
+// These instructions are mostly identical to SUB instruction, except that the result
+// is discarded rather than loaded into A and the handling of flags F5 and F3 differs.
+//
 #define Z80__CP__N(n) \
 { \
     UnsignedByte tmpSub = (n);           \
@@ -498,11 +416,12 @@ Z80_FLAG_N_SET;                                       \
 #define Z80__CP__INDIRECT_REG16(reg) Z80__CP__N(peekUnsigned((reg)))
 #define Z80__CP__INDIRECT_REG16_D(reg,d) Z80__CP__N(peekUnsigned((reg) + (d)))
 
-/* bitwise operations
- *
- * FLAGS: C cleared, N cleared, P is parity, others by definition
- */
-#define Z80_BITWISE_FLAGS Z80_FLAG_C_CLEAR; Z80_FLAG_N_CLEAR; Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a)); Z80_FLAGS_S53_UPDATE(m_registers.a); Z80_FLAG_Z_DEFAULTBEHAVIOUR;
+//
+// bitwise operations
+//
+// FLAGS: C cleared, N cleared, P is parity, others by definition
+//
+#define Z80_BITWISE_FLAGS Z80_FLAG_C_CLEAR; Z80_FLAG_N_CLEAR; Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a)); Z80_FLAGS_S53_UPDATE(m_registers.a); Z80_FLAG_Z_UPDATE(0 == m_registers.a);
 #define Z80__AND__N(n) m_registers.a &= (n); Z80_BITWISE_FLAGS; Z80_FLAG_H_SET;
 #define Z80__AND__REG8(reg) Z80__AND__N((reg))
 #define Z80__AND__INDIRECT_REG16(reg) Z80__AND__N(peekUnsigned(reg))
@@ -518,6 +437,9 @@ Z80_FLAG_N_SET;                                       \
 #define Z80__XOR__INDIRECT_REG16(reg) Z80__XOR__N((peekUnsigned(reg)))
 #define Z80__XOR__INDIRECT_REG16_D(reg,d) Z80__XOR__N(peekUnsigned((reg) + (d)))
 
+//
+// bit set instructions
+//
 /* FLAGS: all preserved */
 #define Z80__SET__N__REG8(n,reg) (reg) |= (1 << (n))
 #define Z80__SET__N__INDIRECT_REG16(n,reg) pokeUnsigned((reg), peekUnsigned((reg)) | (1 << (n)))
@@ -526,10 +448,9 @@ Z80_FLAG_N_SET;                                       \
 Z80__SET__N__INDIRECT_REG16_D(n, (reg16), (d)); \
 (reg8) = peekUnsigned((reg16) + (d));
 
-/*
- * FLAGS: all preserved
- * TODO: check result against known working implementation.
- */
+//
+// bit reset instructions
+//
 #define Z80__RES__N__REG8(n,reg) (reg) &= ~(1 << (n))
 #define Z80__RES__N__INDIRECT_REG16(n,reg) pokeUnsigned((reg), peekUnsigned((reg)) & ~(1 << (n)))
 #define Z80__RES__N__INDIRECT_REG16_D(n,reg,d) Z80__RES__N__INDIRECT_REG16(n,(reg) + (d))
@@ -537,15 +458,13 @@ Z80__SET__N__INDIRECT_REG16_D(n, (reg16), (d)); \
 Z80__RES__N__INDIRECT_REG16_D(n,(reg16),(d));               \
 (reg8) = peekUnsigned((reg16) + (d))
 
-/* bit shift and rotation instructions */
-/* rotate left with carry instructons
- *
- * FLAGS: H cleared, N cleared, P is parity, S as defined, Z as defined, C is
- * manipulated by instruction
- *
- * TODO: check flags against known working implementation.
- * TODO: check result against known working implementation.
- */
+//
+// bit shift and rotation instructions
+//
+
+//
+// rotate left with carry instructions
+//
 #define Z80__RLC__REG8(reg) {            \
     bool tmpBit = (reg) & 0x80;          \
     (reg) <<= 1;                         \
@@ -570,14 +489,9 @@ Z80__RES__N__INDIRECT_REG16_D(n,(reg16),(d));               \
 #define Z80__RLC__INDIRECT_REG16_D(reg,d) Z80__RLC__INDIRECT_REG16((reg) + (d))
 #define Z80__RLC__INDIRECT_REG16_D__REG8(reg16,d,reg8) Z80__RLC__INDIRECT_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
 
-/* rotate right with carry instructons
- *
- * FLAGS: H cleared, N cleared, P is parity, S as defined, Z as defined,
- * C is manipulated by instruction
- *
- * TODO: check flags against known working implementation.
- * TODO: check result against known working implementation.
- */
+//
+// rotate right with carry instructions
+//
 #define Z80__RRC__REG8(reg) { \
     bool bit = (reg) & 0x01;      \
     (reg) >>= 1;                  \
@@ -603,15 +517,13 @@ Z80__RES__N__INDIRECT_REG16_D(n,(reg16),(d));               \
 #define Z80__RRC__INDIRECT_REG16_D(reg,d) Z80__RRC__INDIRECT_REG16((reg) + (d))
 #define Z80__RRC__INDIRECT_REG16_D__REG8(reg16,d,reg8) Z80__RRC__INDIRECT_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
 
-/* rotate left instruction
- *
- * value is rotated left. bit 7 moves into carry flag and carry flag
- * moves into bit 0. In other words, it's as if the value was 9 bits in
- * size with the carry flag as bit 8.
- *
- * FLAGS: H and N cleared, P is parity, C modified directly by
- * instruction, S and Z as defined
- */
+//
+// rotate left instructions
+//
+// value is rotated left. bit 7 moves into carry flag and carry flag
+// moves into bit 0. In other words, it's as if the value was 9 bits in
+// size with the carry flag as bit 8.
+//
  #define Z80__RL__REG8(reg) {     \
 	bool bit = (reg) & 0x80;      \
 	(reg) <<= 1;                  \
@@ -640,16 +552,14 @@ Z80__RES__N__INDIRECT_REG16_D(n,(reg16),(d));               \
 #define Z80__RL__INDIRECT_REG16_D(reg,d) Z80__RL__INDIRECT_REG16((reg) + (d))
 #define Z80__RL__INDIRECT_REG16_D__REG8(reg16,d,reg8) Z80__RL__INDIRECT_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
 
-/* rotate right instruction
- *
- * value is rotated right. bit 0 moves into carry flag and carry flag
- * moves into bit 7. In other words, it's as if the value was 9 bits in
- * size with the carry flag as bit 0.
- *
- * FLAGS: H and N cleared, P is parity, C modified directly by
- * instruction, S and Z as defined
- */
- #define Z80__RR__REG8(reg) {     \
+//
+// rotate right instructions
+//
+// value is rotated right. bit 0 moves into carry flag and carry flag
+// moves into bit 7. In other words, it's as if the value was 9 bits in
+// size with the carry flag as bit 0.
+//
+#define Z80__RR__REG8(reg) {     \
 	bool tmpBit = (reg) & 0x01;   \
 	(reg) >>= 1;                  \
                                   \
@@ -673,12 +583,9 @@ Z80__RES__N__INDIRECT_REG16_D(n,(reg16),(d));               \
 #define Z80__RR__INDIRECT_REG16_D(reg,d) Z80__RR__INDIRECT_REG16((reg) + (d))
 #define Z80__RR__INDIRECT_REG16_D__REG8(reg16,d,reg8) Z80__RR__INDIRECT_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
 
-/* arithmetic left shift instruction
- *
- * FLAGS: H and N are cleared, P is parity, others as defined.
- * TODO: check flags against known working implementation.
- * TODO: check result against known working implementation.
- */
+//
+// arithmetic left shift instructions
+//
 #define Z80__SLA__REG8(reg) {            \
 	Z80_FLAG_C_UPDATE((reg) & 0x80);     \
 	(reg) <<= 1;                         \
@@ -695,12 +602,9 @@ Z80__RES__N__INDIRECT_REG16_D(n,(reg16),(d));               \
 #define Z80__SLA__INDIRECT_REG16_D(reg,d) Z80__SLA__INDIRECT_REG16((reg) + (d))
 #define Z80__SLA__INDIRECT_REG16_D__REG8(reg16,d,reg8) Z80__SLA__INDIRECT_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
 
-/* arithmetic right shift instruction
- *
- * FLAGS: H and N are cleared, P is parity, others as defined.
- * TODO: check flags against known working implementation.
- * TODO: check result against known working implementation.
- */
+//
+// arithmetic right shift instructions
+//
 #define Z80__SRA__REG8(reg) {            \
 	Z80_FLAG_C_UPDATE((reg) & 0x01);     \
     (reg) = ((reg) & 0x80) | ((reg) >>= 1);\
@@ -710,22 +614,20 @@ Z80__RES__N__INDIRECT_REG16_D(n,(reg16),(d));               \
 	Z80_FLAGS_S53_UPDATE((reg));         \
 	Z80_FLAG_Z_UPDATE(0 == (reg));       \
 }
+
 #define Z80__SRA__INDIRECT_REG16(reg) {     \
     UnsignedByte & tmpValue = memory()[reg];\
     Z80__SRA__REG8(tmpValue);               \
 }
+
 #define Z80__SRA__INDIRECT_REG16_D(reg,d) Z80__SRA__INDIRECT_REG16((reg) + (d))
 #define Z80__SRA__INDIRECT_REG16_D__REG8(reg16,d,reg8) Z80__SRA__INDIRECT_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
 
-/* logical left shift instruction
- *
- * bits are left shifted one place. bit 7 goes into carry flag and 1 goes into
- * bit 0.
- *
- * FLAGS: H and N are cleared, P is parity, others as defined.
- * TODO: check flags against known working implementation.
- * TODO: check result against known working implementation.
- */
+//
+// logical left shift instruction
+//
+// bits are left shifted one place. bit 7 goes into carry flag and 1 goes into bit 0.
+//
 #define Z80__SLL__REG8(reg) {            \
 	Z80_FLAG_C_UPDATE((reg) & 0x80);     \
     (reg) = 0x01 | ((reg) << 1);         \
@@ -742,15 +644,11 @@ Z80__RES__N__INDIRECT_REG16_D(n,(reg16),(d));               \
 #define Z80__SLL__INDIRECT_REG16_D(reg,d) Z80__SLL__INDIRECT_REG16((reg) + (d))
 #define Z80__SLL__INDIRECT_REG16_D__REG8(reg16,d,reg8) Z80__SLL__INDIRECT_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
 
-/* logical right shift instruction
- *
- * bits are right shifted one place. bit 0 goes into carry flag and 1 goes into
- * bit 7.
- *
- * FLAGS: H and N are cleared, P is parity, others as defined.
- * TODO: check flags against known working implementation.
- * TODO: check result against known working implementation.
- */
+//
+// logical right shift instructions
+//
+// bits are right shifted one place. bit 0 goes into carry flag and 1 goes into bit 7.
+//
 #define Z80__SRL__REG8(reg) {       \
 	Z80_FLAG_C_UPDATE((reg) & 0x01);\
 	(reg) >>= 1;                    \
@@ -767,12 +665,9 @@ Z80__RES__N__INDIRECT_REG16_D(n,(reg16),(d));               \
 #define Z80__SRL__INDIRECT_REG16_D(reg,d) Z80__SRL__INDIRECT_REG16((reg) + (d))
 #define Z80__SRL__INDIRECT_REG16_D__REG8(reg16,d,reg8) Z80__SRL__INDIRECT_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
 
-/* bit testing instructions
- *
- * FLAGS: C is preserved, N is cleared, P is unknown, H is set, Z is as defined, S is unknown
- * TODO: check flags against known working implementation.
- * TODO: check result against known working implementation.
- */
+//
+// bit testing instructions
+//
 #define Z80__BIT__N__REG8(n,reg) \
 Z80_FLAG_Z_UPDATE(0 == ((reg) & (0x01 << n))); \
 Z80_FLAG_P_UPDATE(Z80_FLAG_Z_ISSET);        \
@@ -791,70 +686,69 @@ Z80_FLAG_F3_UPDATE(m_registers.memptrH & Z80_FLAG_F3_MASK);
 m_registers.memptr = ((reg) + (d)); \
 Z80__BIT__N__INDIRECT_REG16(n,m_registers.memptr);
 
-/* nmi handler return instruction
- *
- * there is only one nmi return instruction, but it has several opcodes (most of
- * which are unofficial), so a macro is provided for a common implementation.
- *
- * FLAGS: all preserved.
- * TODO: check result against known working implementation.
- */
+//
+// nmi handler return instruction
+//
+// there is only one nmi return instruction, but it has several opcodes (most of
+// which are unofficial), so a macro is provided for a common implementation.
+//
 #define Z80__RETN Z80__POP__REG16(m_registers.pc); m_iff1 = m_iff2;
 
-/* interrupt handler return instruction
- *
- * there is only one interrupt return instruction, but it has several opcodes
- * (most of which are unofficial), so a macro is provided for a common
- * implementation.
- *
- * FLAGS: all preserved.
- * TODO: check result against known working implementation.
- */
+//
+// interrupt handler return instruction
+//
+// there is only one interrupt return instruction, but it has several opcodes
+// (most of which are unofficial), so a macro is provided for a common implementation.
+//
 #define Z80__RETI \
 Z80__POP__REG16(m_registers.pc); \
 m_iff1 = m_iff2;                 \
 /* TODO signal IO device that interrupt has finished */
 
-// port is 8-bit and is the LSB for the 16-bit port. the MSB is from A
+//
+// port IO instructions
+//
+
+// helper to perform byte write to connected IO devices
+#define Z80__WRITE_IO_DEVICES(value, port) { \
+    for (auto * device : m_ioDevices) {      \
+        if (!device->checkWritePort(port)) { \
+            continue;                        \
+        }                                    \
+                                             \
+        device->writeByte(port, value);      \
+    }                                        \
+}
+
+// port is 8-bit and is the LSB for the 16-bit port.
 #define Z80__OUT__INDIRECT_REG8__REG8(port,value) {    \
     UnsignedWord tmpPort = ((port) & 0xff | (m_registers.b << 8)); \
-                                                       \
-    for (auto * device : m_ioDevices) {                \
-        if (!device->checkWritePort(tmpPort)) {        \
-            continue;                                  \
-        }                                              \
-                                                       \
-        device->writeByte(tmpPort, (value));           \
-    }                                                  \
-                                                       \
+    Z80__WRITE_IO_DEVICES((value), tmpPort)            \
     m_registers.memptr = tmpPort + 1;                  \
 }
 
 #define Z80__OUT__INDIRECT_N__REG8(port,value) {       \
     UnsignedWord tmpPort = ((port) & 0xff | (m_registers.a << 8)); \
-                                                       \
-    for (auto * device : m_ioDevices) {                \
-        if (!device->checkWritePort(tmpPort)) {        \
-            continue;                                  \
-        }                                              \
-                                                       \
-        device->writeByte(tmpPort, (value));           \
-    }                                                  \
-                                                       \
+    Z80__WRITE_IO_DEVICES((value), tmpPort)            \
     m_registers.memptr = tmpPort + 1;                  \
+}
+
+// TODO if multiple devices are writing on a given port, what happens to the result?
+#define Z80__READ_IO_DEVICES(result, port) { \
+    (result) = 0xff;                         \
+                                             \
+    for (auto * device : m_ioDevices) {      \
+        if (!device->checkReadPort(port)) {  \
+            continue;                        \
+        }                                    \
+                                             \
+        (result) = device->readByte(port);   \
+    }                                        \
 }
 
 #define Z80__IN__REG8__INDIRECT_REG8(dest,port) {    \
     UnsignedWord tmpPort = ((port) & 0xff) | (m_registers.b << 8); \
-                                                     \
-    for (auto * device : m_ioDevices) {              \
-        if (!device->checkReadPort(tmpPort)) {       \
-            continue;                                \
-        }                                            \
-                                                     \
-        (dest) = device->readByte(tmpPort);          \
-    }                                                \
-                                                     \
+    Z80__READ_IO_DEVICES((dest), tmpPort);           \
     m_registers.memptr = tmpPort + 1;                \
     Z80_FLAG_H_CLEAR;                                \
     Z80_FLAG_N_CLEAR;                                \
@@ -864,15 +758,9 @@ m_iff1 = m_iff2;                 \
 }
 
 #define Z80__IN__REG8__INDIRECT_REG16(dest,port) {   \
-    for (auto * device : m_ioDevices) {              \
-        if (!device->checkReadPort((port))) {        \
-            continue;                                \
-        }                                            \
-                                                     \
-        (dest) = device->readByte((port));           \
-    }                                                \
-                                                     \
-    m_registers.memptr = (port) + 1;                 \
+    UnsignedWord tmpPort = ((port) & 0xff) | (m_registers.b << 8); \
+    Z80__READ_IO_DEVICES((dest), tmpPort);           \
+    m_registers.memptr = tmpPort + 1;                \
     Z80_FLAG_H_CLEAR;                                \
     Z80_FLAG_N_CLEAR;                                \
     Z80_FLAG_Z_UPDATE(0 == (dest));                  \
@@ -882,14 +770,7 @@ m_iff1 = m_iff2;                 \
 
 #define Z80__IN__REG8__INDIRECT_N(dest,port) {       \
     UnsignedWord tmpPort = ((port) & 0xff) | (m_registers.a << 8); \
-                                                     \
-    for (auto * device : m_ioDevices) {              \
-        if (!device->checkReadPort(tmpPort)) {       \
-            continue;                                \
-        }                                            \
-                                                     \
-        (dest) = device->readByte(tmpPort);          \
-    }                                                \
+    Z80__READ_IO_DEVICES((dest), tmpPort);           \
 }
 
 namespace
@@ -934,32 +815,36 @@ Z80::Z80::Z80(unsigned char * mem, int memSize)
 
 Z80::Z80::~Z80() = default;
 
-bool Z80::Z80::isEvenParity(Z80::Z80::UnsignedByte v)
+bool Z80::Z80::isEvenParity(UnsignedByte value)
 {
 	static bool parityLut[256] = {
-#include "evenparitytable8.inc"
+        true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
+        false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
+        false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
+        true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
+        false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
+        true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
+        true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
+        false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
+        false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
+        true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
+        true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
+        false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
+        true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
+        false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
+        false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
+        true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
 	};
 
-	return parityLut[v];
+	return parityLut[value];
 }
-
-
-bool Z80::Z80::isEvenParity(Z80::Z80::UnsignedWord v)
-{
-	static bool parityLut[65536] = {
-#include "evenparitytable16.inc"
-	};
-
-	return parityLut[v];
-}
-
 
 void Z80::Z80::init()
 {
     m_interruptMode = InterruptMode::IM0;
-	m_interruptData = 0x0000;
+	m_interruptData = 0x00;
 
-	/* set up opcode cycle costs */
+	/* set up opcode t-state costs */
 #include "z80_plain_opcode_cycles.inc"
 #include "z80_cb_opcode_cycles.inc"
 #include "z80_ed_opcode_cycles.inc"
@@ -971,7 +856,6 @@ void Z80::Z80::init()
 	/* all 0xcb opcodes are 2 bytes in size */
 #include "z80_ed_opcode_sizes.inc"
 }
-
 
 bool Z80::Z80::connectIODevice(Z80IODevice * device)
 {
@@ -995,7 +879,7 @@ void Z80::Z80::disconnectIODevice(Z80IODevice * device)
     m_ioDevices.erase(deviceIterator);
 }
 
-void Z80::Z80::interrupt(UnsignedWord data)
+void Z80::Z80::interrupt(UnsignedByte data)
 {
     m_interruptData = data;
 	m_interruptRequested = true;
@@ -1008,9 +892,12 @@ void Z80::Z80::nmi()
 
 void Z80::Z80::reset()
 {
-    m_interruptMode = InterruptMode::IM0;
-	m_iff1 = m_iff2 = false;
 	m_nmiPending = false;
+    m_interruptMode = InterruptMode::IM0;
+    m_interruptData = 0x00;
+	m_iff1 = false;
+	m_iff2 = false;
+    m_interruptRequested = false;
 	m_registers.reset();
 }
 
@@ -1028,7 +915,7 @@ void Z80::Z80::reset()
  * @param addr
  * @param value
  */
-void Z80::Z80::pokeHostWord(int addr, Z80::Z80::UnsignedWord value)
+void Z80::Z80::pokeHostWord(int addr, UnsignedWord value)
 {
 	if (0 > addr || m_ramSize <= addr) {
 	    return;
@@ -1124,7 +1011,6 @@ bool Z80::Z80::execute(const Z80::Z80::UnsignedByte * instruction, bool doPc, in
 	return ret;
 }
 
-
 int Z80::Z80::fetchExecuteCycle()
 {
 	int tStates = 0;
@@ -1140,6 +1026,7 @@ int Z80::Z80::fetchExecuteCycle()
         tStates += 11;
 	}
 
+	// TODO defer interrupt by a single instruction if the next instruction is a return
 	if (m_iff1 && m_interruptRequested) {
 		// process maskable interrupt
         m_iff1 = m_iff2 = false;
@@ -1151,10 +1038,11 @@ int Z80::Z80::fetchExecuteCycle()
 				    Z80__PUSH__REG16(m_registers.pc);
 				}
 
-				/* execute the instruction */
-				execute(reinterpret_cast<UnsignedByte *>(&m_interruptData), false);
+				// TODO fetch the instruction from the device, up to 4 bytes
+				// execute the instruction
+//				execute(reinterpret_cast<UnsignedByte *>(&m_interruptData), false);
 				// clear the instruction cache - actually just turns it into a NOP
-				m_interruptData = 0x0000;
+				m_interruptData = 0x00;
 				break;
 
 		    case InterruptMode::IM1:
@@ -1165,9 +1053,14 @@ int Z80::Z80::fetchExecuteCycle()
 
 		    case InterruptMode::IM2:
                 Z80__PUSH__REG16(m_registers.pc);
-                m_registers.pc = 0x0038;
-			    // TODO read interrupt vector from data bus
-			    // TODO set PC to location of interrupt routine
+                // interrupt service routine is pointed to by interrupt vector table starting at 0x{regI}00; byte on
+                // data bus from interrupting device is offset into table (e.g. if device provides 0x20, the service
+                // routine starts at the memory address stored at 0x{regI}20). For example, if I contains 0xfe and the
+                // device puts 0x20 on the data bus, then the 16-bit word at 0xfe20 will be fetched. If the two bytes at
+                // 0xfe20 and 0xfe21 are 0x38, 0x04 respectively, then the interrupt routine is located at address
+                // 0x0438 (because Z80 words are little-endian) and the PC will jump to 0x0438 for the interrupt service
+                // routine
+                m_registers.pc = peekUnsignedWord(static_cast<UnsignedWord>(m_registers.i) << 8 | (m_interruptData & 0xfe));
                 tStates += 19;
 				break;
 		}
@@ -2545,6 +2438,7 @@ bool Z80::Z80::executePlainInstruction(const Z80::Z80::UnsignedByte * instructio
 			break;
 
 		default:
+            // TODO we should throw here - it should never happen
 			std::cerr << "unhandled opcode: 0x" << std::hex << (*instruction) << std::endl;
 			Z80_INVALID_INSTRUCTION;
 			break;
@@ -3596,6 +3490,7 @@ bool Z80::Z80::executeCbInstruction(const Z80::Z80::UnsignedByte * instruction, 
 			break;
 
 		default:
+            // TODO we should throw here - it should never happen
 			std::cerr << "unhandled opcode: 0xcb 0x" << std::hex << (*instruction) << std::endl;
 			Z80_INVALID_INSTRUCTION;
 			break;
@@ -3619,195 +3514,69 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 
 	switch (*instruction) {
 		case Z80__ED__NOP__0XED__0X00:
-			break;
-
-		case Z80__ED__NOP__0XED__0X01:
-			break;
-
-		case Z80__ED__NOP__0XED__0X02:
-			break;
-
-		case Z80__ED__NOP__0XED__0X03:
-			break;
-
-		case Z80__ED__NOP__0XED__0X04:
-			break;
-
-		case Z80__ED__NOP__0XED__0X05:
-			break;
-
-		case Z80__ED__NOP__0XED__0X06:
-			break;
-
-		case Z80__ED__NOP__0XED__0X07:
-			break;
-
-		case Z80__ED__NOP__0XED__0X08:
-			break;
-
-		case Z80__ED__NOP__0XED__0X09:
-			break;
-
-		case Z80__ED__NOP__0XED__0X0A:
-			break;
-
-		case Z80__ED__NOP__0XED__0X0B:
-			break;
-
-		case Z80__ED__NOP__0XED__0X0C:
-			break;
-
-		case Z80__ED__NOP__0XED__0X0D:
-			break;
-
-		case Z80__ED__NOP__0XED__0X0E:
-			break;
-
-		case Z80__ED__NOP__0XED__0X0F:
-			break;
-
-		case Z80__ED__NOP__0XED__0X10:
-			break;
-
-		case Z80__ED__NOP__0XED__0X11:
-			break;
-
-		case Z80__ED__NOP__0XED__0X12:
-			break;
-
-		case Z80__ED__NOP__0XED__0X13:
-			break;
-
-		case Z80__ED__NOP__0XED__0X14:
-			break;
-
-		case Z80__ED__NOP__0XED__0X15:
-			break;
-
-		case Z80__ED__NOP__0XED__0X16:
-			break;
-
-		case Z80__ED__NOP__0XED__0X17:
-			break;
-
-		case Z80__ED__NOP__0XED__0X18:
-			break;
-
-		case Z80__ED__NOP__0XED__0X19:
-			break;
-
-		case Z80__ED__NOP__0XED__0X1A:
-			break;
-
-		case Z80__ED__NOP__0XED__0X1B:
-			break;
-
-		case Z80__ED__NOP__0XED__0X1C:
-			break;
-
-		case Z80__ED__NOP__0XED__0X1D:
-			break;
-
-		case Z80__ED__NOP__0XED__0X1E:
-			break;
-
-		case Z80__ED__NOP__0XED__0X1F:
-			break;
-
-		case Z80__ED__NOP__0XED__0X20:
-			break;
-
-		case Z80__ED__NOP__0XED__0X21:
-			break;
-
-		case Z80__ED__NOP__0XED__0X22:
-			break;
-
-		case Z80__ED__NOP__0XED__0X23:
-			break;
-
-		case Z80__ED__NOP__0XED__0X24:
-			break;
-
-		case Z80__ED__NOP__0XED__0X25:
-			break;
-
-		case Z80__ED__NOP__0XED__0X26:
-			break;
-
-		case Z80__ED__NOP__0XED__0X27:
-			break;
-
-		case Z80__ED__NOP__0XED__0X28:
-			break;
-
-		case Z80__ED__NOP__0XED__0X29:
-			break;
-
-		case Z80__ED__NOP__0XED__0X2A:
-			break;
-
-		case Z80__ED__NOP__0XED__0X2B:
-			break;
-
-		case Z80__ED__NOP__0XED__0X2C:
-			break;
-
-		case Z80__ED__NOP__0XED__0X2D:
-			break;
-
-		case Z80__ED__NOP__0XED__0X2E:
-			break;
-
-		case Z80__ED__NOP__0XED__0X2F:
-			break;
-
-		case Z80__ED__NOP__0XED__0X30:
-			break;
-
-		case Z80__ED__NOP__0XED__0X31:
-			break;
-
-		case Z80__ED__NOP__0XED__0X32:
-			break;
-
-		case Z80__ED__NOP__0XED__0X33:
-			break;
-
-		case Z80__ED__NOP__0XED__0X34:
-			break;
-
-		case Z80__ED__NOP__0XED__0X35:
-			break;
-
-		case Z80__ED__NOP__0XED__0X36:
-			break;
-
-		case Z80__ED__NOP__0XED__0X37:
-			break;
-
-		case Z80__ED__NOP__0XED__0X38:
-			break;
-
-		case Z80__ED__NOP__0XED__0X39:
-			break;
-
-		case Z80__ED__NOP__0XED__0X3A:
-			break;
-
-		case Z80__ED__NOP__0XED__0X3B:
-			break;
-
-		case Z80__ED__NOP__0XED__0X3C:
-			break;
-
-		case Z80__ED__NOP__0XED__0X3D:
-			break;
-
-		case Z80__ED__NOP__0XED__0X3E:
-			break;
-
-		case Z80__ED__NOP__0XED__0X3F:
+        case Z80__ED__NOP__0XED__0X01:
+        case Z80__ED__NOP__0XED__0X02:
+        case Z80__ED__NOP__0XED__0X03:
+        case Z80__ED__NOP__0XED__0X04:
+        case Z80__ED__NOP__0XED__0X05:
+        case Z80__ED__NOP__0XED__0X06:
+        case Z80__ED__NOP__0XED__0X07:
+        case Z80__ED__NOP__0XED__0X08:
+        case Z80__ED__NOP__0XED__0X09:
+        case Z80__ED__NOP__0XED__0X0A:
+        case Z80__ED__NOP__0XED__0X0B:
+        case Z80__ED__NOP__0XED__0X0C:
+        case Z80__ED__NOP__0XED__0X0D:
+        case Z80__ED__NOP__0XED__0X0E:
+        case Z80__ED__NOP__0XED__0X0F:
+        case Z80__ED__NOP__0XED__0X10:
+        case Z80__ED__NOP__0XED__0X11:
+        case Z80__ED__NOP__0XED__0X12:
+        case Z80__ED__NOP__0XED__0X13:
+        case Z80__ED__NOP__0XED__0X14:
+        case Z80__ED__NOP__0XED__0X15:
+        case Z80__ED__NOP__0XED__0X16:
+        case Z80__ED__NOP__0XED__0X17:
+        case Z80__ED__NOP__0XED__0X18:
+        case Z80__ED__NOP__0XED__0X19:
+        case Z80__ED__NOP__0XED__0X1A:
+        case Z80__ED__NOP__0XED__0X1B:
+        case Z80__ED__NOP__0XED__0X1C:
+        case Z80__ED__NOP__0XED__0X1D:
+        case Z80__ED__NOP__0XED__0X1E:
+        case Z80__ED__NOP__0XED__0X1F:
+        case Z80__ED__NOP__0XED__0X20:
+        case Z80__ED__NOP__0XED__0X21:
+        case Z80__ED__NOP__0XED__0X22:
+        case Z80__ED__NOP__0XED__0X23:
+        case Z80__ED__NOP__0XED__0X24:
+        case Z80__ED__NOP__0XED__0X25:
+        case Z80__ED__NOP__0XED__0X26:
+        case Z80__ED__NOP__0XED__0X27:
+        case Z80__ED__NOP__0XED__0X28:
+        case Z80__ED__NOP__0XED__0X29:
+        case Z80__ED__NOP__0XED__0X2A:
+        case Z80__ED__NOP__0XED__0X2B:
+        case Z80__ED__NOP__0XED__0X2C:
+        case Z80__ED__NOP__0XED__0X2D:
+        case Z80__ED__NOP__0XED__0X2E:
+        case Z80__ED__NOP__0XED__0X2F:
+        case Z80__ED__NOP__0XED__0X30:
+        case Z80__ED__NOP__0XED__0X31:
+        case Z80__ED__NOP__0XED__0X32:
+        case Z80__ED__NOP__0XED__0X33:
+        case Z80__ED__NOP__0XED__0X34:
+        case Z80__ED__NOP__0XED__0X35:
+        case Z80__ED__NOP__0XED__0X36:
+        case Z80__ED__NOP__0XED__0X37:
+        case Z80__ED__NOP__0XED__0X38:
+        case Z80__ED__NOP__0XED__0X39:
+        case Z80__ED__NOP__0XED__0X3A:
+        case Z80__ED__NOP__0XED__0X3B:
+        case Z80__ED__NOP__0XED__0X3C:
+        case Z80__ED__NOP__0XED__0X3D:
+        case Z80__ED__NOP__0XED__0X3E:
+        case Z80__ED__NOP__0XED__0X3F:
 			break;
 
 		case Z80__ED__IN__B__INDIRECT_C:
@@ -3910,7 +3679,7 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 		case Z80__ED__LD__A__I:				/* 0xed 0x57 */
 			Z80__LD__REG8__REG8(m_registers.a, m_registers.i);
 			Z80_FLAGS_S53_UPDATE(m_registers.a);
-			Z80_FLAG_Z_DEFAULTBEHAVIOUR;
+			Z80_FLAG_Z_UPDATE(0 == m_registers.a);
 			Z80_FLAG_H_CLEAR;
 			Z80_FLAG_P_UPDATE(m_iff2);
 			Z80_FLAG_N_CLEAR;
@@ -3949,7 +3718,7 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 			Z80__LD__REG8__REG8(m_registers.a, m_registers.r);
 			// NOTE carry flag is unmodified
 			Z80_FLAGS_S53_UPDATE(m_registers.a);
-			Z80_FLAG_Z_DEFAULTBEHAVIOUR;
+			Z80_FLAG_Z_UPDATE(0 == m_registers.a);
 			Z80_FLAG_H_CLEAR;
 			Z80_FLAG_P_UPDATE(m_iff2);
 			Z80_FLAG_N_CLEAR;
@@ -3968,7 +3737,7 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 			break;
 
 		case Z80__ED__LD__INDIRECT_NN__HL:
-			Z80__LD__INDIRECT_NN__REG16(Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_registers.hl);
+			Z80__LD__INDIRECT_NN__REG16(z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_registers.hl);
 			break;
 
 		case Z80__ED__NEG__0XED__0X64:	/* 0xed 0x64 */
@@ -4008,8 +3777,8 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 				Z80_FLAG_N_CLEAR;
 				/* should this be set according to A or both A and (HL) ? */
 				Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a));
-				Z80_FLAG_Z_DEFAULTBEHAVIOUR;
-				Z80_FLAG_S_DEFAULTBEHAVIOUR;
+				Z80_FLAG_Z_UPDATE(0 == m_registers.a);
+				Z80_FLAG_S_UPDATE(0x80 & m_registers.a);;
 			}
 			break;
 
@@ -4067,7 +3836,7 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 				Z80_FLAG_H_CLEAR;
 				Z80_FLAG_N_CLEAR;
 				Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a));
-				Z80_FLAG_Z_DEFAULTBEHAVIOUR;
+				Z80_FLAG_Z_UPDATE(0 == m_registers.a);
 				Z80_FLAGS_S53_UPDATE(m_registers.a);
 			}
 			break;
@@ -4139,105 +3908,41 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
 			break;
 
 		case Z80__ED__NOP__0XED__0X7F:
+        case Z80__ED__NOP__0XED__0X80:
+        case Z80__ED__NOP__0XED__0X81:
+        case Z80__ED__NOP__0XED__0X82:
+        case Z80__ED__NOP__0XED__0X83:
+        case Z80__ED__NOP__0XED__0X84:
+        case Z80__ED__NOP__0XED__0X85:
+        case Z80__ED__NOP__0XED__0X86:
+        case Z80__ED__NOP__0XED__0X87:
+        case Z80__ED__NOP__0XED__0X88:
+        case Z80__ED__NOP__0XED__0X89:
+        case Z80__ED__NOP__0XED__0X8A:
+        case Z80__ED__NOP__0XED__0X8B:
+        case Z80__ED__NOP__0XED__0X8C:
+        case Z80__ED__NOP__0XED__0X8D:
+        case Z80__ED__NOP__0XED__0X8E:
+        case Z80__ED__NOP__0XED__0X8F:
+        case Z80__ED__NOP__0XED__0X90:
+        case Z80__ED__NOP__0XED__0X91:
+        case Z80__ED__NOP__0XED__0X92:
+        case Z80__ED__NOP__0XED__0X93:
+        case Z80__ED__NOP__0XED__0X94:
+        case Z80__ED__NOP__0XED__0X95:
+        case Z80__ED__NOP__0XED__0X96:
+        case Z80__ED__NOP__0XED__0X97:
+        case Z80__ED__NOP__0XED__0X98:
+        case Z80__ED__NOP__0XED__0X99:
+        case Z80__ED__NOP__0XED__0X9A:
+        case Z80__ED__NOP__0XED__0X9B:
+        case Z80__ED__NOP__0XED__0X9C:
+        case Z80__ED__NOP__0XED__0X9D:
+        case Z80__ED__NOP__0XED__0X9E:
+        case Z80__ED__NOP__0XED__0X9F:
 			break;
 
-		case Z80__ED__NOP__0XED__0X80:
-			break;
-
-		case Z80__ED__NOP__0XED__0X81:
-			break;
-
-		case Z80__ED__NOP__0XED__0X82:
-			break;
-
-		case Z80__ED__NOP__0XED__0X83:
-			break;
-
-		case Z80__ED__NOP__0XED__0X84:
-			break;
-
-		case Z80__ED__NOP__0XED__0X85:
-			break;
-
-		case Z80__ED__NOP__0XED__0X86:
-			break;
-
-		case Z80__ED__NOP__0XED__0X87:
-			break;
-
-		case Z80__ED__NOP__0XED__0X88:
-			break;
-
-		case Z80__ED__NOP__0XED__0X89:
-			break;
-
-		case Z80__ED__NOP__0XED__0X8A:
-			break;
-
-		case Z80__ED__NOP__0XED__0X8B:
-			break;
-
-		case Z80__ED__NOP__0XED__0X8C:
-			break;
-
-		case Z80__ED__NOP__0XED__0X8D:
-			break;
-
-		case Z80__ED__NOP__0XED__0X8E:
-			break;
-
-		case Z80__ED__NOP__0XED__0X8F:
-			break;
-
-		case Z80__ED__NOP__0XED__0X90:
-			break;
-
-		case Z80__ED__NOP__0XED__0X91:
-			break;
-
-		case Z80__ED__NOP__0XED__0X92:
-			break;
-
-		case Z80__ED__NOP__0XED__0X93:
-			break;
-
-		case Z80__ED__NOP__0XED__0X94:
-			break;
-
-		case Z80__ED__NOP__0XED__0X95:
-			break;
-
-		case Z80__ED__NOP__0XED__0X96:
-			break;
-
-		case Z80__ED__NOP__0XED__0X97:
-			break;
-
-		case Z80__ED__NOP__0XED__0X98:
-			break;
-
-		case Z80__ED__NOP__0XED__0X99:
-			break;
-
-		case Z80__ED__NOP__0XED__0X9A:
-			break;
-
-		case Z80__ED__NOP__0XED__0X9B:
-			break;
-
-		case Z80__ED__NOP__0XED__0X9C:
-			break;
-
-		case Z80__ED__NOP__0XED__0X9D:
-			break;
-
-		case Z80__ED__NOP__0XED__0X9E:
-			break;
-
-		case Z80__ED__NOP__0XED__0X9F:
-			break;
-
-		case Z80__ED__LDI:
+		case Z80__ED__LDI:      // 0xed 0xa0
 		    {
 		        auto tmpByte = peekUnsigned(m_registers.hl);
                 pokeUnsigned(m_registers.de, tmpByte);
@@ -4252,406 +3957,411 @@ bool Z80::Z80::executeEdInstruction(const Z80::Z80::UnsignedByte * instruction, 
             }
 			break;
 
-		case Z80__ED__CPI:
+		case Z80__ED__CPI:      // 0xed 0xa1
 			{
-				/* FLAGS: N is set, C is unmodified, others by definition
-				 *
-				 * this is identical to CP instruction, except C is unmodified and
-				 * P is currently unknown */
 				bool flagC = Z80_FLAG_C_ISSET;
 				Z80__CP__INDIRECT_REG16(m_registers.hl);
 
 				m_registers.hl++;
 				m_registers.bc--;
 
-				/* TODO not sure if this is the correct P flag behaviour */
 				Z80_FLAG_C_UPDATE(flagC);
-				Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a));
+				Z80_FLAG_P_UPDATE(0 != m_registers.bc);
+				Z80_FLAG_F5_UPDATE(m_registers.a & (Z80_FLAG_F5_MASK >> 4));
+				Z80_FLAG_F3_UPDATE(m_registers.a & Z80_FLAG_F3_MASK);
 			}
 			break;
 
-		case Z80__ED__INI:
-			/* FLAGS: all preserved */
-			/* TODO */
+		case Z80__ED__INI:      // 0xed 0xa2
+            {
+                UnsignedByte result;
+                Z80__READ_IO_DEVICES(result, m_registers.bc);
+                pokeUnsigned(m_registers.hl, result);
+                UnsignedByte carryCheck = result + m_registers.c + 1;
+                --m_registers.b;
+                ++m_registers.hl;
+
+                Z80_FLAG_H_UPDATE(carryCheck < result);
+                Z80_FLAG_C_UPDATE(carryCheck < result);
+                Z80_FLAG_P_UPDATE(isEvenParity(static_cast<UnsignedByte>((carryCheck & 0x07) ^ m_registers.b)));
+                Z80_FLAG_Z_UPDATE(0 == m_registers.b);
+                Z80_FLAGS_S53_UPDATE(m_registers.b);
+                Z80_FLAG_N_UPDATE(result & 0x80);
+            }
 			break;
 
-		case Z80__ED__OUTI:
-			/* FLAGS: all preserved */
-			/* TODO */
+		case Z80__ED__OUTI:      // 0xed 0xa3
+            {
+                UnsignedByte value = peekUnsigned(m_registers.hl);
+                Z80__WRITE_IO_DEVICES(value, m_registers.bc);
+                --m_registers.b;
+                ++m_registers.hl;
+                UnsignedByte carryCheck = value + m_registers.l;
+
+                Z80_FLAG_H_UPDATE(carryCheck < value);
+                Z80_FLAG_C_UPDATE(carryCheck < value);
+                Z80_FLAG_P_UPDATE(isEvenParity(static_cast<UnsignedByte>((carryCheck & 0x07) ^ m_registers.b)));
+                Z80_FLAG_Z_UPDATE(0 == m_registers.b);
+                Z80_FLAGS_S53_UPDATE(m_registers.b);
+                Z80_FLAG_N_UPDATE(value & 0x80);
+            }
 			break;
 
 		case Z80__ED__NOP__0XED__0XA4:
-			break;
-
 		case Z80__ED__NOP__0XED__0XA5:
-			break;
-
 		case Z80__ED__NOP__0XED__0XA6:
-			break;
-
 		case Z80__ED__NOP__0XED__0XA7:
 			break;
 
-		case Z80__ED__LDD:
-			/* FLAGS: H and N are cleared, S, Z and C are preserved, P is unknown */
-			pokeUnsigned(m_registers.de, peekUnsigned(m_registers.hl));
-			m_registers.de--;
-			m_registers.hl--;
-			m_registers.bc--;
-			Z80_FLAG_H_CLEAR;
-			Z80_FLAG_N_CLEAR;
-			/* TODO flag P */
+		case Z80__ED__LDD:      // 0xed 0xa8
+		    {
+		        auto value = peekUnsigned(m_registers.hl);
+                pokeUnsigned(m_registers.de, value);
+                m_registers.de--;
+                m_registers.hl--;
+                m_registers.bc--;
+                Z80_FLAG_H_CLEAR;
+                Z80_FLAG_N_CLEAR;
+                Z80_FLAG_P_UPDATE(0 != m_registers.bc);
+                value += m_registers.a;
+                Z80_FLAG_F5_UPDATE(value & (Z80_FLAG_F5_MASK >> 4));
+                Z80_FLAG_F3_UPDATE(value & Z80_FLAG_F3_MASK);
+            }
 			break;
 
-		case Z80__ED__CPD:
+		case Z80__ED__CPD:      // 0xed 0xa9
 			{
-				/* FLAGS: N is set, C is unmodified, others by definition
-				 *
-				 * this is identical to CP instruction, except C is unmodified and
-				 * P is currently unknown */
-				bool flagC = Z80_FLAG_C_ISSET;
-				Z80__CP__INDIRECT_REG16(m_registers.hl);
-
+                auto sub = peekUnsigned(m_registers.hl);
+                auto result = m_registers.a - sub;
 				m_registers.hl--;
 				m_registers.bc--;
 
-				/* TODO not sure if this is the correct P flag behaviour */
-				Z80_FLAG_C_UPDATE(flagC);
-				Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a));
+                Z80_FLAG_N_SET;
+				Z80_FLAG_P_UPDATE(0 != m_registers.bc);
+				Z80_FLAG_Z_UPDATE(0 == result);
+                Z80_FLAG_H_UPDATE_SUB(m_registers.a, sub, result);
+                Z80_FLAG_S_UPDATE(result & Z80_FLAG_S_MASK);
+
+				if (Z80_FLAG_H_ISSET) {
+				    --result;
+				}
+
+				Z80_FLAG_F5_UPDATE(result & (Z80_FLAG_F5_MASK >> 4));
+				Z80_FLAG_F3_UPDATE(result & Z80_FLAG_F3_MASK);
 			}
 			break;
 
-		case Z80__ED__IND:
-			/* FLAGS: all preserved */
-			/* TODO */
+		case Z80__ED__IND:      // 0xed 0xaa
+            {
+                UnsignedByte result;
+                Z80__READ_IO_DEVICES(result, m_registers.bc);
+                pokeUnsigned(m_registers.hl, result);
+                UnsignedByte carryCheck = result + m_registers.c - 1;
+                --m_registers.b;
+                --m_registers.hl;
+
+                Z80_FLAG_H_UPDATE(carryCheck < result);
+                Z80_FLAG_C_UPDATE(carryCheck < result);
+                Z80_FLAG_P_UPDATE(isEvenParity(static_cast<UnsignedByte>((carryCheck & 0x07) ^ m_registers.b)));
+                Z80_FLAG_Z_UPDATE(0 == m_registers.b);
+                Z80_FLAGS_S53_UPDATE(m_registers.b);
+                Z80_FLAG_N_UPDATE(result & 0x80);
+            }
 			break;
 
-		case Z80__ED__OUTD:
-			/* FLAGS: all preserved */
-			/* TODO */
+		case Z80__ED__OUTD:      // 0xed 0xab
+            {
+                UnsignedByte value = peekUnsigned(m_registers.hl);
+                Z80__WRITE_IO_DEVICES(value, m_registers.bc);
+                --m_registers.b;
+                --m_registers.hl;
+                UnsignedByte carryCheck = value + m_registers.l;
+
+                Z80_FLAG_H_UPDATE(carryCheck < value);
+                Z80_FLAG_C_UPDATE(carryCheck < value);
+                Z80_FLAG_P_UPDATE(isEvenParity(static_cast<UnsignedByte>((carryCheck & 0x07) ^ m_registers.b)));
+                Z80_FLAG_Z_UPDATE(0 == m_registers.b);
+                Z80_FLAGS_S53_UPDATE(m_registers.b);
+                Z80_FLAG_N_UPDATE(value & 0x80);
+            }
 			break;
 
 		case Z80__ED__NOP__0XED__0XAC:
-			break;
-
 		case Z80__ED__NOP__0XED__0XAD:
-			break;
-
 		case Z80__ED__NOP__0XED__0XAE:
-			break;
-
 		case Z80__ED__NOP__0XED__0XAF:
 			break;
 
-		case Z80__ED__LDIR:
-			/* TODO cycle cost is dependent on loop iterations ? */
-			/* TODO interrupts can occur while this instruction is processing */
-			/* FLAGS: H, P and N are cleared, S, Z and C are preserved */
-			do {
-				pokeUnsigned(m_registers.de, peekUnsigned(m_registers.hl));
-				m_registers.de++;
-				m_registers.hl++;
-			} while(--m_registers.bc);
+		// TODO R is always off by 4
+		case Z80__ED__LDIR:     // 0xed 0xb0
+            {
+                // interrupts can occur while this instruction is processing so we can't just implement it as a loop
+                auto value = peekUnsigned(m_registers.hl);
+                pokeUnsigned(m_registers.de, value);
+                value += m_registers.a;
+                --m_registers.bc;
+                ++m_registers.de;
+                ++m_registers.hl;
 
-			Z80_FLAG_H_CLEAR;
-			Z80_FLAG_N_CLEAR;
-			Z80_FLAG_P_CLEAR;
+                if (m_registers.bc) {
+                    // repeat this instruction
+                    m_registers.pc -= 2;
+                    Z80_USE_JUMP_CYCLE_COST;
+                }
+
+                Z80_FLAG_H_CLEAR;
+                Z80_FLAG_N_CLEAR;
+                Z80_FLAG_P_UPDATE(0 != m_registers.bc);
+                Z80_FLAG_F5_UPDATE(value & (Z80_FLAG_F5_MASK >> 4));
+                Z80_FLAG_F3_UPDATE(value & Z80_FLAG_F3_MASK);
+            }
 			break;
 
-		case Z80__ED__CPIR:
-			/* TODO cycle cost is dependent on loop iterations ? */
-			/* TODO interrupts can occur while this instruction is processing */
-			/* FLAGS: N is set, C is unmodified, others by definition
-			 *
-			 * this is identical to CP instruction, except C is unmodified and
-			 * P is currently unknown */
-			{
-				bool flagC = Z80_FLAG_C_ISSET;
+		case Z80__ED__CPIR:     // 0xed 0xb1
+            {
+                // interrupts can occur while this instruction is processing so we can't just implement it as a loop
+                auto value = peekUnsigned(m_registers.hl);
+                UnsignedWord result = m_registers.a - value;
+                --m_registers.bc;
+                ++m_registers.hl;
 
-				do {
-					Z80__CP__INDIRECT_REG16(m_registers.hl);
-					m_registers.hl++;
-				} while(--m_registers.bc);
+                if (0 != result && m_registers.bc) {
+                    // repeat this instruction
+                    m_registers.pc -= 2;
+                    Z80_USE_JUMP_CYCLE_COST;
+                }
 
-				/* TODO not sure if this is the correct P flag behaviour */
-				Z80_FLAG_C_UPDATE(flagC);
-				Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a));
-			}
+                Z80_FLAG_S_UPDATE(result & 0x80);
+                Z80_FLAG_Z_UPDATE(0 == result);
+                Z80_FLAG_H_UPDATE_SUB(m_registers.a, value, result);
+                Z80_FLAG_N_SET;
+                Z80_FLAG_P_UPDATE(0 != m_registers.bc);
+                Z80_FLAG_F5_UPDATE(result & (Z80_FLAG_F5_MASK >> 4));
+                Z80_FLAG_F3_UPDATE(result & Z80_FLAG_F3_MASK);
+            }
 			break;
 
-		case Z80__ED__INIR:
-			/* FLAGS: all preserved */
-			/* TODO */
+		case Z80__ED__INIR:     // 0xed 0xb2
+            {
+                UnsignedByte result;
+                Z80__READ_IO_DEVICES(result, m_registers.bc);
+                pokeUnsigned(m_registers.hl, result);
+                UnsignedByte carryCheck = result + m_registers.c + 1;
+                --m_registers.b;
+                ++m_registers.hl;
+
+                if (0 != m_registers.b) {
+                    // repeat this instruction
+                    m_registers.pc -= 2;
+                    Z80_USE_JUMP_CYCLE_COST;
+                }
+
+                Z80_FLAG_H_UPDATE(carryCheck < result);
+                Z80_FLAG_C_UPDATE(carryCheck < result);
+                Z80_FLAG_P_UPDATE(isEvenParity(static_cast<UnsignedByte>((carryCheck & 0x07) ^ m_registers.b)));
+                Z80_FLAG_Z_UPDATE(0 == m_registers.b);
+                Z80_FLAGS_S53_UPDATE(m_registers.b);
+                Z80_FLAG_N_UPDATE(result & 0x80);
+            }
 			break;
 
-		case Z80__ED__OTIR:
-			/* FLAGS: all preserved */
-			/* TODO */
-			break;
+		case Z80__ED__OTIR:     // 0xed 0xb3
+            {
+                UnsignedByte value = peekUnsigned(m_registers.hl);
+                Z80__WRITE_IO_DEVICES(value, m_registers.bc);
+                --m_registers.b;
+                ++m_registers.hl;
+                UnsignedByte carryCheck = value + m_registers.l;
+
+                if (0 != m_registers.b) {
+                    // repeat this instruction
+                    m_registers.pc -= 2;
+                    Z80_USE_JUMP_CYCLE_COST;
+                }
+
+                Z80_FLAG_H_UPDATE(carryCheck < value);
+                Z80_FLAG_C_UPDATE(carryCheck < value);
+                Z80_FLAG_P_UPDATE(isEvenParity(static_cast<UnsignedByte>((carryCheck & 0x07) ^ m_registers.b)));
+                Z80_FLAG_Z_UPDATE(0 == m_registers.b);
+                Z80_FLAGS_S53_UPDATE(m_registers.b);
+                Z80_FLAG_N_UPDATE(value & 0x80);
+            }
+            break;
 
 		case Z80__ED__NOP__0XED__0XB4:
-			break;
-
 		case Z80__ED__NOP__0XED__0XB5:
-			break;
-
 		case Z80__ED__NOP__0XED__0XB6:
-			break;
-
 		case Z80__ED__NOP__0XED__0XB7:
 			break;
 
+        // TODO R is always off by 4
 		case Z80__ED__LDDR:
-			/* TODO cycle cost is dependent on loop iterations ? */
-			/* TODO interrupts can occur while this instruction is processing */
-			/* FLAGS: H, P and N are cleared, S, Z and C are preserved */
-			do {
-				pokeUnsigned(m_registers.de, peekUnsigned(m_registers.hl));
-				m_registers.de--;
-				m_registers.hl--;
-			} while(--m_registers.bc);
+            {
+                // interrupts can occur while this instruction is processing so we can't just implement it as a loop
+                auto value = peekUnsigned(m_registers.hl);
+                pokeUnsigned(m_registers.de, value);
+                value += m_registers.a;
+                --m_registers.bc;
+                --m_registers.de;
+                --m_registers.hl;
 
-			Z80_FLAG_H_CLEAR;
-			Z80_FLAG_N_CLEAR;
-			Z80_FLAG_P_CLEAR;
+                if (m_registers.bc) {
+                    // repeat this instruction
+                    m_registers.pc -= 2;
+                    Z80_USE_JUMP_CYCLE_COST;
+                }
+
+                Z80_FLAG_H_CLEAR;
+                Z80_FLAG_N_CLEAR;
+                Z80_FLAG_P_UPDATE(0 != m_registers.bc);
+                Z80_FLAG_F5_UPDATE(value & (Z80_FLAG_F5_MASK >> 4));
+                Z80_FLAG_F3_UPDATE(value & Z80_FLAG_F3_MASK);
+            }
 			break;
 
-		case Z80__ED__CPDR:
-			/* TODO cycle cost is dependent on loop iterations ? */
-			/* TODO interrupts can occur while this instruction is processing */
-			/* FLAGS: N is set, C is unmodified, others by definition
-			 *
-			 * this is identical to CP instruction, except C is unmodified and
-			 * P is currently unknown */
-			{
-				bool flagC = Z80_FLAG_C_ISSET;
+		case Z80__ED__CPDR:     //0xed 0xb9
+            {
+                // interrupts can occur while this instruction is processing so we can't just implement it as a loop
+                auto value = peekUnsigned(m_registers.hl);
+                UnsignedWord result = m_registers.a - value;
+                --m_registers.bc;
+                --m_registers.hl;
 
-				do {
-					Z80__CP__INDIRECT_REG16(m_registers.hl);
-					m_registers.hl--;
-				} while(--m_registers.bc);
+                if (0 != result && m_registers.bc) {
+                    // repeat this instruction
+                    m_registers.pc -= 2;
+                    Z80_USE_JUMP_CYCLE_COST;
+                }
 
-				/* TODO not sure if this is the correct P flag behaviour */
-				Z80_FLAG_C_UPDATE(flagC);
-				Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a));
-			}
+                Z80_FLAG_S_UPDATE(result & 0x80);
+                Z80_FLAG_Z_UPDATE(0 == result);
+                Z80_FLAG_H_UPDATE_SUB(m_registers.a, value, result);
+                Z80_FLAG_N_SET;
+                Z80_FLAG_P_UPDATE(0 != m_registers.bc);
+                Z80_FLAG_F5_UPDATE(result & (Z80_FLAG_F5_MASK >> 4));
+                Z80_FLAG_F3_UPDATE(result & Z80_FLAG_F3_MASK);
+            }
 			break;
 
-		case Z80__ED__INDR:
-			/* FLAGS: all preserved */
-			/* TODO */
-			break;
+		case Z80__ED__INDR:     //0xed 0xba
+        {
+            UnsignedByte result;
+            Z80__READ_IO_DEVICES(result, m_registers.bc);
+            pokeUnsigned(m_registers.hl, result);
+            UnsignedByte carryCheck = result + m_registers.c - 1;
+            --m_registers.b;
+            --m_registers.hl;
 
-		case Z80__ED__OTDR:
-			/* FLAGS: all preserved */
-			/* TODO */
-			break;
+            if (0 != m_registers.b) {
+                // repeat this instruction
+                m_registers.pc -= 2;
+                Z80_USE_JUMP_CYCLE_COST;
+            }
+
+            Z80_FLAG_H_UPDATE(carryCheck < result);
+            Z80_FLAG_C_UPDATE(carryCheck < result);
+            Z80_FLAG_P_UPDATE(isEvenParity(static_cast<UnsignedByte>((carryCheck & 0x07) ^ m_registers.b)));
+            Z80_FLAG_Z_UPDATE(0 == m_registers.b);
+            Z80_FLAGS_S53_UPDATE(m_registers.b);
+            Z80_FLAG_N_UPDATE(result & 0x80);
+        }
+        break;
+
+		case Z80__ED__OTDR:     // 0xed 0xbb
+        {
+            UnsignedByte value = peekUnsigned(m_registers.hl);
+            --m_registers.b;
+            Z80__WRITE_IO_DEVICES(value, m_registers.bc);
+            --m_registers.hl;
+            UnsignedByte carryCheck = value + m_registers.l;
+
+            if (0 != m_registers.b) {
+                // repeat this instruction
+                m_registers.pc -= 2;
+                Z80_USE_JUMP_CYCLE_COST;
+            }
+
+            Z80_FLAG_H_UPDATE(carryCheck < value);
+            Z80_FLAG_C_UPDATE(carryCheck < value);
+            Z80_FLAG_P_UPDATE(isEvenParity(static_cast<UnsignedByte>((carryCheck & 0x07) ^ m_registers.b)));
+            Z80_FLAG_Z_UPDATE(0 == m_registers.b);
+            Z80_FLAGS_S53_UPDATE(m_registers.b);
+            Z80_FLAG_N_UPDATE(value & 0x80);
+        }
+        break;
 
 		case Z80__ED__NOP__0XED__0XBC:
-			break;
-
 		case Z80__ED__NOP__0XED__0XBD:
-			break;
-
 		case Z80__ED__NOP__0XED__0XBE:
-			break;
-
 		case Z80__ED__NOP__0XED__0XBF:
-			break;
-
 		case Z80__ED__NOP__0XED__0XC0:
-			break;
-
-		case Z80__ED__NOP__0XED__0XC1:
-			break;
-
-		case Z80__ED__NOP__0XED__0XC2:
-			break;
-
-		case Z80__ED__NOP__0XED__0XC3:
-			break;
-
-		case Z80__ED__NOP__0XED__0XC4:
-			break;
-
-		case Z80__ED__NOP__0XED__0XC5:
-			break;
-
-		case Z80__ED__NOP__0XED__0XC6:
-			break;
-
-		case Z80__ED__NOP__0XED__0XC7:
-			break;
-
-		case Z80__ED__NOP__0XED__0XC8:
-			break;
-
-		case Z80__ED__NOP__0XED__0XC9:
-			break;
-
-		case Z80__ED__NOP__0XED__0XCA:
-			break;
-
-		case Z80__ED__NOP__0XED__0XCB:
-			break;
-
-		case Z80__ED__NOP__0XED__0XCC:
-			break;
-
-		case Z80__ED__NOP__0XED__0XCD:
-			break;
-
-		case Z80__ED__NOP__0XED__0XCE:
-			break;
-
-		case Z80__ED__NOP__0XED__0XCF:
-			break;
-
-		case Z80__ED__NOP__0XED__0XD0:
-			break;
-
-		case Z80__ED__NOP__0XED__0XD1:
-			break;
-
-		case Z80__ED__NOP__0XED__0XD2:
-			break;
-
-		case Z80__ED__NOP__0XED__0XD3:
-			break;
-
-		case Z80__ED__NOP__0XED__0XD4:
-			break;
-
-		case Z80__ED__NOP__0XED__0XD5:
-			break;
-
-		case Z80__ED__NOP__0XED__0XD6:
-			break;
-
-		case Z80__ED__NOP__0XED__0XD7:
-			break;
-
-		case Z80__ED__NOP__0XED__0XD8:
-			break;
-
-		case Z80__ED__NOP__0XED__0XD9:
-			break;
-
-		case Z80__ED__NOP__0XED__0XDA:
-			break;
-
-		case Z80__ED__NOP__0XED__0XDB:
-			break;
-
-		case Z80__ED__NOP__0XED__0XDC:
-			break;
-
-		case Z80__ED__NOP__0XED__0XDD:
-			break;
-
-		case Z80__ED__NOP__0XED__0XDE:
-			break;
-
-		case Z80__ED__NOP__0XED__0XDF:
-			break;
-
-		case Z80__ED__NOP__0XED__0XE0:
-			break;
-
-		case Z80__ED__NOP__0XED__0XE1:
-			break;
-
-		case Z80__ED__NOP__0XED__0XE2:
-			break;
-
-		case Z80__ED__NOP__0XED__0XE3:
-			break;
-
-		case Z80__ED__NOP__0XED__0XE4:
-			break;
-
-		case Z80__ED__NOP__0XED__0XE5:
-			break;
-
-		case Z80__ED__NOP__0XED__0XE6:
-			break;
-
-		case Z80__ED__NOP__0XED__0XE7:
-			break;
-
-		case Z80__ED__NOP__0XED__0XE8:
-			break;
-
-		case Z80__ED__NOP__0XED__0XE9:
-			break;
-
-		case Z80__ED__NOP__0XED__0XEA:
-			break;
-
-		case Z80__ED__NOP__0XED__0XEB:
-			break;
-
-		case Z80__ED__NOP__0XED__0XEC:
-			break;
-
-		case Z80__ED__NOP__0XED__0XED:
-			break;
-
-		case Z80__ED__NOP__0XED__0XEE:
-			break;
-
-		case Z80__ED__NOP__0XED__0XEF:
-			break;
-
-		case Z80__ED__NOP__0XED__0XF0:
-			break;
-
-		case Z80__ED__NOP__0XED__0XF1:
-			break;
-
-		case Z80__ED__NOP__0XED__0XF2:
-			break;
-
-		case Z80__ED__NOP__0XED__0XF3:
-			break;
-
-		case Z80__ED__NOP__0XED__0XF4:
-			break;
-
-		case Z80__ED__NOP__0XED__0XF5:
-			break;
-
-		case Z80__ED__NOP__0XED__0XF6:
-			break;
-
-		case Z80__ED__NOP__0XED__0XF7:
-			break;
-
-		case Z80__ED__NOP__0XED__0XF8:
-			break;
-
-		case Z80__ED__NOP__0XED__0XF9:
-			break;
-
-		case Z80__ED__NOP__0XED__0XFA:
-			break;
-
-		case Z80__ED__NOP__0XED__0XFB:
-			break;
-
-		case Z80__ED__NOP__0XED__0XFC:
-			break;
-
-		case Z80__ED__NOP__0XED__0XFD:
-			break;
-
-		case Z80__ED__NOP__0XED__0XFE:
-			break;
-
-		case Z80__ED__NOP__0XED__0XFF:
+        case Z80__ED__NOP__0XED__0XC1:
+        case Z80__ED__NOP__0XED__0XC2:
+        case Z80__ED__NOP__0XED__0XC3:
+        case Z80__ED__NOP__0XED__0XC4:
+        case Z80__ED__NOP__0XED__0XC5:
+        case Z80__ED__NOP__0XED__0XC6:
+        case Z80__ED__NOP__0XED__0XC7:
+        case Z80__ED__NOP__0XED__0XC8:
+        case Z80__ED__NOP__0XED__0XC9:
+        case Z80__ED__NOP__0XED__0XCA:
+        case Z80__ED__NOP__0XED__0XCB:
+        case Z80__ED__NOP__0XED__0XCC:
+        case Z80__ED__NOP__0XED__0XCD:
+        case Z80__ED__NOP__0XED__0XCE:
+        case Z80__ED__NOP__0XED__0XCF:
+        case Z80__ED__NOP__0XED__0XD0:
+        case Z80__ED__NOP__0XED__0XD1:
+        case Z80__ED__NOP__0XED__0XD2:
+        case Z80__ED__NOP__0XED__0XD3:
+        case Z80__ED__NOP__0XED__0XD4:
+        case Z80__ED__NOP__0XED__0XD5:
+        case Z80__ED__NOP__0XED__0XD6:
+        case Z80__ED__NOP__0XED__0XD7:
+        case Z80__ED__NOP__0XED__0XD8:
+        case Z80__ED__NOP__0XED__0XD9:
+        case Z80__ED__NOP__0XED__0XDA:
+        case Z80__ED__NOP__0XED__0XDB:
+        case Z80__ED__NOP__0XED__0XDC:
+        case Z80__ED__NOP__0XED__0XDD:
+        case Z80__ED__NOP__0XED__0XDE:
+        case Z80__ED__NOP__0XED__0XDF:
+        case Z80__ED__NOP__0XED__0XE0:
+        case Z80__ED__NOP__0XED__0XE1:
+        case Z80__ED__NOP__0XED__0XE2:
+        case Z80__ED__NOP__0XED__0XE3:
+        case Z80__ED__NOP__0XED__0XE4:
+        case Z80__ED__NOP__0XED__0XE5:
+        case Z80__ED__NOP__0XED__0XE6:
+        case Z80__ED__NOP__0XED__0XE7:
+        case Z80__ED__NOP__0XED__0XE8:
+        case Z80__ED__NOP__0XED__0XE9:
+        case Z80__ED__NOP__0XED__0XEA:
+        case Z80__ED__NOP__0XED__0XEB:
+        case Z80__ED__NOP__0XED__0XEC:
+        case Z80__ED__NOP__0XED__0XED:
+        case Z80__ED__NOP__0XED__0XEE:
+        case Z80__ED__NOP__0XED__0XEF:
+        case Z80__ED__NOP__0XED__0XF0:
+        case Z80__ED__NOP__0XED__0XF1:
+        case Z80__ED__NOP__0XED__0XF2:
+        case Z80__ED__NOP__0XED__0XF3:
+        case Z80__ED__NOP__0XED__0XF4:
+        case Z80__ED__NOP__0XED__0XF5:
+        case Z80__ED__NOP__0XED__0XF6:
+        case Z80__ED__NOP__0XED__0XF7:
+        case Z80__ED__NOP__0XED__0XF8:
+        case Z80__ED__NOP__0XED__0XF9:
+        case Z80__ED__NOP__0XED__0XFA:
+        case Z80__ED__NOP__0XED__0XFB:
+        case Z80__ED__NOP__0XED__0XFC:
+        case Z80__ED__NOP__0XED__0XFD:
+        case Z80__ED__NOP__0XED__0XFE:
+        case Z80__ED__NOP__0XED__0XFF:
 			break;
 
 		default:
+		    // TODO we should throw here - it should never happen
 			std::cerr << "unhandled opcode: 0xed 0x" << std::hex << (*instruction) << std::endl;
 			Z80_INVALID_INSTRUCTION;
 			break;
@@ -5041,209 +4751,208 @@ bool Z80::Z80::executeDdOrFdInstruction(Z80::Z80::UnsignedWord & reg, const Z80:
 
 		/* the following are all (expensive) replicas of plain instructions, so
 		 * defer to the plain opcode executor method */
-		case Z80__DD_OR_FD__NOP: /*  0x00 */
-		case Z80__DD_OR_FD__LD__BC__NN: /*  0x01 */
-		case Z80__DD_OR_FD__LD__INDIRECT_BC__A: /*  0x02 */
-		case Z80__DD_OR_FD__INC__BC: /*  0x03 */
-		case Z80__DD_OR_FD__INC__B: /*  0x04 */
-		case Z80__DD_OR_FD__DEC__B: /*  0x05 */
-		case Z80__DD_OR_FD__LD__B__N: /*  0x06 */
-		case Z80__DD_OR_FD__RLCA: /*  0x07 */
+		case Z80__DD_OR_FD__NOP:                // 0x00
+		case Z80__DD_OR_FD__LD__BC__NN:         // 0x01
+		case Z80__DD_OR_FD__LD__INDIRECT_BC__A: // 0x02
+		case Z80__DD_OR_FD__INC__BC:            // 0x03
+		case Z80__DD_OR_FD__INC__B:             // 0x04
+		case Z80__DD_OR_FD__DEC__B:             // 0x05
+		case Z80__DD_OR_FD__LD__B__N:           // 0x06
+		case Z80__DD_OR_FD__RLCA:               // 0x07
 
-		case Z80__DD_OR_FD__EX__AF__AF_SHADOW: /*  0x08 */
-		case Z80__DD_OR_FD__LD__A__INDIRECT_BC: /*  0x0a */
-		case Z80__DD_OR_FD__DEC__BC: /*  0x0b */
-		case Z80__DD_OR_FD__INC__C: /*  0x0c */
-		case Z80__DD_OR_FD__DEC__C: /*  0x0d */
-		case Z80__DD_OR_FD__LD__C__N: /*  0x0e */
-		case Z80__DD_OR_FD__RRCA: /*  0x0f */
+		case Z80__DD_OR_FD__EX__AF__AF_SHADOW:  // 0x08
+		case Z80__DD_OR_FD__LD__A__INDIRECT_BC: // 0x0a
+		case Z80__DD_OR_FD__DEC__BC:            // 0x0b
+		case Z80__DD_OR_FD__INC__C:             // 0x0c
+		case Z80__DD_OR_FD__DEC__C:             // 0x0d
+		case Z80__DD_OR_FD__LD__C__N:           // 0x0e
+		case Z80__DD_OR_FD__RRCA:               // 0x0f
 
-		case Z80__DD_OR_FD__DJNZ__d: /*  0x10 */
-		case Z80__DD_OR_FD__LD__DE__NN: /*  0x11#define  */
-		case Z80__DD_OR_FD__LD__INDIRECT_DE__A: /*  0x12 */
-		case Z80__DD_OR_FD__INC__DE: /*  0x13 */
-		case Z80__DD_OR_FD__INC__D: /*  0x14 */
-		case Z80__DD_OR_FD__DEC__D: /*  0x15 */
-		case Z80__DD_OR_FD__LD__D__N: /*  0x16 */
-		case Z80__DD_OR_FD__RLA: /*  0x17 */
+		case Z80__DD_OR_FD__DJNZ__d:            // 0x10
+		case Z80__DD_OR_FD__LD__DE__NN:         // 0x11
+		case Z80__DD_OR_FD__LD__INDIRECT_DE__A: // 0x12
+		case Z80__DD_OR_FD__INC__DE:            // 0x13
+		case Z80__DD_OR_FD__INC__D:             // 0x14
+		case Z80__DD_OR_FD__DEC__D:             // 0x15
+		case Z80__DD_OR_FD__LD__D__N:           // 0x16
+		case Z80__DD_OR_FD__RLA:                // 0x17
 
-		case Z80__DD_OR_FD__JR__d: /*  0x18 */
-		case Z80__DD_OR_FD__LD__A__INDIRECT_DE: /*  0x1a */
-		case Z80__DD_OR_FD__DEC__DE: /*  0x1b */
-		case Z80__DD_OR_FD__INC__E: /*  0x1c */
-		case Z80__DD_OR_FD__DEC__E: /*  0x1d */
-		case Z80__DD_OR_FD__LD__E__N: /*  0x1e */
-		case Z80__DD_OR_FD__RRA: /*  0x1f */
+		case Z80__DD_OR_FD__JR__d:              // 0x18
+		case Z80__DD_OR_FD__LD__A__INDIRECT_DE: // 0x1a
+		case Z80__DD_OR_FD__DEC__DE:            // 0x1b
+		case Z80__DD_OR_FD__INC__E:             // 0x1c
+		case Z80__DD_OR_FD__DEC__E:             // 0x1d
+		case Z80__DD_OR_FD__LD__E__N:           // 0x1e
+		case Z80__DD_OR_FD__RRA:                // 0x1f
 
-		case Z80__DD_OR_FD__JR__NZ__d: /*  0x20 */
-		case Z80__DD_OR_FD__DAA: /*  0x27 */
+		case Z80__DD_OR_FD__JR__NZ__d:          // 0x20
+		case Z80__DD_OR_FD__DAA:                // 0x27
 
-		case Z80__DD_OR_FD__JR__Z__d: /*  0x28 */
-		case Z80__DD_OR_FD__CPL: /*  0x2f */
+		case Z80__DD_OR_FD__JR__Z__d:           // 0x28
+		case Z80__DD_OR_FD__CPL:                // 0x2f
 
-		case Z80__DD_OR_FD__JR__NC__d: /*  0x30 */
-		case Z80__DD_OR_FD__LD__SP__NN: /*  0x31 */
-		case Z80__DD_OR_FD__LD__INDIRECT_NN__A: /*  0x32 */
-		case Z80__DD_OR_FD__INC__SP: /*  0x33 */
-		case Z80__DD_OR_FD__SCF: /*  0x37 */
+		case Z80__DD_OR_FD__JR__NC__d:          // 0x30
+		case Z80__DD_OR_FD__LD__SP__NN:         // 0x31
+		case Z80__DD_OR_FD__LD__INDIRECT_NN__A: // 0x32
+		case Z80__DD_OR_FD__INC__SP:            // 0x33
+		case Z80__DD_OR_FD__SCF:                // 0x37
 
-		case Z80__DD_OR_FD__JR__C__d: /*  0x38 */
-		case Z80__DD_OR_FD__LD__A__INDIRECT_NN: /*  0x3a */
-		case Z80__DD_OR_FD__DEC__SP: /*  0x3b */
-		case Z80__DD_OR_FD__INC__A: /*  0x3c */
-		case Z80__DD_OR_FD__DEC__A: /*  0x3d */
-		case Z80__DD_OR_FD__LD__A__N: /*  0x3e */
-		case Z80__DD_OR_FD__CCF: /*  0x3f */
+		case Z80__DD_OR_FD__JR__C__d:           // 0x38
+		case Z80__DD_OR_FD__LD__A__INDIRECT_NN: // 0x3a
+		case Z80__DD_OR_FD__DEC__SP:            // 0x3b
+		case Z80__DD_OR_FD__INC__A:             // 0x3c
+		case Z80__DD_OR_FD__DEC__A:             // 0x3d
+		case Z80__DD_OR_FD__LD__A__N:           // 0x3e
+		case Z80__DD_OR_FD__CCF:                // 0x3f
 
-		case Z80__DD_OR_FD__LD__B__B: /*  0x40 */
-		case Z80__DD_OR_FD__LD__B__C: /*  0x41 */
-		case Z80__DD_OR_FD__LD__B__D: /*  0x42 */
-		case Z80__DD_OR_FD__LD__B__E: /*  0x43 */
-		case Z80__DD_OR_FD__LD__B__A: /*  0x47 */
+		case Z80__DD_OR_FD__LD__B__B:           // 0x40
+		case Z80__DD_OR_FD__LD__B__C:           // 0x41
+		case Z80__DD_OR_FD__LD__B__D:           // 0x42
+		case Z80__DD_OR_FD__LD__B__E:           // 0x43
+		case Z80__DD_OR_FD__LD__B__A:           // 0x47
 
-		case Z80__DD_OR_FD__LD__C__B: /*  0x48 */
-		case Z80__DD_OR_FD__LD__C__C: /*  0x49 */
-		case Z80__DD_OR_FD__LD__C__D: /*  0x4a */
-		case Z80__DD_OR_FD__LD__C__E: /*  0x4b */
-		case Z80__DD_OR_FD__LD__C__A: /*  0x4f */
+		case Z80__DD_OR_FD__LD__C__B:           // 0x48
+		case Z80__DD_OR_FD__LD__C__C:           // 0x49
+		case Z80__DD_OR_FD__LD__C__D:           // 0x4a
+		case Z80__DD_OR_FD__LD__C__E:           // 0x4b
+		case Z80__DD_OR_FD__LD__C__A:           // 0x4f
 
-		case Z80__DD_OR_FD__LD__D__B: /*  0x50 */
-		case Z80__DD_OR_FD__LD__D__C: /*  0x51 */
-		case Z80__DD_OR_FD__LD__D__D: /*  0x52 */
-		case Z80__DD_OR_FD__LD__D__E: /*  0x53 */
-		case Z80__DD_OR_FD__LD__D__A: /*  0x57 */
+		case Z80__DD_OR_FD__LD__D__B:           // 0x50
+		case Z80__DD_OR_FD__LD__D__C:           // 0x51
+		case Z80__DD_OR_FD__LD__D__D:           // 0x52
+		case Z80__DD_OR_FD__LD__D__E:           // 0x53
+		case Z80__DD_OR_FD__LD__D__A:           // 0x57
 
-		case Z80__DD_OR_FD__LD__E__B: /*  0x58 */
-		case Z80__DD_OR_FD__LD__E__C: /*  0x59 */
-		case Z80__DD_OR_FD__LD__E__D: /*  0x5a */
-		case Z80__DD_OR_FD__LD__E__E: /*  0x5b */
-		case Z80__DD_OR_FD__LD__E__A: /*  0x5f */
+		case Z80__DD_OR_FD__LD__E__B:           // 0x58
+		case Z80__DD_OR_FD__LD__E__C:           // 0x59
+		case Z80__DD_OR_FD__LD__E__D:           // 0x5a
+		case Z80__DD_OR_FD__LD__E__E:           // 0x5b
+		case Z80__DD_OR_FD__LD__E__A:           // 0x5f
 
-		case Z80__DD_OR_FD__HALT: /*  0x76 */
+		case Z80__DD_OR_FD__HALT:               // 0x76
 
-		case Z80__DD_OR_FD__LD__A__B: /*  0x78 */
-		case Z80__DD_OR_FD__LD__A__C: /*  0x79 */
-		case Z80__DD_OR_FD__LD__A__D: /*  0x7a */
-		case Z80__DD_OR_FD__LD__A__E: /*  0x7b */
-		case Z80__DD_OR_FD__LD__A__A: /*  0x7f */
+		case Z80__DD_OR_FD__LD__A__B:           // 0x78
+		case Z80__DD_OR_FD__LD__A__C:           // 0x79
+		case Z80__DD_OR_FD__LD__A__D:           // 0x7a
+		case Z80__DD_OR_FD__LD__A__E:           // 0x7b
+		case Z80__DD_OR_FD__LD__A__A:           // 0x7f
 
-		case Z80__DD_OR_FD__ADD__A__B: /*  0x80 */
-		case Z80__DD_OR_FD__ADD__A__C: /*  0x81 */
-		case Z80__DD_OR_FD__ADD__A__D: /*  0x82 */
-		case Z80__DD_OR_FD__ADD__A__E: /*  0x83 */
-		case Z80__DD_OR_FD__ADD__A__A: /*  0x87 */
+		case Z80__DD_OR_FD__ADD__A__B:          // 0x80
+		case Z80__DD_OR_FD__ADD__A__C:          // 0x81
+		case Z80__DD_OR_FD__ADD__A__D:          // 0x82
+		case Z80__DD_OR_FD__ADD__A__E:          // 0x83
+		case Z80__DD_OR_FD__ADD__A__A:          // 0x87
 
-		case Z80__DD_OR_FD__ADC__A__B: /*  0x88 */
-		case Z80__DD_OR_FD__ADC__A__C: /*  0x89 */
-		case Z80__DD_OR_FD__ADC__A__D: /*  0x8a */
-		case Z80__DD_OR_FD__ADC__A__E: /*  0x8b */
-		case Z80__DD_OR_FD__ADC__A__A: /*  0x8f */
+		case Z80__DD_OR_FD__ADC__A__B:          // 0x88
+		case Z80__DD_OR_FD__ADC__A__C:          // 0x89
+		case Z80__DD_OR_FD__ADC__A__D:          // 0x8a
+		case Z80__DD_OR_FD__ADC__A__E:          // 0x8b
+		case Z80__DD_OR_FD__ADC__A__A:          // 0x8f
 
-		case Z80__DD_OR_FD__SUB__B: /*  0x90 */
-		case Z80__DD_OR_FD__SUB__C: /*  0x91 */
-		case Z80__DD_OR_FD__SUB__D: /*  0x92 */
-		case Z80__DD_OR_FD__SUB__E: /*  0x93 */
-		case Z80__DD_OR_FD__SUB__A: /*  0x97 */
+		case Z80__DD_OR_FD__SUB__B:             // 0x90
+		case Z80__DD_OR_FD__SUB__C:             // 0x91
+		case Z80__DD_OR_FD__SUB__D:             // 0x92
+		case Z80__DD_OR_FD__SUB__E:             // 0x93
+		case Z80__DD_OR_FD__SUB__A:             // 0x97
 
-		case Z80__DD_OR_FD__SBC__A__B: /*  0x98 */
-		case Z80__DD_OR_FD__SBC__A__C: /*  0x99 */
-		case Z80__DD_OR_FD__SBC__A__D: /*  0x9a */
-		case Z80__DD_OR_FD__SBC__A__E: /*  0x9b */
-		case Z80__DD_OR_FD__SBC__A__A: /*  0x9f */
+		case Z80__DD_OR_FD__SBC__A__B:          // 0x98
+		case Z80__DD_OR_FD__SBC__A__C:          // 0x99
+		case Z80__DD_OR_FD__SBC__A__D:          // 0x9a
+		case Z80__DD_OR_FD__SBC__A__E:          // 0x9b
+		case Z80__DD_OR_FD__SBC__A__A:          // 0x9f
 
-		case Z80__DD_OR_FD__AND__B: /*  0xa0 */
-		case Z80__DD_OR_FD__AND__C: /*  0xa1 */
-		case Z80__DD_OR_FD__AND__D: /*  0xa2 */
-		case Z80__DD_OR_FD__AND__E: /*  0xa3 */
-		case Z80__DD_OR_FD__AND__A: /*  0xa7 */
+		case Z80__DD_OR_FD__AND__B:             // 0xa0
+		case Z80__DD_OR_FD__AND__C:             // 0xa1
+		case Z80__DD_OR_FD__AND__D:             // 0xa2
+		case Z80__DD_OR_FD__AND__E:             // 0xa3
+		case Z80__DD_OR_FD__AND__A:             // 0xa7
 
-		case Z80__DD_OR_FD__XOR__B: /*  0xa8 */
-		case Z80__DD_OR_FD__XOR__C: /*  0xa9 */
-		case Z80__DD_OR_FD__XOR__D: /*  0xaa */
-		case Z80__DD_OR_FD__XOR__E: /*  0xab */
-		case Z80__DD_OR_FD__XOR__A: /*  0xaf */
+		case Z80__DD_OR_FD__XOR__B:             // 0xa8
+		case Z80__DD_OR_FD__XOR__C:             // 0xa9
+		case Z80__DD_OR_FD__XOR__D:             // 0xaa
+		case Z80__DD_OR_FD__XOR__E:             // 0xab
+		case Z80__DD_OR_FD__XOR__A:             // 0xaf
 
-		case Z80__DD_OR_FD__OR__B: /*  0xb0 */
-		case Z80__DD_OR_FD__OR__C: /*  0xb1 */
-		case Z80__DD_OR_FD__OR__D: /*  0xb2 */
-		case Z80__DD_OR_FD__OR__E: /*  0xb3 */
-		case Z80__DD_OR_FD__OR__A: /*  0xb7 */
+		case Z80__DD_OR_FD__OR__B:              // 0xb0
+		case Z80__DD_OR_FD__OR__C:              // 0xb1
+		case Z80__DD_OR_FD__OR__D:              // 0xb2
+		case Z80__DD_OR_FD__OR__E:              // 0xb3
+		case Z80__DD_OR_FD__OR__A:              // 0xb7
 
-		case Z80__DD_OR_FD__CP__B: /*  0xb8 */
-		case Z80__DD_OR_FD__CP__C: /*  0xb9 */
-		case Z80__DD_OR_FD__CP__D: /*  0xba */
-		case Z80__DD_OR_FD__CP__E: /*  0xbb */
-		case Z80__DD_OR_FD__CP__A: /*  0xbf */
+		case Z80__DD_OR_FD__CP__B:              // 0xb8
+		case Z80__DD_OR_FD__CP__C:              // 0xb9
+		case Z80__DD_OR_FD__CP__D:              // 0xba
+		case Z80__DD_OR_FD__CP__E:              // 0xbb
+		case Z80__DD_OR_FD__CP__A:              // 0xbf
 
-		case Z80__DD_OR_FD__RET__NZ: /*  0xc0 */
-		case Z80__DD_OR_FD__POP__BC: /*  0xc1 */
-		case Z80__DD_OR_FD__JP__NZ__NN: /*  0xc2 */
-		case Z80__DD_OR_FD__JP__NN: /*  0xc3 */
-		case Z80__DD_OR_FD__CALL__NZ__NN: /*  0xc4 */
-		case Z80__DD_OR_FD__PUSH__BC: /*  0xc5 */
-		case Z80__DD_OR_FD__ADD__A__N: /*  0xc6 */
-		case Z80__DD_OR_FD__RST__00: /*  0xc7 */
+		case Z80__DD_OR_FD__RET__NZ:            // 0xc0
+		case Z80__DD_OR_FD__POP__BC:            // 0xc1
+		case Z80__DD_OR_FD__JP__NZ__NN:         // 0xc2
+		case Z80__DD_OR_FD__JP__NN:             // 0xc3
+		case Z80__DD_OR_FD__CALL__NZ__NN:       // 0xc4
+		case Z80__DD_OR_FD__PUSH__BC:           // 0xc5
+		case Z80__DD_OR_FD__ADD__A__N:          // 0xc6
+		case Z80__DD_OR_FD__RST__00:            // 0xc7
 
-		case Z80__DD_OR_FD__RET__Z: /*  0xc8 */
-		case Z80__DD_OR_FD__RET: /*  0xc9 */
-		case Z80__DD_OR_FD__JP__Z__NN: /*  0xca */
-		case Z80__DD_OR_FD__CALL__Z__NN: /*  0xcc */
-		case Z80__DD_OR_FD__CALL__NN: /*  0xcd */
-		case Z80__DD_OR_FD__ADC__A__N: /*  0xce */
-		case Z80__DD_OR_FD__RST__08: /*  0xcf */
+		case Z80__DD_OR_FD__RET__Z:             // 0xc8
+		case Z80__DD_OR_FD__RET:                // 0xc9
+		case Z80__DD_OR_FD__JP__Z__NN:          // 0xca
+		case Z80__DD_OR_FD__CALL__Z__NN:        // 0xcc
+		case Z80__DD_OR_FD__CALL__NN:           // 0xcd
+		case Z80__DD_OR_FD__ADC__A__N:          // 0xce
+		case Z80__DD_OR_FD__RST__08:            // 0xcf
 
-		case Z80__DD_OR_FD__RET__NC: /*  0xd0 */
-		case Z80__DD_OR_FD__POP__DE: /*  0xd1 */
-		case Z80__DD_OR_FD__JP__NC__NN: /*  0xd2 */
-		case Z80__DD_OR_FD__OUT__INDIRECT_N__A: /*  0xd3 */
-		case Z80__DD_OR_FD__CALL__NC__NN: /*  0xd4 */
-		case Z80__DD_OR_FD__PUSH__DE: /*  0xd5 */
-		case Z80__DD_OR_FD__SUB__N: /*  0xd6 */
-		case Z80__DD_OR_FD__RST__10: /*  0xd7 */
+		case Z80__DD_OR_FD__RET__NC:            // 0xd0
+		case Z80__DD_OR_FD__POP__DE:            // 0xd1
+		case Z80__DD_OR_FD__JP__NC__NN:         // 0xd2
+		case Z80__DD_OR_FD__OUT__INDIRECT_N__A: // 0xd3
+		case Z80__DD_OR_FD__CALL__NC__NN:       // 0xd4
+		case Z80__DD_OR_FD__PUSH__DE:           // 0xd5
+		case Z80__DD_OR_FD__SUB__N:             // 0xd6
+		case Z80__DD_OR_FD__RST__10:            // 0xd7
 
-		case Z80__DD_OR_FD__RET__C: /*  0xd8 */
-		case Z80__DD_OR_FD__EXX: /*  0xd9 */
-		case Z80__DD_OR_FD__JP__C__NN: /*  0xda */
-		case Z80__DD_OR_FD__IN__A__INDIRECT_N: /*  0xdb */
-		case Z80__DD_OR_FD__CALL__C__NN: /*  0xdc */
-		case Z80__DD_OR_FD__PREFIX__DD: /*  0xdd */
-		case Z80__DD_OR_FD__SBC__A__N: /*  0xde */
-		case Z80__DD_OR_FD__RST__18: /*  0xdf */
+		case Z80__DD_OR_FD__RET__C:             // 0xd8
+		case Z80__DD_OR_FD__EXX:                // 0xd9
+		case Z80__DD_OR_FD__JP__C__NN:          // 0xda
+		case Z80__DD_OR_FD__IN__A__INDIRECT_N:  // 0xdb
+		case Z80__DD_OR_FD__CALL__C__NN:        // 0xdc
+		case Z80__DD_OR_FD__PREFIX__DD:         // 0xdd
+		case Z80__DD_OR_FD__SBC__A__N:          // 0xde
+		case Z80__DD_OR_FD__RST__18:            // 0xdf
 
-		case Z80__DD_OR_FD__RET__PO: /*  0xe0 */
-		case Z80__DD_OR_FD__JP__PO__NN: /*  0xe2 */
-		case Z80__DD_OR_FD__CALL__PO__NN: /*  0xe4 */
-		case Z80__DD_OR_FD__AND__N: /*  0xe6 */
-		case Z80__DD_OR_FD__RST__20: /*  0xe7 */
+		case Z80__DD_OR_FD__RET__PO:            // 0xe0
+		case Z80__DD_OR_FD__JP__PO__NN:         // 0xe2
+		case Z80__DD_OR_FD__CALL__PO__NN:       // 0xe4
+		case Z80__DD_OR_FD__AND__N:             // 0xe6
+		case Z80__DD_OR_FD__RST__20:            // 0xe7
 
-		case Z80__DD_OR_FD__RET__PE: /*  0xe8 */
-		case Z80__DD_OR_FD__JP__PE__NN: /*  0xea */
-		case Z80__DD_OR_FD__EX__DE__HL: /*  0xeb */
-		case Z80__DD_OR_FD__CALL__PE__NN: /*  0xec */
-		case Z80__DD_OR_FD__PREFIX__ED: /*  0xed */
-		case Z80__DD_OR_FD__XOR__N: /*  0xee */
-		case Z80__DD_OR_FD__RST__28: /*  0xef */
+		case Z80__DD_OR_FD__RET__PE:            // 0xe8
+		case Z80__DD_OR_FD__JP__PE__NN:         // 0xea
+		case Z80__DD_OR_FD__EX__DE__HL:         // 0xeb
+		case Z80__DD_OR_FD__CALL__PE__NN:       // 0xec
+		case Z80__DD_OR_FD__PREFIX__ED:         // 0xed
+		case Z80__DD_OR_FD__XOR__N:             // 0xee
+		case Z80__DD_OR_FD__RST__28:            // 0xef
 
-		case Z80__DD_OR_FD__RET__P: /*  0xf0 */
-		case Z80__DD_OR_FD__POP__AF: /*  0xf1 */
-		case Z80__DD_OR_FD__JP__P__NN: /*  0xf2 */
-		case Z80__DD_OR_FD__DI: /*  0xf3 */
-		case Z80__DD_OR_FD__CALL__P__NN: /*  0xf4 */
-		case Z80__DD_OR_FD__PUSH__AF: /*  0xf5 */
-		case Z80__DD_OR_FD__OR__N: /*  0xf6 */
-		case Z80__DD_OR_FD__RST__30: /*  0xf7 */
+		case Z80__DD_OR_FD__RET__P:             // 0xf0
+		case Z80__DD_OR_FD__POP__AF:            // 0xf1
+		case Z80__DD_OR_FD__JP__P__NN:          // 0xf2
+		case Z80__DD_OR_FD__DI:                 // 0xf3
+		case Z80__DD_OR_FD__CALL__P__NN:        // 0xf4
+		case Z80__DD_OR_FD__PUSH__AF:           // 0xf5
+		case Z80__DD_OR_FD__OR__N:              // 0xf6
+		case Z80__DD_OR_FD__RST__30:            // 0xf7
 
-		case Z80__DD_OR_FD__RET__M: /*  0xf8 */
-		case Z80__DD_OR_FD__JP__M__NN: /*  0xfa */
-		case Z80__DD_OR_FD__EI: /*  0xfb */
-		case Z80__DD_OR_FD__CALL__M__NN: /*  0xfc */
-		case Z80__DD_OR_FD__PREFIX__FD: /*  0xfd */
-		case Z80__DD_OR_FD__CP__N: /*  0xfe */
-		case Z80__DD_OR_FD__RST__38: /*  0xff */
+		case Z80__DD_OR_FD__RET__M:             // 0xf8
+		case Z80__DD_OR_FD__JP__M__NN:          // 0xfa
+		case Z80__DD_OR_FD__EI:                 // 0xfb
+		case Z80__DD_OR_FD__CALL__M__NN:        // 0xfc
+		case Z80__DD_OR_FD__CP__N:              // 0xfe
+		case Z80__DD_OR_FD__RST__38:            // 0xff
 		{
 			/* these are all (expensive) replicas of plain instructions, so defer
 			 * to the plain opcode executor method */
-			bool ret = executePlainInstruction(instruction + 1, doPc, cycles, size);
+			bool ret = execute(instruction + 1, doPc, cycles, size);
 
 			if (size) {
 			    *size += 1;
@@ -5251,7 +4960,21 @@ bool Z80::Z80::executeDdOrFdInstruction(Z80::Z80::UnsignedWord & reg, const Z80:
 
 			return ret;
 		}
-	}
+
+        case Z80__DD_OR_FD__PREFIX__FD: /*  0xfd */
+        {
+            // this is an (expensive) replica of the extension instructions, so defer to the plain opcode executor
+            --m_registers.r;
+            bool ret = executePlainInstruction(instruction + 1, doPc, cycles, size);
+
+            if (size) {
+                *size += 1;
+            }
+
+            return ret;
+        }
+
+    }
 
 	if (cycles) {
 	    *cycles = (useJumpCycleCost ? Z80_CYCLES_JUMP(m_ddorfd_opcode_cycles[*instruction]) : Z80_CYCLES_NOJUMP(m_ddorfd_opcode_cycles[*instruction]));
@@ -5261,7 +4984,6 @@ bool Z80::Z80::executeDdOrFdInstruction(Z80::Z80::UnsignedWord & reg, const Z80:
 	    *size = DdOrFdOpcodeSize[*instruction];
 	}
 
-	++m_registers.r;
 	return true;
 }
 

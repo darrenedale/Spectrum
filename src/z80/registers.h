@@ -255,14 +255,15 @@ namespace Z80
             hl = 0x0000;
             ix = 0x0000;
             iy = 0x0000;
+            pc = 0x0000;
+            sp = 0xffff;
             afShadow = 0xffff;
             bcShadow = 0x0000;
             deShadow = 0x0000;
+            hlShadow = 0x0000;
+            memptr = 0x0000;
             i = 0;
             r = 0;
-            pc = 0x0000;
-            sp = 0xffff;
-            // TODO memptr
         }
     };
 

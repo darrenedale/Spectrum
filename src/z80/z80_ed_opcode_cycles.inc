@@ -212,19 +212,19 @@ m_ed_opcode_cycles[Z80__ED__NOP__0XED__0XAD] = 4;
 m_ed_opcode_cycles[Z80__ED__NOP__0XED__0XAE] = 4;
 m_ed_opcode_cycles[Z80__ED__NOP__0XED__0XAF] = 4;
 
-m_ed_opcode_cycles[Z80__ED__LDIR]= 1 | (21 << 16);
-m_ed_opcode_cycles[Z80__ED__CPIR]= 1 | (21 << 16);
-m_ed_opcode_cycles[Z80__ED__INIR]= 1 | (21 << 16);
-m_ed_opcode_cycles[Z80__ED__OTIR]= 1 | (21 << 16);
+m_ed_opcode_cycles[Z80__ED__LDIR]= 0 | (21 << 16);
+m_ed_opcode_cycles[Z80__ED__CPIR]= 0 | (21 << 16);
+m_ed_opcode_cycles[Z80__ED__INIR]= 0 | (21 << 16);
+m_ed_opcode_cycles[Z80__ED__OTIR]= 0 | (21 << 16);
 m_ed_opcode_cycles[Z80__ED__NOP__0XED__0XB4] = 4;
 m_ed_opcode_cycles[Z80__ED__NOP__0XED__0XB5] = 4;
 m_ed_opcode_cycles[Z80__ED__NOP__0XED__0XB6] = 4;
 m_ed_opcode_cycles[Z80__ED__NOP__0XED__0XB7] = 4;
 
-m_ed_opcode_cycles[Z80__ED__LDDR]= 1 | (21 << 16);
-m_ed_opcode_cycles[Z80__ED__CPDR]= 1 | (21 << 16);
-m_ed_opcode_cycles[Z80__ED__INDR]= 1 | (21 << 16);
-m_ed_opcode_cycles[Z80__ED__OTDR]= 1 | (21 << 16);
+m_ed_opcode_cycles[Z80__ED__LDDR]= 0 | (21 << 16);
+m_ed_opcode_cycles[Z80__ED__CPDR]= 0 | (21 << 16);
+m_ed_opcode_cycles[Z80__ED__INDR]= 0 | (21 << 16);
+m_ed_opcode_cycles[Z80__ED__OTDR]= 0 | (21 << 16);
 m_ed_opcode_cycles[Z80__ED__NOP__0XED__0XBC] = 4;
 m_ed_opcode_cycles[Z80__ED__NOP__0XED__0XBD] = 4;
 m_ed_opcode_cycles[Z80__ED__NOP__0XED__0XBE] = 4;
