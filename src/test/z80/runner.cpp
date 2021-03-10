@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <cstring>
 
 #include "runner.h"
 
@@ -321,6 +322,8 @@ int Runner::runTest(const TestBattery::TestCase & testCase)
     std::cout << "============================================================\n";
     std::cout << "Test: " << test.name() << "\n";
     std::cout << "------------------------------------------------------------\n";
+    cpu().reset();
+    std::memset(cpu().memory(), 0x00, cpu().memorySize());
     test.setupZ80(cpu());
     test.setupMemory(cpu().memory());
 
