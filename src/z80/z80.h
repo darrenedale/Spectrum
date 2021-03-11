@@ -39,28 +39,14 @@ namespace Z80
         using UnsignedWord = ::Z80::UnsignedWord;
         using SignedByte = ::Z80::SignedByte;
         using SignedWord = ::Z80::SignedWord;
+        using Register8 = ::Z80::Register8;
+        using Register16 = ::Z80::Register16;
 
         enum class InterruptMode : std::uint8_t
         {
             IM0 = 0,
             IM1,
             IM2,
-        };
-
-        enum class Register16 : std::uint8_t
-        {
-            AF, BC, DE, HL,
-            IX, IY,
-            SP, PC,
-            AFShadow, BCShadow, DEShadow, HLShadow
-        };
-
-        enum class Register8 : std::uint8_t
-        {
-            A, F, B, C, D, E, H, L,
-            IXH, IXL, IYH, IYL,
-            I, R,
-            AShadow, FShadow, BShadow, CShadow, DShadow, EShadow, HShadow, LShadow
         };
 
         static constexpr const std::endian Z80ByteOrder = std::endian::little;
@@ -630,17 +616,17 @@ namespace Z80
          * True if all flag bits from the mask are set, false otherwise.
          *
          * @tparam mask 
-         * @return 
+         * @return
          */
         template <UnsignedByte mask>
         [[nodiscard]] inline bool checkFlags() const
         {
             return mask == (m_registers.f & mask);
         }
-        
-        [[nodiscard]] inline bool cFlag() const
+
+        [[nodiscard]] inline bool sFlag() const
         {
-            return checkFlags<Z80_FLAG_C_MASK>();
+            return checkFlags<Z80_FLAG_S_MASK>();
         }
 
         [[nodiscard]] inline bool zFlag() const
@@ -648,9 +634,19 @@ namespace Z80
             return checkFlags<Z80_FLAG_Z_MASK>();
         }
 
-        [[nodiscard]] inline bool sFlag() const
+        [[nodiscard]] inline bool f5Flag() const
         {
-            return checkFlags<Z80_FLAG_S_MASK>();
+            return checkFlags<Z80_FLAG_F5_MASK>();
+        }
+
+        [[nodiscard]] inline bool hFlag() const
+        {
+            return checkFlags<Z80_FLAG_H_MASK>();
+        }
+
+        [[nodiscard]] inline bool f3Flag() const
+        {
+            return checkFlags<Z80_FLAG_F3_MASK>();
         }
 
         [[nodiscard]] inline bool pFlag() const
@@ -663,20 +659,20 @@ namespace Z80
             return checkFlags<Z80_FLAG_N_MASK>();
         }
 
-        [[nodiscard]] inline bool hFlag() const
+        [[nodiscard]] inline bool cFlag() const
         {
-            return checkFlags<Z80_FLAG_H_MASK>();
+            return checkFlags<Z80_FLAG_C_MASK>();
         }
-        
+
         template <UnsignedByte mask>
         [[nodiscard]] inline bool checkShadowFlags() const
         {
             return m_registers.fShadow & mask;
         }
-        
-        [[nodiscard]] inline bool cShadowFlag() const
+
+        [[nodiscard]] inline bool sShadowFlag() const
         {
-            return checkShadowFlags<Z80_FLAG_C_MASK>();
+            return checkShadowFlags<Z80_FLAG_S_MASK>();
         }
 
         [[nodiscard]] inline bool zShadowFlag() const
@@ -684,9 +680,19 @@ namespace Z80
             return checkShadowFlags<Z80_FLAG_Z_MASK>();
         }
 
-        [[nodiscard]] inline bool sShadowFlag() const
+        [[nodiscard]] inline bool f5ShadowFlag() const
         {
-            return checkShadowFlags<Z80_FLAG_S_MASK>();
+            return checkShadowFlags<Z80_FLAG_F3_MASK>();
+        }
+
+        [[nodiscard]] inline bool hShadowFlag() const
+        {
+            return checkShadowFlags<Z80_FLAG_H_MASK>();
+        }
+
+        [[nodiscard]] inline bool f3ShadowFlag() const
+        {
+            return checkShadowFlags<Z80_FLAG_F3_MASK>();
         }
 
         [[nodiscard]] inline bool pShadowFlag() const
@@ -699,9 +705,9 @@ namespace Z80
             return checkShadowFlags<Z80_FLAG_N_MASK>();
         }
 
-        [[nodiscard]] inline bool hShadowFlag() const
+        [[nodiscard]] inline bool cShadowFlag() const
         {
-            return checkShadowFlags<Z80_FLAG_H_MASK>();
+            return checkShadowFlags<Z80_FLAG_C_MASK>();
         }
 
         // convenience aliases

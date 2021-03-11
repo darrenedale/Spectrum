@@ -1,14 +1,25 @@
 #ifndef Z80INTERPRETER_H
 #define Z80INTERPRETER_H
 
-#include "../z80/z80.h"
+#include <vector>
+
 #include <QString>
-#include <QStringList>
-#include <QVector>
-#include <QRegExp>
+
+#include "../z80/types.h"
+
+namespace Z80
+{
+    class Z80;
+}
 
 namespace Interpreter
 {
+    using UnsignedByte = Z80::UnsignedByte;
+    using UnsignedWord = Z80::UnsignedWord;
+    using Register8 = Z80::Register8;
+    using Register16 = Z80::Register16;
+    using Z80Cpu = Z80::Z80;
+
     class Z80Interpreter
     {
     public:
@@ -23,35 +34,31 @@ namespace Interpreter
 
         typedef int NumberFormats;
 
-        Z80Interpreter(Z80::Z80 * cpu);
-
+        explicit Z80Interpreter(Z80Cpu * cpu);
         virtual ~Z80Interpreter();
 
-        bool hasCpu() const;
+        [[nodiscard]] bool hasCpu() const;
+        [[nodiscard]] Z80Cpu * cpu() const;
 
-        Z80::Z80 * cpu() const;
-
-        void setCpu(Z80::Z80 * cpu);
-
+        void setCpu(Z80Cpu * cpu);
         void run();
-
-        static void run(Z80::Z80 * cpu);
+        static void run(Z80Cpu * cpu);
 
     protected:
-        typedef QVector<Z80::UnsignedByte> Opcode;
+        using Opcode = std::vector<UnsignedByte>;
+        using Tokens = std::vector<QString>;
 
         static const Opcode InvalidInstruction;
 
         QString readInput();
 
-        static QStringList tokenise(const QString & input);
+        static Tokens tokenise(const QString & input);
 
-        /* returns true if the interpreter should continue running, false if it
-         * should exit. */
+        // returns true if the interpreter should continue running, false if it should exit.
         bool handleInput(const QString & input);
 
-        /* dot-command methods */
-        void handleDotCommand(const QStringList & tokens);
+        // dot-command methods
+        void handleDotCommand(const Tokens & tokens);
 
         void dotHelp() const;
 
@@ -63,171 +70,172 @@ namespace Interpreter
 
         void dotHideCosts();
 
-        void dotAutoShowFlags(const QStringList & tokens);
+        void dotAutoShowFlags(const Tokens & tokens);
 
         void dotStatus() const;
 
         void dotDumpFlags() const;
 
-        void dotDumpMemory(const QStringList & tokens) const;
+        void dotDumpMemory(const Tokens & tokens) const;
 
         void dotDumpMemory(int low, int len = 16) const;
 
         void dotDumpRegisters() const;
 
-        void dotRegisterValue(const QStringList & tokens) const;
+        void dotRegisterValue(const Tokens & tokens) const;
 
-        void dotRegisterValue(const Z80::Z80::Register8 reg, const NumberFormats & fmt = AllFormats) const;
+        void dotRegisterValue(Register8 reg, const NumberFormats & fmt = AllFormats) const;
 
-        void dotRegisterValue(const Z80::Z80::Register16 reg, const NumberFormats & fmt = AllFormats) const;
+        void dotRegisterValue(Register16 reg, const NumberFormats & fmt = AllFormats) const;
 
-        /* Z80 instruction methods */
+        // Z80 instruction methods
         void runOpcode(const Opcode & opcode);
 
-        static Opcode assembleInstruction(const QStringList & tokens);
+        static Opcode assembleInstruction(const Tokens & tokens);
 
-        static Opcode assembleADC(const QStringList & tokens);
+        static Opcode assembleADC(const Tokens & tokens);
 
-        static Opcode assembleADD(const QStringList & tokens);
+        static Opcode assembleADD(const Tokens & tokens);
 
-        static Opcode assembleAND(const QStringList & tokens);
+        static Opcode assembleAND(const Tokens & tokens);
 
-        static Opcode assembleBIT(const QStringList & tokens);
+        static Opcode assembleBIT(const Tokens & tokens);
 
-        static Opcode assembleCALL(const QStringList & tokens);
+        static Opcode assembleCALL(const Tokens & tokens);
 
-        static Opcode assembleCCF(const QStringList & tokens);
+        static Opcode assembleCCF(const Tokens & tokens);
 
-        static Opcode assembleCP(const QStringList & tokens);
+        static Opcode assembleCP(const Tokens & tokens);
 
-        static Opcode assembleCPD(const QStringList & tokens);
+        static Opcode assembleCPD(const Tokens & tokens);
 
-        static Opcode assembleCPDR(const QStringList & tokens);
+        static Opcode assembleCPDR(const Tokens & tokens);
 
-        static Opcode assembleCPI(const QStringList & tokens);
+        static Opcode assembleCPI(const Tokens & tokens);
 
-        static Opcode assembleCPIR(const QStringList & tokens);
+        static Opcode assembleCPIR(const Tokens & tokens);
 
-        static Opcode assembleCPL(const QStringList & tokens);
+        static Opcode assembleCPL(const Tokens & tokens);
 
-        static Opcode assembleDAA(const QStringList & tokens);
+        static Opcode assembleDAA(const Tokens & tokens);
 
-        static Opcode assembleDEC(const QStringList & tokens);
+        static Opcode assembleDEC(const Tokens & tokens);
 
-        static Opcode assembleDI(const QStringList & tokens);
+        static Opcode assembleDI(const Tokens & tokens);
 
-        static Opcode assembleDJNZ(const QStringList & tokens);
+        static Opcode assembleDJNZ(const Tokens & tokens);
 
-        static Opcode assembleEI(const QStringList & tokens);
+        static Opcode assembleEI(const Tokens & tokens);
 
-        static Opcode assembleEX(const QStringList & tokens);
+        static Opcode assembleEX(const Tokens & tokens);
 
-        static Opcode assembleEXX(const QStringList & tokens);
+        static Opcode assembleEXX(const Tokens & tokens);
 
-        static Opcode assembleHALT(const QStringList & tokens);
+        static Opcode assembleHALT(const Tokens & tokens);
 
-        static Opcode assembleIM(const QStringList & tokens);
+        static Opcode assembleIM(const Tokens & tokens);
 
-        static Opcode assembleIN(const QStringList & tokens);
+        static Opcode assembleIN(const Tokens & tokens);
 
-        static Opcode assembleINC(const QStringList & tokens);
+        static Opcode assembleINC(const Tokens & tokens);
 
-        static Opcode assembleIND(const QStringList & tokens);
+        static Opcode assembleIND(const Tokens & tokens);
 
-        static Opcode assembleINDR(const QStringList & tokens);
+        static Opcode assembleINDR(const Tokens & tokens);
 
-        static Opcode assembleINI(const QStringList & tokens);
+        static Opcode assembleINI(const Tokens & tokens);
 
-        static Opcode assembleINIR(const QStringList & tokens);
+        static Opcode assembleINIR(const Tokens & tokens);
 
-        static Opcode assembleJP(const QStringList & tokens);
+        static Opcode assembleJP(const Tokens & tokens);
 
-        static Opcode assembleJR(const QStringList & tokens);
+        static Opcode assembleJR(const Tokens & tokens);
 
-        static Opcode assembleLD(const QStringList & tokens);
+        static Opcode assembleLD(const Tokens & tokens);
 
-        static Opcode assembleLDD(const QStringList & tokens);
+        static Opcode assembleLDD(const Tokens & tokens);
 
-        static Opcode assembleLDDR(const QStringList & tokens);
+        static Opcode assembleLDDR(const Tokens & tokens);
 
-        static Opcode assembleLDI(const QStringList & tokens);
+        static Opcode assembleLDI(const Tokens & tokens);
 
-        static Opcode assembleLDIR(const QStringList & tokens);
+        static Opcode assembleLDIR(const Tokens & tokens);
 
-        static Opcode assembleNEG(const QStringList & tokens);
+        static Opcode assembleNEG(const Tokens & tokens);
 
-        static Opcode assembleNOP(const QStringList & tokens);
+        static Opcode assembleNOP(const Tokens & tokens);
 
-        static Opcode assembleOR(const QStringList & tokens);
+        static Opcode assembleOR(const Tokens & tokens);
 
-        static Opcode assembleOUT(const QStringList & tokens);
+        static Opcode assembleOUT(const Tokens & tokens);
 
-        static Opcode assembleOUTD(const QStringList & tokens);
+        static Opcode assembleOUTD(const Tokens & tokens);
 
-        static Opcode assembleOTDR(const QStringList & tokens);
+        static Opcode assembleOTDR(const Tokens & tokens);
 
-        static Opcode assembleOUTI(const QStringList & tokens);
+        static Opcode assembleOUTI(const Tokens & tokens);
 
-        static Opcode assembleOTIR(const QStringList & tokens);
+        static Opcode assembleOTIR(const Tokens & tokens);
 
-        static Opcode assemblePOP(const QStringList & tokens);
+        static Opcode assemblePOP(const Tokens & tokens);
 
-        static Opcode assemblePUSH(const QStringList & tokens);
+        static Opcode assemblePUSH(const Tokens & tokens);
 
-        static Opcode assembleRES(const QStringList & tokens);
+        static Opcode assembleRES(const Tokens & tokens);
 
-        static Opcode assembleRET(const QStringList & tokens);
+        static Opcode assembleRET(const Tokens & tokens);
 
-        static Opcode assembleRETI(const QStringList & tokens);
+        static Opcode assembleRETI(const Tokens & tokens);
 
-        static Opcode assembleRETN(const QStringList & tokens);
+        static Opcode assembleRETN(const Tokens & tokens);
 
-        static Opcode assembleRLA(const QStringList & tokens);
+        static Opcode assembleRLA(const Tokens & tokens);
 
-        static Opcode assembleRL(const QStringList & tokens);
+        static Opcode assembleRL(const Tokens & tokens);
 
-        static Opcode assembleRLCA(const QStringList & tokens);
+        static Opcode assembleRLCA(const Tokens & tokens);
 
-        static Opcode assembleRLC(const QStringList & tokens);
+        static Opcode assembleRLC(const Tokens & tokens);
 
-        static Opcode assembleRLD(const QStringList & tokens);
+        static Opcode assembleRLD(const Tokens & tokens);
 
-        static Opcode assembleRRA(const QStringList & tokens);
+        static Opcode assembleRRA(const Tokens & tokens);
 
-        static Opcode assembleRR(const QStringList & tokens);
+        static Opcode assembleRR(const Tokens & tokens);
 
-        static Opcode assembleRRCA(const QStringList & tokens);
+        static Opcode assembleRRCA(const Tokens & tokens);
 
-        static Opcode assembleRRC(const QStringList & tokens);
+        static Opcode assembleRRC(const Tokens & tokens);
 
-        static Opcode assembleRRD(const QStringList & tokens);
+        static Opcode assembleRRD(const Tokens & tokens);
 
-        static Opcode assembleRST(const QStringList & tokens);
+        static Opcode assembleRST(const Tokens & tokens);
 
-        static Opcode assembleSBC(const QStringList & tokens);
+        static Opcode assembleSBC(const Tokens & tokens);
 
-        static Opcode assembleSCF(const QStringList & tokens);
+        static Opcode assembleSCF(const Tokens & tokens);
 
-        static Opcode assembleSET(const QStringList & tokens);
+        static Opcode assembleSET(const Tokens & tokens);
 
-        static Opcode assembleSLA(const QStringList & tokens);
+        static Opcode assembleSLA(const Tokens & tokens);
 
-        static Opcode assembleSRA(const QStringList & tokens);
+        static Opcode assembleSRA(const Tokens & tokens);
 
-        static Opcode assembleSLL(const QStringList & tokens);
+        static Opcode assembleSLL(const Tokens & tokens);
 
-        static Opcode assembleSRL(const QStringList & tokens);
+        static Opcode assembleSRL(const Tokens & tokens);
 
-        static Opcode assembleSUB(const QStringList & tokens);
+        static Opcode assembleSUB(const Tokens & tokens);
 
-        static Opcode assembleXOR(const QStringList & tokens);
+        static Opcode assembleXOR(const Tokens & tokens);
 
     private:
         void discardCpu();
 
-        Z80::Z80 * m_cpu;
-        bool m_showOpcodes, m_showInstructionCost, m_autoShowFlags;
-        QStringList m_inputHistory;
+        Z80Cpu * m_cpu;
+        bool m_showOpcodes;
+        bool m_showInstructionCost;
+        bool m_autoShowFlags;
     };
 }
 
