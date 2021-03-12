@@ -10,7 +10,7 @@
 #include <QLabel>
 
 #include "../../z80/z80.h"
-#include "../../qt/hexspinbox.h"
+#include "hexspinbox.h"
 
 class QEvent;
 

@@ -7,7 +7,7 @@
 #include <string>
 
 #include "../computer.h"
-#include "../z80/z80.h"
+#include "z80.h"
 
 namespace Spectrum
 {
@@ -25,9 +25,9 @@ namespace Spectrum
 			explicit Spectrum(int = 65536, uint8_t * mem = nullptr);
 			~Spectrum() override;
 
-			inline Z80::Z80 * z80() const
+			inline Z80 * z80() const
             {
-			    return dynamic_cast<Z80::Z80 *>(cpu());
+			    return dynamic_cast<Z80 *>(cpu());
             }
 
 			inline int nmiCounter() const
@@ -45,8 +45,8 @@ namespace Spectrum
 				return DisplayMemorySize;
 			}
 
-			virtual void reset();
-			virtual void run(int instructionCount);
+			void reset() override;
+			void run(int instructionCount) override;
 
 			/**
 			 * If set, the Spectrum will be constrained to run no faster than the clock speed set.

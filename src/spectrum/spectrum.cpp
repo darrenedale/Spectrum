@@ -8,7 +8,7 @@
 
 #include "displaydevice.h"
 #include "keyboard.h"
-#include "../z80/z80.h"
+#include "z80.h"
 
 namespace
 {
@@ -20,8 +20,7 @@ namespace Spectrum
     Spectrum::Spectrum(int memsize, uint8_t * mem)
             : Computer(memsize, mem)
     {
-        Cpu * z80 = new Z80::Z80(memory(), memorySize());
-        // 3.5MHz
+        Cpu * z80 = new Z80(memory(), memorySize());
         z80->setClockSpeed(DefaultClockSpeed);
         addCpu(z80);
     }
@@ -45,7 +44,7 @@ namespace Spectrum
         refreshDisplays();
 
         // fetch the CPU to work with
-        auto * z80 = dynamic_cast<Z80::Z80 *>(cpu());
+        auto * z80 = dynamic_cast<Z80 *>(cpu());
 
         if (!z80) {
             std::cerr << "cpu is not a Z80.\n";

@@ -10,7 +10,7 @@
 #include "../spectrum.h"
 #include "qspectrumdisplay.h"
 #include "debugwindow.h"
-#include "../../qt/imagewidget.h"
+#include "imagewidget.h"
 #include "keyboard.h"
 #include "thread.h"
 

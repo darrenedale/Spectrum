@@ -8,7 +8,7 @@
  * This emulation is based on interpretation. There is no dynamic compilation and no cross-assembly.
  *
  * \todo
- * - interrupt modes 0 and 2
+ * - interrupt modes 0 multi-byte instructions
  */
 #include <iostream>
 #include <cassert>
@@ -16,9 +16,8 @@
 #include "z80.h"
 #include "iodevice.h"
 #include "invalidopcode.h"
+#include "invalidinterruptmode.h"
 #include "opcodes.h"
-
-#define Z80_UNUSED(x) ((void) (x));
 
 // cast values to Z80 data types
 #define Z80_CUBYTE(v) static_cast<UnsignedByte>((v) & 0x00ff)
@@ -63,7 +62,21 @@
 #define Z80_FLAG_F3_ISSET (0 != (m_registers.f & Z80_FLAG_F3_MASK))
 #define Z80_FLAG_F5_ISSET (0 != (m_registers.f & Z80_FLAG_F5_MASK))
 
-// update H flag for 4-bit overflow during addition 
+/* used in instruction execution methods to force the PC NOT to be updated with
+ * the size of the instruction in execute() in cases where the instruction
+ * directly changes the PC - e.g. JP, JR, DJNZ, RET, CALL etc. */
+#define Z80_DONT_UPDATE_PC if (doPc) *doPc = false;
+#define Z80_USE_JUMP_CYCLE_COST useJumpCycleCost = true;
+
+/* macros to fetch opcode t-state costs. most non-jump opcodes
+	don't actually need to use these. for conditional jump opcodes,
+	the cost if the jump is taken is stored in the rightmost 16
+	bits; the cost if the jump is not taken is stored in the
+	leftmost 16 bits */
+#define Z80_TSTATES_JUMP(tStates) (((tStates) & 0xffff0000) >> 16)
+#define Z80_TSTATES_NOJUMP(tStates) ((tStates) & 0x0000ffff)
+
+// update H flag for carry into bit 4 during addition
 #define Z80_FLAG_H_UPDATE_ADD(orig,delta,result) \
 {                                                \
     UnsignedByte tmpHalfCarry = (                \
@@ -75,7 +88,7 @@
     Z80_FLAG_H_UPDATE(tmpHalfCarry == 1 || tmpHalfCarry == 2 || tmpHalfCarry == 3 || tmpHalfCarry == 7);\
 }
 
-// update H flag for 4-bit overflow during subtraction 
+// update H flag for carry into bit 4 during subtraction
 #define Z80_FLAG_H_UPDATE_SUB(orig,delta,result) \
 {                                                \
     UnsignedByte tmpHalfCarry = (                \
@@ -86,6 +99,20 @@
                                                  \
     Z80_FLAG_H_UPDATE(tmpHalfCarry == 2 || tmpHalfCarry == 4 || tmpHalfCarry == 6 || tmpHalfCarry == 7);\
 }
+
+// update H flag for carry into bit-12 during addition
+#define Z80_FLAG_H_UPDATE_16_ADD(orig,delta,result) \
+{                                                   \
+    UnsignedByte tmpHalfCarry = (                   \
+        (((result) & 0x0800) >> 9)                  \
+        | (((delta) & 0x0800) >> 10)                \
+        | (((orig) & 0x0800) >> 11)                 \
+    );                                              \
+                                                    \
+    Z80_FLAG_H_UPDATE(tmpHalfCarry == 1 || tmpHalfCarry == 2 || tmpHalfCarry == 3 || tmpHalfCarry == 7);\
+}
+
+// NOTE there are no 16-bit subtraction instructions so no macro for managing the H flag in this scenario
 
 // update P/V flag for 8-bit overflow during addition 
 #define Z80_FLAG_P_UPDATE_OVERFLOW_ADD(orig,delta,result)   \
@@ -135,75 +162,51 @@
     Z80_FLAG_P_UPDATE(tmpOverflow == 1 || tmpOverflow == 6);\
 }
 
-/* used in instruction execution methods to force the PC NOT to be updated with
- * the size of the instruction in execute() in cases where the instruction
- * directly changes the PC - e.g. JP, JR, DJNZ, RET, CALL etc. */
-#define Z80_DONT_UPDATE_PC if (doPc) *doPc = false;
-#define Z80_USE_JUMP_CYCLE_COST useJumpCycleCost = true;
-
-/* macros to fetch opcode t-state costs. most non-jump opcodes
-	don't actually need to use these. for conditional jump opcodes,
-	the cost if the jump is taken is stored in the rightmost 16
-	bits; the cost if the jump is not taken is stored in the
-	leftmost 16 bits */
-#define Z80_TSTATES_JUMP(tStates) (((tStates) & 0xffff0000) >> 16)
-#define Z80_TSTATES_NOJUMP(tStates) ((tStates) & 0x0000ffff)
-
 /*
  * macros implementing common instruction semantics using different combinations of like operands
  */
 
-/* data loading instructions
- *
- * FLAGS: no flags are modified, except when I (0xed 0x47) or R (0xed 0x4f) is
- * loaded from A, in which case C is preserved, H and N are reset, Z and S are
- * flipped(?) and P is set if interrupts are enabled. these cases are handled in
- * the code in the fetch-execute cycle.
- */
+// data loading instructions
+//
+// FLAGS: no flags are modified
 #define Z80__LD__REG8__N(dest, n) ((dest) = (n))
 #define Z80__LD__REG8__REG8(dest, src) ((dest) = (src))
 
-/*
- * nn (the memory address to retrieve) MUST be in HOST byte order
- */
+// nn (the memory address to retrieve) MUST be in HOST byte order
 #define Z80__LD__REG8__INDIRECT_NN(dest, nn) ((dest) = peekUnsigned(nn))
 #define Z80__LD__REG8__INDIRECT_REG16(dest, src) ((dest) = peekUnsigned((src)))
 
-/*
- * nn MUST be in HOST byte order
- */
+// nn (the value to write to the register) MUST be in HOST byte order
 #define Z80__LD__REG16__NN(dest, nn) ((dest) = (nn))
 #define Z80__LD__REG16__REG16(dest, src) ((dest) = (src))
 
-/*
- */
 #define Z80__LD__INDIRECT_REG16__REG8(dest, src) pokeUnsigned((dest), (src))
 
-/*
- * nn (the memory address to load) MUST be in HOST byte order
- */
-#define Z80__LD__INDIRECT_NN__REG16(nn, src) { auto __tmpAddr = (nn); pokeHostWord(__tmpAddr, (src)); m_registers.memptr = hostToZ80ByteOrder(__tmpAddr); }
+// nn (the memory address to load) MUST be in HOST byte order
+// TODO check how we're handling memptr - this code seems to imply that unlike the other registers it's being stored
+//  in Z80 byte order?
+#define Z80__LD__INDIRECT_NN__REG16(nn, src) \
+{                                            \
+    auto tmpAddr = (nn);                     \
+    pokeHostWord(tmpAddr, (src));            \
+    m_registers.memptr = hostToZ80ByteOrder(tmpAddr); \
+}
 
-/*
- * nn (the memory address to retrieve) MUST be in HOST byte order
- */
-#define Z80__LD__REG16__INDIRECT_NN(dest, nn) ((dest) = z80ToHostByteOrder(peekUnsignedWord(nn)))
+// nn (the memory address to retrieve) MUST be in HOST byte order
+#define Z80__LD__REG16__INDIRECT_NN(dest, nn) ((dest) = peekUnsignedWord(nn))
 #define Z80__LD__INDIRECT_REG16__N(dest, n) (pokeUnsigned((dest), n))
 
-/*
- * nn (the memory address to load) MUST be in HOST byte order
- */
+// nn (the memory address to load) MUST be in HOST byte order
 #define Z80__LD__INDIRECT_NN__REG8(nn, src) (pokeUnsigned(nn, (src)))
 #define Z80__LD__INDIRECT_REG16_D__N(reg, d, n) Z80__LD__INDIRECT_REG16__N(((reg) + (d)), (n));
 #define Z80__LD__INDIRECT_REG16_D__REG8(reg, d, src) Z80__LD__INDIRECT_NN__REG8((reg) + (d), (src));
 #define Z80__LD__REG8__INDIRECT_REG16_D(dest, reg, d) Z80__LD__REG8__INDIRECT_NN((dest), (reg) + (d));
 
-/* reset instructions
- *
- * addr can be 0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30 or 0x38
- *
- * FLAGS: no flags are modified.
- */
+// reset instructions
+//
+// addr can be 0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30 or 0x38, and must be in HOST byte order
+//
+// FLAGS: no flags are modified.
 #define Z80__RST__N(addr)             \
 Z80__PUSH__REG16(m_registers.pc + 1); \
 m_registers.pc = (addr);              \
@@ -229,16 +232,47 @@ m_registers.memptr = m_registers.pc
 //
 // stack instructions
 //
-#define Z80__POP__REG16(reg) {(reg) = peekUnsignedWord(m_registers.sp); m_registers.sp += 2;}
-#define Z80__PUSH__REG16(reg) {m_registers.sp -= 2; pokeHostWord(m_registers.sp, (reg));}
+#define Z80__POP__REG16(reg)              \
+(reg) = peekUnsignedWord(m_registers.sp); \
+m_registers.sp += 2;
+
+#define Z80__PUSH__REG16(reg) \
+m_registers.sp -= 2;          \
+pokeHostWord(m_registers.sp, (reg));
 
 //
 // addition instructions
 //
-#define Z80__ADD__REG8__N(dest,n) { UnsignedWord res = Z80_CUBYTE(dest) + Z80_CUBYTE(n); Z80_FLAG_P_UPDATE((((dest) ^ ~(n)) & ((dest) ^ Z80_CUBYTE(res)) & 0x80) != 0); Z80_FLAG_N_CLEAR; Z80_FLAG_Z_UPDATE(0 == (res & 0x00ff)); Z80_FLAG_S_UPDATE((res) & 0x0080); Z80_FLAG_C_UPDATE(res & 0x0100); Z80_FLAG_H_UPDATE(((dest) ^ (n) ^ Z80_CUBYTE(res)) & 0x10); Z80_FLAG_F3_UPDATE(Z80_CUBYTE(res) & 0x20); Z80_FLAG_F5_UPDATE(Z80_CUBYTE(res) & 0x08); (dest) = Z80_CUBYTE(res); Z80_FLAG_F3_UPDATE(m_registers.a & Z80_FLAG_F3_MASK); Z80_FLAG_F5_UPDATE(m_registers.a & Z80_FLAG_F5_MASK); }
+#define Z80__ADD__REG8__N(dest,n) {    \
+    UnsignedByte tmpOldValue = (dest); \
+    UnsignedByte tmpDelta = (n);         \
+    UnsignedWord tmpResult = tmpOldValue + tmpDelta; \
+    (dest) = tmpResult & 0xff;                 \
+    Z80_FLAG_P_UPDATE_OVERFLOW_ADD(tmpOldValue, tmpDelta, tmpResult); \
+    Z80_FLAG_N_CLEAR;                   \
+    Z80_FLAG_Z_UPDATE(0 == ((dest) & 0xff));              \
+    Z80_FLAG_S_UPDATE((dest) & 0x80);  \
+    Z80_FLAG_C_UPDATE(tmpResult & 0x100);    \
+    Z80_FLAG_H_UPDATE_ADD(tmpOldValue, tmpDelta, tmpResult);                    \
+    Z80_FLAG_F3_UPDATE((dest) & Z80_FLAG_F3_MASK);\
+    Z80_FLAG_F5_UPDATE((dest) & Z80_FLAG_F5_MASK);\
+}
+
 #define Z80__ADD__REG8__REG8(dest,src) Z80__ADD__REG8__N(dest,src)
 #define Z80__ADD__REG8__INDIRECT_REG16(dest,src) Z80__ADD__REG8__N(dest,(*(m_ram + (src))))
-#define Z80__ADD__REG16__REG16(dest,src) { unsigned long res = (dest) + (src); Z80_FLAG_H_UPDATE((Z80_CUWORD(res) ^ (dest) ^ (src)) & 0x1000); Z80_FLAG_N_CLEAR; Z80_FLAG_C_UPDATE(res & 0x10000); (dest) = Z80_CUWORD(res); Z80_FLAG_F5_UPDATE((dest) & 0x2000); Z80_FLAG_F3_UPDATE((dest) & 0x0800); }
+
+#define Z80__ADD__REG16__REG16(dest,src) {       \
+    UnsignedWord tmpOldValue = (dest);           \
+    UnsignedWord tmpDelta = (src);                 \
+    std::uint32_t tmpResult = tmpOldValue + tmpDelta;  \
+    (dest) = tmpResult & 0xffff;                 \
+    Z80_FLAG_H_UPDATE_16_ADD(tmpOldValue, tmpDelta, tmpResult); \
+    Z80_FLAG_N_CLEAR;                            \
+    Z80_FLAG_C_UPDATE(tmpResult & 0x10000);\
+    Z80_FLAG_F5_UPDATE((dest) & (Z80_FLAG_F5_MASK << 8)); \
+    Z80_FLAG_F3_UPDATE((dest) & (Z80_FLAG_F3_MASK << 8)); \
+}
+
 #define Z80__ADD__REG8__INDIRECT_REG16_D(dest, reg, d) Z80__ADD__REG8__N((dest),(*(m_ram + (reg) + (d))))
 
 //
@@ -247,13 +281,13 @@ m_registers.memptr = m_registers.pc
 //
 #define Z80__ADC__REG8__N(dest,n) {      \
     UnsignedByte tmpOldValue = (dest);   \
-    UnsignedByte tmpAdd = (n);           \
-    UnsignedWord tmpResult = (dest) + tmpAdd + (Z80_FLAG_C_ISSET ? 1 : 0);\
+    UnsignedByte tmpDelta = (n);           \
+    UnsignedWord tmpResult = (dest) + tmpDelta + (Z80_FLAG_C_ISSET ? 1 : 0);\
     (dest) = tmpResult & 0xff;           \
     Z80_FLAG_C_UPDATE(tmpResult & 0x100);\
     Z80_FLAG_N_CLEAR;                    \
-    Z80_FLAG_P_UPDATE_OVERFLOW_ADD(tmpOldValue, tmpAdd, (dest));\
-    Z80_FLAG_H_UPDATE_ADD(tmpOldValue, tmpAdd, (dest));\
+    Z80_FLAG_P_UPDATE_OVERFLOW_ADD(tmpOldValue, tmpDelta, (dest));\
+    Z80_FLAG_H_UPDATE_ADD(tmpOldValue, tmpDelta, (dest));\
     Z80_FLAGS_S53_UPDATE((dest));        \
     Z80_FLAG_Z_UPDATE(0 == (dest));      \
 }
@@ -263,17 +297,17 @@ m_registers.memptr = m_registers.pc
 
 #define Z80__ADC__REG16__REG16(dest,src) { \
     UnsignedWord tmpOldValue = (dest);            \
-    UnsignedWord tmpAdd = (src);                    \
-    std::uint32_t tmpResult = (dest) + tmpAdd + (Z80_FLAG_C_ISSET ? 1 : 0);\
+    UnsignedWord tmpDelta = (src);                    \
+    std::uint32_t tmpResult = (dest) + tmpDelta + (Z80_FLAG_C_ISSET ? 1 : 0);\
     (dest) = tmpResult & 0xffff;                  \
     Z80_FLAG_N_CLEAR;                             \
     Z80_FLAG_Z_UPDATE(0 == (dest));               \
     Z80_FLAGS_S53_UPDATE(((dest) & 0xff00) >> 8); \
-    Z80_FLAG_P_UPDATE_OVERFLOW16_ADD(tmpOldValue, tmpAdd, (dest));      \
+    Z80_FLAG_P_UPDATE_OVERFLOW16_ADD(tmpOldValue, tmpDelta, (dest));      \
     Z80_FLAG_C_UPDATE(tmpResult & 0x00010000);    \
     /* check for carry between bits 11 and 12 - exactly the same as half-carry flag for 8-bit ADC, except we're
      * working with the high byte */              \
-    Z80_FLAG_H_UPDATE_ADD(static_cast<UnsignedByte>((tmpOldValue & 0xff00) >> 8), static_cast<UnsignedByte>((tmpAdd & 0xff00) >> 8), static_cast<UnsignedByte>((tmpResult & 0xff00) >> 8));\
+    Z80_FLAG_H_UPDATE_ADD(static_cast<UnsignedByte>((tmpOldValue & 0xff00) >> 8), static_cast<UnsignedByte>((tmpDelta & 0xff00) >> 8), static_cast<UnsignedByte>((tmpResult & 0xff00) >> 8));\
 }
 
 #define Z80__ADC__REG8__INDIRECT_REG16_D(dest, reg, d) Z80__ADC__REG8__N((dest), peekUnsigned((reg) + (d)))
@@ -281,17 +315,15 @@ m_registers.memptr = m_registers.pc
 //
 // subtraction instructions
 //
-// FLAGS: N is set, P is overflow, others by definition
-//
 #define Z80__SUB__N(n) { \
     UnsignedByte tmpOldValue = m_registers.a;   \
-    UnsignedByte tmpSub = (n);           \
-    UnsignedWord tmpResult = m_registers.a - tmpSub; \
+    UnsignedByte tmpDelta = (n);           \
+    UnsignedWord tmpResult = m_registers.a - tmpDelta; \
     m_registers.a = tmpResult & 0xff;           \
     Z80_FLAG_C_UPDATE(tmpResult & 0x0100);                       \
     Z80_FLAG_N_SET;      \
-    Z80_FLAG_P_UPDATE_OVERFLOW_SUB(tmpOldValue, tmpSub, m_registers.a); \
-    Z80_FLAG_H_UPDATE_SUB(tmpOldValue, tmpSub, m_registers.a); \
+    Z80_FLAG_P_UPDATE_OVERFLOW_SUB(tmpOldValue, tmpDelta, m_registers.a); \
+    Z80_FLAG_H_UPDATE_SUB(tmpOldValue, tmpDelta, m_registers.a); \
     Z80_FLAGS_S53_UPDATE(m_registers.a);\
     Z80_FLAG_Z_UPDATE(0 == m_registers.a);      \
 }
@@ -306,13 +338,13 @@ m_registers.memptr = m_registers.pc
 //
 #define Z80__SBC__REG8__N(dest,n) { \
     UnsignedByte tmpOldValue = (dest);\
-    UnsignedByte tmpSub = (n);            \
-    UnsignedWord tmpResult = (dest) - tmpSub - (Z80_FLAG_C_ISSET ? 1 : 0);\
+    UnsignedByte tmpDelta = (n);            \
+    UnsignedWord tmpResult = (dest) - tmpDelta - (Z80_FLAG_C_ISSET ? 1 : 0);\
     (dest) = tmpResult & 0xff;   \
     Z80_FLAG_C_UPDATE(tmpResult & 0x0100);\
     Z80_FLAG_N_SET;                       \
-    Z80_FLAG_P_UPDATE_OVERFLOW_SUB(tmpOldValue, tmpSub, (dest));\
-    Z80_FLAG_H_UPDATE_SUB(tmpOldValue, tmpSub, (dest));\
+    Z80_FLAG_P_UPDATE_OVERFLOW_SUB(tmpOldValue, tmpDelta, (dest));\
+    Z80_FLAG_H_UPDATE_SUB(tmpOldValue, tmpDelta, (dest));\
     Z80_FLAGS_S53_UPDATE((dest));  \
     Z80_FLAG_Z_UPDATE(0 == (dest));\
 }
@@ -322,17 +354,17 @@ m_registers.memptr = m_registers.pc
 
 #define Z80__SBC__REG16__REG16(dest, src) {     \
     UnsignedWord tmpOldValue = (dest);          \
-    UnsignedWord tmpSub = (src);                \
-    std::uint32_t tmpResult = (dest) - tmpSub - (Z80_FLAG_C_ISSET ? 1 : 0); \
+    UnsignedWord tmpDelta = (src);                \
+    std::uint32_t tmpResult = (dest) - tmpDelta - (Z80_FLAG_C_ISSET ? 1 : 0); \
     (dest) = tmpResult & 0xffff;                \
     Z80_FLAG_N_SET;                             \
     Z80_FLAG_Z_UPDATE(0 == (dest));             \
     Z80_FLAGS_S53_UPDATE(((dest) & 0xff00) >> 8); \
-    Z80_FLAG_P_UPDATE_OVERFLOW16_SUB(tmpOldValue, tmpSub, (dest));    \
+    Z80_FLAG_P_UPDATE_OVERFLOW16_SUB(tmpOldValue, tmpDelta, (dest));    \
     Z80_FLAG_C_UPDATE((dest) > tmpOldValue);    \
     /* check for carry between bits 11 and 12 - exactly the same as half-carry flag for 8-bit SBC, except we're
      * working with the high byte */ \
-   Z80_FLAG_H_UPDATE_SUB(static_cast<UnsignedByte>((tmpOldValue & 0xff00) >> 8), static_cast<UnsignedByte>((tmpSub & 0xff00) >> 8), static_cast<UnsignedByte>((tmpResult & 0xff00) >> 8));\
+   Z80_FLAG_H_UPDATE_SUB(static_cast<UnsignedByte>((tmpOldValue & 0xff00) >> 8), static_cast<UnsignedByte>((tmpDelta & 0xff00) >> 8), static_cast<UnsignedByte>((tmpResult & 0xff00) >> 8));\
 }
 
 #define Z80__SBC__REG8__INDIRECT_REG16_D(dest,reg,d) Z80__SBC__REG8__N((dest), peekUnsigned((reg) + (d)))
@@ -340,13 +372,13 @@ m_registers.memptr = m_registers.pc
 //
 // increment instructions
 //
-#define Z80__INC__REG8(reg) \
-(reg)++;                    \
+#define Z80__INC__REG8(reg)             \
+(reg)++;                                \
 Z80_FLAG_H_UPDATE(0 == (0x0f & (reg))); \
-Z80_FLAG_P_UPDATE(0x80 == (reg)); \
-Z80_FLAG_N_CLEAR;           \
-Z80_FLAG_Z_UPDATE(0 == (reg));   \
-Z80_FLAG_S_UPDATE((reg) & 0x80); \
+Z80_FLAG_P_UPDATE(0x80 == (reg));       \
+Z80_FLAG_N_CLEAR;                       \
+Z80_FLAG_Z_UPDATE(0 == (reg));          \
+Z80_FLAG_S_UPDATE((reg) & 0x80);        \
 Z80_FLAG_F3_UPDATE((reg) & Z80_FLAG_F3_MASK); \
 Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
 
@@ -399,15 +431,15 @@ Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
 //
 #define Z80__CP__N(n) \
 { \
-    UnsignedByte tmpSub = (n);           \
-    UnsignedWord tmpResult = m_registers.a - tmpSub; \
+    UnsignedByte tmpDelta = (n);           \
+    UnsignedWord tmpResult = m_registers.a - tmpDelta; \
     Z80_FLAG_C_UPDATE(tmpResult & 0x0100);                       \
     Z80_FLAG_N_SET;      \
-    Z80_FLAG_P_UPDATE_OVERFLOW_SUB(m_registers.a, tmpSub, tmpResult); \
-    Z80_FLAG_H_UPDATE_SUB(m_registers.a, tmpSub, tmpResult); \
+    Z80_FLAG_P_UPDATE_OVERFLOW_SUB(m_registers.a, tmpDelta, tmpResult); \
+    Z80_FLAG_H_UPDATE_SUB(m_registers.a, tmpDelta, tmpResult); \
     Z80_FLAG_S_UPDATE(tmpResult & Z80_FLAG_S_MASK);\
-    Z80_FLAG_F5_UPDATE(tmpSub & Z80_FLAG_F5_MASK);\
-    Z80_FLAG_F3_UPDATE(tmpSub & Z80_FLAG_F3_MASK);\
+    Z80_FLAG_F5_UPDATE(tmpDelta & Z80_FLAG_F5_MASK);\
+    Z80_FLAG_F3_UPDATE(tmpDelta & Z80_FLAG_F3_MASK);\
     Z80_FLAG_Z_UPDATE(0 == tmpResult);      \
 }
 #define Z80__CP__REG8(reg) Z80__CP__N(reg)
@@ -419,7 +451,13 @@ Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
 //
 // FLAGS: C cleared, N cleared, P is parity, others by definition
 //
-#define Z80_BITWISE_FLAGS Z80_FLAG_C_CLEAR; Z80_FLAG_N_CLEAR; Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a)); Z80_FLAGS_S53_UPDATE(m_registers.a); Z80_FLAG_Z_UPDATE(0 == m_registers.a);
+#define Z80_BITWISE_FLAGS \
+Z80_FLAG_C_CLEAR;         \
+Z80_FLAG_N_CLEAR;         \
+Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a)); \
+Z80_FLAGS_S53_UPDATE(m_registers.a);            \
+Z80_FLAG_Z_UPDATE(0 == m_registers.a);
+
 #define Z80__AND__N(n) m_registers.a &= (n); Z80_BITWISE_FLAGS; Z80_FLAG_H_SET;
 #define Z80__AND__REG8(reg) Z80__AND__N((reg))
 #define Z80__AND__INDIRECT_REG16(reg) Z80__AND__N(peekUnsigned(reg))
@@ -989,6 +1027,57 @@ void Z80::Z80::execute(const UnsignedByte * instruction, bool doPc, int * tState
     }
 }
 
+void Z80::Z80::handleNmi()
+{
+    m_iff2 = m_iff1;
+    m_iff1 = false;
+    Z80__PUSH__REG16(m_registers.pc);
+    m_registers.pc = 0x0066;
+}
+
+int Z80::Z80::handleInterrupt()
+{
+    int tStates = 0;
+    m_iff1 = m_iff2 = false;
+
+    switch (m_interruptMode) {
+        case InterruptMode::IM0:
+            std::cerr << "IM0 is not currently handled correctly.\n";
+            // TODO if the instruction is a call or RST, push PC onto stack
+            if (false/* is_call_or_rst */) {
+                Z80__PUSH__REG16(m_registers.pc);
+            }
+
+            // TODO fetch the instruction from the device, up to 4 bytes
+            // execute the instruction
+//				execute(reinterpret_cast<UnsignedByte *>(&m_interruptData), false);
+            // clear the instruction cache - actually just turns it into a NOP
+            m_interruptData = 0x00;
+            return 0;
+
+        case InterruptMode::IM1:
+        Z80__PUSH__REG16(m_registers.pc);
+            m_registers.pc = 0x0038;
+            return 13;
+
+        case InterruptMode::IM2:
+        Z80__PUSH__REG16(m_registers.pc);
+            // interrupt service routine is pointed to by interrupt vector table starting at 0x{regI}00; byte on
+            // data bus from interrupting device is offset into table (e.g. if device provides 0x20, the service
+            // routine starts at the memory address stored at 0x{regI}20). For example, if I contains 0xfe and the
+            // device puts 0x20 on the data bus, then the 16-bit word at 0xfe20 will be fetched. If the two bytes at
+            // 0xfe20 and 0xfe21 are 0x38, 0x04 respectively, then the interrupt routine is located at address
+            // 0x0438 (because Z80 words are little-endian) and the PC will jump to 0x0438 for the interrupt service
+            // routine
+            m_registers.pc = peekUnsignedWord(static_cast<UnsignedWord>(m_registers.i) << 8 | (m_interruptData & 0xfe));
+            return 19;
+            break;
+    }
+
+    // should never happen
+    throw InvalidInterruptMode(static_cast<UnsignedByte>(m_interruptMode));
+}
+
 int Z80::Z80::fetchExecuteCycle()
 {
 	int tStates = 0;
@@ -996,54 +1085,16 @@ int Z80::Z80::fetchExecuteCycle()
 
 	// TODO technically interrupts occur at the end of instruction processing
 	if (m_nmiPending) {
-		m_iff2 = m_iff1;
-		m_iff1 = false;
-		Z80__PUSH__REG16(m_registers.pc);
-		m_registers.pc = 0x0066;
-		m_nmiPending = false;
-        tStates += 11;
+	    handleNmi();
+	    tStates += 11;
+	    m_nmiPending = false;
 	}
 
 	// TODO defer interrupt by a single instruction if the next instruction is a return
 	if (m_iff1 && m_interruptRequested) {
 		// process maskable interrupt
-        m_iff1 = m_iff2 = false;
-
-		switch(m_interruptMode) {
-			case InterruptMode::IM0:
-				// TODO if the instruction is a call or RST, push PC onto stack
-				if (false/* is_call_or_rst */) {
-				    Z80__PUSH__REG16(m_registers.pc);
-				}
-
-				// TODO fetch the instruction from the device, up to 4 bytes
-				// execute the instruction
-//				execute(reinterpret_cast<UnsignedByte *>(&m_interruptData), false);
-				// clear the instruction cache - actually just turns it into a NOP
-				m_interruptData = 0x00;
-				break;
-
-		    case InterruptMode::IM1:
-				Z80__PUSH__REG16(m_registers.pc);
-                m_registers.pc = 0x0038;
-                tStates += 13;
-				break;
-
-		    case InterruptMode::IM2:
-                Z80__PUSH__REG16(m_registers.pc);
-                // interrupt service routine is pointed to by interrupt vector table starting at 0x{regI}00; byte on
-                // data bus from interrupting device is offset into table (e.g. if device provides 0x20, the service
-                // routine starts at the memory address stored at 0x{regI}20). For example, if I contains 0xfe and the
-                // device puts 0x20 on the data bus, then the 16-bit word at 0xfe20 will be fetched. If the two bytes at
-                // 0xfe20 and 0xfe21 are 0x38, 0x04 respectively, then the interrupt routine is located at address
-                // 0x0438 (because Z80 words are little-endian) and the PC will jump to 0x0438 for the interrupt service
-                // routine
-                m_registers.pc = peekUnsignedWord(static_cast<UnsignedWord>(m_registers.i) << 8 | (m_interruptData & 0xfe));
-                tStates += 19;
-				break;
-		}
-
-		m_interruptRequested = false;
+        tStates += handleInterrupt();
+        m_interruptRequested = false;
 	}
 
 	execute(m_memory + m_registers.pc, true, &tStates, &size);
@@ -2035,10 +2086,6 @@ void Z80::Z80::executePlainInstruction(const UnsignedByte * instruction, bool * 
 		case Z80__PLAIN__JP__Z__NN:					// 0xca
             m_registers.memptr = z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
 
-            // NOTE docs I've found say cost is 10 if jump taken, 1 if not; however Z80 test suite expects cost to
-            //  always bew 10
-            Z80_USE_JUMP_CYCLE_COST;
-
             if (Z80_FLAG_Z_ISSET) {
                 m_registers.pc = m_registers.memptr;
                 Z80_DONT_UPDATE_PC;
@@ -2090,10 +2137,6 @@ void Z80::Z80::executePlainInstruction(const UnsignedByte * instruction, bool * 
 
 		case Z80__PLAIN__JP__NC__NN:				// 0xd2
             m_registers.memptr = z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
-
-            // NOTE docs I've found say cost is 10 if jump taken, 1 if not; however Z80 test suite expects cost to
-            //  always bew 10
-            Z80_USE_JUMP_CYCLE_COST;
 
             if (!Z80_FLAG_C_ISSET) {
                 m_registers.pc = m_registers.memptr;
@@ -2147,10 +2190,6 @@ void Z80::Z80::executePlainInstruction(const UnsignedByte * instruction, bool * 
 		case Z80__PLAIN__JP__C__NN:					// 0xda
             m_registers.memptr = z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
 
-            // NOTE docs I've found say cost is 10 if jump taken, 1 if not; however Z80 test suite expects cost to
-            //  always bew 10
-            Z80_USE_JUMP_CYCLE_COST;
-
             if (Z80_FLAG_C_ISSET) {
                 m_registers.pc = m_registers.memptr;
                 Z80_DONT_UPDATE_PC;
@@ -2201,10 +2240,6 @@ void Z80::Z80::executePlainInstruction(const UnsignedByte * instruction, bool * 
 		case Z80__PLAIN__JP__PO__NN:				// 0xe2
 			// the operand PO stands for "parity odd"
             m_registers.memptr = z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
-
-            // NOTE docs I've found say cost is 10 if jump taken, 1 if not; however Z80 test suite expects cost to
-            //  always bew 10
-            Z80_USE_JUMP_CYCLE_COST;
 
             if (!Z80_FLAG_P_ISSET) {
                 m_registers.pc = m_registers.memptr;
@@ -2261,10 +2296,6 @@ void Z80::Z80::executePlainInstruction(const UnsignedByte * instruction, bool * 
             // the operand PO stands for "parity even"
             m_registers.memptr = z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
 
-            // NOTE docs I've found say cost is 10 if jump taken, 1 if not; however Z80 test suite expects cost to
-            //  always bew 10
-            Z80_USE_JUMP_CYCLE_COST;
-
             if (Z80_FLAG_P_ISSET) {
                 m_registers.pc = m_registers.memptr;
                 Z80_DONT_UPDATE_PC;
@@ -2320,10 +2351,6 @@ void Z80::Z80::executePlainInstruction(const UnsignedByte * instruction, bool * 
             //  operates using the sign flag
             m_registers.memptr = z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
 
-            // NOTE docs I've found say cost is 10 if jump taken, 1 if not; however Z80 test suite expects cost to
-            //  always bew 10
-            Z80_USE_JUMP_CYCLE_COST;
-
             if (!Z80_FLAG_S_ISSET) {
                 m_registers.pc = m_registers.memptr;
                 Z80_DONT_UPDATE_PC;
@@ -2375,10 +2402,6 @@ void Z80::Z80::executePlainInstruction(const UnsignedByte * instruction, bool * 
 		case Z80__PLAIN__JP__M__NN:					// 0xfa
 			// the operand M stands for "minus" and therefore uses the sign flag
             m_registers.memptr = z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
-
-            // NOTE docs I've found say cost is 10 if jump taken, 1 if not; however Z80 test suite expects cost to
-            //  always bew 10
-            Z80_USE_JUMP_CYCLE_COST;
 
             if (Z80_FLAG_S_ISSET) {
                 m_registers.pc = m_registers.memptr;

@@ -881,12 +881,15 @@ namespace Z80
         void nmi();
         void interrupt(UnsignedByte data = 0x00);
 
-        void execute(const UnsignedByte *instruction, bool doPc = true, int *tStates = 0, int *size = 0);
+        virtual void execute(const UnsignedByte *instruction, bool doPc = true, int *tStates = 0, int *size = 0);
 
         // fetches and executes a single instruction, returns the number of t-states
-        int fetchExecuteCycle();
+        virtual int fetchExecuteCycle();
 
     protected:
+        virtual void handleNmi();
+        virtual int handleInterrupt();
+
         // doPc is altered to be false if the instruction is a jump that is taken; tStates is filled with clock cycles
         // consumed; size is filled with byte size of instruction and operands; doPc is set to false if the instruction
         // has modified the PC. returns true if execution of instruction was successful, false otherwise

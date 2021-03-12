@@ -44,6 +44,7 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
   m_flags(),
   m_shadowFlags(),
   m_memoryWidget(thread->spectrum()),
+  m_memoryLocation(),
   m_memoryPc(),
   m_memorySp(),
   m_step(QIcon::fromTheme(QStringLiteral("debug-step-instruction")), tr("Step")),
@@ -201,6 +202,7 @@ void DebugWindow::layoutWidget()
     memoryLayout->addWidget(&m_memoryWidget);
     memory->setLayout(memoryLayout);
     auto * tmpLayout = new QHBoxLayout();
+    tmpLayout->addWidget(&m_memoryLocation);
     tmpLayout->addStretch(10);
     tmpLayout->addWidget(&m_memoryPc);
     tmpLayout->addWidget(&m_memorySp);
@@ -228,6 +230,7 @@ void DebugWindow::connectWidgets()
     connect(&m_refresh, &QAction::triggered, this, &DebugWindow::updateStateDisplay);
     connect(&m_step, &QAction::triggered, this, &DebugWindow::stepTriggered);
 
+    connect(&m_memoryLocation, qOverload<int>(&HexSpinBox::valueChanged), this, &DebugWindow::memoryLocationChanged);
     connect(&m_memoryPc, &QToolButton::clicked, this, &DebugWindow::scrollMemoryToPcTriggered);
     connect(&m_memorySp, &QToolButton::clicked, this, &DebugWindow::scrollMemoryToSpTriggered);
 
@@ -363,10 +366,19 @@ void DebugWindow::threadStepped()
 
 void DebugWindow::scrollMemoryToPcTriggered()
 {
-    m_memoryWidget.scrollToAddress(m_pc.value());
+    auto addr = m_pc.value();
+    m_memoryLocation.setValue(addr);
+    m_memoryWidget.scrollToAddress(addr);
 }
 
 void DebugWindow::scrollMemoryToSpTriggered()
 {
-    m_memoryWidget.scrollToAddress(m_sp.value());
+    auto addr = m_sp.value();
+    m_memoryLocation.setValue(addr);
+    m_memoryWidget.scrollToAddress(addr);
+}
+
+void DebugWindow::memoryLocationChanged()
+{
+    m_memoryWidget.scrollToAddress(m_memoryLocation.value());
 }

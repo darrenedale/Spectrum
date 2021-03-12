@@ -5,20 +5,22 @@
 #include <QPaintEvent>
 #include <QPainter>
 
-ImageWidget::ImageWidget( QWidget * parent )
-:	ImageWidget(QImage(), parent)
+using namespace Spectrum;
+
+ImageWidget::ImageWidget(QWidget * parent)
+:	ImageWidget({}, parent)
 {
 }
 
 ImageWidget::ImageWidget(QImage image, QWidget * parent )
 :	QWidget(parent),
-	m_image(image)
+	m_image(std::move(image))
 {
 }
 
-void ImageWidget::setImage(const QImage & image)
+void ImageWidget::setImage(QImage image)
 {
-	m_image = image;
+	m_image = std::move(image);
 	update();
 }
 
@@ -30,9 +32,9 @@ void ImageWidget::resizeEvent(QResizeEvent * ev)
 
 void ImageWidget::paintEvent(QPaintEvent *)
 {
-    QPainter p(this);
-    p.drawImage(QRect(QPoint(0, 0), size()), m_image);
-    p.end();
+    QPainter painter(this);
+    painter.drawImage(QRect(QPoint(0, 0), size()), m_image);
+    painter.end();
 }
 
 ImageWidget::~ImageWidget() = default;

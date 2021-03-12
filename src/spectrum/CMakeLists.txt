@@ -8,6 +8,7 @@ add_executable(
         spectrum
         main.cpp
         spectrum.cpp
+        z80.cpp
         keyboard.cpp
         kempstonjoystick.cpp
         displaydevice.h
@@ -23,12 +24,12 @@ add_executable(
         qt/memorywidget.cpp
         qt/threadpauser.h
         qt/keyboardmonitorwidget.cpp
+        qt/imagewidget.cpp
+        qt/hexspinbox.cpp
         ../cpu.cpp
         ../z80/z80.cpp
         ../z80/iodevice.cpp
         ../z80/registers.h
-        ../qt/imagewidget.cpp
-        ../qt/hexspinbox.cpp
 )
 
 target_link_libraries(spectrum Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Gamepad)

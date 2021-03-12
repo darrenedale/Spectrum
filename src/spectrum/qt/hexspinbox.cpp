@@ -11,6 +11,8 @@
 
 #include "hexspinbox.h"
 
+using namespace Spectrum;
+
 HexSpinBox::HexSpinBox(QWidget * parent)
 : HexSpinBox(4, QLatin1Char('0'), parent)
 {}
@@ -31,6 +33,14 @@ HexSpinBox::HexSpinBox(int digits, const QChar & fillChar, QWidget * parent)
     assert(0 < digits);
     setPrefix(QStringLiteral("0x"));
     setMinimum(0);
+
+    int max = 0;
+
+    while (digits--) {
+        max = (max << 4) | 0xf;
+    }
+
+    setMaximum(max);
     setMouseTracking(true);
 }
 

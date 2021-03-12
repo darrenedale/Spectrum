@@ -48,7 +48,7 @@ MainWindow::MainWindow(QWidget * parent)
     m_debugWindow.installEventFilter(this);
     m_load.setShortcut(::Qt::Key::Key_Control + ::Qt::Key::Key_O);
     m_pauseResume.setShortcuts({::Qt::Key::Key_Pause, ::Qt::Key::Key_Control + ::Qt::Key_P,});
-    m_debug.setShortcut(::Qt::Key::Key_Control + ::Qt::Key::Key_D);
+    m_debug.setShortcuts({::Qt::Key::Key_Control + ::Qt::Key::Key_D, ::Qt::Key::Key_F12,});
     m_debug.setCheckable(true);
     m_debugStep.setShortcut(::Qt::Key::Key_Space);
     m_saveScreenshot.setShortcut(::Qt::Key::Key_Print);

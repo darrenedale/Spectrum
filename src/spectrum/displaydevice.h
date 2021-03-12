@@ -11,7 +11,7 @@ namespace Spectrum
      * Interface for display devices for Spectrums.
      */
 	class DisplayDevice
-    : public Z80::IODevice
+    : public ::Z80::IODevice
 	{
     public:
         enum class Colour: std::uint8_t

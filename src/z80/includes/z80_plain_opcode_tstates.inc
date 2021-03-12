@@ -227,7 +227,7 @@
 
 5 | (11 << 16),        // Z80__PLAIN__RET__Z
 10,       // Z80__PLAIN__RET
-1 | (10 << 16),        // Z80__PLAIN__JP__Z__NN
+10,        // Z80__PLAIN__JP__Z__NN
 0,        // Z80__PLAIN__PREFIX__CB	/* 0xcb prefix */
 10 | (17 << 16),        // Z80__PLAIN__CALL__Z__NN
 17,       // Z80__PLAIN__CALL__NN
@@ -236,7 +236,7 @@
 
 5 | (11 << 16),        // Z80__PLAIN__RET__NC
 10,       // Z80__PLAIN__POP__DE
-1 | (10 << 16),        // Z80__PLAIN__JP__NC__NN
+10,        // Z80__PLAIN__JP__NC__NN
 11,       // Z80__PLAIN__OUT__INDIRECT_N__A
 10 | (17 << 16),        // Z80__PLAIN__CALL__NC__NN
 11,       // Z80__PLAIN__PUSH__DE
@@ -245,7 +245,7 @@
 
 5 | (11 << 16),        // Z80__PLAIN__RET__C
 4,        // Z80__PLAIN__EXX
-1 | (10 << 16),        // Z80__PLAIN__JP__C__NN
+10,        // Z80__PLAIN__JP__C__NN
 11,        // Z80__PLAIN__IN__A__INDIRECT_N
 10 | (17 << 16),        // Z80__PLAIN__CALL__C__NN
 0,        // Z80__PLAIN__PREFIX__DD	/* 0xdd prefix */
@@ -254,7 +254,7 @@
 
 5 | (11 << 16),        // Z80__PLAIN__RET__PO
 10,       // Z80__PLAIN__POP__HL
-1 | (10 << 16),        // Z80__PLAIN__JP__PO__NN
+10,        // Z80__PLAIN__JP__PO__NN
 19,       // Z80__PLAIN__EX__INDIRECT_SP__HL
 10 | (17 << 16),        // Z80__PLAIN__CALL__PO__NN
 11,       // Z80__PLAIN__PUSH__HL
@@ -263,7 +263,7 @@
 
 5 | (11 << 16),        // Z80__PLAIN__RET__PE
 4,        // Z80__PLAIN__JP__INDIRECT_HL
-1 | (10 << 16),        // Z80__PLAIN__JP__PE__NN
+10,        // Z80__PLAIN__JP__PE__NN
 4,        // Z80__PLAIN__EX__DE__HL
 10 | (17 << 16),        // Z80__PLAIN__CALL__PE__NN
 0,        // Z80__PLAIN__PREFIX__ED	/* 0xed prefix */
@@ -272,7 +272,7 @@
 
 5 | (11 << 16),        // Z80__PLAIN__RET__P
 10,       // Z80__PLAIN__POP__AF
-1 | (10 << 16),        // Z80__PLAIN__JP__P__NN
+10,        // Z80__PLAIN__JP__P__NN
 4,        // Z80__PLAIN__DI
 10 | (17 << 16),        // Z80__PLAIN__CALL__P__NN
 11,       // Z80__PLAIN__PUSH__AF
@@ -281,7 +281,7 @@
 
 5 | (11 << 16),        // Z80__PLAIN__RET__M
 6,        // Z80__PLAIN__LD__SP__HL
-1 | (10 << 16),        // Z80__PLAIN__JP__M__NN
+10,        // Z80__PLAIN__JP__M__NN
 4,        // Z80__PLAIN__EI
 10 | (17 << 16),        // Z80__PLAIN__CALL__M__NN
 0,        // Z80__PLAIN__PREFIX__FD	/* 0xfd prefix */

@@ -6,7 +6,7 @@
 #include <QMainWindow>
 #include <QAction>
 
-#include "../../qt/hexspinbox.h"
+#include "hexspinbox.h"
 #include "registerpairwidget.h"
 #include "flagswidget.h"
 #include "memorywidget.h"
@@ -44,6 +44,7 @@ namespace Spectrum::Qt
         void threadPaused();
         void threadResumed();
         void threadStepped();
+        void memoryLocationChanged();
         void scrollMemoryToPcTriggered();
         void scrollMemoryToSpTriggered();
 
@@ -67,6 +68,7 @@ namespace Spectrum::Qt
         FlagsWidget m_flags;
         FlagsWidget m_shadowFlags;
         MemoryWidget m_memoryWidget;
+        HexSpinBox m_memoryLocation;
         QToolButton m_memoryPc;
         QToolButton m_memorySp;
         QAction m_pauseResume;

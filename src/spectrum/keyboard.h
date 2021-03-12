@@ -13,7 +13,7 @@
 namespace Spectrum
 {
     class Keyboard
-    : public Z80::IODevice
+    : public ::Z80::IODevice
     {
     public:
         enum class Key: std::uint8_t
