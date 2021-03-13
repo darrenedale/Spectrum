@@ -31,30 +31,30 @@ bool Keyboard::checkReadPort(Z80::UnsignedWord port) const
     return !(port & 0x0001);
 }
 
-// NOTE we receive the LAST key (the one that goes in bit 4) so that we can loop easily, exiting when the mask is 0
-Z80::UnsignedByte Keyboard::readHalfRow(Key finalKey) const
+// NOTE we receive the key that goes in bit 4 so that we can loop easily, exiting when the key mask is 0
+Z80::UnsignedByte Keyboard::readHalfRow(Key bit4Key) const
 {
     Z80::UnsignedByte result = 0b00011111;
-    Z80::UnsignedByte mask = 0b00010000;
+    Z80::UnsignedByte keyMask = 0b00010000;
 
-    for (auto key = static_cast<std::uint8_t>(finalKey); mask; --key, mask >>= 1) {
+    for (auto key = static_cast<std::uint8_t>(bit4Key); keyMask; --key, keyMask >>= 1) {
         if (keyState(static_cast<Key>(key))) {
-            result &= ~mask;
+            result &= ~keyMask;
         }
     }
 
     return result;
 }
 
-// NOTE we receive the LAST key (the one that goes in bit 4) so that we can loop easily, exiting when the mask is 0
-Z80::UnsignedByte Keyboard::readHalfRowReverse(Key finalKey) const
+// NOTE we receive the key that goes in bit 4 so that we can loop easily, exiting when the key mask is 0
+Z80::UnsignedByte Keyboard::readHalfRowReverse(Key bit4Key) const
 {
-    Z80::UnsignedByte result = 0b00011111;
-    Z80::UnsignedByte mask = 0b00010000;
+    Z80::UnsignedByte result = 0xff;
+    Z80::UnsignedByte keyMask = 0x10;
 
-    for (auto key = static_cast<int>(finalKey); mask; ++key, mask >>= 1) {
+    for (auto key = static_cast<int>(bit4Key); keyMask; ++key, keyMask >>= 1) {
         if (keyState(static_cast<Key>(key))) {
-            result &= ~mask;
+            result &= ~keyMask;
         }
     }
 
@@ -63,7 +63,7 @@ Z80::UnsignedByte Keyboard::readHalfRowReverse(Key finalKey) const
 
 Z80::UnsignedByte Keyboard::readByte(Z80::UnsignedWord port)
 {
-    Z80::UnsignedByte result = 0b00011111;
+    Z80::UnsignedByte result = 0xff;
     Z80::UnsignedByte halfRows = (port & 0xff00) >> 8;
 
     if (0xff == halfRows) {

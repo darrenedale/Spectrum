@@ -31,14 +31,29 @@ namespace Spectrum
             addObserver(m_instructionObservers, observer);
         }
 
+        inline void removeInstructionObserver(Observer * observer)
+        {
+            removeObserver(m_instructionObservers, observer);
+        }
+
         inline void addNmiObserver(Observer * observer)
         {
             addObserver(m_nmiObservers, observer);
         }
 
+        inline void removeNmiObserver(Observer * observer)
+        {
+            removeObserver(m_nmiObservers, observer);
+        }
+
         inline void addInterruptObserver(Observer * observer)
         {
             addObserver(m_interruptObservers, observer);
+        }
+
+        inline void removeInterruptObserver(Observer * observer)
+        {
+            removeObserver(m_interruptObservers, observer);
         }
 
     protected:
@@ -56,6 +71,18 @@ namespace Spectrum
             }
 
             observers.push_back(observer);
+        }
+
+        void removeObserver(Observers & observers, Observer * observer)
+        {
+            auto observerIterator = std::find(observers.cbegin(), observers.cend(), observer);
+
+            if (observers.cend() == observerIterator) {
+                // not one of our observers
+                return;
+            }
+
+            observers.erase(observerIterator);
         }
 
         void notifyObservers(const Observers & observers)

@@ -25,4 +25,4 @@ namespace Spectrum::Qt
     };
 }
 
-#endif //SPECTRUM_KEYBOARD_H
+#endif // SPECTRUM_QSPECTRUMKEYBOARD_H

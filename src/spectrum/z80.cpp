@@ -14,8 +14,8 @@ Spectrum::Z80::Z80(Z80::UnsignedByte * memory, int memorySize)
 
 void Spectrum::Z80::execute(const UnsignedByte *instruction, bool doPc, int *tStates, int *size)
 {
-    notifyObservers(m_instructionObservers);
     BaseZ80::execute(instruction, doPc, tStates, size);
+    notifyObservers(m_instructionObservers);
 }
 
 int Spectrum::Z80::handleInterrupt()

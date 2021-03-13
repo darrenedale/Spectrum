@@ -10,16 +10,22 @@ add_executable(
         spectrum.cpp
         z80.cpp
         keyboard.cpp
+        joystickinterface.cpp
+        interfacetwojoystick.cpp
         kempstonjoystick.cpp
         displaydevice.h
         qt/application.cpp
         qt/mainwindow.cpp
         qt/thread.cpp
+        qt/breakpoint.cpp
+        qt/programcounterbreakpoint.cpp
         qt/debugwindow.cpp
-        qt/qspectrumdisplay.cpp
+        qt/qimagedisplaydevice.cpp
         qt/registerpairwidget.cpp
         qt/flagswidget.cpp
         qt/keyboard.cpp
+        qt/qinterfacetwojoystick.cpp
+        qt/qinterfacetwojoystick.h
         qt/qkempstonjoystick.cpp
         qt/memorywidget.cpp
         qt/threadpauser.h

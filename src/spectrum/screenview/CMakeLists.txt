@@ -5,7 +5,7 @@ add_executable(
         application.cpp
         mainwindow.cpp
         colourcombo.cpp
-        ../qt/qspectrumdisplay.cpp
+        ../qt/qimagedisplaydevice.cpp
         ../qt/imagewidget.cpp
         ../../z80/iodevice.cpp
 )

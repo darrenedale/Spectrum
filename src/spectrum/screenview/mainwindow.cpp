@@ -10,7 +10,7 @@
 #include <QStandardPaths>
 
 #include "mainwindow.h"
-#include "../qt/qspectrumdisplay.h"
+#include "../qt/qimagedisplaydevice.h"
 
 using namespace ScreenView;
 
@@ -125,7 +125,7 @@ void MainWindow::closeEvent(QCloseEvent * ev)
 
 void MainWindow::updateScreen()
 {
-    Spectrum::Qt::QSpectrumDisplay display;
+    Spectrum::Qt::QImageDisplayDevice display;
     display.redrawDisplay(m_screenData);
     display.setBorder(m_borderColour->colour(), m_borderColour->isBright());
     m_display->setImage(display.image());

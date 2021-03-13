@@ -8,7 +8,9 @@
 #include <QTimer>
 
 #include "../spectrum.h"
-#include "qspectrumdisplay.h"
+#include "qimagedisplaydevice.h"
+#include "qinterfacetwojoystick.h"
+#include "qkempstonjoystick.h"
 #include "debugwindow.h"
 #include "imagewidget.h"
 #include "keyboard.h"
@@ -16,7 +18,7 @@
 
 namespace Spectrum::Qt
 {
-	class QSpectrumDisplay;
+	class QImageDisplayDevice;
 
 	class MainWindow
 	:	public QMainWindow {
@@ -31,6 +33,7 @@ namespace Spectrum::Qt
 
         void loadSnaSnapshot(const QString & fileName);
         void loadZ80Snapshot(const QString & fileName);
+        void loadSpSnapshot(const QString & fileName);
         void saveSnapshot(const QString & fileName) const;
 
         inline Spectrum & spectrum()
@@ -48,9 +51,13 @@ namespace Spectrum::Qt
 	protected:
         void showEvent(QShowEvent *) override;
 	    void closeEvent(QCloseEvent *) override;
+	    void keyPressEvent(QKeyEvent *) override;
+	    void keyReleaseEvent(QKeyEvent *) override;
         void refreshSpectrumDisplay();
 
     private:
+        using Joystick = QInterfaceTwoJoystick;
+
         void createToolbars();
         void connectSignals();
 
@@ -74,7 +81,7 @@ namespace Spectrum::Qt
         Spectrum m_spectrum;
         Thread m_spectrumThread;
         Keyboard m_keyboard;
-        QSpectrumDisplay m_display;
+        QImageDisplayDevice m_display;
         ImageWidget m_displayWidget;
         QAction m_load;
         QAction m_pauseResume;
@@ -87,6 +94,7 @@ namespace Spectrum::Qt
         QSpinBox m_emulationSpeedSpin;
         DebugWindow m_debugWindow;
         QTimer m_displayRefreshTimer;
+        Joystick m_joystick;
 	};
 }
 

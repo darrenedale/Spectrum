@@ -9,11 +9,11 @@
 
 namespace Spectrum::Qt
 {
-	class QSpectrumDisplay
+	class QImageDisplayDevice
 	:   public DisplayDevice
 	{
     public:
-        QSpectrumDisplay();
+        QImageDisplayDevice();
 
         QImage & image()
         {

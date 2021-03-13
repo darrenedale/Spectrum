@@ -17,27 +17,27 @@ Z80::UnsignedByte Spectrum::KempstonJoystick::readByte(Z80::UnsignedWord port)
     // TODO configurable mappings
     Z80::UnsignedByte value = 0x00;
 
-    if (joystickIsLeft()) {
+    if (joystick1IsLeft()) {
         value |= 0b00000010;
-    } else if (joystickIsRight()) {
+    } else if (joystick1IsRight()) {
         value |= 0b00000001;
     }
 
-    if (joystickIsUp()) {
+    if (joystick1IsUp()) {
         value |= 0b00001000;
-    } else if (joystickIsDown()) {
+    } else if (joystick1IsDown()) {
         value |= 0b00000100;
     }
 
-    if (button1IsPressed()) {
+    if (joystick1Button1IsPressed()) {
         value |= 0b00010000;
     }
 
-    if (button2IsPressed()) {
+    if (joystick1Button2IsPressed()) {
         value |= 0b01000000;
     }
 
-    if (button3IsPressed()) {
+    if (joystick1Button3IsPressed()) {
         value |= 0b10000000;
     }
 

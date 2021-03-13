@@ -10,6 +10,7 @@
 #include <QSpinBox>
 #include <QFileDialog>
 #include <QEvent>
+#include <QKeyEvent>
 #include <QDebug>
 #include <QSettings>
 #include <QDateTime>
@@ -23,6 +24,12 @@ using namespace Spectrum::Qt;
 /**
  * TODO refactor the rough snapshot read methods into helper classes, and add buffer overflow checking
  */
+
+namespace
+{
+    auto z80ToHostByteOrder = ::Z80::Z80::z80ToHostByteOrder;
+    auto hostToZ80ByteOrder = ::Z80::Z80::hostToZ80ByteOrder;
+};
 
 MainWindow::MainWindow(QWidget * parent)
 : QMainWindow(parent),
@@ -43,8 +50,12 @@ MainWindow::MainWindow(QWidget * parent)
   m_displayRefreshTimer(nullptr)
 {
     m_spectrum.setExecutionSpeedConstrained(true);
-    m_spectrum.setKeyboard(&m_keyboard);
-    installEventFilter(&m_keyboard);
+    m_displayWidget.keepAspectRatio();
+    m_displayWidget.setFocusPolicy(::Qt::FocusPolicy::ClickFocus);
+    m_displayWidget.setFocus();
+    m_displayWidget.installEventFilter(&m_joystick);
+    m_displayWidget.installEventFilter(&m_keyboard);
+    m_displayWidget.installEventFilter(this);
     m_debugWindow.installEventFilter(this);
     m_load.setShortcut(::Qt::Key::Key_Control + ::Qt::Key::Key_O);
     m_pauseResume.setShortcuts({::Qt::Key::Key_Pause, ::Qt::Key::Key_Control + ::Qt::Key_P,});
@@ -70,6 +81,8 @@ MainWindow::MainWindow(QWidget * parent)
     connect(&m_displayRefreshTimer, &QTimer::timeout, this, &MainWindow::refreshSpectrumDisplay);
 
     createToolbars();
+    m_spectrum.setJoystickInterface(&m_joystick);
+    m_spectrum.setKeyboard(&m_keyboard);
 	m_spectrum.addDisplayDevice(&m_display);
 	setCentralWidget(&m_displayWidget);
 
@@ -83,6 +96,8 @@ MainWindow::MainWindow(QWidget * parent)
 
 MainWindow::~MainWindow()
 {
+    m_spectrum.setKeyboard(nullptr);
+    m_spectrum.removeDisplayDevice(&m_display);
 	m_spectrumThread.quit();
 
 	if (!m_spectrumThread.wait(250)) {
@@ -523,6 +538,153 @@ void MainWindow::loadZ80Snapshot(const QString & fileName)
     m_displayWidget.setImage(m_display.image());
 }
 
+void MainWindow::loadSpSnapshot(const QString & fileName)
+{
+    // NOTE all data is in Z80 byte order
+    struct Header
+    {
+        char signature[2];
+        std::uint16_t length;
+        std::uint16_t baseAddress;
+
+        struct
+        {
+            std::uint16_t bc;
+            std::uint16_t de;
+            std::uint16_t hl;
+            std::uint16_t af;
+            std::uint16_t ix;
+            std::uint16_t iy;
+        } registers;
+
+        struct
+        {
+            std::uint16_t bc;
+            std::uint16_t de;
+            std::uint16_t hl;
+            std::uint16_t af;
+        } shadowRegisters;
+
+        struct {
+            std::uint8_t r;
+            std::uint8_t i;
+        } interruptRegisters;
+
+        std::uint16_t sp;
+        std::uint16_t pc;
+        std::uint16_t reserved1;
+        std::uint8_t border;
+        std::uint8_t reserved2;
+        std::uint16_t status;
+    };
+
+    ThreadPauser pauser(m_spectrumThread);
+
+    // read file
+    Header header = {};
+    std::ifstream::char_type * programBuffer = nullptr;
+
+    {
+        std::ifstream in(fileName.toStdString());
+
+        if (!in) {
+            // TODO display "not found" message
+            std::cerr << "Could not open file '" << fileName.toStdString() << "'\n";
+            return;
+        }
+
+        // read header
+        in.read(reinterpret_cast<std::ifstream::char_type *>(&header), sizeof(header));
+
+        if (in.fail()) {
+            std::cerr << "Error reading header from '" << fileName.toStdString() << "'\n";
+            return;
+        }
+
+        // validate header
+        if (*reinterpret_cast<const std::uint16_t *>("SP") != *reinterpret_cast<const std::uint16_t *>(header.signature)) {
+            std::cerr << "Not an SP file.";
+            return;
+        }
+
+        // NOTE from here on, the length and baseAddress members of the header are in host byte order
+        header.length = z80ToHostByteOrder(header.length);
+        header.baseAddress = z80ToHostByteOrder(header.baseAddress);
+
+        if (0x0000ffff < static_cast<int>(header.baseAddress) + header.length - 1) {
+            std::cerr << std::hex << std::setfill('0');
+            std::cerr << "Program extends beyond upper bounds of RAM (0x" << std::setw(4) << header.baseAddress << " + " << std::dec << header.length << ") > 0xffff\n";
+            std::cerr << "Base address: 0x" << std::hex << std::setw(4) << header.baseAddress << "\n";
+            std::cerr << "Length      : " << std::dec <<  header.length << " bytes\n";
+            std::cerr << "End address : 0x" << std::hex <<  std::setw(5) << (static_cast<std::uint32_t>(header.baseAddress) + header.length) << "\n";
+            std::cerr << "Program extends beyond upper bounds of RAM (0x" << std::setw(4) << header.baseAddress << " + " << std::dec << header.length << ") > 0xffff\n";
+            std::cerr << std::setfill(' ');
+            return;
+        }
+
+        header.border = header.border & 0x07;
+
+        programBuffer = new std::ifstream::char_type[header.length];
+        in.read(programBuffer, header.length);
+
+        if (in.fail()) {
+            std::cerr << "Error reading program from '" << fileName.toStdString() << "'\n";
+            delete[] programBuffer;
+            return;
+        }
+
+        if (!in.eof()) {
+            std::cerr << "Warning: ignored extraneous content at end of file (from byte " << in.tellg() << " onward.\n";
+        }
+    }
+
+    // set state
+    auto * memory = m_spectrum.memory();
+    auto & cpu = *(m_spectrum.z80());
+    auto & registers = cpu.registers();
+
+    registers.bc = z80ToHostByteOrder(header.registers.bc);
+    registers.de = z80ToHostByteOrder(header.registers.de);
+    registers.hl = z80ToHostByteOrder(header.registers.hl);
+    registers.af = z80ToHostByteOrder(header.registers.af);
+    registers.ix = z80ToHostByteOrder(header.registers.ix);
+    registers.iy = z80ToHostByteOrder(header.registers.iy);
+
+    registers.bcShadow = z80ToHostByteOrder(header.shadowRegisters.bc);
+    registers.deShadow = z80ToHostByteOrder(header.shadowRegisters.de);
+    registers.hlShadow = z80ToHostByteOrder(header.shadowRegisters.hl);
+    registers.afShadow = z80ToHostByteOrder(header.shadowRegisters.af);
+
+    registers.r = header.interruptRegisters.r;
+    registers.i = header.interruptRegisters.i;
+
+    registers.sp = z80ToHostByteOrder(header.sp);
+    registers.pc = z80ToHostByteOrder(header.pc);
+
+    m_display.setBorder(static_cast<DisplayDevice::Colour>(header.border));
+
+    // NOTE from here on, the status member of the header is in host byte order
+    header.status = z80ToHostByteOrder(header.status);
+    // bit 0 = IFF1
+    cpu.setIff1(header.status & 0x0001);
+    // bit 2 = IFF2
+    cpu.setIff2(header.status & 0x0004);
+
+    // bit 1 = IM
+    cpu.setInterruptMode(header.status & 0x0002 ? ::Z80::Z80::InterruptMode::IM2 : ::Z80::Z80::InterruptMode::IM1);
+
+    // bit 4 = interrupt pending
+    if (header.status & 0x0010) {
+        cpu.interrupt();
+    }
+
+    // NOTE bit 5 of status indicates flash state but we don't use this
+
+    std::memcpy(memory + header.baseAddress, programBuffer, header.length);
+
+    delete[] programBuffer;
+}
+
 void MainWindow::pauseResumeTriggered()
 {
     if (m_spectrumThread.isPaused()) {
@@ -540,7 +702,7 @@ void MainWindow::saveScreenshotTriggered()
     if(s_filters.isEmpty()) {
         s_filters << tr("Spectrum Screenshot (SCR) files (*.scr)");
         s_filters << tr("Portable Network Graphics (PNG) files (*.png)");
-        s_filters << tr("JPEG files (*.jpeg|*.jpg)");
+        s_filters << tr("JPEG files (*.jpeg *.jpg)");
         s_filters << tr("Windows Bitmap (BMP) files (*.bmp)");
     }
 
@@ -562,8 +724,10 @@ void MainWindow::loadSnapshotTriggered()
     ThreadPauser pauser(m_spectrumThread);
 
     if(filters.isEmpty()) {
-        filters << tr("Snapshot (SNA) files (*.sna)");
-        filters << tr("Z80 Snapshot (Z80) files (*.z80)");
+        filters << tr("All supported snapshot files (*.sna *.z80 *.sp)");
+        filters << tr("SNA Snapshots (*.sna)");
+        filters << tr("Z80 Snapshots (*.z80)");
+        filters << tr("SP Snapshots (*.sp)");
     }
 
     QString fileName = QFileDialog::getOpenFileName(this, tr("Load snapshot"), m_lastSnapshotLoadDir, filters.join(";;"), &lastFilter);
@@ -593,6 +757,8 @@ void MainWindow::loadSnapshotTriggered()
         loadSnaSnapshot(fileName);
     } else if ("z80" == format) {
         loadZ80Snapshot(fileName);
+    } else if ("sp" == format) {
+        loadSpSnapshot(fileName);
     } else {
         std::cerr << "unrecognised format '" << format.toStdString() << "' from filename '" << fileName.toStdString() << "'\n";
     }
@@ -642,12 +808,14 @@ void MainWindow::refreshSpectrumDisplay()
 void MainWindow::debugTriggered()
 {
     if (m_debug.isChecked()) {
+        m_spectrumThread.setDebugMode(true);
         m_debugWindow.show();
         m_debugWindow.activateWindow();
-        // TODO bring to front
+        m_debugWindow.raise();
     }
     else {
-        m_debugWindow.hide();
+        m_spectrumThread.setDebugMode(false);
+        m_debugWindow.close();
     }
 }
 
@@ -686,6 +854,29 @@ void MainWindow::threadStepped()
 
 bool MainWindow::eventFilter(QObject * target, QEvent * event)
 {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch"
+    // while user holds tab on display widget, temporarily run as fast as possible
+    if (&m_displayWidget == target) {
+        switch (event->type()) {
+            case QEvent::Type::KeyPress:
+                if (::Qt::Key::Key_Tab == dynamic_cast<QKeyEvent *>(event)->key()) {
+                    m_spectrum.setExecutionSpeedConstrained(false);
+                    return true;
+                }
+                break;
+
+
+            case QEvent::Type::KeyRelease:
+                if (::Qt::Key::Key_Tab == dynamic_cast<QKeyEvent *>(event)->key()) {
+                    m_spectrum.setExecutionSpeedConstrained(0 < m_emulationSpeedSlider.value());
+                    return true;
+                }
+                break;
+
+        }
+    }
+
     if (target == &m_debugWindow) {
         switch (event->type()) {
             case QEvent::Type::Show:
@@ -694,9 +885,31 @@ bool MainWindow::eventFilter(QObject * target, QEvent * event)
 
             case QEvent::Type::Hide:
                 m_debug.setChecked(false);
+                m_spectrumThread.setDebugMode(false);
                 break;
         }
     }
+#pragma clang diagnostic pop
 
     return false;
+}
+
+void MainWindow::keyPressEvent(QKeyEvent * event)
+{
+    if (!event->isAutoRepeat() && ::Qt::Key::Key_Tab == event->key()) {
+        m_spectrumThread.spectrum().setExecutionSpeedConstrained(false);
+        return;
+    }
+
+    QMainWindow::keyPressEvent(event);
+}
+
+void MainWindow::keyReleaseEvent(QKeyEvent * event)
+{
+    if (::Qt::Key::Key_Tab == event->key()) {
+        m_spectrumThread.spectrum().setExecutionSpeedConstrained(0 < m_emulationSpeedSlider.value());
+        return;
+    }
+
+    QMainWindow::keyReleaseEvent(event);
 }

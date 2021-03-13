@@ -1,10 +1,11 @@
-#include "thread.h"
+#include <iostream>
 
 #include <QMutexLocker>
 #include <QApplication>
 #include <QDebug>
 
 #include "../spectrum.h"
+#include "thread.h"
 
 namespace
 {
@@ -51,7 +52,7 @@ void Thread::run()
         }
 
         m_spectrumLock.lock();
-        m_spectrum.run((m_pause && m_step ? 1 : DefaultInstructionCount));
+        m_spectrum.run(((m_pause && m_step) || m_debugMode ? 1 : DefaultInstructionCount));
         m_spectrumLock.unlock();
 
         if (m_step) {
@@ -96,4 +97,22 @@ void Thread::quit()
     m_pause = false;
     m_quit = true;
     m_waitCondition.wakeOne();
+}
+
+void Thread::setDebugMode(bool debug)
+{
+    QMutexLocker locker(&m_threadLock);
+
+    if (debug == m_debugMode) {
+        return;
+    }
+
+    m_debugMode = debug;
+    std::cout << "Debug mode " << (debug ? "enabled\n" : "disabled\n");
+
+    if (debug) {
+        Q_EMIT debuggingStarted();
+    } else {
+        Q_EMIT debuggingFinished();
+    }
 }

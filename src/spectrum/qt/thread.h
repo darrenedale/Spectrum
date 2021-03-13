@@ -36,12 +36,20 @@ namespace Spectrum::Qt
 			    return m_pause;
             }
 
+			inline bool isInDebugMode() const
+            {
+			    return m_debugMode;
+            }
+
 		Q_SIGNALS:
 	        void paused();
 	        void resumed();
 			void stepped();
+			void debuggingStarted();
+			void debuggingFinished();
 
 		public Q_SLOTS:
+			void setDebugMode(bool debug = true);
 			void pause();
 			void reset();
 			void resume();
@@ -59,6 +67,7 @@ namespace Spectrum::Qt
 			bool m_pause;
 			bool m_quit;
 			bool m_step;
+			bool m_debugMode;
 	};
 }
 

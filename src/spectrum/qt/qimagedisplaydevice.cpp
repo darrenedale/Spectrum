@@ -5,7 +5,7 @@
 #include <QRgb>
 #include <QPainter>
 
-#include "qspectrumdisplay.h"
+#include "qimagedisplaydevice.h"
 
 //#define QSPECTRUMDISPLAY_USEPAINTER
 
@@ -36,12 +36,12 @@ namespace
     };
 }
 
-QSpectrumDisplay::QSpectrumDisplay()
+QImageDisplayDevice::QImageDisplayDevice()
 : m_image(fullWidth(), fullHeight(), QImage::Format_ARGB32)
 {
 }
 
-void QSpectrumDisplay::redrawDisplay(const uint8_t * displayMemory)
+void QImageDisplayDevice::redrawDisplay(const uint8_t * displayMemory)
 {
     ++m_frameCounter;
     bool flashInvert = m_frameCounter & 0x20;
@@ -104,7 +104,7 @@ void QSpectrumDisplay::redrawDisplay(const uint8_t * displayMemory)
 #endif
 }
 
-void QSpectrumDisplay::setBorder(DisplayDevice::Colour colour, bool bright)
+void QImageDisplayDevice::setBorder(DisplayDevice::Colour colour, bool bright)
 {
     QPainter painter(&image());
     auto idx = static_cast<std::size_t>(colour);
@@ -121,12 +121,12 @@ void QSpectrumDisplay::setBorder(DisplayDevice::Colour colour, bool bright)
     painter.end();
 }
 
-constexpr int QSpectrumDisplay::fullWidth()
+constexpr int QImageDisplayDevice::fullWidth()
 {
     return Width + BorderSize + BorderSize;
 }
 
-constexpr int QSpectrumDisplay::fullHeight()
+constexpr int QImageDisplayDevice::fullHeight()
 {
     return Height + BorderSize + BorderSize;
 }

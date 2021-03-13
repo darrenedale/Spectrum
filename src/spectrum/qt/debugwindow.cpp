@@ -1,5 +1,7 @@
 #include "debugwindow.h"
 
+#include <iostream>
+#include <iomanip>
 #include <QSpinBox>
 #include <QLineEdit>
 #include <QGroupBox>
@@ -10,11 +12,12 @@
 #include <QDockWidget>
 #include <QSettings>
 
-#include "thread.h"
 #include "../spectrum.h"
 #include "../../z80/z80.h"
+#include "thread.h"
 #include "registerpairwidget.h"
 #include "keyboardmonitorwidget.h"
+#include "programcounterbreakpoint.h"
 
 using namespace Spectrum::Qt;
 
@@ -45,12 +48,16 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
   m_shadowFlags(),
   m_memoryWidget(thread->spectrum()),
   m_memoryLocation(),
+  m_setBreakpoint(),
   m_memoryPc(),
   m_memorySp(),
   m_step(QIcon::fromTheme(QStringLiteral("debug-step-instruction")), tr("Step")),
   m_pauseResume(QIcon::fromTheme(QStringLiteral("media-playback-play")), tr("Resume")),
   m_refresh(QIcon::fromTheme(QStringLiteral("view-refresh")), tr("Refresh")),
-  m_keyboardMonitor(&m_thread->spectrum())
+  m_status(),
+  m_keyboardMonitor(&m_thread->spectrum()),
+  m_cpuObserver((*this)),
+  m_breakpoints()
 {
     m_pc.setMinimum(0);
     m_pc.setMaximum(0xffff);
@@ -65,6 +72,7 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
     m_im.setMinimum(0);
     m_im.setMaximum(2);
 
+    m_setBreakpoint.setIcon(QIcon::fromTheme(QStringLiteral("process-stop")));
     m_memoryPc.setText(QStringLiteral("PC"));
     m_memorySp.setText(QStringLiteral("SP"));
 
@@ -98,6 +106,7 @@ void DebugWindow::createToolbars()
     toolbar->addAction(&m_step);
     toolbar->addSeparator();
     toolbar->addAction(&m_refresh);
+    toolbar->addWidget(&m_status);
 }
 
 void DebugWindow::createDockWidgets()
@@ -203,6 +212,7 @@ void DebugWindow::layoutWidget()
     memory->setLayout(memoryLayout);
     auto * tmpLayout = new QHBoxLayout();
     tmpLayout->addWidget(&m_memoryLocation);
+    tmpLayout->addWidget(&m_setBreakpoint);
     tmpLayout->addStretch(10);
     tmpLayout->addWidget(&m_memoryPc);
     tmpLayout->addWidget(&m_memorySp);
@@ -231,6 +241,7 @@ void DebugWindow::connectWidgets()
     connect(&m_step, &QAction::triggered, this, &DebugWindow::stepTriggered);
 
     connect(&m_memoryLocation, qOverload<int>(&HexSpinBox::valueChanged), this, &DebugWindow::memoryLocationChanged);
+    connect(&m_setBreakpoint, &QToolButton::clicked, this, &DebugWindow::setBreakpointTriggered);
     connect(&m_memoryPc, &QToolButton::clicked, this, &DebugWindow::scrollMemoryToPcTriggered);
     connect(&m_memorySp, &QToolButton::clicked, this, &DebugWindow::scrollMemoryToSpTriggered);
 
@@ -277,20 +288,23 @@ void DebugWindow::connectWidgets()
 
 void DebugWindow::closeEvent(QCloseEvent * ev)
 {
+    m_thread->spectrum().z80()->removeInstructionObserver(&m_cpuObserver);
     QSettings settings;
     settings.beginGroup(QStringLiteral("debugwindow"));
     settings.setValue(QStringLiteral("position"), pos());
     settings.setValue(QStringLiteral("size"), size());
     settings.endGroup();
-    QWidget::closeEvent(ev);
+    QMainWindow::closeEvent(ev);
 }
 
 void DebugWindow::showEvent(QShowEvent * ev)
 {
+    m_thread->spectrum().z80()->addInstructionObserver(&m_cpuObserver);
     QSettings settings;
     settings.beginGroup(QStringLiteral("debugwindow"));
     setGeometry({settings.value(QStringLiteral("position")).toPoint(), settings.value(QStringLiteral("size")).toSize()});
     settings.endGroup();
+    QMainWindow::showEvent(ev);
 }
 
 void DebugWindow::updateStateDisplay()
@@ -381,4 +395,64 @@ void DebugWindow::scrollMemoryToSpTriggered()
 void DebugWindow::memoryLocationChanged()
 {
     m_memoryWidget.scrollToAddress(m_memoryLocation.value());
+}
+
+void DebugWindow::setBreakpointTriggered()
+{
+    auto addr = m_memoryLocation.value();
+
+    if (0 > addr || 0xffff < addr) {
+        std::cerr << "invalid breakpoint address: " << std::hex << std::setfill('0') << std::setw(4) << addr << std::dec << std::setfill(' ') << "\n";
+        return;
+    }
+
+    auto existingBreakpoint = std::find_if(m_breakpoints.cbegin(), m_breakpoints.cend(), [addr](const auto * breakpoint) -> bool {
+        auto * pcBreakpoint = dynamic_cast<const ProgramCounterBreakpoint *>(breakpoint);
+        return pcBreakpoint && pcBreakpoint->address() == addr;
+    });
+
+    if (existingBreakpoint != m_breakpoints.cend()) {
+        std::cerr << "breakpoint already set: 0x" << std::hex << std::setfill('0') << std::setw(4) << addr << std::dec << std::setfill(' ') << "\n";
+        return;
+    }
+
+    std::cout << "setting breakpoint at 0x" << std::hex << std::setfill('0') << std::setw(4) << addr << std::dec << std::setfill(' ') << "\n";
+    setStatus(tr("Breakpoint set at PC = 0x%1.").arg(addr, 4, 16, QLatin1Char('0')));
+
+    auto * breakpoint = new ProgramCounterBreakpoint(*m_thread, addr);
+    connect(breakpoint, &ProgramCounterBreakpoint::triggered, [this, addr]() {
+        std::cout << "PC breakpoint hit, navigating to memory location\n";
+        setStatus(tr("Breakpoint hit: PC = 0x%1.").arg(addr, 4, 16, QLatin1Char('0')));
+        show();
+        activateWindow();
+        raise();
+        m_memoryWidget.scrollToAddress(addr);
+        // TODO navigate disassembly to breakpoint address
+    });
+
+    m_breakpoints.push_back(breakpoint);
+}
+
+DebugWindow::~DebugWindow()
+{
+    m_thread->spectrum().z80()->removeInstructionObserver(&m_cpuObserver);
+}
+
+void DebugWindow::setStatus(const QString & status)
+{
+    m_status.setText(status);
+}
+
+void DebugWindow::clearStatus()
+{
+    m_status.clear();
+}
+
+void DebugWindow::InstructionObserver::notify(::Spectrum::Z80 * cpu)
+{
+    const auto & spectrum = window.m_thread->spectrum();
+
+    for (auto * breakpoint : window.m_breakpoints) {
+        breakpoint->check(spectrum);
+    }
 }

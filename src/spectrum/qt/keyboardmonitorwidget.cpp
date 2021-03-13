@@ -81,7 +81,7 @@ KeyboardMonitorWidget::KeyboardMonitorWidget(Spectrum * spectrum, QWidget * pare
     m_enter.setText(tr("Enter"));
 
     m_capsShift.setCheckable(true);
-    m_capsShift.setText(tr("Caps Shift"));
+    m_capsShift.setText(tr("Caps"));
     m_z.setCheckable(true);
     m_z.setText(tr("Z"));
     m_x.setCheckable(true);
@@ -98,7 +98,7 @@ KeyboardMonitorWidget::KeyboardMonitorWidget(Spectrum * spectrum, QWidget * pare
     m_m.setCheckable(true);
     m_m.setText(tr("M"));
     m_symbolShift.setCheckable(true);
-    m_symbolShift.setText(tr("Symbol Shift"));
+    m_symbolShift.setText(tr("Sym"));
     m_space.setCheckable(true);
     m_space.setText(tr("Space"));
 

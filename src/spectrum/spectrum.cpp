@@ -7,6 +7,7 @@
 #include <QThread>
 
 #include "displaydevice.h"
+#include "joystickinterface.h"
 #include "keyboard.h"
 #include "z80.h"
 
@@ -18,7 +19,12 @@ namespace
 namespace Spectrum
 {
     Spectrum::Spectrum(int memsize, uint8_t * mem)
-            : Computer(memsize, mem)
+    : Computer(memsize, mem),
+      m_interruptCycleCounter(0),
+      m_displayDevices(),
+      m_constrainExecutionSpeed(true),
+      m_keyboard(nullptr),
+      m_joystick(nullptr)
     {
         Cpu * z80 = new Z80(memory(), memorySize());
         z80->setClockSpeed(DefaultClockSpeed);
@@ -144,6 +150,21 @@ namespace Spectrum
 
         if (cpu && keyboard) {
             cpu->connectIODevice(m_keyboard);
+        }
+    }
+
+    void Spectrum::setJoystickInterface(JoystickInterface * joystick)
+    {
+        auto * cpu = z80();
+
+        if (cpu && m_joystick) {
+            cpu->disconnectIODevice(m_joystick);
+        }
+
+        m_joystick = joystick;
+
+        if (cpu && m_joystick) {
+            cpu->connectIODevice(m_joystick);
         }
     }
 

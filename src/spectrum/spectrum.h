@@ -13,6 +13,7 @@ namespace Spectrum
 {
 	class DisplayDevice;
 	class Keyboard;
+	class JoystickInterface;
 
 	class Spectrum
     :	public Computer<>
@@ -84,10 +85,16 @@ namespace Spectrum
 			}
 
 			void setKeyboard(Keyboard * keyboard);
+			void setJoystickInterface(JoystickInterface *);
 
             [[nodiscard]] Keyboard * keyboard() const
             {
                 return m_keyboard;
+            }
+
+            [[nodiscard]] JoystickInterface * joystickInterface() const
+            {
+                return m_joystick;
             }
 
 			inline void refreshDisplays() const;
@@ -101,6 +108,7 @@ namespace Spectrum
 			bool m_constrainExecutionSpeed;
 			std::vector<DisplayDevice *> m_displayDevices;
             Keyboard * m_keyboard;
+            JoystickInterface * m_joystick;
     };
 }
 

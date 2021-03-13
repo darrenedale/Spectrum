@@ -39,6 +39,63 @@ std::vector<SpectrumKeyboard::Key> Keyboard::mapQtKeys(::Qt::Key key) const
         case ::Qt::Key::Key_Backspace:
             return {SpectrumKeyboard::Key::CapsShift, SpectrumKeyboard::Key::Num0};
 
+        case ::Qt::Key::Key_Colon:
+            return {SpectrumKeyboard::Key::SymbolShift, SpectrumKeyboard::Key::Z};
+
+        case ::Qt::Key::Key_Semicolon:
+            return {SpectrumKeyboard::Key::SymbolShift, SpectrumKeyboard::Key::O};
+
+        case ::Qt::Key::Key_QuoteDbl:
+            return {SpectrumKeyboard::Key::SymbolShift, SpectrumKeyboard::Key::P};
+
+        case ::Qt::Key::Key_Apostrophe:
+            return {SpectrumKeyboard::Key::SymbolShift, SpectrumKeyboard::Key::Num7};
+
+        case ::Qt::Key::Key_Period:
+            return {SpectrumKeyboard::Key::SymbolShift, SpectrumKeyboard::Key::M};
+
+        case ::Qt::Key::Key_Comma:
+            return {SpectrumKeyboard::Key::SymbolShift, SpectrumKeyboard::Key::N};
+
+        case ::Qt::Key::Key_Underscore:
+            return {SpectrumKeyboard::Key::SymbolShift, SpectrumKeyboard::Key::Num0};
+
+        case ::Qt::Key::Key_Minus:
+            return {SpectrumKeyboard::Key::SymbolShift, SpectrumKeyboard::Key::J};
+
+        case ::Qt::Key::Key_Plus:
+            return {SpectrumKeyboard::Key::SymbolShift, SpectrumKeyboard::Key::K};
+
+        case ::Qt::Key::Key_Equal:
+            return {SpectrumKeyboard::Key::SymbolShift, SpectrumKeyboard::Key::L};
+
+        case ::Qt::Key::Key_Greater:
+            return {SpectrumKeyboard::Key::SymbolShift, SpectrumKeyboard::Key::T};
+
+        case ::Qt::Key::Key_Less:
+            return {SpectrumKeyboard::Key::SymbolShift, SpectrumKeyboard::Key::R};
+
+        case ::Qt::Key::Key_Slash:
+            return {SpectrumKeyboard::Key::SymbolShift, SpectrumKeyboard::Key::V};
+
+        case ::Qt::Key::Key_Question:
+            return {SpectrumKeyboard::Key::SymbolShift, SpectrumKeyboard::Key::C};
+
+        case ::Qt::Key::Key_CapsLock:
+            return {SpectrumKeyboard::Key::CapsShift, SpectrumKeyboard::Key::Num2};
+
+//        case ::Qt::Key::Key_Left:
+//            return {SpectrumKeyboard::Key::CapsShift, SpectrumKeyboard::Key::Num5};
+//
+//        case ::Qt::Key::Key_Right:
+//            return {SpectrumKeyboard::Key::CapsShift, SpectrumKeyboard::Key::Num8};
+//
+//        case ::Qt::Key::Key_Up:
+//            return {SpectrumKeyboard::Key::CapsShift, SpectrumKeyboard::Key::Num7};
+//
+//        case ::Qt::Key::Key_Down:
+//            return {SpectrumKeyboard::Key::CapsShift, SpectrumKeyboard::Key::Num6};
+
         case ::Qt::Key::Key_Shift:
             return {SpectrumKeyboard::Key::CapsShift};
 

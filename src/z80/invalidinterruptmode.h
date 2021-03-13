@@ -15,11 +15,11 @@ namespace Z80
         : m_mode(mode)
         {}
 
-        InvalidOpcode(const InvalidOpcode & other) = default;
-        InvalidOpcode(InvalidOpcode && other) = default;
-        InvalidOpcode & operator=(const InvalidOpcode & other) = default;
-        InvalidOpcode & operator=(InvalidOpcode && other) = default;
-        ~InvalidOpcode() override = default;
+        InvalidInterruptMode(const InvalidInterruptMode & other) = default;
+        InvalidInterruptMode(InvalidInterruptMode && other) = default;
+        InvalidInterruptMode & operator=(const InvalidInterruptMode & other) = default;
+        InvalidInterruptMode & operator=(InvalidInterruptMode && other) = default;
+        ~InvalidInterruptMode() override = default;
 
         [[nodiscard]] UnsignedByte mode() const
         {

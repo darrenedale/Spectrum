@@ -31,12 +31,35 @@ namespace Spectrum
 
         void setImage(QImage);
 
+        void setKeepAspectRatio(bool keep);
+
+        inline void keepAspectRatio()
+        {
+            setKeepAspectRatio(true);
+        }
+
+        inline void ignoreAspectRatio()
+        {
+            setKeepAspectRatio(false);
+        }
+
+        [[nodiscard]] inline bool aspectRatioKept() const
+        {
+            return m_keepAspectRatio;
+        }
+
+        [[nodiscard]] inline bool aspectRatioIgnored() const
+        {
+            return !aspectRatioKept();
+        }
+
     protected:
         void resizeEvent(QResizeEvent *) override;
         void paintEvent(QPaintEvent *) override;
 
     private:
         QImage m_image;
+        bool m_keepAspectRatio;
     };
 }
 

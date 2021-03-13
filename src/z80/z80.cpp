@@ -11,6 +11,7 @@
  * - interrupt modes 0 multi-byte instructions
  */
 #include <iostream>
+#include <iomanip>
 #include <cassert>
 
 #include "z80.h"
@@ -223,7 +224,8 @@ m_registers.memptr = m_registers.pc
     (src) = tmpWord;                        \
 }
 
-#define Z80__EX__INDIRECT_REG16__REG16(src, dest) {\
+#define Z80__EX__INDIRECT_REG16__REG16(src, dest) \
+{\
     UnsignedWord tmpWord = peekUnsignedWord((src));\
     pokeHostWord((src), (dest));                   \
     (dest) = tmpWord;                              \
@@ -243,7 +245,8 @@ pokeHostWord(m_registers.sp, (reg));
 //
 // addition instructions
 //
-#define Z80__ADD__REG8__N(dest,n) {    \
+#define Z80__ADD__REG8__N(dest,n) \
+{    \
     UnsignedByte tmpOldValue = (dest); \
     UnsignedByte tmpDelta = (n);         \
     UnsignedWord tmpResult = tmpOldValue + tmpDelta; \
@@ -261,7 +264,8 @@ pokeHostWord(m_registers.sp, (reg));
 #define Z80__ADD__REG8__REG8(dest,src) Z80__ADD__REG8__N(dest,src)
 #define Z80__ADD__REG8__INDIRECT_REG16(dest,src) Z80__ADD__REG8__N(dest,(*(m_ram + (src))))
 
-#define Z80__ADD__REG16__REG16(dest,src) {       \
+#define Z80__ADD__REG16__REG16(dest,src) \
+{       \
     UnsignedWord tmpOldValue = (dest);           \
     UnsignedWord tmpDelta = (src);                 \
     std::uint32_t tmpResult = tmpOldValue + tmpDelta;  \
@@ -279,7 +283,8 @@ pokeHostWord(m_registers.sp, (reg));
 // addition with carry instructions
 // dest = dest + src + carry
 //
-#define Z80__ADC__REG8__N(dest,n) {      \
+#define Z80__ADC__REG8__N(dest,n) \
+{      \
     UnsignedByte tmpOldValue = (dest);   \
     UnsignedByte tmpDelta = (n);           \
     UnsignedWord tmpResult = (dest) + tmpDelta + (Z80_FLAG_C_ISSET ? 1 : 0);\
@@ -295,7 +300,8 @@ pokeHostWord(m_registers.sp, (reg));
 #define Z80__ADC__REG8__REG8(dest,src) Z80__ADC__REG8__N((dest), (src));
 #define Z80__ADC__REG8__INDIRECT_REG16(dest,src) Z80__ADC__REG8__N((dest), peekUnsigned(src))
 
-#define Z80__ADC__REG16__REG16(dest,src) { \
+#define Z80__ADC__REG16__REG16(dest,src) \
+{ \
     UnsignedWord tmpOldValue = (dest);            \
     UnsignedWord tmpDelta = (src);                    \
     std::uint32_t tmpResult = (dest) + tmpDelta + (Z80_FLAG_C_ISSET ? 1 : 0);\
@@ -315,7 +321,8 @@ pokeHostWord(m_registers.sp, (reg));
 //
 // subtraction instructions
 //
-#define Z80__SUB__N(n) { \
+#define Z80__SUB__N(n) \
+{ \
     UnsignedByte tmpOldValue = m_registers.a;   \
     UnsignedByte tmpDelta = (n);           \
     UnsignedWord tmpResult = m_registers.a - tmpDelta; \
@@ -336,7 +343,8 @@ pokeHostWord(m_registers.sp, (reg));
 // subtraction with carry instructions
 // dest = dest - src - carry
 //
-#define Z80__SBC__REG8__N(dest,n) { \
+#define Z80__SBC__REG8__N(dest,n) \
+{ \
     UnsignedByte tmpOldValue = (dest);\
     UnsignedByte tmpDelta = (n);            \
     UnsignedWord tmpResult = (dest) - tmpDelta - (Z80_FLAG_C_ISSET ? 1 : 0);\
@@ -352,7 +360,8 @@ pokeHostWord(m_registers.sp, (reg));
 #define Z80__SBC__REG8__REG8(dest,src) Z80__SBC__REG8__N((dest), (src))
 #define Z80__SBC__REG8__INDIRECT_REG16(dest,src) Z80__SBC__REG8__N((dest),peekUnsigned(src))
 
-#define Z80__SBC__REG16__REG16(dest, src) {     \
+#define Z80__SBC__REG16__REG16(dest, src) \
+{     \
     UnsignedWord tmpOldValue = (dest);          \
     UnsignedWord tmpDelta = (src);                \
     std::uint32_t tmpResult = (dest) - tmpDelta - (Z80_FLAG_C_ISSET ? 1 : 0); \
@@ -442,6 +451,7 @@ Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
     Z80_FLAG_F3_UPDATE(tmpDelta & Z80_FLAG_F3_MASK);\
     Z80_FLAG_Z_UPDATE(0 == tmpResult);      \
 }
+
 #define Z80__CP__REG8(reg) Z80__CP__N(reg)
 #define Z80__CP__INDIRECT_REG16(reg) Z80__CP__N(peekUnsigned((reg)))
 #define Z80__CP__INDIRECT_REG16_D(reg,d) Z80__CP__N(peekUnsigned((reg) + (d)))
@@ -501,7 +511,8 @@ Z80__RES__N__INDIRECT_REG16_D(n,(reg16),(d));               \
 //
 // rotate left with carry instructions
 //
-#define Z80__RLC__REG8(reg) {            \
+#define Z80__RLC__REG8(reg)              \
+{                                        \
     bool tmpBit = (reg) & 0x80;          \
     (reg) <<= 1;                         \
                                          \
@@ -518,17 +529,20 @@ Z80__RES__N__INDIRECT_REG16_D(n,(reg16),(d));               \
     Z80_FLAGS_S53_UPDATE((reg));         \
     Z80_FLAG_Z_UPDATE(0 == (reg));       \
 }
+
 #define Z80__RLC__INDIRECT_REG16(reg) {     \
     UnsignedByte & tmpValue = memory()[reg];\
     Z80__RLC__REG8(tmpValue);               \
 }
+
 #define Z80__RLC__INDIRECT_REG16_D(reg,d) Z80__RLC__INDIRECT_REG16((reg) + (d))
 #define Z80__RLC__INDIRECT_REG16_D__REG8(reg16,d,reg8) Z80__RLC__INDIRECT_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
 
 //
 // rotate right with carry instructions
 //
-#define Z80__RRC__REG8(reg) { \
+#define Z80__RRC__REG8(reg) \
+{ \
     bool bit = (reg) & 0x01;      \
     (reg) >>= 1;                  \
                                   \
@@ -546,7 +560,8 @@ Z80__RES__N__INDIRECT_REG16_D(n,(reg16),(d));               \
     Z80_FLAGS_S53_UPDATE((reg));         \
     Z80_FLAG_Z_UPDATE(0 == (reg));       \
 }
-#define Z80__RRC__INDIRECT_REG16(reg) {\
+#define Z80__RRC__INDIRECT_REG16(reg) \
+{\
     UnsignedByte & tmpValue = memory()[reg]; \
     Z80__RRC__REG8(tmpValue);          \
 }
@@ -560,7 +575,8 @@ Z80__RES__N__INDIRECT_REG16_D(n,(reg16),(d));               \
 // moves into bit 0. In other words, it's as if the value was 9 bits in
 // size with the carry flag as bit 8.
 //
- #define Z80__RL__REG8(reg) {     \
+#define Z80__RL__REG8(reg)        \
+{                                 \
 	bool bit = (reg) & 0x80;      \
 	(reg) <<= 1;                  \
 	                              \
@@ -581,10 +597,12 @@ Z80__RES__N__INDIRECT_REG16_D(n,(reg16),(d));               \
 /*
  * re-use RL instruction for 8-bit reg to do the actual work
  */
-#define Z80__RL__INDIRECT_REG16(reg) {      \
+#define Z80__RL__INDIRECT_REG16(reg) \
+{      \
     UnsignedByte & tmpValue = memory()[reg];\
     Z80__RL__REG8(tmpValue);                \
 }
+
 #define Z80__RL__INDIRECT_REG16_D(reg,d) Z80__RL__INDIRECT_REG16((reg) + (d))
 #define Z80__RL__INDIRECT_REG16_D__REG8(reg16,d,reg8) Z80__RL__INDIRECT_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
 
@@ -595,7 +613,8 @@ Z80__RES__N__INDIRECT_REG16_D(n,(reg16),(d));               \
 // moves into bit 7. In other words, it's as if the value was 9 bits in
 // size with the carry flag as bit 0.
 //
-#define Z80__RR__REG8(reg) {     \
+#define Z80__RR__REG8(reg) \
+{     \
 	bool tmpBit = (reg) & 0x01;   \
 	(reg) >>= 1;                  \
                                   \
@@ -778,8 +797,12 @@ m_iff1 = m_iff2;                 \
             continue;                        \
         }                                    \
                                              \
-        (result) = device->readByte(port);   \
+        (result) &= device->readByte(port);  \
     }                                        \
+/*                                             \
+    if ((port) == 0xeffe || (port) == 0xf7fe) { \
+    std::cout << "byte from IN " << std::hex << std::setfill('0') << std::setw(4) << (port) << ": 0x" << std::setw(2) << static_cast<std::uint16_t>(result) << '\n';                                         \
+    }*/ \
 }
 
 #define Z80__IN__REG8__INDIRECT_REG8(dest,port) {    \

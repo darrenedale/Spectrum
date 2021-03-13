@@ -17,6 +17,7 @@ class QLineEdit;
 namespace Spectrum::Qt
 {
 	class Thread;
+	class Breakpoint;
 
 	class DebugWindow
 	:	public QMainWindow
@@ -26,6 +27,10 @@ namespace Spectrum::Qt
     public:
         explicit DebugWindow(QWidget * = nullptr);
         explicit DebugWindow(Thread * spectrum, QWidget * = nullptr);
+        ~DebugWindow() override;
+
+        void setStatus(const QString & status);
+        void clearStatus();
 
         void updateStateDisplay();
 
@@ -34,6 +39,18 @@ namespace Spectrum::Qt
 	    void closeEvent(QCloseEvent *) override;
 
     private:
+	    class InstructionObserver
+        : public ::Spectrum::Z80::Observer
+        {
+        public:
+	        explicit InstructionObserver(DebugWindow & owner)
+	        : window(owner) {}
+
+	        void notify(::Spectrum::Z80 * cpu) override;
+	        const DebugWindow & window;
+        };
+
+	    using Breakpoints = std::vector<Breakpoint *>;
         void createToolbars();
         void createDockWidgets();
         void layoutWidget();
@@ -45,6 +62,7 @@ namespace Spectrum::Qt
         void threadResumed();
         void threadStepped();
         void memoryLocationChanged();
+        void setBreakpointTriggered();
         void scrollMemoryToPcTriggered();
         void scrollMemoryToSpTriggered();
 
@@ -69,13 +87,18 @@ namespace Spectrum::Qt
         FlagsWidget m_shadowFlags;
         MemoryWidget m_memoryWidget;
         HexSpinBox m_memoryLocation;
+        QToolButton m_setBreakpoint;
         QToolButton m_memoryPc;
         QToolButton m_memorySp;
         QAction m_pauseResume;
         QAction m_step;
         QAction m_refresh;
+        QLabel m_status;
 
         KeyboardMonitorWidget m_keyboardMonitor;
+
+        InstructionObserver m_cpuObserver;
+        Breakpoints m_breakpoints;
 	};
 }
 
