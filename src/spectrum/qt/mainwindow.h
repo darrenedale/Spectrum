@@ -56,7 +56,7 @@ namespace Spectrum::Qt
         void refreshSpectrumDisplay();
 
     private:
-        using Joystick = QInterfaceTwoJoystick;
+        using Joystick = QKempstonJoystick;
 
         void createToolbars();
         void connectSignals();

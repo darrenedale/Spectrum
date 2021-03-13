@@ -66,13 +66,15 @@ MainWindow::MainWindow(QWidget * parent)
     m_refreshScreen.setShortcut(::Qt::Key::Key_F5);
 
     m_emulationSpeedSlider.setMinimum(0);
-    m_emulationSpeedSlider.setMaximum(10);
-    m_emulationSpeedSlider.setValue(1);
+    m_emulationSpeedSlider.setMaximum(1000);
+    m_emulationSpeedSlider.setValue(100);
+    m_emulationSpeedSlider.setSingleStep(10);
 
     m_emulationSpeedSpin.setMinimum(0);
-    m_emulationSpeedSpin.setMaximum(10);
-    m_emulationSpeedSpin.setValue(1);
-    m_emulationSpeedSpin.setSuffix(QStringLiteral("x"));
+    m_emulationSpeedSpin.setMaximum(1000);
+    m_emulationSpeedSpin.setValue(100);
+    m_emulationSpeedSpin.setSingleStep(10);
+    m_emulationSpeedSpin.setSuffix(QStringLiteral("%"));
     m_emulationSpeedSpin.setSpecialValueText(tr("Unlimited"));
 
     // update screen at 100 FPS
@@ -770,7 +772,7 @@ void MainWindow::emulationSpeedChanged(int speed)
         m_spectrum.setExecutionSpeedConstrained(false);
     } else {
         m_spectrum.setExecutionSpeedConstrained(true);
-        m_spectrum.z80()->setClockSpeed(Spectrum::DefaultClockSpeed * speed);
+        m_spectrum.z80()->setClockSpeed(static_cast<int>(Spectrum::DefaultClockSpeed * (speed / 100.0)));
     }
 }
 
