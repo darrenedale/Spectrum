@@ -181,7 +181,7 @@ void MainWindow::showEvent(QShowEvent * ev)
     auto speed = settings.value(QStringLiteral("emulationSpeed"), 1).toInt(&ok);
 
     if (!ok) {
-        speed = 1;
+        speed = 100;
     }
 
     m_emulationSpeedSlider.setValue(speed);
@@ -236,9 +236,6 @@ void MainWindow::loadSnaSnapshot(const QString & fileName)
         }
     }
 
-    auto paused = m_spectrumThread.isPaused();
-    m_spectrumThread.pause();
-    
     auto * ram = m_spectrum.memory() + 16384;
     auto & cpu = *(m_spectrum.z80());
     auto & registers = cpu.registers();
@@ -267,10 +264,6 @@ void MainWindow::loadSnaSnapshot(const QString & fileName)
 
     // RETN instruction is required to resume execution of the .SNA
     cpu.execute(retn);
-
-    if (!paused) {
-        m_spectrumThread.resume();
-    }
 }
 
 void MainWindow::loadZ80Snapshot(const QString & fileName)
