@@ -11,6 +11,9 @@
 #include <QFileDialog>
 #include <QEvent>
 #include <QKeyEvent>
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QMimeData>
 #include <QDebug>
 #include <QSettings>
 #include <QDateTime>
@@ -91,6 +94,7 @@ MainWindow::MainWindow(QWidget * parent)
 	connect(&m_spectrumThread, &Thread::paused, this, &MainWindow::threadPaused);
 	connect(&m_spectrumThread, &Thread::resumed, this, &MainWindow::threadResumed);
 
+    setAcceptDrops(true);
     connectSignals();
 	m_spectrumThread.start();
 	threadResumed();
@@ -156,36 +160,35 @@ void MainWindow::connectSignals()
 	connect(&m_refreshScreen, &QAction::triggered, this, &MainWindow::refreshSpectrumDisplay);
 }
 
-void MainWindow::closeEvent(QCloseEvent * ev)
+void MainWindow::refreshSpectrumDisplay()
 {
-    QSettings settings;
-    settings.beginGroup("mainwindow");
-    settings.setValue("position", pos());
-    settings.setValue("size", size());
-    settings.setValue("lastSnapshotLoadDir", m_lastSnapshotLoadDir);
-    settings.setValue("lastScreenshotDir", m_lastScreenshotDir);
-    settings.setValue("emulationSpeed", m_emulationSpeedSlider.value());
-    settings.endGroup();
-    m_debugWindow.close();
-    QWidget::closeEvent(ev);
-}
+    auto image = m_display.image().scaledToWidth(512);
+    auto pen = QColor(*reinterpret_cast<QRgb *>(image.bits()));
 
-void MainWindow::showEvent(QShowEvent * ev)
-{
-    QSettings settings;
-    bool ok;
-    settings.beginGroup("mainwindow");
-    setGeometry({settings.value(QStringLiteral("position")).toPoint(), settings.value(QStringLiteral("size")).toSize()});
-    m_lastSnapshotLoadDir = settings.value(QStringLiteral("lastSnapshotLoadDir")).toString();
-    m_lastScreenshotDir = settings.value(QStringLiteral("lastScreenshotDir")).toString();
-    auto speed = settings.value(QStringLiteral("emulationSpeed"), 1).toInt(&ok);
-
-    if (!ok) {
-        speed = 100;
+    if (pen.lightness() > 128) {
+        pen = ::Qt::GlobalColor::black;
+    } else {
+        pen = ::Qt::GlobalColor::white;
     }
 
-    m_emulationSpeedSlider.setValue(speed);
-    settings.endGroup();
+    QPainter painter(&image);
+    QFont font = painter.font();
+    font.setPixelSize(10);
+    font.setFixedPitch(true);
+    painter.setFont(font);
+    painter.setPen(pen);
+    int y = 2;
+    auto & registers = m_spectrum.z80()->registers();
+    QLatin1Char fill('0');
+    painter.drawText(2, y+= 10, QStringLiteral("PC: $%1").arg(registers.pc, 4, 16, fill));
+    painter.drawText(2, y+= 10, QStringLiteral("SP: $%1").arg(registers.sp, 4, 16, fill));
+    painter.drawText(2, y+= 10, QStringLiteral("AF: $%1").arg(registers.af, 4, 16, fill));
+    painter.drawText(2, y+= 10, QStringLiteral("BC: $%1").arg(registers.bc, 4, 16, fill));
+    painter.drawText(2, y+= 10, QStringLiteral("DE: $%1").arg(registers.de, 4, 16, fill));
+    painter.drawText(2, y+= 10, QStringLiteral("HL: $%1").arg(registers.hl, 4, 16, fill));
+    painter.end();
+
+    m_displayWidget.setImage(image);
 }
 
 void MainWindow::saveScreenshot(const QString & fileName)
@@ -204,6 +207,32 @@ void MainWindow::saveScreenshot(const QString & fileName)
         outFile.close();
     } else {
         m_display.image().save(fileName);
+    }
+}
+
+QString MainWindow::guessSnapshotFormat(const QString & fileName)
+{
+    if (auto matches = QRegularExpression("^.*\\.([a-zA-Z0-9_-]+)$").match(fileName); matches.hasMatch()) {
+        return matches.captured(1).toLower();
+    }
+
+    return {};
+}
+
+void MainWindow::loadSnapshot(const QString & fileName, QString format)
+{
+    if (format.isEmpty()) {
+        format = guessSnapshotFormat(fileName);
+    }
+
+    if ("sna" == format) {
+        loadSnaSnapshot(fileName);
+    } else if ("z80" == format) {
+        loadZ80Snapshot(fileName);
+    } else if ("sp" == format) {
+        loadSpSnapshot(fileName);
+    } else {
+        std::cerr << "unrecognised format '" << format.toStdString() << "' from filename '" << fileName.toStdString() << "'\n";
     }
 }
 
@@ -680,6 +709,122 @@ void MainWindow::loadSpSnapshot(const QString & fileName)
     delete[] programBuffer;
 }
 
+bool MainWindow::eventFilter(QObject * target, QEvent * event)
+{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch"
+    // while user holds tab on display widget, temporarily run as fast as possible
+    if (&m_displayWidget == target) {
+        switch (event->type()) {
+            case QEvent::Type::KeyPress:
+                if (::Qt::Key::Key_Tab == dynamic_cast<QKeyEvent *>(event)->key()) {
+                    m_spectrum.setExecutionSpeedConstrained(false);
+                    return true;
+                }
+                break;
+
+
+            case QEvent::Type::KeyRelease:
+                if (::Qt::Key::Key_Tab == dynamic_cast<QKeyEvent *>(event)->key()) {
+                    m_spectrum.setExecutionSpeedConstrained(0 < m_emulationSpeedSlider.value());
+                    return true;
+                }
+                break;
+
+        }
+    }
+
+    if (target == &m_debugWindow) {
+        switch (event->type()) {
+            case QEvent::Type::Show:
+                m_debug.setChecked(true);
+                break;
+
+            case QEvent::Type::Hide:
+                m_debug.setChecked(false);
+                m_spectrumThread.setDebugMode(false);
+                break;
+        }
+    }
+#pragma clang diagnostic pop
+
+    return false;
+}
+
+void MainWindow::closeEvent(QCloseEvent * ev)
+{
+    QSettings settings;
+    settings.beginGroup("mainwindow");
+    settings.setValue("position", pos());
+    settings.setValue("size", size());
+    settings.setValue("lastSnapshotLoadDir", m_lastSnapshotLoadDir);
+    settings.setValue("lastScreenshotDir", m_lastScreenshotDir);
+    settings.setValue("emulationSpeed", m_emulationSpeedSlider.value());
+    settings.endGroup();
+    m_debugWindow.close();
+    QWidget::closeEvent(ev);
+}
+
+void MainWindow::showEvent(QShowEvent * ev)
+{
+    QSettings settings;
+    bool ok;
+    settings.beginGroup("mainwindow");
+    setGeometry({settings.value(QStringLiteral("position")).toPoint(), settings.value(QStringLiteral("size")).toSize()});
+    m_lastSnapshotLoadDir = settings.value(QStringLiteral("lastSnapshotLoadDir")).toString();
+    m_lastScreenshotDir = settings.value(QStringLiteral("lastScreenshotDir")).toString();
+    auto speed = settings.value(QStringLiteral("emulationSpeed"), 1).toInt(&ok);
+
+    if (!ok) {
+        speed = 100;
+    }
+
+    m_emulationSpeedSlider.setValue(speed);
+    settings.endGroup();
+}
+
+void MainWindow::keyPressEvent(QKeyEvent * event)
+{
+    if (!event->isAutoRepeat() && ::Qt::Key::Key_Tab == event->key()) {
+        m_spectrumThread.spectrum().setExecutionSpeedConstrained(false);
+        return;
+    }
+
+    QMainWindow::keyPressEvent(event);
+}
+
+void MainWindow::keyReleaseEvent(QKeyEvent * event)
+{
+    if (::Qt::Key::Key_Tab == event->key()) {
+        m_spectrumThread.spectrum().setExecutionSpeedConstrained(0 < m_emulationSpeedSlider.value());
+        return;
+    }
+
+    QMainWindow::keyReleaseEvent(event);
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent * event)
+{
+    if (event->mimeData()->hasUrls() && QStringLiteral("file") == event->mimeData()->urls().first().scheme()) {
+        event->acceptProposedAction();
+    }
+}
+
+void MainWindow::dropEvent(QDropEvent * event)
+{
+    if (event->mimeData()->hasUrls()) {
+        auto url = event->mimeData()->urls().first();
+        std::cout << url.toString().toStdString() << "\n";
+
+        if (QStringLiteral("file") != url.scheme()) {
+            std::cerr << "remote URLs cannot yet be loaded.\n";
+            return;
+        }
+
+        loadSnapshot(url.path());
+    }
+}
+
 void MainWindow::pauseResumeTriggered()
 {
     if (m_spectrumThread.isPaused()) {
@@ -742,21 +887,7 @@ void MainWindow::loadSnapshotTriggered()
         }
     }
 
-    if (format.isEmpty()) {
-        if (auto matches = QRegularExpression("^.*\\.([a-zA-Z0-9_-]+)$").match(fileName); matches.hasMatch()) {
-            format = matches.captured(1).toLower();
-        }
-    }
-
-    if ("sna" == format) {
-        loadSnaSnapshot(fileName);
-    } else if ("z80" == format) {
-        loadZ80Snapshot(fileName);
-    } else if ("sp" == format) {
-        loadSpSnapshot(fileName);
-    } else {
-        std::cerr << "unrecognised format '" << format.toStdString() << "' from filename '" << fileName.toStdString() << "'\n";
-    }
+    loadSnapshot(fileName, format);
 }
 
 void MainWindow::emulationSpeedChanged(int speed)
@@ -767,37 +898,6 @@ void MainWindow::emulationSpeedChanged(int speed)
         m_spectrum.setExecutionSpeedConstrained(true);
         m_spectrum.z80()->setClockSpeed(static_cast<int>(Spectrum::DefaultClockSpeed * (speed / 100.0)));
     }
-}
-
-void MainWindow::refreshSpectrumDisplay()
-{
-    auto image = m_display.image().scaledToWidth(512);
-    auto pen = QColor(*reinterpret_cast<QRgb *>(image.bits()));
-
-    if (pen.lightness() > 128) {
-        pen = ::Qt::GlobalColor::black;
-    } else {
-        pen = ::Qt::GlobalColor::white;
-    }
-
-    QPainter painter(&image);
-    QFont font = painter.font();
-    font.setPixelSize(10);
-    font.setFixedPitch(true);
-    painter.setFont(font);
-    painter.setPen(pen);
-    int y = 2;
-    auto & registers = m_spectrum.z80()->registers();
-    QLatin1Char fill('0');
-    painter.drawText(2, y+= 10, QStringLiteral("PC: $%1").arg(registers.pc, 4, 16, fill));
-    painter.drawText(2, y+= 10, QStringLiteral("SP: $%1").arg(registers.sp, 4, 16, fill));
-    painter.drawText(2, y+= 10, QStringLiteral("AF: $%1").arg(registers.af, 4, 16, fill));
-    painter.drawText(2, y+= 10, QStringLiteral("BC: $%1").arg(registers.bc, 4, 16, fill));
-    painter.drawText(2, y+= 10, QStringLiteral("DE: $%1").arg(registers.de, 4, 16, fill));
-    painter.drawText(2, y+= 10, QStringLiteral("HL: $%1").arg(registers.hl, 4, 16, fill));
-    painter.end();
-
-    m_displayWidget.setImage(image);
 }
 
 void MainWindow::debugTriggered()
@@ -845,66 +945,4 @@ void MainWindow::threadResumed()
 void MainWindow::threadStepped()
 {
     refreshSpectrumDisplay();
-}
-
-bool MainWindow::eventFilter(QObject * target, QEvent * event)
-{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wswitch"
-    // while user holds tab on display widget, temporarily run as fast as possible
-    if (&m_displayWidget == target) {
-        switch (event->type()) {
-            case QEvent::Type::KeyPress:
-                if (::Qt::Key::Key_Tab == dynamic_cast<QKeyEvent *>(event)->key()) {
-                    m_spectrum.setExecutionSpeedConstrained(false);
-                    return true;
-                }
-                break;
-
-
-            case QEvent::Type::KeyRelease:
-                if (::Qt::Key::Key_Tab == dynamic_cast<QKeyEvent *>(event)->key()) {
-                    m_spectrum.setExecutionSpeedConstrained(0 < m_emulationSpeedSlider.value());
-                    return true;
-                }
-                break;
-
-        }
-    }
-
-    if (target == &m_debugWindow) {
-        switch (event->type()) {
-            case QEvent::Type::Show:
-                m_debug.setChecked(true);
-                break;
-
-            case QEvent::Type::Hide:
-                m_debug.setChecked(false);
-                m_spectrumThread.setDebugMode(false);
-                break;
-        }
-    }
-#pragma clang diagnostic pop
-
-    return false;
-}
-
-void MainWindow::keyPressEvent(QKeyEvent * event)
-{
-    if (!event->isAutoRepeat() && ::Qt::Key::Key_Tab == event->key()) {
-        m_spectrumThread.spectrum().setExecutionSpeedConstrained(false);
-        return;
-    }
-
-    QMainWindow::keyPressEvent(event);
-}
-
-void MainWindow::keyReleaseEvent(QKeyEvent * event)
-{
-    if (::Qt::Key::Key_Tab == event->key()) {
-        m_spectrumThread.spectrum().setExecutionSpeedConstrained(0 < m_emulationSpeedSlider.value());
-        return;
-    }
-
-    QMainWindow::keyReleaseEvent(event);
 }

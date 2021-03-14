@@ -31,6 +31,7 @@ namespace Spectrum::Qt
 
         void saveScreenshot(const QString & fileName);
 
+        void loadSnapshot(const QString & fileName, QString format = {});
         void loadSnaSnapshot(const QString & fileName);
         void loadZ80Snapshot(const QString & fileName);
         void loadSpSnapshot(const QString & fileName);
@@ -49,10 +50,13 @@ namespace Spectrum::Qt
         bool eventFilter(QObject *, QEvent *) override;
 
 	protected:
+	    static QString guessSnapshotFormat(const QString & fileName);
         void showEvent(QShowEvent *) override;
 	    void closeEvent(QCloseEvent *) override;
 	    void keyPressEvent(QKeyEvent *) override;
 	    void keyReleaseEvent(QKeyEvent *) override;
+	    void dragEnterEvent(QDragEnterEvent *) override;
+	    void dropEvent(QDropEvent *) override;
         void refreshSpectrumDisplay();
 
     private:
