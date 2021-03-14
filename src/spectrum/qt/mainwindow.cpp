@@ -162,33 +162,38 @@ void MainWindow::connectSignals()
 
 void MainWindow::refreshSpectrumDisplay()
 {
-    auto image = m_display.image().scaledToWidth(512);
-    auto pen = QColor(*reinterpret_cast<QRgb *>(image.bits()));
+    if (m_debug.isChecked()) {
+        auto image = m_display.image();
+        image = image.scaledToWidth(image.width() * 2);
+        auto pen = QColor(*reinterpret_cast<QRgb *>(image.bits()));
 
-    if (pen.lightness() > 128) {
-        pen = ::Qt::GlobalColor::black;
+        if (pen.lightness() > 128) {
+            pen = ::Qt::GlobalColor::black;
+        } else {
+            pen = ::Qt::GlobalColor::white;
+        }
+
+        QPainter painter(&image);
+        QFont font = painter.font();
+        font.setPixelSize(10);
+        font.setFixedPitch(true);
+        painter.setFont(font);
+        painter.setPen(pen);
+        int y = 2;
+        auto & registers = m_spectrum.z80()->registers();
+        QLatin1Char fill('0');
+        painter.drawText(2, y += 10, QStringLiteral("PC: $%1").arg(registers.pc, 4, 16, fill));
+        painter.drawText(2, y += 10, QStringLiteral("SP: $%1").arg(registers.sp, 4, 16, fill));
+        painter.drawText(2, y += 10, QStringLiteral("AF: $%1").arg(registers.af, 4, 16, fill));
+        painter.drawText(2, y += 10, QStringLiteral("BC: $%1").arg(registers.bc, 4, 16, fill));
+        painter.drawText(2, y += 10, QStringLiteral("DE: $%1").arg(registers.de, 4, 16, fill));
+        painter.drawText(2, y += 10, QStringLiteral("HL: $%1").arg(registers.hl, 4, 16, fill));
+        painter.end();
+
+        m_displayWidget.setImage(image);
     } else {
-        pen = ::Qt::GlobalColor::white;
+        m_displayWidget.setImage(m_display.image());
     }
-
-    QPainter painter(&image);
-    QFont font = painter.font();
-    font.setPixelSize(10);
-    font.setFixedPitch(true);
-    painter.setFont(font);
-    painter.setPen(pen);
-    int y = 2;
-    auto & registers = m_spectrum.z80()->registers();
-    QLatin1Char fill('0');
-    painter.drawText(2, y+= 10, QStringLiteral("PC: $%1").arg(registers.pc, 4, 16, fill));
-    painter.drawText(2, y+= 10, QStringLiteral("SP: $%1").arg(registers.sp, 4, 16, fill));
-    painter.drawText(2, y+= 10, QStringLiteral("AF: $%1").arg(registers.af, 4, 16, fill));
-    painter.drawText(2, y+= 10, QStringLiteral("BC: $%1").arg(registers.bc, 4, 16, fill));
-    painter.drawText(2, y+= 10, QStringLiteral("DE: $%1").arg(registers.de, 4, 16, fill));
-    painter.drawText(2, y+= 10, QStringLiteral("HL: $%1").arg(registers.hl, 4, 16, fill));
-    painter.end();
-
-    m_displayWidget.setImage(image);
 }
 
 void MainWindow::saveScreenshot(const QString & fileName)
@@ -814,7 +819,6 @@ void MainWindow::dropEvent(QDropEvent * event)
 {
     if (event->mimeData()->hasUrls()) {
         auto url = event->mimeData()->urls().first();
-        std::cout << url.toString().toStdString() << "\n";
 
         if (QStringLiteral("file") != url.scheme()) {
             std::cerr << "remote URLs cannot yet be loaded.\n";
