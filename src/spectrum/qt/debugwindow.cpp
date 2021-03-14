@@ -10,6 +10,7 @@
 #include <QLabel>
 #include <QToolBar>
 #include <QDockWidget>
+#include <QMenu>
 #include <QSettings>
 
 #include "../spectrum.h"
@@ -17,6 +18,7 @@
 #include "thread.h"
 #include "registerpairwidget.h"
 #include "keyboardmonitorwidget.h"
+#include "pokewidget.h"
 #include "programcounterbreakpoint.h"
 
 using namespace Spectrum::Qt;
@@ -56,6 +58,7 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
   m_refresh(QIcon::fromTheme(QStringLiteral("view-refresh")), tr("Refresh")),
   m_status(),
   m_keyboardMonitor(&m_thread->spectrum()),
+  m_poke(),
   m_cpuObserver((*this)),
   m_breakpoints()
 {
@@ -72,6 +75,7 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
     m_im.setMinimum(0);
     m_im.setMaximum(2);
 
+    m_memoryWidget.setContextMenuPolicy(::Qt::ContextMenuPolicy::CustomContextMenu);
     m_setBreakpoint.setIcon(QIcon::fromTheme(QStringLiteral("process-stop")));
     m_memoryPc.setText(QStringLiteral("PC"));
     m_memorySp.setText(QStringLiteral("SP"));
@@ -99,6 +103,11 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
 	connectWidgets();
 }
 
+DebugWindow::~DebugWindow()
+{
+    m_thread->spectrum().z80()->removeInstructionObserver(&m_cpuObserver);
+}
+
 void DebugWindow::createToolbars()
 {
     auto * toolbar = addToolBar(tr("Debug"));
@@ -114,6 +123,25 @@ void DebugWindow::createDockWidgets()
     auto * dock = new QDockWidget(tr("Keyboard"), this);
     dock->setWidget(&m_keyboardMonitor);
     addDockWidget(::Qt::DockWidgetArea::BottomDockWidgetArea, dock);
+
+    dock = new QDockWidget(tr("Memory"), this);
+    auto * memory = new QWidget();
+    auto * memoryLayout = new QVBoxLayout();
+    memoryLayout->addWidget(&m_memoryWidget);
+    auto * tmpLayout = new QHBoxLayout();
+    tmpLayout->addWidget(&m_memoryLocation);
+    tmpLayout->addWidget(&m_setBreakpoint);
+    tmpLayout->addStretch(10);
+    tmpLayout->addWidget(&m_memoryPc);
+    tmpLayout->addWidget(&m_memorySp);
+    memoryLayout->addLayout(tmpLayout);
+    memory->setLayout(memoryLayout);
+    dock->setWidget(memory);
+    addDockWidget(::Qt::DockWidgetArea::RightDockWidgetArea, dock);
+
+    dock = new QDockWidget(tr("Poke"), this);
+    dock->setWidget(&m_poke);
+    addDockWidget(::Qt::DockWidgetArea::RightDockWidgetArea, dock);
 }
 
 void DebugWindow::layoutWidget()
@@ -205,18 +233,18 @@ void DebugWindow::layoutWidget()
 
     shadowRegistersLayout->addStretch(10);
     shadowRegisters->setLayout(shadowRegistersLayout);
-
-    auto * memory = new QGroupBox(tr("Memory"));
-    auto * memoryLayout = new QVBoxLayout();
-    memoryLayout->addWidget(&m_memoryWidget);
-    memory->setLayout(memoryLayout);
-    auto * tmpLayout = new QHBoxLayout();
-    tmpLayout->addWidget(&m_memoryLocation);
-    tmpLayout->addWidget(&m_setBreakpoint);
-    tmpLayout->addStretch(10);
-    tmpLayout->addWidget(&m_memoryPc);
-    tmpLayout->addWidget(&m_memorySp);
-    memoryLayout->addLayout(tmpLayout);
+//
+//    auto * memory = new QGroupBox(tr("Memory"));
+//    auto * memoryLayout = new QVBoxLayout();
+//    memoryLayout->addWidget(&m_memoryWidget);
+//    memory->setLayout(memoryLayout);
+//    auto * tmpLayout = new QHBoxLayout();
+//    tmpLayout->addWidget(&m_memoryLocation);
+//    tmpLayout->addWidget(&m_setBreakpoint);
+//    tmpLayout->addStretch(10);
+//    tmpLayout->addWidget(&m_memoryPc);
+//    tmpLayout->addWidget(&m_memorySp);
+//    memoryLayout->addLayout(tmpLayout);
 
 	auto * mainLayout = new QHBoxLayout();
     auto * leftLayout = new QVBoxLayout();
@@ -227,7 +255,7 @@ void DebugWindow::layoutWidget()
     rightLayout->addWidget(pointers);
     mainLayout->addLayout(leftLayout);
     mainLayout->addLayout(rightLayout);
-    mainLayout->addWidget(memory);
+//    mainLayout->addWidget(memory);
 
     auto * centralWidget = new QWidget();
     centralWidget->setLayout(mainLayout);
@@ -240,10 +268,15 @@ void DebugWindow::connectWidgets()
     connect(&m_refresh, &QAction::triggered, this, &DebugWindow::updateStateDisplay);
     connect(&m_step, &QAction::triggered, this, &DebugWindow::stepTriggered);
 
+    connect(&m_memoryWidget, &QWidget::customContextMenuRequested, this, &DebugWindow::memoryContextMenuRequested);
     connect(&m_memoryLocation, qOverload<int>(&HexSpinBox::valueChanged), this, &DebugWindow::memoryLocationChanged);
     connect(&m_setBreakpoint, &QToolButton::clicked, this, &DebugWindow::setBreakpointTriggered);
     connect(&m_memoryPc, &QToolButton::clicked, this, &DebugWindow::scrollMemoryToPcTriggered);
     connect(&m_memorySp, &QToolButton::clicked, this, &DebugWindow::scrollMemoryToSpTriggered);
+    connect(&m_poke, &PokeWidget::pokeClicked, [this](Z80::UnsignedWord address, Z80::UnsignedByte value) -> void {
+        m_thread->spectrum().memory()[address] = value;
+        updateStateDisplay();
+    });
 
     for (auto * widget : {&m_af, &m_bc, &m_de, &m_hl, &m_ix, &m_iy, &m_afshadow, &m_bcshadow, &m_deshadow, &m_hlshadow, }) {
         connect(widget, &RegisterPairWidget::valueChanged, [this, widget]() {
@@ -433,11 +466,6 @@ void DebugWindow::setBreakpointTriggered()
     m_breakpoints.push_back(breakpoint);
 }
 
-DebugWindow::~DebugWindow()
-{
-    m_thread->spectrum().z80()->removeInstructionObserver(&m_cpuObserver);
-}
-
 void DebugWindow::setStatus(const QString & status)
 {
     m_status.setText(status);
@@ -446,6 +474,26 @@ void DebugWindow::setStatus(const QString & status)
 void DebugWindow::clearStatus()
 {
     m_status.clear();
+}
+
+void DebugWindow::memoryContextMenuRequested(const QPoint & pos)
+{
+    const auto address = m_memoryWidget.addressAt(pos);
+
+    if (!address) {
+        std::cout << "no address at (" << pos.x() << ", " << pos.y() << ")\n";
+        return;
+    }
+
+    QMenu menu(this);
+    menu.addSection(QStringLiteral("0x%1").arg(*address, 4, 16, QLatin1Char('0')));
+
+    menu.addAction(tr("Poke..."), [this, address = *address, value = m_thread->spectrum().memory()[*address]]() {
+        m_poke.setValue(value);
+        m_poke.setAddress(address);
+    });
+
+    menu.exec(m_memoryWidget.mapToGlobal(pos));
 }
 
 void DebugWindow::InstructionObserver::notify(::Spectrum::Z80 * cpu)

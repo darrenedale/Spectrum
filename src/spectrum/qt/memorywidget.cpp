@@ -41,6 +41,15 @@ namespace
             return m_cellHeight;
         }
 
+        std::optional<Z80::UnsignedWord> addressAt(const QPoint & pos) const
+        {
+            if (m_addressWidth > pos.x()) {
+                return {};
+            }
+
+            return (((pos.y() - Margin) / m_cellHeight) * 16) + ((pos.x() - Margin - m_addressWidth) / m_cellWidth);
+        }
+
         void setHighlight(Z80::UnsignedWord address, const QColor & foreground, const QColor & background)
         {
             m_highlights.insert_or_assign(address, ByteHighlight{address, foreground, background});
@@ -71,20 +80,18 @@ namespace
         bool event(QEvent * event) override
         {
             if (QEvent::Type::ToolTip == event->type()) {
-                auto pos = dynamic_cast<QHelpEvent *>(event)->pos();
+                auto address = addressAt(dynamic_cast<QHelpEvent *>(event)->pos());
 
-                if (m_addressWidth > pos.x()) {
+                if (!address) {
                     return false;
                 }
 
-                Z80::UnsignedWord address = (((pos.y() - Margin) / m_cellHeight) * 16)
-                        + ((pos.x() - Margin - m_addressWidth) / m_cellWidth);
-                auto byteValue = *(m_memory + address);
+                auto byteValue = *(m_memory + *address);
 
                 QToolTip::showText(
                     dynamic_cast<QHelpEvent *>(event)->globalPos(),
                     tr("<p><strong>0x%1</strong></p><p>Hex: 0x%2<br>Dec: %3<br>Bin: %4<br>Oct: 0%5</p>")
-                    .arg(address, 4, 16, QChar('0'))
+                    .arg(*address, 4, 16, QChar('0'))
                     .arg(byteValue, 2, 16, QChar('0'))
                     .arg(byteValue)
                     .arg(byteValue, 8, 2, QChar('0'))
@@ -187,6 +194,12 @@ void MemoryWidget::removeHighlight(Z80::UnsignedWord address)
 void MemoryWidget::clearHighlights()
 {
     dynamic_cast<MemoryView *>(widget())->clearHighlights();
+}
+
+std::optional<Z80::UnsignedWord> MemoryWidget::addressAt(const QPoint & pos) const
+{
+    auto * view = dynamic_cast<MemoryView *>(widget());
+    return view->addressAt(view->mapFromParent(pos));
 }
 
 MemoryWidget::~MemoryWidget() = default;

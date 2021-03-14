@@ -11,6 +11,7 @@
 #include "flagswidget.h"
 #include "memorywidget.h"
 #include "keyboardmonitorwidget.h"
+#include "pokewidget.h"
 
 class QLineEdit;
 
@@ -37,6 +38,9 @@ namespace Spectrum::Qt
 	protected:
 	    void showEvent(QShowEvent *) override;
 	    void closeEvent(QCloseEvent *) override;
+
+	    void showPokeWidget(Z80::UnsignedWord, Z80::UnsignedByte);
+        void memoryContextMenuRequested(const QPoint &);
 
     private:
 	    class InstructionObserver
@@ -96,6 +100,7 @@ namespace Spectrum::Qt
         QLabel m_status;
 
         KeyboardMonitorWidget m_keyboardMonitor;
+        PokeWidget m_poke;
 
         InstructionObserver m_cpuObserver;
         Breakpoints m_breakpoints;

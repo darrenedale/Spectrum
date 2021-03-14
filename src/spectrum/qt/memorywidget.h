@@ -5,6 +5,7 @@
 #ifndef SPECTRUM_MEMORYWIDGET_H
 #define SPECTRUM_MEMORYWIDGET_H
 
+#include <optional>
 #include <QScrollArea>
 
 #include "../spectrum.h"
@@ -34,6 +35,7 @@ namespace Spectrum::Qt
         void removeHighlight(Z80::UnsignedWord address);
         void clearHighlights();
 
+        std::optional<Z80::UnsignedWord> addressAt(const QPoint &) const;
         void scrollToAddress(Z80::UnsignedWord addr);
 
         QWidget * takeWidget() = delete;
