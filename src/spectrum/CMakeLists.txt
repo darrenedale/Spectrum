@@ -38,7 +38,7 @@ add_executable(
         ../z80/z80.cpp
         ../z80/iodevice.cpp
         ../z80/registers.h
-)
+        z80snapshotwriter.cpp z80snapshotwriter.h snapshot.cpp snapshot.h)
 
 target_link_libraries(spectrum Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Gamepad)
 
