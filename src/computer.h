@@ -19,14 +19,14 @@ class Computer {
 		    assert(0 <= memSize);
 
 		    if (!m_ram) {
-                m_ram = (std::uint8_t *) std::malloc(sizeof(byte_t) * memSize);
+                m_ram = new byte_t[memSize];
             }
         }
 
 		virtual ~Computer()
         {
             if (m_myRam) {
-                std::free(m_ram);
+                delete[] m_ram;
             }
 
             m_ram = nullptr;
@@ -76,6 +76,42 @@ class Computer {
 
 			m_cpus.erase(pos, pos);
 		}
+
+		/**
+		 * Provide the computer with new memory that it borrows.
+		 *
+		 * @param memory
+		 * @param size
+		 */
+		inline void setMemory(byte_t * memory, int size)
+        {
+		    if (m_myRam) {
+		        delete[] m_ram;
+		        m_myRam = false;
+		    }
+
+		    // TODO pass the memory to the CPUs
+		    m_ram = memory;
+		    m_ramSize = size;
+        }
+
+        /**
+         * Proivide the computer with new memory that it owns.
+         *
+         * @param memory
+         * @param size
+         */
+		inline void giveMemory(byte_t * memory, int size)
+        {
+		    if (m_myRam) {
+		        delete[] m_ram;
+		    }
+
+            // TODO pass the memory to the CPUs
+		    m_myRam = true;
+		    m_ram = memory;
+		    m_ramSize = size;
+        }
 
 		virtual void reset() = 0;
 		virtual void run(int instructionCount) = 0;
