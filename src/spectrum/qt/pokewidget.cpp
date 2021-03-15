@@ -17,7 +17,7 @@ PokeWidget::PokeWidget(Z80::UnsignedWord address, Z80::UnsignedByte value, QWidg
 {
     m_address.setValue(address);
     m_value.setValue(value);
-    m_poke.setIcon(QIcon::fromTheme("media-playback-play"));
+    m_poke.setIcon(QIcon::fromTheme("dialog-ok-apply"));
 
     auto * layout = new QHBoxLayout();
     layout->addWidget(new QLabel(tr("Address")));

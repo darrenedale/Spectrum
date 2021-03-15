@@ -481,12 +481,14 @@ void DebugWindow::memoryContextMenuRequested(const QPoint & pos)
     const auto address = m_memoryWidget.addressAt(pos);
 
     if (!address) {
-        std::cout << "no address at (" << pos.x() << ", " << pos.y() << ")\n";
         return;
     }
 
+    auto value = m_thread->spectrum().memory()[*address];
     QMenu menu(this);
-    menu.addSection(QStringLiteral("0x%1").arg(*address, 4, 16, QLatin1Char('0')));
+    menu.addSection(QStringLiteral("0x%1 : 0x%2")
+        .arg(*address, 4, 16, QLatin1Char('0'))
+        .arg(value, 2, 16, QLatin1Char('0')));
 
     menu.addAction(tr("Poke..."), [this, address = *address, value = m_thread->spectrum().memory()[*address]]() {
         m_poke.setValue(value);

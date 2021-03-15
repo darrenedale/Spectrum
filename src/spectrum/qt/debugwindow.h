@@ -39,7 +39,6 @@ namespace Spectrum::Qt
 	    void showEvent(QShowEvent *) override;
 	    void closeEvent(QCloseEvent *) override;
 
-	    void showPokeWidget(Z80::UnsignedWord, Z80::UnsignedByte);
         void memoryContextMenuRequested(const QPoint &);
 
     private:
