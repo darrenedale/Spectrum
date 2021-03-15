@@ -12,7 +12,7 @@ namespace Spectrum::Qt
     class ThreadPauser
     {
     public:
-        ThreadPauser(Thread & thread)
+        explicit ThreadPauser(Thread & thread)
         : m_thread(thread),
           m_wasPaused(thread.isPaused())
         {
@@ -21,7 +21,7 @@ namespace Spectrum::Qt
 
         virtual ~ThreadPauser()
         {
-            if (m_wasPaused) {
+            if (!m_wasPaused) {
                 m_thread.resume();
             }
         }

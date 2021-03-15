@@ -7,7 +7,7 @@
 
 #include <QComboBox>
 
-#include "../displaydevice.h"
+#include "../types.h"
 
 namespace ScreenView
 {
@@ -20,19 +20,19 @@ namespace ScreenView
         explicit ColourCombo(QWidget * = nullptr);
         ~ColourCombo() override;
 
-        Spectrum::DisplayDevice::Colour colour() const;
-        bool isBright() const;
+        [[nodiscard]] Spectrum::Colour colour() const;
+        [[nodiscard]] bool isBright() const;
 
     public Q_SLOTS:
-        void setColour(Spectrum::DisplayDevice::Colour, bool = false);
+        void setColour(Spectrum::Colour, bool = false);
         void setBright(bool);
 
     Q_SIGNALS:
-        void colourSelected(Spectrum::DisplayDevice::Colour, bool);
+        void colourSelected(Spectrum::Colour, bool);
 
     protected:
-        int findItem(Spectrum::DisplayDevice::Colour colour, bool = false);
-        void addItem(const QString &, Spectrum::DisplayDevice::Colour);
+        int findItem(Spectrum::Colour colour, bool = false);
+        void addItem(const QString &, Spectrum::Colour);
     };
 }
 

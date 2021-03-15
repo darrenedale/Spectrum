@@ -3,6 +3,7 @@
 
 #include <cstdint>
 
+#include "types.h"
 #include "../z80/iodevice.h"
 
 namespace Spectrum
@@ -14,18 +15,6 @@ namespace Spectrum
     : public ::Z80::IODevice
 	{
     public:
-        enum class Colour: std::uint8_t
-        {
-            Black = 0,
-            Blue,
-            Red,
-            Magenta,
-            Green,
-            Cyan,
-            Yellow,
-            White,
-        };
-
         /**
          * Display devices are output-only devices.
          *
@@ -70,6 +59,7 @@ namespace Spectrum
             setBorder(static_cast<Colour>(value & 0b00000111));
         }
 
+        virtual Colour border() const = 0;
         virtual void setBorder(Colour, bool bright = false) = 0;
         virtual void redrawDisplay(const uint8_t * displayMemory) = 0;
 

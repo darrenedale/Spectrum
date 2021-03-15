@@ -7,8 +7,6 @@
 
 #include "qimagedisplaydevice.h"
 
-//#define QSPECTRUMDISPLAY_USEPAINTER
-
 using namespace Spectrum::Qt;
 
 namespace
@@ -37,7 +35,9 @@ namespace
 }
 
 QImageDisplayDevice::QImageDisplayDevice()
-: m_image(fullWidth(), fullHeight(), QImage::Format_ARGB32)
+: m_image(fullWidth(), fullHeight(), QImage::Format_ARGB32),
+  m_border(Colour::White),
+  m_frameCounter(0)
 {
 }
 
@@ -104,8 +104,10 @@ void QImageDisplayDevice::redrawDisplay(const uint8_t * displayMemory)
 #endif
 }
 
-void QImageDisplayDevice::setBorder(DisplayDevice::Colour colour, bool bright)
+void QImageDisplayDevice::setBorder(Colour colour, bool bright)
 {
+    m_border = colour;
+
     QPainter painter(&image());
     auto idx = static_cast<std::size_t>(colour);
 
@@ -129,4 +131,9 @@ constexpr int QImageDisplayDevice::fullWidth()
 constexpr int QImageDisplayDevice::fullHeight()
 {
     return Height + BorderSize + BorderSize;
+}
+
+Spectrum::Colour QImageDisplayDevice::border() const
+{
+    return m_border;
 }

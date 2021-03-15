@@ -4,6 +4,7 @@ add_executable(
         z80interpreter
         ../cpu.cpp
         ../z80/z80.cpp
+        ../z80/registers.cpp
         z80interpreter.cpp
         operand.cpp
         main.cpp

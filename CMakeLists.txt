@@ -18,6 +18,7 @@ add_executable(
         src/test/z80/expectationfilereader.cpp
         src/cpu.cpp
         src/z80/z80.cpp
+        src/z80/registers.cpp
         src/z80/iodevice.cpp
         src/test/z80/testiodevice.h)
 

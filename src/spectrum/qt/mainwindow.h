@@ -35,7 +35,9 @@ namespace Spectrum::Qt
         void loadSnaSnapshot(const QString & fileName);
         void loadZ80Snapshot(const QString & fileName);
         void loadSpSnapshot(const QString & fileName);
-        void saveSnapshot(const QString & fileName) const;
+
+        // NOTE can't be const because the thread must be paused
+        void saveSnapshot(const QString & fileName, QString format = {});
 
         inline Spectrum & spectrum()
         {
@@ -88,6 +90,7 @@ namespace Spectrum::Qt
         QImageDisplayDevice m_display;
         ImageWidget m_displayWidget;
         QAction m_load;
+        QAction m_save;
         QAction m_pauseResume;
         QAction m_refreshScreen;
         QAction m_saveScreenshot;

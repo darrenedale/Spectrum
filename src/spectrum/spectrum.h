@@ -84,6 +84,11 @@ namespace Spectrum
 				m_displayDevices.erase(pos, pos);
 			}
 
+			[[nodiscard]] const std::vector<DisplayDevice *> & displayDevices() const
+            {
+			    return m_displayDevices;
+            }
+
 			void setKeyboard(Keyboard * keyboard);
 			void setJoystickInterface(JoystickInterface *);
 

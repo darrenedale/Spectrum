@@ -11,8 +11,6 @@
 #include <QFileDialog>
 #include <QEvent>
 #include <QKeyEvent>
-#include <QDragEnterEvent>
-#include <QDropEvent>
 #include <QMimeData>
 #include <QDebug>
 #include <QSettings>
@@ -21,6 +19,9 @@
 
 #include "mainwindow.h"
 #include "threadpauser.h"
+#include "../snapshot.h"
+#include "../z80snapshotwriter.h"
+#include "../snasnapshotwriter.h"
 
 using namespace Spectrum::Qt;
 
@@ -41,6 +42,7 @@ MainWindow::MainWindow(QWidget * parent)
   m_display(),
   m_displayWidget(),
   m_load(QIcon::fromTheme(QStringLiteral("document-open")), tr("Load Snapshot")),
+  m_save(QIcon::fromTheme(QStringLiteral("document-save")), tr("save Snapshot")),
   m_pauseResume(QIcon::fromTheme(QStringLiteral("media-playback-start")), tr("Start/Pause")),
   m_saveScreenshot(QIcon::fromTheme(QStringLiteral("image")), tr("Screenshot")),
   m_refreshScreen(QIcon::fromTheme("view-refresh"), tr("Refresh")),
@@ -60,8 +62,9 @@ MainWindow::MainWindow(QWidget * parent)
     m_displayWidget.installEventFilter(&m_keyboard);
     m_displayWidget.installEventFilter(this);
     m_debugWindow.installEventFilter(this);
-    m_load.setShortcut(::Qt::Key::Key_Control + ::Qt::Key::Key_O);
-    m_pauseResume.setShortcuts({::Qt::Key::Key_Pause, ::Qt::Key::Key_Control + ::Qt::Key_P,});
+    m_load.setShortcuts({::Qt::Key::Key_Control + ::Qt::Key::Key_O, ::Qt::Key::Key_F1});
+    m_save.setShortcuts({::Qt::Key::Key_Control + ::Qt::Key::Key_S, ::Qt::Key::Key_F2});
+    m_pauseResume.setShortcuts({::Qt::Key::Key_Pause, ::Qt::Key::Key_Escape, ::Qt::Key::Key_Control + ::Qt::Key_P,});
     m_debug.setShortcuts({::Qt::Key::Key_Control + ::Qt::Key::Key_D, ::Qt::Key::Key_F12,});
     m_debug.setCheckable(true);
     m_debugStep.setShortcut(::Qt::Key::Key_Space);
@@ -130,6 +133,7 @@ void MainWindow::createToolbars()
 {
 	auto * tempToolBar = addToolBar(QStringLiteral("Main"));
     tempToolBar->addAction(&m_load);
+    tempToolBar->addAction(&m_save);
     tempToolBar->addSeparator();
     tempToolBar->addAction(&m_pauseResume);
     tempToolBar->addAction(&m_reset);
@@ -152,6 +156,7 @@ void MainWindow::connectSignals()
 	connect(&m_emulationSpeedSlider, &QSlider::valueChanged, this, &MainWindow::emulationSpeedChanged);
 
 	connect(&m_load, &QAction::triggered, this, &MainWindow::loadSnapshotTriggered);
+	connect(&m_save, &QAction::triggered, this, &MainWindow::saveSnapshotTriggered);
 	connect(&m_pauseResume, &QAction::triggered, this, &MainWindow::pauseResumeTriggered);
 	connect(&m_reset, &QAction::triggered, &m_spectrumThread, &Thread::reset);
 	connect(&m_debug, &QAction::triggered, this, &MainWindow::debugTriggered);
@@ -288,7 +293,7 @@ void MainWindow::loadSnaSnapshot(const QString & fileName)
     }
 
     cpu.setInterruptMode(static_cast<Z80::Z80::InterruptMode>(*(byte++) & 0x03));
-    m_display.setBorder(static_cast<DisplayDevice::Colour>(*(byte++) & 0x07));
+    m_display.setBorder(static_cast<Colour>(*(byte++) & 0x07));
     std::memcpy(ram, byte, 0xc000);
 
     // update the display
@@ -332,7 +337,7 @@ void MainWindow::loadZ80Snapshot(const QString & fileName)
         }
     }
 
-    auto * ram = m_spectrum.memory() + 16384;
+    auto * ram = m_spectrum.memory() + 0x4000;
     auto & cpu = *(m_spectrum.z80());
     auto & registers = cpu.registers();
     auto * byte = buffer;
@@ -442,7 +447,7 @@ void MainWindow::loadZ80Snapshot(const QString & fileName)
 
     // flag byte contains bit 7 of R register in bit 0
     registers.r |= (fileFormatFlags & 0x01) << 7;
-    m_display.setBorder(static_cast<DisplayDevice::Colour>((fileFormatFlags & 0b00001110) >> 1));
+    m_display.setBorder(static_cast<Colour>((fileFormatFlags & 0b00001110) >> 1));
 
     for (auto & reg : {&registers.e, &registers.d, &registers.cShadow, &registers.bShadow, &registers.eShadow,
                        &registers.dShadow, &registers.lShadow, &registers.hShadow, &registers.aShadow,
@@ -690,7 +695,7 @@ void MainWindow::loadSpSnapshot(const QString & fileName)
     registers.sp = z80ToHostByteOrder(header.sp);
     registers.pc = z80ToHostByteOrder(header.pc);
 
-    m_display.setBorder(static_cast<DisplayDevice::Colour>(header.border));
+    m_display.setBorder(static_cast<Colour>(header.border));
 
     // NOTE from here on, the status member of the header is in host byte order
     header.status = z80ToHostByteOrder(header.status);
@@ -712,6 +717,36 @@ void MainWindow::loadSpSnapshot(const QString & fileName)
     std::memcpy(memory + header.baseAddress, programBuffer, header.length);
 
     delete[] programBuffer;
+}
+
+void MainWindow::saveSnapshot(const QString & fileName, QString format)
+{
+    ThreadPauser pauser(m_spectrumThread);
+
+    if (format.isEmpty()) {
+        format = guessSnapshotFormat(fileName);
+    }
+
+    if ("sna" == format) {
+        auto * z80 = m_spectrum.z80();
+        z80->execute(reinterpret_cast<const Z80::UnsignedByte *>("\xcd\x00\x00"), false);
+        SnaSnapshotWriter writer(Snapshot{m_spectrum});
+        z80->execute(reinterpret_cast<const Z80::UnsignedByte *>("\xed\x45"), false);
+
+        if (!writer.writeTo(fileName.toStdString())) {
+            std::cerr << "failed to write snapshot to '" << fileName.toStdString() << "'\n";
+        }
+    } else if ("z80" == format) {
+        Z80SnapshotWriter writer(Snapshot{m_spectrum});
+
+        if (!writer.writeTo(fileName.toStdString())) {
+            std::cerr << "failed to write snapshot to '" << fileName.toStdString() << "'\n";
+        }
+    } else if ("sp" == format) {
+        std::cerr << "Not yet implemented.\n";
+    } else {
+        std::cerr << "unrecognised format '" << format.toStdString() << "' from filename '" << fileName.toStdString() << "'\n";
+    }
 }
 
 bool MainWindow::eventFilter(QObject * target, QEvent * event)
@@ -892,6 +927,41 @@ void MainWindow::loadSnapshotTriggered()
     }
 
     loadSnapshot(fileName, format);
+}
+
+void MainWindow::saveSnapshotTriggered()
+{
+    static QStringList filters;
+    static QString lastFilter;
+
+    ThreadPauser pauser(m_spectrumThread);
+
+    if(filters.isEmpty()) {
+        filters << tr("SNA Snapshots (*.sna)");
+        filters << tr("Z80 Snapshots (*.z80)");
+        filters << tr("SP Snapshots (*.sp)");
+    }
+
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save snapshot"), m_lastSnapshotLoadDir, filters.join(";;"), &lastFilter);
+
+    if(fileName.isEmpty()) {
+        return;
+    }
+
+    m_lastSnapshotLoadDir = QFileInfo(fileName).path();
+    auto format = lastFilter;
+
+    if (!format.isEmpty()) {
+        if (auto matches = QRegularExpression("^.*\\(\\*\\.([a-zA-Z0-9_-]+)\\)$").match(format); matches.hasMatch()) {
+            format = matches.captured(1).toLower();
+        } else {
+            format.clear();
+        }
+    }
+
+    // we appear to be generating non-functional .z80 snapshots - is the Z80 still running while the snapshot is being
+    // taken?
+    saveSnapshot(fileName, format);
 }
 
 void MainWindow::emulationSpeedChanged(int speed)

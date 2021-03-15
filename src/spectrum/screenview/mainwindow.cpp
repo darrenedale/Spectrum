@@ -18,7 +18,7 @@ MainWindow::MainWindow(QWidget * parent)
 : QMainWindow(parent),
   m_chooseFile(std::make_unique<QPushButton>(QIcon::fromTheme(QStringLiteral("document-open")), tr(""))),
   m_fileName(std::make_unique<QLineEdit>()),
-  m_display(std::make_unique<ImageWidget>()),
+  m_display(std::make_unique<Spectrum::ImageWidget>()),
   m_borderColour(std::make_unique<ColourCombo>()),
   m_screenData()
 {
@@ -37,7 +37,7 @@ MainWindow::MainWindow(QWidget * parent)
     centralWidget->setLayout(mainLayout);
     setCentralWidget(centralWidget);
 
-    m_borderColour->setColour(Spectrum::DisplayDevice::Colour::White, false);
+    m_borderColour->setColour(Spectrum::Colour::White, false);
 
     connect(m_chooseFile.get(), &QPushButton::clicked, this, &MainWindow::chooseScreenFile);
 

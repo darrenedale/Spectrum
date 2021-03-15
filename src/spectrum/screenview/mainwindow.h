@@ -42,7 +42,7 @@ namespace ScreenView
         std::unique_ptr<QLineEdit> m_fileName;
         std::unique_ptr<QPushButton> m_chooseFile;
         std::unique_ptr<ColourCombo> m_borderColour;
-        std::unique_ptr<ImageWidget> m_display;
+        std::unique_ptr<Spectrum::ImageWidget> m_display;
         ScreenData m_screenData;
     };
 }

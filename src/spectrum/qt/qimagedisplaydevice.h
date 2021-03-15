@@ -25,6 +25,7 @@ namespace Spectrum::Qt
             return m_image;
         }
 
+        [[nodiscard]] Colour border() const override;
         void setBorder(Colour, bool = false) override;
         void redrawDisplay(const uint8_t *) override;
 
@@ -34,6 +35,7 @@ namespace Spectrum::Qt
 
 	private:
 	    QImage m_image;
+	    Colour m_border;
 	    std::uint8_t m_frameCounter;
     };
 }

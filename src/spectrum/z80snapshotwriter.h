@@ -5,11 +5,22 @@
 #ifndef SPECTRUM_Z80SNAPSHOTWRITER_H
 #define SPECTRUM_Z80SNAPSHOTWRITER_H
 
+#include "snapshotwriter.h"
+
 namespace Spectrum
 {
+    /**
+     * TODO support later versioned files with the extended header
+     * TODO support writing compressed memory images
+     */
     class Z80SnapshotWriter
+    : public SnapshotWriter
     {
+    public:
+        using SnapshotWriter::SnapshotWriter;
 
+        bool writeTo(std::ostream & out) const override;
+        using SnapshotWriter::writeTo;
     };
 }
 

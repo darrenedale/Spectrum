@@ -15,14 +15,14 @@ using namespace Spectrum;
 ColourCombo::ColourCombo(QWidget * parent)
 : QComboBox(parent)
 {
-    addItem(tr("Black"), DisplayDevice::Colour::Black);
-    addItem(tr("Blue"), DisplayDevice::Colour::Blue);
-    addItem(tr("Red"), DisplayDevice::Colour::Red);
-    addItem(tr("Magenta"), DisplayDevice::Colour::Magenta);
-    addItem(tr("Green"), DisplayDevice::Colour::Green);
-    addItem(tr("Cyan"), DisplayDevice::Colour::Cyan);
-    addItem(tr("Yellow"), DisplayDevice::Colour::Yellow);
-    addItem(tr("White"), DisplayDevice::Colour::White);
+    addItem(tr("Black"), Colour::Black);
+    addItem(tr("Blue"), Colour::Blue);
+    addItem(tr("Red"), Colour::Red);
+    addItem(tr("Magenta"), Colour::Magenta);
+    addItem(tr("Green"), Colour::Green);
+    addItem(tr("Cyan"), Colour::Cyan);
+    addItem(tr("Yellow"), Colour::Yellow);
+    addItem(tr("White"), Colour::White);
 
     connect(this, qOverload<int>(&QComboBox::currentIndexChanged), [this]() {
         Q_EMIT colourSelected(colour(), isBright());
@@ -31,9 +31,9 @@ ColourCombo::ColourCombo(QWidget * parent)
 
 ColourCombo::~ColourCombo() = default;
 
-DisplayDevice::Colour ColourCombo::colour() const
+Colour ColourCombo::colour() const
 {
-    return static_cast<DisplayDevice::Colour>(currentData(ColourRole).toUInt());
+    return static_cast<Colour>(currentData(ColourRole).toUInt());
 }
 
 bool ColourCombo::isBright() const
@@ -41,7 +41,7 @@ bool ColourCombo::isBright() const
     return currentData(BrightRole).toBool();
 }
 
-void ColourCombo::addItem(const QString & text, Spectrum::DisplayDevice::Colour colour)
+void ColourCombo::addItem(const QString & text, Spectrum::Colour colour)
 {
     int idx = count();
     QComboBox::addItem(text);
@@ -69,7 +69,7 @@ void ColourCombo::setBright(bool bright)
     setCurrentIndex(idx);
 }
 
-void ColourCombo::setColour(DisplayDevice::Colour colour, bool bright)
+void ColourCombo::setColour(Colour colour, bool bright)
 {
     if (this->colour() == colour && isBright() == bright) {
         return;
@@ -84,16 +84,10 @@ void ColourCombo::setColour(DisplayDevice::Colour colour, bool bright)
     setCurrentIndex(idx);
 }
 
-#include <iostream>
-
-int ColourCombo::findItem(Spectrum::DisplayDevice::Colour colour, bool bright)
+int ColourCombo::findItem(Spectrum::Colour colour, bool bright)
 {
-    std::cout << "Looking for colour " << static_cast<std::uint8_t>(colour) << (bright ? " (bright)" : "") << "\n";
-
     for (int idx = 0; idx < count(); ++idx) {
-        std::cout << "Colour at index " << idx << " id " << itemData(idx, ColourRole).toUInt() << (itemData(idx, BrightRole).toBool() ? " (bright)" : "") << "\n";
-
-        if (static_cast<DisplayDevice::Colour>(itemData(idx, ColourRole).toUInt()) == colour
+        if (static_cast<Colour>(itemData(idx, ColourRole).toUInt()) == colour
         && itemData(idx, BrightRole).toBool() == bright) {
             return idx;
         }
