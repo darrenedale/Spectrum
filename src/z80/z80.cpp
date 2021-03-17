@@ -1135,7 +1135,7 @@ void Z80::Z80::executePlainInstruction(const UnsignedByte * instruction, bool * 
 			break;
 
 		case Z80__PLAIN__LD__BC__NN:					// 0x01
-			Z80__LD__REG16__NN(m_registers.bcZ80, *((UnsignedWord *)(instruction + 1)));
+			Z80__LD__REG16__NN(m_registers.bc, z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
 			break;
 
 		case Z80__PLAIN__LD__INDIRECT_BC__A:		// 0x02

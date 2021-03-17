@@ -101,6 +101,11 @@ namespace Spectrum::Qt
         KeyboardMonitorWidget m_keyboardMonitor;
         PokeWidget m_poke;
 
+        QDockWidget * m_shadowRegistersDock;
+        QDockWidget * m_memoryDock;
+        QDockWidget * m_keyboardDock;
+        QDockWidget * m_pokeDock;
+
         InstructionObserver m_cpuObserver;
         Breakpoints m_breakpoints;
 	};

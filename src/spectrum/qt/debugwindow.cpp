@@ -54,11 +54,15 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
   m_memoryPc(),
   m_memorySp(),
   m_step(QIcon::fromTheme(QStringLiteral("debug-step-instruction")), tr("Step")),
-  m_pauseResume(QIcon::fromTheme(QStringLiteral("media-playback-play")), tr("Resume")),
+  m_pauseResume(QIcon::fromTheme(QStringLiteral("media-playback-start")), tr("Resume")),
   m_refresh(QIcon::fromTheme(QStringLiteral("view-refresh")), tr("Refresh")),
   m_status(),
   m_keyboardMonitor(&m_thread->spectrum()),
   m_poke(),
+  m_shadowRegistersDock(nullptr),
+  m_memoryDock(nullptr),
+  m_keyboardDock(nullptr),
+  m_pokeDock(nullptr),
   m_cpuObserver((*this)),
   m_breakpoints()
 {
@@ -101,6 +105,12 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
 	connect(m_thread, &Thread::resumed, this, &DebugWindow::threadResumed, ::Qt::UniqueConnection);
 
 	connectWidgets();
+
+	if (m_thread->isPaused()) {
+	    threadPaused();
+	} else {
+	    threadResumed();
+	}
 }
 
 DebugWindow::~DebugWindow()
@@ -120,11 +130,11 @@ void DebugWindow::createToolbars()
 
 void DebugWindow::createDockWidgets()
 {
-    auto * dock = new QDockWidget(tr("Keyboard"), this);
-    dock->setWidget(&m_keyboardMonitor);
-    addDockWidget(::Qt::DockWidgetArea::BottomDockWidgetArea, dock);
+    m_keyboardDock = new QDockWidget(tr("Keyboard"), this);
+    m_keyboardDock->setWidget(&m_keyboardMonitor);
+    addDockWidget(::Qt::DockWidgetArea::BottomDockWidgetArea, m_keyboardDock);
 
-    dock = new QDockWidget(tr("Memory"), this);
+    m_memoryDock = new QDockWidget(tr("Memory"), this);
     auto * memory = new QWidget();
     auto * memoryLayout = new QVBoxLayout();
     memoryLayout->addWidget(&m_memoryWidget);
@@ -136,12 +146,37 @@ void DebugWindow::createDockWidgets()
     tmpLayout->addWidget(&m_memorySp);
     memoryLayout->addLayout(tmpLayout);
     memory->setLayout(memoryLayout);
-    dock->setWidget(memory);
-    addDockWidget(::Qt::DockWidgetArea::RightDockWidgetArea, dock);
+    m_memoryDock->setWidget(memory);
+    addDockWidget(::Qt::DockWidgetArea::RightDockWidgetArea, m_memoryDock);
 
-    dock = new QDockWidget(tr("Poke"), this);
-    dock->setWidget(&m_poke);
-    addDockWidget(::Qt::DockWidgetArea::RightDockWidgetArea, dock);
+    m_pokeDock = new QDockWidget(tr("Poke"), this);
+    m_pokeDock->setWidget(&m_poke);
+    addDockWidget(::Qt::DockWidgetArea::RightDockWidgetArea, m_pokeDock);
+
+    // shadow registers
+    m_shadowRegistersDock = new QDockWidget(tr("Shadow registers"));
+    auto * shadowRegisters = new QWidget();
+    auto * shadowRegistersLayout = new QVBoxLayout();
+
+    shadowRegistersLayout->setSpacing(2);
+    shadowRegistersLayout->addWidget(&m_afshadow);
+    shadowRegistersLayout->addWidget(&m_bcshadow);
+    shadowRegistersLayout->addWidget(&m_deshadow);
+    shadowRegistersLayout->addWidget(&m_hlshadow);
+
+    auto * flagsLayout = new QHBoxLayout();
+    auto * tmpLabel = new QLabel("Flags");
+    tmpLabel->setBuddy(&m_shadowFlags);
+    tmpLabel->setFont(m_shadowFlags.font());
+    flagsLayout->addWidget(tmpLabel);
+    flagsLayout->addWidget(&m_shadowFlags);
+    flagsLayout->addStretch(10);
+    shadowRegistersLayout->addLayout(flagsLayout);
+    shadowRegistersLayout->addStretch(10);
+
+    shadowRegisters->setLayout(shadowRegistersLayout);
+    m_shadowRegistersDock->setWidget(shadowRegisters);
+    addDockWidget(::Qt::DockWidgetArea::LeftDockWidgetArea, m_shadowRegistersDock);
 }
 
 void DebugWindow::layoutWidget()
@@ -198,8 +233,8 @@ void DebugWindow::layoutWidget()
     tmpLabel->setBuddy(&m_sp);
     tmpLabel->setFont(m_sp.font());
     tmpLabel->setMinimumHeight(m_sp.minimumHeight());
-    regLayout->addWidget(tmpLabel);
-    regLayout->addWidget(&m_sp);
+    regLayout->addWidget(tmpLabel, 1);
+    regLayout->addWidget(&m_sp, 10);
     pointersLayout->addLayout(regLayout);
 
     regLayout = new QHBoxLayout();
@@ -207,55 +242,15 @@ void DebugWindow::layoutWidget()
     tmpLabel->setBuddy(&m_pc);
     tmpLabel->setFont(m_pc.font());
     tmpLabel->setMinimumHeight(m_pc.minimumHeight());
-    regLayout->addWidget(tmpLabel);
-    regLayout->addWidget(&m_pc);
+    regLayout->addWidget(tmpLabel, 1);
+    regLayout->addWidget(&m_pc, 10);
     pointersLayout->addLayout(regLayout);
     pointers->setLayout(pointersLayout);
 
-	// shadow registers
-    auto * shadowRegisters = new QGroupBox(tr("Shadow registers"));
-    auto * shadowRegistersLayout = new QVBoxLayout();
-
-    plainRegistersLayout->setSpacing(2);
-	shadowRegistersLayout->addWidget(&m_afshadow);
-	shadowRegistersLayout->addWidget(&m_bcshadow);
-	shadowRegistersLayout->addWidget(&m_deshadow);
-	shadowRegistersLayout->addWidget(&m_hlshadow);
-
-    flagsLayout = new QHBoxLayout();
-    tmpLabel = new QLabel("Flags");
-    tmpLabel->setBuddy(&m_shadowFlags);
-    tmpLabel->setFont(m_shadowFlags.font());
-    flagsLayout->addWidget(tmpLabel);
-    flagsLayout->addWidget(&m_shadowFlags);
-    flagsLayout->addStretch(10);
-    shadowRegistersLayout->addLayout(flagsLayout);
-
-    shadowRegistersLayout->addStretch(10);
-    shadowRegisters->setLayout(shadowRegistersLayout);
-//
-//    auto * memory = new QGroupBox(tr("Memory"));
-//    auto * memoryLayout = new QVBoxLayout();
-//    memoryLayout->addWidget(&m_memoryWidget);
-//    memory->setLayout(memoryLayout);
-//    auto * tmpLayout = new QHBoxLayout();
-//    tmpLayout->addWidget(&m_memoryLocation);
-//    tmpLayout->addWidget(&m_setBreakpoint);
-//    tmpLayout->addStretch(10);
-//    tmpLayout->addWidget(&m_memoryPc);
-//    tmpLayout->addWidget(&m_memorySp);
-//    memoryLayout->addLayout(tmpLayout);
-
-	auto * mainLayout = new QHBoxLayout();
-    auto * leftLayout = new QVBoxLayout();
-    leftLayout->addWidget(plainRegisters);
-    leftLayout->addWidget(interrupts);
-    auto * rightLayout = new QVBoxLayout();
-    rightLayout->addWidget(shadowRegisters);
-    rightLayout->addWidget(pointers);
-    mainLayout->addLayout(leftLayout);
-    mainLayout->addLayout(rightLayout);
-//    mainLayout->addWidget(memory);
+	auto * mainLayout = new QVBoxLayout();
+    mainLayout->addWidget(plainRegisters);
+    mainLayout->addWidget(interrupts);
+    mainLayout->addWidget(pointers);
 
     auto * centralWidget = new QWidget();
     centralWidget->setLayout(mainLayout);
@@ -392,6 +387,10 @@ void DebugWindow::threadPaused()
     m_pauseResume.setIcon(QIcon::fromTheme(QStringLiteral("media-playback-start")));
     m_pauseResume.setText(tr("Resume"));
     centralWidget()->setEnabled(true);
+    m_shadowRegistersDock->setEnabled(true);
+    m_memoryDock->setEnabled(true);
+    m_pokeDock->setEnabled(true);
+    m_keyboardDock->setEnabled(true);
     m_step.setEnabled(true);
     updateStateDisplay();
     connect(m_thread, &Thread::stepped, this, &DebugWindow::threadStepped, ::Qt::UniqueConnection);
@@ -402,6 +401,11 @@ void DebugWindow::threadResumed()
     m_pauseResume.setIcon(QIcon::fromTheme(QStringLiteral("media-playback-pause")));
     m_pauseResume.setText(tr("Pause"));
     centralWidget()->setEnabled(false);
+    m_poke.setEnabled(false);
+    m_shadowRegistersDock->setEnabled(false);
+    m_memoryDock->setEnabled(false);
+    m_pokeDock->setEnabled(false);
+    m_keyboardDock->setEnabled(false);
     m_step.setEnabled(false);
     disconnect(m_thread, &Thread::stepped, this, &DebugWindow::threadStepped);
 }

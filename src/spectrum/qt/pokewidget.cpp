@@ -20,11 +20,11 @@ PokeWidget::PokeWidget(Z80::UnsignedWord address, Z80::UnsignedByte value, QWidg
     m_poke.setIcon(QIcon::fromTheme("dialog-ok-apply"));
 
     auto * layout = new QHBoxLayout();
-    layout->addWidget(new QLabel(tr("Address")));
-    layout->addWidget(&m_address);
-    layout->addWidget(new QLabel(tr("Value")));
-    layout->addWidget(&m_value);
-    layout->addWidget(&m_poke);
+    layout->addWidget(new QLabel(tr("Address")), 1);
+    layout->addWidget(&m_address, 10);
+    layout->addWidget(new QLabel(tr("Value")), 1);
+    layout->addWidget(&m_value, 10);
+    layout->addWidget(&m_poke, 1);
     setLayout(layout);
 
     connect(&m_poke, &QToolButton::clicked, [this]() {
