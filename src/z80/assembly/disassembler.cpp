@@ -2482,57 +2482,157 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
 
     switch (*machineCode) {
         case Z80__CB__RLC__B:					// 0x00
-            return {};
+            return {
+                Instruction::RLC,
+                {
+                        {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize,
+            };
 
         case Z80__CB__RLC__C:					// 0x01
-            return {};
+            return {
+                    Instruction::RLC,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RLC__D:					// 0x02
-            return {};
+            return {
+                    Instruction::RLC,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RLC__E:					// 0x03
-            return {};
+            return {
+                    Instruction::RLC,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RLC__H:					// 0x04
-            return {};
+            return {
+                    Instruction::RLC,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RLC__L:					// 0x05
-            return {};
+            return {
+                    Instruction::RLC,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RLC__INDIRECT_HL:	// 0x06
-            return {};
+            return {
+                    Instruction::RLC,
+                    {
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RLC__A:					// 0x07
-
-            return {};
+            return {
+                    Instruction::RLC,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RRC__B:					// 0x08
-            return {};
+            return {
+                    Instruction::RRC,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RRC__C:					// 0x09
-            return {};
+            return {
+                    Instruction::RRC,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RRC__D:					// 0x0a
-            return {};
+            return {
+                    Instruction::RRC,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RRC__E:					// 0x0b
-            return {};
+            return {
+                    Instruction::RRC,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RRC__H:					// 0x0c
-            return {};
+            return {
+                    Instruction::RRC,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RRC__L:					// 0x0d
-            return {};
+            return {
+                    Instruction::RRC,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RRC__INDIRECT_HL:	// 0x0e
-            return {};
+            return {
+                    Instruction::RRC,
+                    {
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RRC__A:					// 0x0f
-
-            return {};
+            return {
+                    Instruction::RRC,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RL__B:					// 0x10
-            return {};
+            return {
+                    Instruction::RL,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RL__C:					// 0x11
             return {
@@ -2544,747 +2644,2338 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
             };
 
         case Z80__CB__RL__D:					// 0x12
-            return {};
+            return {
+                    Instruction::RL,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RL__E:					// 0x13
-            return {};
+            return {
+                    Instruction::RL,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RL__H:					// 0x14
-            return {};
+            return {
+                    Instruction::RL,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RL__L:					// 0x15
-            return {};
+            return {
+                    Instruction::RL,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RL__INDIRECT_HL:		// 0x16
-            return {};
+            return {
+                    Instruction::RL,
+                    {
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RL__A:					// 0x17
-
-            return {};
+            return {
+                    Instruction::RL,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RR__B:					// 0x18
-            return {};
+            return {
+                    Instruction::RR,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RR__C:					// 0x19
-            return {};
+            return {
+                    Instruction::RR,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RR__D:					// 0x1a
-            return {};
+            return {
+                    Instruction::RR,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RR__E:					// 0x1b
-            return {};
+            return {
+                    Instruction::RR,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RR__H:					// 0x1c
-            return {};
+            return {
+                    Instruction::RR,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RR__L:					// 0x1d
-            return {};
+            return {
+                    Instruction::RR,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RR__INDIRECT_HL:		// 0x1e
-            return {};
+            return {
+                    Instruction::RR,
+                    {
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RR__A:					// 0x1f
-
-            return {};
+            return {
+                    Instruction::RR,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SLA__B:					// 0x20
-            return {};
+            return {
+                    Instruction::SLA,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SLA__C:					// 0x21
-            return {};
+            return {
+                    Instruction::SLA,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SLA__D:					// 0x22
-            return {};
+            return {
+                    Instruction::SLA,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SLA__E:					// 0x23
-            return {};
+            return {
+                    Instruction::SLA,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SLA__H:					// 0x24
-            return {};
+            return {
+                    Instruction::SLA,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SLA__L:					// 0x25
-            return {};
+            return {
+                    Instruction::SLA,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SLA__INDIRECT_HL:	// 0x26
-            return {};
+            return {
+                    Instruction::SLA,
+                    {
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SLA__A:					// 0x27
-
-            return {};
+            return {
+                    Instruction::SLA,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SRA__B:					// 0x28
-            return {};
+            return {
+                    Instruction::SRA,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SRA__C:					// 0x29
-            return {};
+            return {
+                    Instruction::SRA,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SRA__D:					// 0x2a
-            return {};
+            return {
+                    Instruction::SRA,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SRA__E:					// 0x2b
-            return {};
+            return {
+                    Instruction::SRA,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SRA__H:					// 0x2c
-            return {};
+            return {
+                    Instruction::SRA,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SRA__L:					// 0x2d
-            return {};
+            return {
+                    Instruction::SRA,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SRA__INDIRECT_HL:	// 0x2e
-            return {};
+            return {
+                    Instruction::SRA,
+                    {
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SRA__A:					// 0x2f
-
-            return {};
+            return {
+                    Instruction::SRA,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SLL__B:					// 0x30
-            return {};
+            return {
+                    Instruction::SLL,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SLL__C:					// 0x31
-            return {};
+            return {
+                    Instruction::SLL,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SLL__D:					// 0x32
-            return {};
+            return {
+                    Instruction::SLL,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SLL__E:					// 0x33
-            return {};
+            return {
+                    Instruction::SLL,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SLL__H:					// 0x34
-            return {};
+            return {
+                    Instruction::SLL,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SLL__L:					// 0x35
-            return {};
+            return {
+                    Instruction::SLL,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SLL__INDIRECT_HL:	// 0x36
-            return {};
+            return {
+                    Instruction::SLL,
+                    {
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SLL__A:					// 0x37
-
-            return {};
+            return {
+                    Instruction::SLL,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SRL__B:					// 0x38
-            return {};
+            return {
+                    Instruction::SRL,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SRL__C:					// 0x39
-            return {};
+            return {
+                    Instruction::SRL,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SRL__D:					// 0x3a
-            return {};
+            return {
+                    Instruction::SRL,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SRL__E:					// 0x3b
-            return {};
+            return {
+                    Instruction::SRL,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SRL__H:					// 0x3c
-            return {};
+            return {
+                    Instruction::SRL,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SRL__L:					// 0x3d
-            return {};
+            return {
+                    Instruction::SRL,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SRL__INDIRECT_HL:	// 0x3e
-            return {};
+            return {
+                    Instruction::SRL,
+                    {
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SRL__A:					// 0x3f
-
-            return {};
+            return {
+                    Instruction::SRL,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__0__B:					// 0x40
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__0__C:					// 0x41
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__0__D:					// 0x42
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__0__E:					// 0x43
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__0__H:					// 0x44
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__0__L:					// 0x45
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__0__INDIRECT_HL:	// 0x46
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0,},
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__0__A:					// 0x47
-
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__1__B:					// 0x48
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__1__C:					// 0x49
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__1__D:					// 0x4a
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__1__E:					// 0x4b
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__1__H:					// 0x4c
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__1__L:					// 0x4d
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__1__INDIRECT_HL:	// 0x4e
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1,},
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__1__A:					// 0x4f
-
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__2__B:					// 0x50
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__2__C:					// 0x51
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__2__D:					// 0x52
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__2__E:					// 0x53
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__2__H:					// 0x54
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__2__L:					// 0x55
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__2__INDIRECT_HL:	// 0x56
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2,},
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__2__A:					// 0x57
-
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__3__B:					// 0x58
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__3__C:					// 0x59
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__3__D:					// 0x5a
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__3__E:					// 0x5b
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__3__H:					// 0x5c
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__3__L:					// 0x5d
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__3__INDIRECT_HL:	// 0x5e
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3,},
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__3__A:					// 0x5f
-
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__4__B:					// 0x60
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 4,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__4__C:					// 0x61
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 4,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__4__D:					// 0x62
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 4,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__4__E:					// 0x63
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 4,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__4__H:					// 0x64
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 4,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__4__L:					// 0x65
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 4,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__4__INDIRECT_HL:	// 0x66
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 4,},
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__4__A:					// 0x67
-
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 4,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__5__B:					// 0x68
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__5__C:					// 0x69
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__5__D:					// 0x6a
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__5__E:					// 0x6b
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__5__H:					// 0x6c
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__5__L:					// 0x6d
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__5__INDIRECT_HL:	// 0x6e
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5,},
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__5__A:					// 0x6f
-
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__6__B:					// 0x70
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 6,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__6__C:					// 0x71
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 6,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__6__D:					// 0x72
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 6,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__6__E:					// 0x73
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 6,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__6__H:					// 0x74
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 6,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__6__L:					// 0x75
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 6,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__6__INDIRECT_HL:	// 0x76
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 6,},
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__6__A:					// 0x77
-
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 6,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__7__B:					// 0x78
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__7__C:					// 0x79
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__7__D:					// 0x7a
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__7__E:					// 0x7b
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__7__H:					// 0x7c
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__7__L:					// 0x7d
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__7__INDIRECT_HL:	// 0x7e
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7,},
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__BIT__7__A:					// 0x7f
-
-            return {};
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__0__B:					// 0x80
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__0__C:					// 0x81
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__0__D:					// 0x82
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__0__E:					// 0x83
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__0__H:					// 0x84
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__0__L:					// 0x85
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__0__INDIRECT_HL:	// 0x86
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0,},
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__0__A:					// 0x87
-
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__1__B:					// 0x88
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__1__C:					// 0x89
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__1__D:					// 0x8a
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__1__E:					// 0x8b
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__1__H:					// 0x8c
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__1__L:					// 0x8d
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__1__INDIRECT_HL:	// 0x8e
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1,},
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__1__A:					// 0x8f
-
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__2__B:					// 0x90
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__2__C:					// 0x91
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__2__D:					// 0x92
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__2__E:					// 0x93
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__2__H:					// 0x94
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__2__L:					// 0x95
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__2__INDIRECT_HL:	// 0x96
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2,},
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__2__A:					// 0x97
-
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__3__B:					// 0x98
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__3__C:					// 0x99
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__3__D:					// 0x9a
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__3__E:					// 0x9b
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__3__H:					// 0x9c
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__3__L:					// 0x9d
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__3__INDIRECT_HL:	// 0x9e
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3,},
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__3__A:					// 0x9f
-
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__4__B:					// 0xa0
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 4,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__4__C:					// 0xa1
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 4,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__4__D:					// 0xa2
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 4,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__4__E:					// 0xa3
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 4,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__4__H:					// 0xa4
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 4,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__4__L:					// 0xa5
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 4,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__4__INDIRECT_HL:	// 0xa6
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 4,},
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__4__A:					// 0xa7
-
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 4,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__5__B:					// 0xa8
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__5__C:					// 0xa9
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__5__D:					// 0xaa
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__5__E:					// 0xab
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__5__H:					// 0xac
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__5__L:					// 0xad
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__5__INDIRECT_HL:	// 0xae
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5,},
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__5__A:					// 0xaf
-
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__6__B:					// 0xb0
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 6,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__6__C:					// 0xb1
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 6,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__6__D:					// 0xb2
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 6,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__6__E:					// 0xb3
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 6,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__6__H:					// 0xb4
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 6,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__6__L:					// 0xb5
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 6,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__6__INDIRECT_HL:	// 0xb6
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 6,},
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__6__A:					// 0xb7
-
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 6,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__7__B:					// 0xb8
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__7__C:					// 0xb9
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__7__D:					// 0xba
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__7__E:					// 0xbb
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__7__H:					// 0xbc
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__7__L:					// 0xbd
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__7__INDIRECT_HL:	// 0xbe
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7,},
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__RES__7__A:					// 0xbf
-
-            return {};
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__0__B:					// 0xc0
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__0__C:					// 0xc1
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__0__D:					// 0xc2
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__0__E:					// 0xc3
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__0__H:					// 0xc4
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__0__L:					// 0xc5
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__0__INDIRECT_HL:	// 0xc6
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0,},
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__0__A:					// 0xc7
-
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__1__B:					// 0xc8
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__1__C:					// 0xc9
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__1__D:					// 0xca
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__1__E:					// 0xcb
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__1__H:					// 0xcc
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__1__L:					// 0xcd
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__1__INDIRECT_HL:	// 0xce
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1,},
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__1__A:					// 0xcf
-
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__2__B:					// 0xd0
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__2__C:					// 0xd1
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__2__D:					// 0xd2
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__2__E:					// 0xd3
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__2__H:					// 0xd4
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__2__L:					// 0xd5
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__2__INDIRECT_HL:	// 0xd6
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2,},
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__2__A:					// 0xd7
-
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__3__B:					// 0xd8
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__3__C:					// 0xd9
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__3__D:					// 0xda
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__3__E:					// 0xdb
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__3__H:					// 0xdc
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__3__L:					// 0xdd
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__3__INDIRECT_HL:	// 0xde
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3,},
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__3__A:					// 0xdf
-
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__4__B:					// 0xe0
-            return {};
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 4,},
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize,
+            };
 
         case Z80__CB__SET__4__C:					// 0xe1
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 4,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__4__D:					// 0xe2
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 4,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__4__E:					// 0xe3
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 4,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__4__H:					// 0xe4
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 4,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__4__L:					// 0xe5
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 4,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__4__INDIRECT_HL:	// 0xe6
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 4,},
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__4__A:					// 0xe7
-
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 4,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__5__B:					// 0xe8
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__5__C:					// 0xe9
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__5__D:					// 0xea
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__5__E:					// 0xeb
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__5__H:					// 0xec
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__5__L:					// 0xed
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__5__INDIRECT_HL:	// 0xee
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5,},
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__5__A:					// 0xef
-
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__6__B:					// 0xf0
-            return {};
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 6,},
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize,
+            };
 
         case Z80__CB__SET__6__C:					// 0xf1
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 6,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__6__D:					// 0xf2
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 6,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__6__E:					// 0xf3
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 6,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__6__H:					// 0xf4
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 6,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__6__L:					// 0xf5
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 6,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__6__INDIRECT_HL:	// 0xf6
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 6,},
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__6__A:					// 0xf7
-
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 6,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__7__B:					// 0xf8
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__7__C:					// 0xf9
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__7__D:					// 0xfa
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__7__E:					// 0xfb
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__7__H:					// 0xfc
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__7__L:					// 0xfd
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__7__INDIRECT_HL:	// 0xfe
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7,},
+                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    },
+                    OpcodeSize,
+            };
 
         case Z80__CB__SET__7__A:					// 0xff
-            return {};
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7,},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                    },
+                    OpcodeSize,
+            };
     }
     
     std::cerr << "disassembly of opcode 0xcb 0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(*machineCode) << " not yet implemented\n" << std::setfill('0') << std::dec;

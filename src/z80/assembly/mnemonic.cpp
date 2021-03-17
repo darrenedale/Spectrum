@@ -144,6 +144,9 @@ std::string std::to_string(const Instruction & instruction)
         case Instruction::SLA:
             return "SLA";
 
+        case Instruction::SLL:
+            return "SLL";
+
         case Instruction::SRA:
             return "SRA";
 

@@ -17,7 +17,7 @@ namespace Z80::Assembly
         LD, PUSH, POP, EX, EXX, LDI, LDIR, LDD, LDDR, CPI, CPIR, CPD, CPDR,
         ADD, ADC, SUB, SBC, AND, OR, XOR, CP, INC, DEC,
         DAA, CPL, NEG, CCF, SCF, NOP, HALT, DI, EI, IM0, IM1, IM2,
-        RLCA, RLA, RRCA, RRA, RLC, RL, RRC, RR, SLA, SRA, SRL, RLD, RRD,
+        RLCA, RLA, RRCA, RRA, RLC, RL, RRC, RR, SLA, SLL, SRA, SRL, RLD, RRD,
         BIT, SET, RES,
         JP, JPNZ, JPZ, JPNC, JPC, JPPO, JPPE, JPP, JPM,
         JR, JRNZ, JRZ, JRNC, JRC,

@@ -24,8 +24,11 @@ std::string std::to_string(const Operand & op)
             break;
 
         case AddressingMode::Relative:
-            // TODO -ve offsests are not output correctly - see instruction at 0x0023 in Spectrum ROM
-            out << '$' << (op.signedByte < 0 ? '-' : '+') << std::hex << std::setw(0) << static_cast<std::uint16_t>(op.signedByte);
+            if (0 > op.signedByte) {
+                out << "$-" << std::hex << std::setw(0) << static_cast<std::uint16_t>(op.signedByte * -1);
+            } else {
+                out << "$+" << std::hex << std::setw(0) << static_cast<std::uint16_t>(op.signedByte);
+            }
             break;
 
         case AddressingMode::Extended:
@@ -33,8 +36,13 @@ std::string std::to_string(const Operand & op)
             break;
 
         case AddressingMode::Indexed:
-            // TODO -ve offsests are not output correctly
-            out << '(' << to_string(op.indexedAddress.register16) << " + $" << (op.indexedAddress.offset < 0 ? '-' : '+') <<  std::hex << std::setw(0) << static_cast<std::uint16_t>(op.indexedAddress.offset) << ')';
+            if (0 > op.signedByte) {
+                out << '(' << to_string(op.indexedAddress.register16) << " - $" << std::hex << std::setw(0)
+                    << static_cast<std::uint16_t>(op.indexedAddress.offset * -1) << ')';
+            } else {
+                out << '(' << to_string(op.indexedAddress.register16) << " + $" << std::hex << std::setw(0)
+                    << static_cast<std::uint16_t>(op.indexedAddress.offset) << ')';
+            }
             break;
 
         case AddressingMode::Register8:

@@ -17,7 +17,7 @@ constexpr const int ErrNoRomFileRead = 2;
 
 int main(int argc, char ** argv)
 {
-    UnsignedByte memory[0xffff];
+    UnsignedByte memory[0x3fff];
     const char * romFileName = "spectrum48.rom";
 
     if (argc > 1) {
@@ -39,11 +39,10 @@ int main(int argc, char ** argv)
     }
 
     Disassembler disassembler(memory, sizeof(memory));
-    int count = 0;
-
     std::cout << std::hex << std::setfill('0');
+    auto count = 0;
 
-    while (count < 100 && disassembler.canDisassembleMore()) {
+    while (count < 50 && disassembler.canDisassembleMore()) {
         auto address = disassembler.address();
 
         std::cout << "0x" << std::setw(4) << disassembler.address()
@@ -54,17 +53,17 @@ int main(int argc, char ** argv)
         bool first = true;
 
         while (address < disassembler.address()) {
-            if (!first) {
+            if (first) {
+                first = false;
+            } else {
                 std::cout << ' ';
             }
 
             std::cout << "0x" << static_cast<std::uint16_t>(*(memory + address));
-            first = false;
             ++address;
         }
 
         std::cout << "]\n";
-
         ++count;
     }
 }
