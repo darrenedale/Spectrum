@@ -37,6 +37,7 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
   m_hl(QStringLiteral("HL")),
   m_ix(QStringLiteral("IX")),
   m_iy(QStringLiteral("IY")),
+  m_disassembly(m_thread->spectrum()),
   m_afshadow(QStringLiteral("AF'")),
   m_bcshadow(QStringLiteral("BC'")),
   m_deshadow(QStringLiteral("DE'")),
@@ -247,10 +248,19 @@ void DebugWindow::layoutWidget()
     pointersLayout->addLayout(regLayout);
     pointers->setLayout(pointersLayout);
 
-	auto * mainLayout = new QVBoxLayout();
-    mainLayout->addWidget(plainRegisters);
-    mainLayout->addWidget(interrupts);
-    mainLayout->addWidget(pointers);
+    auto * disassembly = new QGroupBox(tr("Disassembly"));
+    auto * disassemblyLayout = new QVBoxLayout();
+    disassemblyLayout->addWidget(&m_disassembly);
+    disassembly->setLayout(disassemblyLayout);
+
+	auto * leftLayout = new QVBoxLayout();
+    leftLayout->addWidget(plainRegisters);
+    leftLayout->addWidget(interrupts);
+    leftLayout->addWidget(pointers);
+
+	auto * mainLayout = new QHBoxLayout();
+	mainLayout->addLayout(leftLayout);
+	mainLayout->addWidget(disassembly);
 
     auto * centralWidget = new QWidget();
     centralWidget->setLayout(mainLayout);
@@ -363,6 +373,7 @@ void DebugWindow::updateStateDisplay()
 	m_memoryWidget.setHighlight(m_sp.value(), qRgb(0x80, 0x80, 0xe0), qRgba(0, 0, 0, 0.0));
 	m_memoryWidget.update();
 	m_keyboardMonitor.updateStateDisplay();
+	m_disassembly.setFirstAddress(cpu->pc());
 }
 
 void DebugWindow::pauseResumeTriggered()

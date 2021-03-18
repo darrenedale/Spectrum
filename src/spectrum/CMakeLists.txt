@@ -37,6 +37,7 @@ add_executable(
         qt/qinterfacetwojoystick.h
         qt/qkempstonjoystick.cpp
         qt/memorywidget.cpp
+        qt/disassemblywidget.cpp
         qt/threadpauser.h
         qt/keyboardmonitorwidget.cpp
         qt/imagewidget.cpp
@@ -46,6 +47,9 @@ add_executable(
         ../z80/iodevice.cpp
         ../z80/registers.cpp
         ../z80/registers.h
+        ../z80/assembly/disassembler.cpp
+        ../z80/assembly/mnemonic.cpp
+        ../z80/assembly/operand.cpp
 )
 
 target_link_libraries(spectrum Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Gamepad)

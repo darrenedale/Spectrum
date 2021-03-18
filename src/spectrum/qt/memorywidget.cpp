@@ -115,6 +115,7 @@ namespace
             int width = this->width();
             const auto endHighlight = m_highlights.cend();
             const auto defaultPen = painter.pen();
+            QRect cellRect;
 
             for (int addr = 0; addr < 0xffff; addr += 16) {
                 y += m_cellHeight;
@@ -124,14 +125,15 @@ namespace
                     continue;
                 }
 
-                painter.drawText(Margin, y, QStringLiteral("0x%1").arg(addr, 4, 16, FillChar));
+                cellRect = QRect(Margin, y - m_cellHeight, m_addressWidth, m_cellHeight);
+                painter.drawText(cellRect, Qt::AlignVCenter | Qt::AlignLeft, QStringLiteral("0x%1").arg(addr, 4, 16, FillChar));
 
                 int x = m_addressWidth;
 
                 for (std::uint8_t byte = 0; byte < 16; ++byte) {
                     const auto highlight = m_highlights.find(addr + byte);
                     const bool highlighted = endHighlight != highlight;
-                    const auto cellRect = QRect(x, y - m_cellHeight, m_cellWidth, m_cellHeight);
+                    cellRect = QRect(x, y - m_cellHeight, m_cellWidth, m_cellHeight);
 
                     if (highlighted) {
                         painter.fillRect(cellRect, QBrush(highlight->second.background));

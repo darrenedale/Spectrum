@@ -31,7 +31,7 @@ Disassembler::Mnemonics Disassembler::disassembleFrom(int address, int maxCount)
     static UnsignedByte overflowBuffer[4];
     Mnemonics ret;
 
-    while (0 < maxCount && address < m_memorySize) {
+    while (0 != maxCount && address < m_memorySize) {
         UnsignedByte * machineCode = m_memory + address;
         auto bytesAvailable = m_memorySize - address;
 

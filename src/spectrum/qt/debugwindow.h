@@ -9,6 +9,7 @@
 #include "hexspinbox.h"
 #include "registerpairwidget.h"
 #include "flagswidget.h"
+#include "disassemblywidget.h"
 #include "memorywidget.h"
 #include "keyboardmonitorwidget.h"
 #include "pokewidget.h"
@@ -77,6 +78,7 @@ namespace Spectrum::Qt
         RegisterPairWidget m_hl;
         RegisterPairWidget m_ix;
         RegisterPairWidget m_iy;
+        DisassemblyWidget m_disassembly;
         RegisterPairWidget m_afshadow;
         RegisterPairWidget m_bcshadow;
         RegisterPairWidget m_deshadow;
