@@ -20,7 +20,8 @@ namespace Z80::Assembly
         Indexed,                // IX or IY with 8-bit offset - indexedAddress contains the register and offset
         Register8,              // one of the 8-bit registers - see register8
         Register16,             // one of the 8-bit registers - see register16
-        RegisterIndirect,       // unsigned 16-bit absolute address contained in a 16-bit register - see register16
+        Register8Indirect,      // unsigned MSB of 16-bit port contained in an 8-bit register - see register8
+        Register16Indirect,     // unsigned 16-bit absolute address/port contained in a 16-bit register - see register16
         Bit,                    // the bit to work with for BIT/SET/RES instructions - see bit
     };
 

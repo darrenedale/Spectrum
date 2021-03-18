@@ -118,7 +118,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
             return {
                     Instruction::LD,
                     {
-                             {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::BC,},
+                             {.mode = AddressingMode::Register16Indirect, .register16 = Register16::BC,},
                              {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                      },
                     1,
@@ -193,7 +193,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
                     Instruction::LD,
                     {
                              {.mode = AddressingMode::Register8, .register8 = Register8::A,},
-                             {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::BC,},
+                             {.mode = AddressingMode::Register16Indirect, .register16 = Register16::BC,},
                      },
                     1,
             };
@@ -265,7 +265,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
             return {
                     Instruction::LD,
                     {
-                             {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::DE,},
+                             {.mode = AddressingMode::Register16Indirect, .register16 = Register16::DE,},
                              {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                      },
                     1,
@@ -339,7 +339,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
                     Instruction::LD,
                     {
                             { .mode = AddressingMode::Register8, .register8 =Register8::A,},
-                            { .mode = AddressingMode::RegisterIndirect, .register16 =Register16::DE,},
+                            { .mode = AddressingMode::Register16Indirect, .register16 =Register16::DE,},
                     },
                     1,
             };
@@ -576,7 +576,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
             return {
                     Instruction::INC,
                     {
-                            { .mode = AddressingMode::RegisterIndirect, .register16 =Register16::HL,},
+                            { .mode = AddressingMode::Register16Indirect, .register16 =Register16::HL,},
                     },
                     1,
             };
@@ -585,7 +585,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
             return {
                     Instruction::DEC,
                     {
-                            { .mode = AddressingMode::RegisterIndirect, .register16 =Register16::HL,},
+                            { .mode = AddressingMode::Register16Indirect, .register16 =Register16::HL,},
                     },
                     1,
             };
@@ -594,7 +594,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
             return {
                 Instruction::LD,
                 {
-                    { .mode = AddressingMode::RegisterIndirect, .register16 =Register16::HL,},
+                    { .mode = AddressingMode::Register16Indirect, .register16 =Register16::HL,},
                     { .mode = AddressingMode::Immediate, .unsignedByte = *(machineCode + 1),},
                 },
                 2,
@@ -745,7 +745,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
                     Instruction::LD,
                     {
                             {.mode = AddressingMode::Register8, .register8 = Register8::B,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     1,
             };
@@ -825,7 +825,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
                     Instruction::LD,
                     {
                             {.mode = AddressingMode::Register8, .register8 = Register8::C,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     1,
             };
@@ -905,7 +905,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
                     Instruction::LD,
                     {
                             {.mode = AddressingMode::Register8, .register8 = Register8::D,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     1,
             };
@@ -985,7 +985,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
                     Instruction::LD,
                     {
                             {.mode = AddressingMode::Register8, .register8 = Register8::E,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     1,
             };
@@ -1065,7 +1065,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
                     Instruction::LD,
                     {
                             {.mode = AddressingMode::Register8, .register8 = Register8::H,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     1,
             };
@@ -1145,7 +1145,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
                     Instruction::LD,
                     {
                             {.mode = AddressingMode::Register8, .register8 = Register8::L,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     1,
             };
@@ -1164,7 +1164,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
             return {
                     Instruction::LD,
                     {
-                             {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                             {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                              {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                      },
                     1,
@@ -1174,7 +1174,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
             return {
                     Instruction::LD,
                     {
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                             {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                     },
                     1,
@@ -1184,7 +1184,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
             return {
                     Instruction::LD,
                     {
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                             {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                     },
                     1,
@@ -1194,7 +1194,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
             return {
                     Instruction::LD,
                     {
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                             {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                     },
                     1,
@@ -1204,7 +1204,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
             return {
                     Instruction::LD,
                     {
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                             {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                     },
                     1,
@@ -1214,7 +1214,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
             return {
                     Instruction::LD,
                     {
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                             {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                     },
                     1,
@@ -1231,7 +1231,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
             return {
                     Instruction::LD,
                     {
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                             {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                     },
                     1,
@@ -1302,7 +1302,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
                     Instruction::LD,
                     {
                             {.mode = AddressingMode::Register8, .register8 = Register8::A,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     1,
             };
@@ -1382,7 +1382,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
                     Instruction::ADD,
                     {
                             {.mode = AddressingMode::Register8, .register8 = Register8::A,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     1,
             };
@@ -1462,7 +1462,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
                     Instruction::ADC,
                     {
                             {.mode = AddressingMode::Register8, .register8 = Register8::A,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     1,
             };
@@ -1542,7 +1542,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
                     Instruction::SUB,
                     {
                             {.mode = AddressingMode::Register8, .register8 = Register8::A,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     1,
             };
@@ -1622,7 +1622,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
                     Instruction::SBC,
                     {
                             {.mode = AddressingMode::Register8, .register8 = Register8::A,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     1,
             };
@@ -1695,7 +1695,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
             return {
                     Instruction::AND,
                     {
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     1,
             };
@@ -1767,7 +1767,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
             return {
                     Instruction::XOR,
                     {
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     1,
             };
@@ -1839,7 +1839,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
             return {
                     Instruction::OR,
                     {
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     1,
             };
@@ -1911,7 +1911,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
             return {
                     Instruction::CP,
                     {
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     1,
             };
@@ -2226,7 +2226,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
             return {
                     Instruction::EX,
                     {
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::SP,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::SP,},
                             {.mode = AddressingMode::Register16, .register16 = Register16::HL,},
                     },
                     1
@@ -2279,7 +2279,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
             return {
                 Instruction::JPM,
                 {
-                    {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                    {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                 },
                 1
             };
@@ -2539,7 +2539,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
             return {
                     Instruction::RLC,
                     {
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -2611,7 +2611,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
             return {
                     Instruction::RRC,
                     {
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -2683,7 +2683,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
             return {
                     Instruction::RL,
                     {
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -2755,7 +2755,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
             return {
                     Instruction::RR,
                     {
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -2827,7 +2827,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
             return {
                     Instruction::SLA,
                     {
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -2899,7 +2899,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
             return {
                     Instruction::SRA,
                     {
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -2971,7 +2971,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
             return {
                     Instruction::SLL,
                     {
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -3043,7 +3043,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
             return {
                     Instruction::SRL,
                     {
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -3122,7 +3122,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
                     Instruction::BIT,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 0,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -3202,7 +3202,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
                     Instruction::BIT,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 1,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -3282,7 +3282,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
                     Instruction::BIT,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 2,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -3362,7 +3362,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
                     Instruction::BIT,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 3,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -3442,7 +3442,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
                     Instruction::BIT,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 4,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -3522,7 +3522,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
                     Instruction::BIT,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 5,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -3602,7 +3602,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
                     Instruction::BIT,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 6,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -3682,7 +3682,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
                     Instruction::BIT,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 7,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -3762,7 +3762,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
                     Instruction::RES,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 0,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -3842,7 +3842,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
                     Instruction::RES,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 1,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -3922,7 +3922,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
                     Instruction::RES,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 2,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -4002,7 +4002,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
                     Instruction::RES,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 3,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -4082,7 +4082,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
                     Instruction::RES,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 4,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -4162,7 +4162,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
                     Instruction::RES,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 5,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -4242,7 +4242,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
                     Instruction::RES,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 6,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -4322,7 +4322,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
                     Instruction::RES,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 7,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -4402,7 +4402,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
                     Instruction::SET,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 0,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -4482,7 +4482,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
                     Instruction::SET,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 1,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -4562,7 +4562,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
                     Instruction::SET,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 2,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -4642,7 +4642,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
                     Instruction::SET,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 3,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -4722,7 +4722,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
                     Instruction::SET,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 4,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -4802,7 +4802,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
                     Instruction::SET,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 5,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -4882,7 +4882,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
                     Instruction::SET,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 6,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -4962,7 +4962,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
                     Instruction::SET,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 7,},
-                            {.mode = AddressingMode::RegisterIndirect, .register16 = Register16::HL,},
+                            {.mode = AddressingMode::Register16Indirect, .register16 = Register16::HL,},
                     },
                     OpcodeSize,
             };
@@ -4988,6 +4988,850 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
 
 Mnemonic Disassembler::disassembleOneEd(const Z80::UnsignedByte * machineCode)
 {
+    switch (*machineCode)
+    {
+        case Z80__ED__IN__B__INDIRECT_C:            // 0x40
+            return {
+                    Instruction::IN,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B},
+                            {.mode = AddressingMode::Register8Indirect, .register8 = Register8::C},
+                    },
+                    2,
+            };
+
+        case Z80__ED__OUT__INDIRECT_C__B:            // 0x41
+            return {
+                    Instruction::OUT,
+                    {
+                            {.mode = AddressingMode::Register8Indirect, .register8 = Register8::C},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::B},
+                    },
+                    2,
+            };
+
+        case Z80__ED__SBC__HL__BC:                    // 0x42
+            return {
+                    Instruction::SBC,
+                    {
+                            {.mode = AddressingMode::Register16, .register16 = Register16::HL},
+                            {.mode = AddressingMode::Register16, .register16 = Register16::BC},
+                    },
+                    2,
+            };
+
+        case Z80__ED__LD__INDIRECT_NN__BC:        // 0x43
+            return {
+                    Instruction::LD,
+                    {
+                            {.mode = AddressingMode::Extended, .unsignedWord = readUnsignedWord(machineCode + 1)},
+                            {.mode = AddressingMode::Register16, .register16 = Register16::BC},
+                    },
+                    4,
+            };
+
+        case Z80__ED__NEG:                                // 0x44
+            return {
+                Instruction::NEG,
+                {},
+                2,
+            };
+
+        case Z80__ED__RETN:                            // 0x45
+            return {
+                    Instruction::RETN,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__IM__0:                            // 0x46
+            return {
+                    Instruction::IM0,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__LD__I__A:                        // 0x47
+            return {
+                    Instruction::LD,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::I},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A},
+                    },
+                    2,
+            };
+
+        case Z80__ED__IN__C__INDIRECT_C:            // 0x48
+            return {
+                    Instruction::IN,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C},
+                            {.mode = AddressingMode::Register8Indirect, .register8 = Register8::C},
+                    },
+                    2,
+            };
+
+        case Z80__ED__OUT__INDIRECT_C__C:            // 0x49
+            return {
+                    Instruction::OUT,
+                    {
+                            {.mode = AddressingMode::Register8Indirect, .register8 = Register8::C},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::C},
+                    },
+                    2,
+            };
+
+        case Z80__ED__ADC__HL__BC:                    // 0x4a
+            return {
+                    Instruction::ADC,
+                    {
+                            {.mode = AddressingMode::Register16, .register16 = Register16::HL},
+                            {.mode = AddressingMode::Register16, .register16 = Register16::BC},
+                    },
+                    2,
+            };
+
+        case Z80__ED__LD__BC__INDIRECT_NN:        // 0x4b
+            return {
+                    Instruction::LD,
+                    {
+                            {.mode = AddressingMode::Register16, .register16 = Register16::BC},
+                            {.mode = AddressingMode::Extended, .unsignedWord = readUnsignedWord(machineCode + 1)},
+                    },
+                    4,
+            };
+
+        case Z80__ED__NEG__0XED__0X4C:                // 0x4c
+            return {
+                    Instruction::NEG,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__RETI:                            // 0x4d
+            return {
+                    Instruction::RETI,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__IM__0__0XED__0X4E:            // 0x4e
+            return {
+                    Instruction::IM0,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__LD__R__A:                        // 0x4f
+            return {
+                    Instruction::LD,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::R},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A},
+                    },
+                    2,
+            };
+
+        case Z80__ED__IN__D__INDIRECT_C:            // 0x50
+            return {
+                    Instruction::IN,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D},
+                            {.mode = AddressingMode::Register8Indirect, .register8 = Register8::C},
+                    },
+                    2,
+            };
+
+        case Z80__ED__OUT__INDIRECT_C__D:            // 0x51
+            return {
+                    Instruction::OUT,
+                    {
+                            {.mode = AddressingMode::Register8Indirect, .register8 = Register8::C},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::D},
+                    },
+                    2,
+            };
+
+        case Z80__ED__SBC__HL__DE:                    // 0x52
+            return {
+                    Instruction::SBC,
+                    {
+                            {.mode = AddressingMode::Register16, .register16 = Register16::HL},
+                            {.mode = AddressingMode::Register16, .register16 = Register16::DE},
+                    },
+                    2,
+            };
+
+        case Z80__ED__LD__INDIRECT_NN__DE:        // 0x53
+            return {
+                    Instruction::LD,
+                    {
+                            {.mode = AddressingMode::Extended, .unsignedWord = readUnsignedWord(machineCode + 1)},
+                            {.mode = AddressingMode::Register16, .register16 = Register16::DE},
+                    },
+                    4,
+            };
+
+        case Z80__ED__NEG__0XED__0X54:                // 0x54
+            return {
+                    Instruction::NEG,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__RETN__0XED__0X55:            // 0x55
+            return {
+                    Instruction::RETN,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__IM__1:                            // 0x56
+            return {
+                    Instruction::IM1,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__LD__A__I:                        // 0x57
+            return {
+                    Instruction::LD,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::I},
+                    },
+                    4,
+            };
+
+        case Z80__ED__IN__E__INDIRECT_C:            // 0x58
+            return {
+                    Instruction::IN,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E},
+                            {.mode = AddressingMode::Register8Indirect, .register8 = Register8::C},
+                    },
+                    2,
+            };
+
+        case Z80__ED__OUT__INDIRECT_C__E:            // 0x59
+            return {
+                    Instruction::OUT,
+                    {
+                            {.mode = AddressingMode::Register8Indirect, .register8 = Register8::C},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::E},
+                    },
+                    2,
+            };
+
+        case Z80__ED__ADC__HL__DE:                    // 0x5a
+            return {
+                    Instruction::ADC,
+                    {
+                            {.mode = AddressingMode::Register16, .register16 = Register16::HL},
+                            {.mode = AddressingMode::Register16, .register16 = Register16::DE},
+                    },
+                    2,
+            };
+
+        case Z80__ED__LD__DE__INDIRECT_NN:        // 0x5b
+            return {
+                    Instruction::LD,
+                    {
+                            {.mode = AddressingMode::Register16, .register16 = Register16::DE},
+                            {.mode = AddressingMode::Extended, .unsignedWord = readUnsignedWord(machineCode + 1)},
+                    },
+                    4,
+            };
+
+        case Z80__ED__NEG__0XED__0X5C:                // 0x5c
+            return {
+                    Instruction::NEG,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__RETI__0XED__0X5D:            // 0x5d
+            return {
+                    Instruction::RETI,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__IM__2:                            // 0x5e
+            return {
+                    Instruction::IM2,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__LD__A__R:                        // 0x5f
+            return {
+                    Instruction::LD,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::R},
+                    },
+                    2,
+            };
+
+        case Z80__ED__IN__H__INDIRECT_C:            // 0x60
+            return {
+                    Instruction::IN,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H},
+                            {.mode = AddressingMode::Register8Indirect, .register8 = Register8::C},
+                    },
+                    2,
+            };
+
+        case Z80__ED__OUT__INDIRECT_C__H:            // 0x61
+            return {
+                    Instruction::OUT,
+                    {
+                            {.mode = AddressingMode::Register8Indirect, .register8 = Register8::C},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::H},
+                    },
+                    2,
+            };
+
+        case Z80__ED__SBC__HL__HL:                    // 0x62
+            return {
+                    Instruction::SBC,
+                    {
+                            {.mode = AddressingMode::Register16, .register16 = Register16::HL},
+                            {.mode = AddressingMode::Register16, .register16 = Register16::HL},
+                    },
+                    2,
+            };
+
+        case Z80__ED__LD__INDIRECT_NN__HL:        // 0x63
+            return {
+                    Instruction::LD,
+                    {
+                            {.mode = AddressingMode::Extended, .unsignedWord = readUnsignedWord(machineCode + 1)},
+                            {.mode = AddressingMode::Register16, .register16 = Register16::HL},
+                    },
+                    4,
+            };
+
+        case Z80__ED__NEG__0XED__0X64:                // 0x64
+            return {
+                    Instruction::NEG,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__RETN__0XED__0X65:            // 0x65
+            return {
+                    Instruction::RETN,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__IM__0__0XED__0X66:            // 0x66
+            return {
+                    Instruction::IM0,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__RRD:                                // 0x67
+            return {
+                    Instruction::RRD,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__IN__L__INDIRECT_C:            // 0x68
+            return {
+                    Instruction::IN,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L},
+                            {.mode = AddressingMode::Register8Indirect, .register8 = Register8::C},
+                    },
+                    2,
+            };
+
+        case Z80__ED__OUT__INDIRECT_C__L:            // 0x69
+            return {
+                    Instruction::OUT,
+                    {
+                            {.mode = AddressingMode::Register8Indirect, .register8 = Register8::C},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::L},
+                    },
+                    2,
+            };
+
+        case Z80__ED__ADC__HL__HL:                    // 0x6a
+            return {
+                    Instruction::ADC,
+                    {
+                            {.mode = AddressingMode::Register16, .register16 = Register16::HL},
+                            {.mode = AddressingMode::Register16, .register16 = Register16::HL},
+                    },
+                    2,
+            };
+
+        case Z80__ED__LD__HL__INDIRECT_NN:        // 0x6b
+            return {
+                    Instruction::LD,
+                    {
+                            {.mode = AddressingMode::Register16, .register16 = Register16::HL},
+                            {.mode = AddressingMode::Extended, .unsignedWord = readUnsignedWord(machineCode + 1)},
+                    },
+                    4,
+            };
+
+        case Z80__ED__NEG__0XED__0X6C:                // 0x6c
+            return {
+                    Instruction::NEG,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__RETI__0XED__0X6D:            // 0x6d
+            return {
+                    Instruction::RETI,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__IM__0__0XED__0X6E:            // 0x6e
+            return {
+                    Instruction::IM0,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__RLD:                                // 0x6f
+            return {
+                    Instruction::RLD,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__IN__INDIRECT_C:                // 0x70
+            return {
+                    Instruction::IN,
+                    {
+                            {.mode = AddressingMode::Register8Indirect, .register8 = Register8::C},
+                    },
+                    2,
+            };
+
+        case Z80__ED__OUT__INDIRECT_C__0:            // 0x71
+            return {
+                    Instruction::OUT,
+                    {
+                            {.mode = AddressingMode::Register8Indirect, .register8 = Register8::C},
+                            {.mode = AddressingMode::Immediate, .unsignedByte = 0x00},
+                    },
+                    2,
+            };
+
+        case Z80__ED__SBC__HL__SP:                    // 0x72
+            return {
+                    Instruction::SBC,
+                    {
+                            {.mode = AddressingMode::Register16, .register16 = Register16::HL},
+                            {.mode = AddressingMode::Register16, .register16 = Register16::SP},
+                    },
+                    2,
+            };
+
+        case Z80__ED__LD__INDIRECT_NN__SP:        // 0x73
+            return {
+                    Instruction::LD,
+                    {
+                            {.mode = AddressingMode::Extended, .unsignedWord = readUnsignedWord(machineCode + 1)},
+                            {.mode = AddressingMode::Register16, .register16 = Register16::SP},
+                    },
+                    4,
+            };
+
+        case Z80__ED__NEG__0XED__0X74:                // 0x74
+            return {
+                    Instruction::NEG,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__RETN__0XED__0X75:            // 0x75
+            return {
+                    Instruction::RETN,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__IM__1__0XED__0X76:            // 0x76
+            return {
+                    Instruction::IM1,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__IN__A__INDIRECT_C:            // 0x78
+            return {
+                    Instruction::IN,
+                    {
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A},
+                            {.mode = AddressingMode::Register8Indirect, .register8 = Register8::C},
+                    },
+                    2,
+            };
+
+        case Z80__ED__OUT__INDIRECT_C__A:            // 0x79
+            return {
+                    Instruction::OUT,
+                    {
+                            {.mode = AddressingMode::Register8Indirect, .register8 = Register8::C},
+                            {.mode = AddressingMode::Register8, .register8 = Register8::A},
+                    },
+                    2,
+            };
+
+        case Z80__ED__ADC__HL__SP:                    // 0x7a
+            return {
+                    Instruction::ADC,
+                    {
+                            {.mode = AddressingMode::Register16, .register16 = Register16::HL},
+                            {.mode = AddressingMode::Register16, .register16 = Register16::SP},
+                    },
+                    2,
+            };
+
+        case Z80__ED__LD__SP__INDIRECT_NN:        // 0x7b
+            return {
+                    Instruction::LD,
+                    {
+                            {.mode = AddressingMode::Register16, .register16 = Register16::SP},
+                            {.mode = AddressingMode::Extended, .unsignedWord = readUnsignedWord(machineCode + 1)},
+                    },
+                    4,
+            };
+
+        case Z80__ED__NEG__0XED__0X7C:                // 0x7c
+            return {
+                    Instruction::NEG,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__RETI__0XED__0X7D:            // 0x7d
+            return {
+                    Instruction::RETI,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__IM__2__0XED__0X7E:            // 0x7e
+            return {
+                    Instruction::IM2,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__LDI:                                // 0xa0
+            return {
+                    Instruction::LDI,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__CPI:                                // 0xa1
+            return {
+                    Instruction::CPI,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__INI:                                // 0xa2
+            return {
+                    Instruction::INI,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__OUTI:                            // 0xa3
+            return {
+                    Instruction::OUTI,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__LDD:                                // 0xa8
+            return {
+                    Instruction::LDD,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__CPD:                                // 0xa9
+            return {
+                    Instruction::CPD,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__IND:                                // 0xaa
+            return {
+                    Instruction::IND,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__OUTD:                            // 0xab
+            return {
+                    Instruction::OUTD,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__LDIR:                            // 0xb0
+            return {
+                    Instruction::LDIR,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__CPIR:                            // 0xb1
+            return {
+                    Instruction::CPIR,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__INIR:                            // 0xb2
+            return {
+                    Instruction::INIR,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__OTIR:                            // 0xb3
+            return {
+                    Instruction::OTIR,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__LDDR:                            // 0xb8
+            return {
+                    Instruction::LDDR,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__CPDR:                            // 0xb9
+            return {
+                    Instruction::CPDR,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__INDR:                            // 0xba
+            return {
+                    Instruction::INDR,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__OTDR:                            // 0xbb
+            return {
+                    Instruction::OTDR,
+                    {},
+                    2,
+            };
+
+        case Z80__ED__NOP__0XED__0X00:                // 0x00
+        case Z80__ED__NOP__0XED__0X01:                // 0x01
+        case Z80__ED__NOP__0XED__0X02:                // 0x02
+        case Z80__ED__NOP__0XED__0X03:                // 0x03
+        case Z80__ED__NOP__0XED__0X04:                // 0x04
+        case Z80__ED__NOP__0XED__0X05:                // 0x05
+        case Z80__ED__NOP__0XED__0X06:                // 0x06
+        case Z80__ED__NOP__0XED__0X07:                // 0x07
+        case Z80__ED__NOP__0XED__0X08:                // 0x08
+        case Z80__ED__NOP__0XED__0X09:                // 0x09
+        case Z80__ED__NOP__0XED__0X0A:                // 0x0a
+        case Z80__ED__NOP__0XED__0X0B:                // 0x0b
+        case Z80__ED__NOP__0XED__0X0C:                // 0x0c
+        case Z80__ED__NOP__0XED__0X0D:                // 0x0d
+        case Z80__ED__NOP__0XED__0X0E:                // 0x0e
+        case Z80__ED__NOP__0XED__0X0F:                // 0x0f
+        case Z80__ED__NOP__0XED__0X10:                // 0x10
+        case Z80__ED__NOP__0XED__0X11:                // 0x11
+        case Z80__ED__NOP__0XED__0X12:                // 0x12
+        case Z80__ED__NOP__0XED__0X13:                // 0x13
+        case Z80__ED__NOP__0XED__0X14:                // 0x14
+        case Z80__ED__NOP__0XED__0X15:                // 0x15
+        case Z80__ED__NOP__0XED__0X16:                // 0x16
+        case Z80__ED__NOP__0XED__0X17:                // 0x17
+        case Z80__ED__NOP__0XED__0X18:                // 0x18
+        case Z80__ED__NOP__0XED__0X19:                // 0x19
+        case Z80__ED__NOP__0XED__0X1A:                // 0x1a
+        case Z80__ED__NOP__0XED__0X1B:                // 0x1b
+        case Z80__ED__NOP__0XED__0X1C:                // 0x1c
+        case Z80__ED__NOP__0XED__0X1D:                // 0x1d
+        case Z80__ED__NOP__0XED__0X1E:                // 0x1e
+        case Z80__ED__NOP__0XED__0X1F:                // 0x1f
+        case Z80__ED__NOP__0XED__0X20:                // 0x20
+        case Z80__ED__NOP__0XED__0X21:                // 0x21
+        case Z80__ED__NOP__0XED__0X22:                // 0x22
+        case Z80__ED__NOP__0XED__0X23:                // 0x23
+        case Z80__ED__NOP__0XED__0X24:                // 0x24
+        case Z80__ED__NOP__0XED__0X25:                // 0x25
+        case Z80__ED__NOP__0XED__0X26:                // 0x26
+        case Z80__ED__NOP__0XED__0X27:                // 0x27
+        case Z80__ED__NOP__0XED__0X28:                // 0x28
+        case Z80__ED__NOP__0XED__0X29:                // 0x29
+        case Z80__ED__NOP__0XED__0X2A:                // 0x2a
+        case Z80__ED__NOP__0XED__0X2B:                // 0x2b
+        case Z80__ED__NOP__0XED__0X2C:                // 0x2c
+        case Z80__ED__NOP__0XED__0X2D:                // 0x2d
+        case Z80__ED__NOP__0XED__0X2E:                // 0x2e
+        case Z80__ED__NOP__0XED__0X2F:                // 0x2f
+        case Z80__ED__NOP__0XED__0X30:                // 0x30
+        case Z80__ED__NOP__0XED__0X31:                // 0x31
+        case Z80__ED__NOP__0XED__0X32:                // 0x32
+        case Z80__ED__NOP__0XED__0X33:                // 0x33
+        case Z80__ED__NOP__0XED__0X34:                // 0x34
+        case Z80__ED__NOP__0XED__0X35:                // 0x35
+        case Z80__ED__NOP__0XED__0X36:                // 0x36
+        case Z80__ED__NOP__0XED__0X37:                // 0x37
+        case Z80__ED__NOP__0XED__0X38:                // 0x38
+        case Z80__ED__NOP__0XED__0X39:                // 0x39
+        case Z80__ED__NOP__0XED__0X3A:                // 0x3a
+        case Z80__ED__NOP__0XED__0X3B:                // 0x3b
+        case Z80__ED__NOP__0XED__0X3C:                // 0x3c
+        case Z80__ED__NOP__0XED__0X3D:                // 0x3d
+        case Z80__ED__NOP__0XED__0X3E:                // 0x3e
+        case Z80__ED__NOP__0XED__0X3F:                // 0x3f
+
+        case Z80__ED__NOP__0XED__0x77:                // 0x77
+        case Z80__ED__NOP__0XED__0X7F:                // 0x7f
+        case Z80__ED__NOP__0XED__0X80:                // 0x80
+        case Z80__ED__NOP__0XED__0X81:                // 0x81
+        case Z80__ED__NOP__0XED__0X82:                // 0x82
+        case Z80__ED__NOP__0XED__0X83:                // 0x83
+        case Z80__ED__NOP__0XED__0X84:                // 0x84
+        case Z80__ED__NOP__0XED__0X85:                // 0x85
+        case Z80__ED__NOP__0XED__0X86:                // 0x86
+        case Z80__ED__NOP__0XED__0X87:                // 0x87
+        case Z80__ED__NOP__0XED__0X88:                // 0x88
+        case Z80__ED__NOP__0XED__0X89:                // 0x89
+        case Z80__ED__NOP__0XED__0X8A:                // 0x8a
+        case Z80__ED__NOP__0XED__0X8B:                // 0x8b
+        case Z80__ED__NOP__0XED__0X8C:                // 0x8c
+        case Z80__ED__NOP__0XED__0X8D:                // 0x8d
+        case Z80__ED__NOP__0XED__0X8E:                // 0x8e
+        case Z80__ED__NOP__0XED__0X8F:                // 0x8f
+        case Z80__ED__NOP__0XED__0X90:                // 0x90
+        case Z80__ED__NOP__0XED__0X91:                // 0x91
+        case Z80__ED__NOP__0XED__0X92:                // 0x92
+        case Z80__ED__NOP__0XED__0X93:                // 0x93
+        case Z80__ED__NOP__0XED__0X94:                // 0x94
+        case Z80__ED__NOP__0XED__0X95:                // 0x95
+        case Z80__ED__NOP__0XED__0X96:                // 0x96
+        case Z80__ED__NOP__0XED__0X97:                // 0x97
+        case Z80__ED__NOP__0XED__0X98:                // 0x98
+        case Z80__ED__NOP__0XED__0X99:                // 0x99
+        case Z80__ED__NOP__0XED__0X9A:                // 0x9a
+        case Z80__ED__NOP__0XED__0X9B:                // 0x9b
+        case Z80__ED__NOP__0XED__0X9C:                // 0x9c
+        case Z80__ED__NOP__0XED__0X9D:                // 0x9d
+        case Z80__ED__NOP__0XED__0X9E:                // 0x9e
+        case Z80__ED__NOP__0XED__0X9F:                // 0x9f
+
+        case Z80__ED__NOP__0XED__0XA4:                // 0xa4
+        case Z80__ED__NOP__0XED__0XA5:                // 0xa5
+        case Z80__ED__NOP__0XED__0XA6:                // 0xa6
+        case Z80__ED__NOP__0XED__0XA7:                // 0xa7
+        
+        case Z80__ED__NOP__0XED__0XAC:                // 0xac
+        case Z80__ED__NOP__0XED__0XAD:                // 0xad
+        case Z80__ED__NOP__0XED__0XAE:                // 0xae
+        case Z80__ED__NOP__0XED__0XAF:                // 0xaf
+
+        case Z80__ED__NOP__0XED__0XB4:                // 0xb4
+        case Z80__ED__NOP__0XED__0XB5:                // 0xb5
+        case Z80__ED__NOP__0XED__0XB6:                // 0xb6
+        case Z80__ED__NOP__0XED__0XB7:                // 0xb7
+
+        case Z80__ED__NOP__0XED__0XBC:                // 0xbc
+        case Z80__ED__NOP__0XED__0XBD:                // 0xbd
+        case Z80__ED__NOP__0XED__0XBE:                // 0xbe
+        case Z80__ED__NOP__0XED__0XBF:                // 0xbf
+        case Z80__ED__NOP__0XED__0XC0:                // 0xc0
+        case Z80__ED__NOP__0XED__0XC1:                // 0xc1
+        case Z80__ED__NOP__0XED__0XC2:                // 0xc2
+        case Z80__ED__NOP__0XED__0XC3:                // 0xc3
+        case Z80__ED__NOP__0XED__0XC4:                // 0xc4
+        case Z80__ED__NOP__0XED__0XC5:                // 0xc5
+        case Z80__ED__NOP__0XED__0XC6:                // 0xc6
+        case Z80__ED__NOP__0XED__0XC7:                // 0xc7
+        case Z80__ED__NOP__0XED__0XC8:                // 0xc8
+        case Z80__ED__NOP__0XED__0XC9:                // 0xc9
+        case Z80__ED__NOP__0XED__0XCA:                // 0xca
+        case Z80__ED__NOP__0XED__0XCB:                // 0xcb
+        case Z80__ED__NOP__0XED__0XCC:                // 0xcc
+        case Z80__ED__NOP__0XED__0XCD:                // 0xcd
+        case Z80__ED__NOP__0XED__0XCE:                // 0xce
+        case Z80__ED__NOP__0XED__0XCF:                // 0xcf
+        case Z80__ED__NOP__0XED__0XD0:                // 0xd0
+        case Z80__ED__NOP__0XED__0XD1:                // 0xd1
+        case Z80__ED__NOP__0XED__0XD2:                // 0xd2
+        case Z80__ED__NOP__0XED__0XD3:                // 0xd3
+        case Z80__ED__NOP__0XED__0XD4:                // 0xd4
+        case Z80__ED__NOP__0XED__0XD5:                // 0xd5
+        case Z80__ED__NOP__0XED__0XD6:                // 0xd6
+        case Z80__ED__NOP__0XED__0XD7:                // 0xd7
+        case Z80__ED__NOP__0XED__0XD8:                // 0xd8
+        case Z80__ED__NOP__0XED__0XD9:                // 0xd9
+        case Z80__ED__NOP__0XED__0XDA:                // 0xda
+        case Z80__ED__NOP__0XED__0XDB:                // 0xdb
+        case Z80__ED__NOP__0XED__0XDC:                // 0xdc
+        case Z80__ED__NOP__0XED__0XDD:                // 0xdd
+        case Z80__ED__NOP__0XED__0XDE:                // 0xde
+        case Z80__ED__NOP__0XED__0XDF:                // 0xdf
+        case Z80__ED__NOP__0XED__0XE0:                // 0xe0
+        case Z80__ED__NOP__0XED__0XE1:                // 0xe1
+        case Z80__ED__NOP__0XED__0XE2:                // 0xe2
+        case Z80__ED__NOP__0XED__0XE3:                // 0xe3
+        case Z80__ED__NOP__0XED__0XE4:                // 0xe4
+        case Z80__ED__NOP__0XED__0XE5:                // 0xe5
+        case Z80__ED__NOP__0XED__0XE6:                // 0xe6
+        case Z80__ED__NOP__0XED__0XE7:                // 0xe7
+        case Z80__ED__NOP__0XED__0XE8:                // 0xe8
+        case Z80__ED__NOP__0XED__0XE9:                // 0xe9
+        case Z80__ED__NOP__0XED__0XEA:                // 0xea
+        case Z80__ED__NOP__0XED__0XEB:                // 0xeb
+        case Z80__ED__NOP__0XED__0XEC:                // 0xec
+        case Z80__ED__NOP__0XED__0XED:                // 0xed
+        case Z80__ED__NOP__0XED__0XEE:                // 0xee
+        case Z80__ED__NOP__0XED__0XEF:                // 0xef
+        case Z80__ED__NOP__0XED__0XF0:                // 0xf0
+        case Z80__ED__NOP__0XED__0XF1:                // 0xf1
+        case Z80__ED__NOP__0XED__0XF2:                // 0xf2
+        case Z80__ED__NOP__0XED__0XF3:                // 0xf3
+        case Z80__ED__NOP__0XED__0XF4:                // 0xf4
+        case Z80__ED__NOP__0XED__0XF5:                // 0xf5
+        case Z80__ED__NOP__0XED__0XF6:                // 0xf6
+        case Z80__ED__NOP__0XED__0XF7:                // 0xf7
+        case Z80__ED__NOP__0XED__0XF8:                // 0xf8
+        case Z80__ED__NOP__0XED__0XF9:                // 0xf9
+        case Z80__ED__NOP__0XED__0XFA:                // 0xfa
+        case Z80__ED__NOP__0XED__0XFB:                // 0xfb
+        case Z80__ED__NOP__0XED__0XFC:                // 0xfc
+        case Z80__ED__NOP__0XED__0XFD:                // 0xfd
+        case Z80__ED__NOP__0XED__0XFE:                // 0xfe
+        case Z80__ED__NOP__0XED__0XFF:                // 0xff
+            return {
+                    Instruction::NOP,
+                    {},
+                    2,
+            };
+    }
 
     std::cerr << "disassembly of opcode 0xed 0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(*machineCode) << " not yet implemented\n" << std::setfill('0') << std::dec;
     return {
@@ -4999,8 +5843,502 @@ Mnemonic Disassembler::disassembleOneEd(const Z80::UnsignedByte * machineCode)
 
 Mnemonic Disassembler::disassembleOneDdOrFd(Register16 reg, const Z80::UnsignedByte * machineCode)
 {
+    switch (*machineCode) {
+        case Z80__DD_OR_FD__INC__INDIRECT_IX_d_OR_IY_d:                // 0x34
+            return {
+                Instruction::INC,
+                {
+                    { .mode = AddressingMode::Indexed, .indexedAddress = { .register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)),}, },
+                },
+                3,
+            };
 
-    std::cerr << "disassembly of opcode 0xed 0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(*machineCode) << " not yet implemented\n" << std::setfill('0') << std::dec;
+        case Z80__DD_OR_FD__DEC__INDIRECT_IX_d_OR_IY_d:                // 0x35
+            return {
+                Instruction::DEC,
+                {
+                        { .mode = AddressingMode::Indexed, .indexedAddress = { .register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)),}, },
+                },
+                3,
+            };
+
+        case Z80__DD_OR_FD__LD__INDIRECT_IX_d_OR_IY_d__N:                // 0x36
+            return {
+                Instruction::LD,
+                {
+                        { .mode = AddressingMode::Indexed, .indexedAddress = { .register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)),}, },
+                },
+                3,
+            };
+
+        case Z80__DD_OR_FD__JR__C__d:                // 0x38
+            return {
+                Instruction::JRC,
+                {
+                    { .mode = AddressingMode::Relative, .unsignedByte = *(machineCode + 1), },
+                },
+                3,
+            };
+
+        case Z80__DD_OR_FD__LD__B__INDIRECT_IX_d_OR_IY_d:                // 0x46
+            return {
+                Instruction::LD,
+                {
+                        { .mode = AddressingMode::Register8, .register8 = Register8::B, },
+                        { .mode = AddressingMode::Indexed, .indexedAddress = { .register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)),}, },
+                },
+                3,
+            };
+
+        case Z80__DD_OR_FD__LD__C__INDIRECT_IX_d_OR_IY_d:                // 0x4e
+            return {
+                    Instruction::LD,
+                    {
+                            { .mode = AddressingMode::Register8, .register8 = Register8::C, },
+                            { .mode = AddressingMode::Indexed, .indexedAddress = { .register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)),}, },
+                    },
+                    3,
+            };
+
+        case Z80__DD_OR_FD__LD__D__INDIRECT_IX_d_OR_IY_d:                // 0x56
+            return {
+                    Instruction::LD,
+                    {
+                            { .mode = AddressingMode::Register8, .register8 = Register8::D, },
+                            { .mode = AddressingMode::Indexed, .indexedAddress = { .register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)),}, },
+                    },
+                    3,
+            };
+
+        case Z80__DD_OR_FD__LD__E__INDIRECT_IX_d_OR_IY_d:                // 0x5e
+            return {
+                    Instruction::LD,
+                    {
+                            { .mode = AddressingMode::Register8, .register8 = Register8::E, },
+                            { .mode = AddressingMode::Indexed, .indexedAddress = { .register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)),}, },
+                    },
+                    3,
+            };
+
+        case Z80__DD_OR_FD__LD__H__INDIRECT_IX_d_OR_IY_d:                // 0x66
+            return {
+                    Instruction::LD,
+                    {
+                            { .mode = AddressingMode::Register8, .register8 = Register8::H, },
+                            { .mode = AddressingMode::Indexed, .indexedAddress = { .register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)),}, },
+                    },
+                    3,
+            };
+
+        case Z80__DD_OR_FD__LD__L__INDIRECT_IX_d_OR_IY_d:                // 0x6e
+            return {
+                    Instruction::LD,
+                    {
+                            { .mode = AddressingMode::Register8, .register8 = Register8::L, },
+                            { .mode = AddressingMode::Indexed, .indexedAddress = { .register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)),}, },
+                    },
+                    3,
+            };
+
+        case Z80__DD_OR_FD__LD__INDIRECT_IX_d_OR_IY_d__B:                // 0x70
+            return {
+                    Instruction::LD,
+                    {
+                            { .mode = AddressingMode::Indexed, .indexedAddress = { .register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)),}, },
+                            { .mode = AddressingMode::Register8, .register8 = Register8::B, },
+                    },
+                    3,
+            };
+
+        case Z80__DD_OR_FD__LD__INDIRECT_IX_d_OR_IY_d__C:                // 0x71
+            return {
+                    Instruction::LD,
+                    {
+                            { .mode = AddressingMode::Indexed, .indexedAddress = { .register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)),}, },
+                            { .mode = AddressingMode::Register8, .register8 = Register8::C, },
+                    },
+                    3,
+            };
+
+        case Z80__DD_OR_FD__LD__INDIRECT_IX_d_OR_IY_d__D:                // 0x72
+            return {
+                    Instruction::LD,
+                    {
+                            { .mode = AddressingMode::Indexed, .indexedAddress = { .register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)),}, },
+                            { .mode = AddressingMode::Register8, .register8 = Register8::D, },
+                    },
+                    3,
+            };
+
+        case Z80__DD_OR_FD__LD__INDIRECT_IX_d_OR_IY_d__E:                // 0x73
+            return {
+                    Instruction::LD,
+                    {
+                            { .mode = AddressingMode::Indexed, .indexedAddress = { .register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)),}, },
+                            { .mode = AddressingMode::Register8, .register8 = Register8::E, },
+                    },
+                    3,
+            };
+
+        case Z80__DD_OR_FD__LD__INDIRECT_IX_d_OR_IY_d__H:                // 0x74
+            return {
+                    Instruction::LD,
+                    {
+                            { .mode = AddressingMode::Indexed, .indexedAddress = { .register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)),}, },
+                            { .mode = AddressingMode::Register8, .register8 = Register8::H, },
+                    },
+                    3,
+            };
+
+        case Z80__DD_OR_FD__LD__INDIRECT_IX_d_OR_IY_d__L:                // 0x75
+            return {
+                    Instruction::LD,
+                    {
+                            { .mode = AddressingMode::Indexed, .indexedAddress = { .register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)),}, },
+                            { .mode = AddressingMode::Register8, .register8 = Register8::L, },
+                    },
+                    3,
+            };
+
+        case Z80__DD_OR_FD__LD__INDIRECT_IX_d_OR_IY_d__A:                // 0x77
+            return {
+                    Instruction::LD,
+                    {
+                            { .mode = AddressingMode::Indexed, .indexedAddress = { .register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)),}, },
+                            { .mode = AddressingMode::Register8, .register8 = Register8::A, },
+                    },
+                    3,
+            };
+
+        case Z80__DD_OR_FD__LD__A__INDIRECT_IX_d_OR_IY_d:                // 0x7e
+            return {
+                    Instruction::LD,
+                    {
+                            { .mode = AddressingMode::Register8, .register8 = Register8::A, },
+                            { .mode = AddressingMode::Indexed, .indexedAddress = { .register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)),}, },
+                    },
+                    3,
+            };
+
+        case Z80__DD_OR_FD__ADD__A__INDIRECT_IX_d_OR_IY_d:                // 0x86
+            return {
+                Instruction::ADD,
+                    {
+                            { .mode = AddressingMode::Register8, .register8 = Register8::A, },
+                            { .mode = AddressingMode::Indexed, .indexedAddress = { .register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)),}, },
+                    },
+                    3,
+            };
+
+        case Z80__DD_OR_FD__ADC__A__INDIRECT_IX_d_OR_IY_d:                // 0x8e
+            return {
+                    Instruction::ADC,
+                    {
+                            { .mode = AddressingMode::Register8, .register8 = Register8::A, },
+                            { .mode = AddressingMode::Indexed, .indexedAddress = { .register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)),}, },
+                    },
+                    3,
+            };
+
+        case Z80__DD_OR_FD__SUB__INDIRECT_IX_d_OR_IY_d:                // 0x96
+            return {
+                    Instruction::SUB,
+                    {
+                            { .mode = AddressingMode::Register8, .register8 = Register8::A, },
+                            { .mode = AddressingMode::Indexed, .indexedAddress = { .register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)),}, },
+                    },
+                    3,
+            };
+
+        case Z80__DD_OR_FD__SBC__A__INDIRECT_IX_d_OR_IY_d:                // 0x9e
+            return {
+                    Instruction::SBC,
+                    {
+                            { .mode = AddressingMode::Register8, .register8 = Register8::A, },
+                            { .mode = AddressingMode::Indexed, .indexedAddress = { .register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)),}, },
+                    },
+                    3,
+            };
+
+        case Z80__DD_OR_FD__AND__INDIRECT_IX_d_OR_IY_d:                // 0xa6
+            return {
+                Instruction::AND,
+                {
+                        { .mode = AddressingMode::Indexed, .indexedAddress = { .register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)),}, },
+                },
+                3,
+            };
+
+        case Z80__DD_OR_FD__XOR__INDIRECT_IX_d_OR_IY_d:                // 0xae
+            return {
+                Instruction::XOR,
+                {
+                        { .mode = AddressingMode::Indexed, .indexedAddress = { .register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)),}, },
+                },
+                3,
+            };
+
+        case Z80__DD_OR_FD__OR__INDIRECT_IX_d_OR_IY_d:                // 0xb6
+            return {
+                Instruction::OR,
+                {
+                        { .mode = AddressingMode::Indexed, .indexedAddress = { .register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)),}, },
+                },
+                3,
+            };
+
+        case Z80__DD_OR_FD__CP__INDIRECT_IX_d_OR_IY_d:                // 0xbe
+            return {
+                Instruction::CP,
+                {
+                        { .mode = AddressingMode::Indexed, .indexedAddress = { .register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)),}, },
+                },
+                3,
+            };
+
+        case Z80__DD_OR_FD__PREFIX__CB:                // 0xcb
+            // TODO disassemble 0xdd 0xcb and 0xfd 0xcb opcodes
+            return {};
+
+        // these are all expensive replicas of the plain instructions
+        case Z80__DD_OR_FD__NOP:                // 0x00
+        case Z80__DD_OR_FD__LD__BC__NN:                // 0x01
+        case Z80__DD_OR_FD__LD__INDIRECT_BC__A:                // 0x02
+        case Z80__DD_OR_FD__INC__BC:                // 0x03
+        case Z80__DD_OR_FD__INC__B:                // 0x04
+        case Z80__DD_OR_FD__DEC__B:                // 0x05
+        case Z80__DD_OR_FD__LD__B__N:                // 0x06
+        case Z80__DD_OR_FD__RLCA:                // 0x07
+        case Z80__DD_OR_FD__EX__AF__AF_SHADOW:                // 0x08
+        case Z80__DD_OR_FD__ADD__IX_OR_IY__BC:                // 0x09
+        case Z80__DD_OR_FD__LD__A__INDIRECT_BC:                // 0x0a
+        case Z80__DD_OR_FD__DEC__BC:                // 0x0b
+        case Z80__DD_OR_FD__INC__C:                // 0x0c
+        case Z80__DD_OR_FD__DEC__C:                // 0x0d
+        case Z80__DD_OR_FD__LD__C__N:                // 0x0e
+        case Z80__DD_OR_FD__RRCA:                // 0x0f
+        case Z80__DD_OR_FD__DJNZ__d:                // 0x10
+        case Z80__DD_OR_FD__LD__DE__NN:                // 0x11
+        case Z80__DD_OR_FD__LD__INDIRECT_DE__A:                // 0x12
+        case Z80__DD_OR_FD__INC__DE:                // 0x13
+        case Z80__DD_OR_FD__INC__D:                // 0x14
+        case Z80__DD_OR_FD__DEC__D:                // 0x15
+        case Z80__DD_OR_FD__LD__D__N:                // 0x16
+        case Z80__DD_OR_FD__RLA:                // 0x17
+        case Z80__DD_OR_FD__JR__d:                // 0x18
+        case Z80__DD_OR_FD__ADD__IX_OR_IY__DE:                // 0x19
+        case Z80__DD_OR_FD__LD__A__INDIRECT_DE:                // 0x1a
+        case Z80__DD_OR_FD__DEC__DE:                // 0x1b
+        case Z80__DD_OR_FD__INC__E:                // 0x1c
+        case Z80__DD_OR_FD__DEC__E:                // 0x1d
+        case Z80__DD_OR_FD__LD__E__N:                // 0x1e
+        case Z80__DD_OR_FD__RRA:                // 0x1f
+        case Z80__DD_OR_FD__JR__NZ__d:                // 0x20
+        case Z80__DD_OR_FD__LD__IX_OR_IY__NN:                // 0x21
+        case Z80__DD_OR_FD__LD__INDIRECT_NN__IX_OR_IY:                // 0x22
+        case Z80__DD_OR_FD__INC__IX_OR_IY:                // 0x23
+        case Z80__DD_OR_FD__INC__IXH_OR_IYH:                // 0x24
+        case Z80__DD_OR_FD__DEC__IXH_OR_IYH:                // 0x25
+        case Z80__DD_OR_FD__LD__IXH_OR_IYH__N:                // 0x26
+        case Z80__DD_OR_FD__DAA:                // 0x27
+        case Z80__DD_OR_FD__JR__Z__d:                // 0x28
+        case Z80__DD_OR_FD__ADD__IX_OR_IY__IX_OR_IY:                // 0x29
+        case Z80__DD_OR_FD__LD__IX_OR_IY__INDIRECT_NN:                // 0x2a
+        case Z80__DD_OR_FD__DEC__IX_OR_IY:                // 0x2b
+        case Z80__DD_OR_FD__INC__IXL_OR_IYL:                // 0x2c
+        case Z80__DD_OR_FD__DEC__IXL_OR_IYL:                // 0x2d
+        case Z80__DD_OR_FD__LD__IXL_OR_IYL__N:                // 0x2e
+        case Z80__DD_OR_FD__CPL:                // 0x2f
+        case Z80__DD_OR_FD__JR__NC__d:                // 0x30
+        case Z80__DD_OR_FD__LD__SP__NN:                // 0x31
+        case Z80__DD_OR_FD__LD__INDIRECT_NN__A:                // 0x32
+        case Z80__DD_OR_FD__INC__SP:                // 0x33
+        case Z80__DD_OR_FD__SCF:                // 0x37
+        case Z80__DD_OR_FD__ADD__IX_OR_IY__SP:                // 0x39
+        case Z80__DD_OR_FD__LD__A__INDIRECT_NN:                // 0x3a
+        case Z80__DD_OR_FD__DEC__SP:                // 0x3b
+        case Z80__DD_OR_FD__INC__A:                // 0x3c
+        case Z80__DD_OR_FD__DEC__A:                // 0x3d
+        case Z80__DD_OR_FD__LD__A__N:                // 0x3e
+        case Z80__DD_OR_FD__CCF:                // 0x3f
+        case Z80__DD_OR_FD__LD__B__B:                // 0x40
+        case Z80__DD_OR_FD__LD__B__C:                // 0x41
+        case Z80__DD_OR_FD__LD__B__D:                // 0x42
+        case Z80__DD_OR_FD__LD__B__E:                // 0x43
+        case Z80__DD_OR_FD__LD__B__IXH_OR_IYH:                // 0x44
+        case Z80__DD_OR_FD__LD__B__IXL_OR_IYL:                // 0x45
+        case Z80__DD_OR_FD__LD__B__A:                // 0x47
+        case Z80__DD_OR_FD__LD__C__B:                // 0x48
+        case Z80__DD_OR_FD__LD__C__C:                // 0x49
+        case Z80__DD_OR_FD__LD__C__D:                // 0x4a
+        case Z80__DD_OR_FD__LD__C__E:                // 0x4b
+        case Z80__DD_OR_FD__LD__C__IXH_OR_IYH:                // 0x4c
+        case Z80__DD_OR_FD__LD__C__IXL_OR_IYL:                // 0x4d
+        case Z80__DD_OR_FD__LD__C__A:                // 0x4f
+        case Z80__DD_OR_FD__LD__D__B:                // 0x50
+        case Z80__DD_OR_FD__LD__D__C:                // 0x51
+        case Z80__DD_OR_FD__LD__D__D:                // 0x52
+        case Z80__DD_OR_FD__LD__D__E:                // 0x53
+        case Z80__DD_OR_FD__LD__D__IXH_OR_IYH:                // 0x54
+        case Z80__DD_OR_FD__LD__D__IXL_OR_IYL:                // 0x55
+        case Z80__DD_OR_FD__LD__D__A:                // 0x57
+        case Z80__DD_OR_FD__LD__E__B:                // 0x58
+        case Z80__DD_OR_FD__LD__E__C:                // 0x59
+        case Z80__DD_OR_FD__LD__E__D:                // 0x5a
+        case Z80__DD_OR_FD__LD__E__E:                // 0x5b
+        case Z80__DD_OR_FD__LD__E__IXH_OR_IYH:                // 0x5c
+        case Z80__DD_OR_FD__LD__E__IXL_OR_IYL:                // 0x5d
+        case Z80__DD_OR_FD__LD__E__A:                // 0x5f
+        case Z80__DD_OR_FD__LD__IXH_OR_IYH__B:                // 0x60
+        case Z80__DD_OR_FD__LD__IXH_OR_IYH__C:                // 0x61
+        case Z80__DD_OR_FD__LD__IXH_OR_IYH__D:                // 0x62
+        case Z80__DD_OR_FD__LD__IXH_OR_IYH__E:                // 0x63
+        case Z80__DD_OR_FD__LD__IXH_OR_IYH__IXH_OR_IYH:                // 0x64
+        case Z80__DD_OR_FD__LD__IXH_OR_IYH__IXL_OR_IYL:                // 0x65
+        case Z80__DD_OR_FD__LD__IXH_OR_IYH__A:                // 0x67
+        case Z80__DD_OR_FD__LD__IXL_OR_IYL__B:                // 0x68
+        case Z80__DD_OR_FD__LD__IXL_OR_IYL__C:                // 0x69
+        case Z80__DD_OR_FD__LD__IXL_OR_IYL__D:                // 0x6a
+        case Z80__DD_OR_FD__LD__IXL_OR_IYL__E:                // 0x6b
+        case Z80__DD_OR_FD__LD__IXL_OR_IYL__IXH_OR_IYH:                // 0x6c
+        case Z80__DD_OR_FD__LD__IXL_OR_IYL__IXL_OR_IYL:                // 0x6d
+        case Z80__DD_OR_FD__LD__IXL_OR_IYL__A:                // 0x6f
+        case Z80__DD_OR_FD__HALT:                // 0x76
+        case Z80__DD_OR_FD__LD__A__B:                // 0x78
+        case Z80__DD_OR_FD__LD__A__C:                // 0x79
+        case Z80__DD_OR_FD__LD__A__D:                // 0x7a
+        case Z80__DD_OR_FD__LD__A__E:                // 0x7b
+        case Z80__DD_OR_FD__LD__A__IXH_OR_IYH:                // 0x7c
+        case Z80__DD_OR_FD__LD__A__IXL_OR_IYL:                // 0x7d
+        case Z80__DD_OR_FD__LD__A__A:                // 0x7f
+        case Z80__DD_OR_FD__ADD__A__B:                // 0x80
+        case Z80__DD_OR_FD__ADD__A__C:                // 0x81
+        case Z80__DD_OR_FD__ADD__A__D:                // 0x82
+        case Z80__DD_OR_FD__ADD__A__E:                // 0x83
+        case Z80__DD_OR_FD__ADD__A__IXH_OR_IYH:                // 0x84
+        case Z80__DD_OR_FD__ADD__A__IXL_OR_IYL:                // 0x85
+        case Z80__DD_OR_FD__ADD__A__A:                // 0x87
+        case Z80__DD_OR_FD__ADC__A__B:                // 0x88
+        case Z80__DD_OR_FD__ADC__A__C:                // 0x89
+        case Z80__DD_OR_FD__ADC__A__D:                // 0x8a
+        case Z80__DD_OR_FD__ADC__A__E:                // 0x8b
+        case Z80__DD_OR_FD__ADC__A__IXH_OR_IYH:                // 0x8c
+        case Z80__DD_OR_FD__ADC__A__IXL_OR_IYL:                // 0x8d
+        case Z80__DD_OR_FD__ADC__A__A:                // 0x8f
+        case Z80__DD_OR_FD__SUB__B:                // 0x90
+        case Z80__DD_OR_FD__SUB__C:                // 0x91
+        case Z80__DD_OR_FD__SUB__D:                // 0x92
+        case Z80__DD_OR_FD__SUB__E:                // 0x93
+        case Z80__DD_OR_FD__SUB__IXH_OR_IYH:                // 0x94
+        case Z80__DD_OR_FD__SUB__IXL_OR_IYL:                // 0x95
+        case Z80__DD_OR_FD__SUB__A:                // 0x97
+        case Z80__DD_OR_FD__SBC__A__B:                // 0x98
+        case Z80__DD_OR_FD__SBC__A__C:                // 0x99
+        case Z80__DD_OR_FD__SBC__A__D:                // 0x9a
+        case Z80__DD_OR_FD__SBC__A__E:                // 0x9b
+        case Z80__DD_OR_FD__SBC__A__IXH_OR_IYH:                // 0x9c
+        case Z80__DD_OR_FD__SBC__A__IXL_OR_IYL:                // 0x9d
+        case Z80__DD_OR_FD__SBC__A__A:                // 0x9f
+        case Z80__DD_OR_FD__AND__B:                // 0xa0
+        case Z80__DD_OR_FD__AND__C:                // 0xa1
+        case Z80__DD_OR_FD__AND__D:                // 0xa2
+        case Z80__DD_OR_FD__AND__E:                // 0xa3
+        case Z80__DD_OR_FD__AND__IXH_OR_IYH:                // 0xa4
+        case Z80__DD_OR_FD__AND__IXL_OR_IYL:                // 0xa5
+        case Z80__DD_OR_FD__AND__A:                // 0xa7
+        case Z80__DD_OR_FD__XOR__B:                // 0xa8
+        case Z80__DD_OR_FD__XOR__C:                // 0xa9
+        case Z80__DD_OR_FD__XOR__D:                // 0xaa
+        case Z80__DD_OR_FD__XOR__E:                // 0xab
+        case Z80__DD_OR_FD__XOR__IXH_OR_IYH:                // 0xac
+        case Z80__DD_OR_FD__XOR__IXL_OR_IYL:                // 0xad
+        case Z80__DD_OR_FD__XOR__A:                // 0xaf
+        case Z80__DD_OR_FD__OR__B:                // 0xb0
+        case Z80__DD_OR_FD__OR__C:                // 0xb1
+        case Z80__DD_OR_FD__OR__D:                // 0xb2
+        case Z80__DD_OR_FD__OR__E:                // 0xb3
+        case Z80__DD_OR_FD__OR__IXH_OR_IYH:                // 0xb4
+        case Z80__DD_OR_FD__OR__IXL_OR_IYL:                // 0xb5
+        case Z80__DD_OR_FD__OR__A:                // 0xb7
+        case Z80__DD_OR_FD__CP__B:                // 0xb8
+        case Z80__DD_OR_FD__CP__C:                // 0xb9
+        case Z80__DD_OR_FD__CP__D:                // 0xba
+        case Z80__DD_OR_FD__CP__E:                // 0xbb
+        case Z80__DD_OR_FD__CP__IXH_OR_IYH:                // 0xbc
+        case Z80__DD_OR_FD__CP__IXL_OR_IYL:                // 0xbd
+        case Z80__DD_OR_FD__CP__A:                // 0xbf
+        case Z80__DD_OR_FD__RET__NZ:                // 0xc0
+        case Z80__DD_OR_FD__POP__BC:                // 0xc1
+        case Z80__DD_OR_FD__JP__NZ__NN:                // 0xc2
+        case Z80__DD_OR_FD__JP__NN:                // 0xc3
+        case Z80__DD_OR_FD__CALL__NZ__NN:                // 0xc4
+        case Z80__DD_OR_FD__PUSH__BC:                // 0xc5
+        case Z80__DD_OR_FD__ADD__A__N:                // 0xc6
+        case Z80__DD_OR_FD__RST__00:                // 0xc7
+        case Z80__DD_OR_FD__RET__Z:                // 0xc8
+        case Z80__DD_OR_FD__RET:                // 0xc9
+        case Z80__DD_OR_FD__JP__Z__NN:                // 0xca
+        case Z80__DD_OR_FD__CALL__Z__NN:                // 0xcc
+        case Z80__DD_OR_FD__CALL__NN:                // 0xcd
+        case Z80__DD_OR_FD__ADC__A__N:                // 0xce
+        case Z80__DD_OR_FD__RST__08:                // 0xcf
+        case Z80__DD_OR_FD__RET__NC:                // 0xd0
+        case Z80__DD_OR_FD__POP__DE:                // 0xd1
+        case Z80__DD_OR_FD__JP__NC__NN:                // 0xd2
+        case Z80__DD_OR_FD__OUT__INDIRECT_N__A:                // 0xd3
+        case Z80__DD_OR_FD__CALL__NC__NN:                // 0xd4
+        case Z80__DD_OR_FD__PUSH__DE:                // 0xd5
+        case Z80__DD_OR_FD__SUB__N:                // 0xd6
+        case Z80__DD_OR_FD__RST__10:                // 0xd7
+        case Z80__DD_OR_FD__RET__C:                // 0xd8
+        case Z80__DD_OR_FD__EXX:                // 0xd9
+        case Z80__DD_OR_FD__JP__C__NN:                // 0xda
+        case Z80__DD_OR_FD__IN__A__INDIRECT_N:                // 0xdb
+        case Z80__DD_OR_FD__CALL__C__NN:                // 0xdc
+        case Z80__DD_OR_FD__PREFIX__DD:                // 0xdd
+        case Z80__DD_OR_FD__SBC__A__N:                // 0xde
+        case Z80__DD_OR_FD__RST__18:                // 0xdf
+        case Z80__DD_OR_FD__RET__PO:                // 0xe0
+        case Z80__DD_OR_FD__POP__IX_OR_IY:                // 0xe1
+        case Z80__DD_OR_FD__JP__PO__NN:                // 0xe2
+        case Z80__DD_OR_FD__EX__INDIRECT_SP__IX_OR_IY:                // 0xe3
+        case Z80__DD_OR_FD__CALL__PO__NN:                // 0xe4
+        case Z80__DD_OR_FD__PUSH__IX_OR_IY:                // 0xe5
+        case Z80__DD_OR_FD__AND__N:                // 0xe6
+        case Z80__DD_OR_FD__RST__20:                // 0xe7
+        case Z80__DD_OR_FD__RET__PE:                // 0xe8
+        case Z80__DD_OR_FD__JP__IX_OR_IY:                // 0xe9
+        case Z80__DD_OR_FD__JP__PE__NN:                // 0xea
+        case Z80__DD_OR_FD__EX__DE__HL:                // 0xeb
+        case Z80__DD_OR_FD__CALL__PE__NN:                // 0xec
+        case Z80__DD_OR_FD__PREFIX__ED:                // 0xed
+        case Z80__DD_OR_FD__XOR__N:                // 0xee
+        case Z80__DD_OR_FD__RST__28:                // 0xef
+        case Z80__DD_OR_FD__RET__P:                // 0xf0
+        case Z80__DD_OR_FD__POP__AF:                // 0xf1
+        case Z80__DD_OR_FD__JP__P__NN:                // 0xf2
+        case Z80__DD_OR_FD__DI:                // 0xf3
+        case Z80__DD_OR_FD__CALL__P__NN:                // 0xf4
+        case Z80__DD_OR_FD__PUSH__AF:                // 0xf5
+        case Z80__DD_OR_FD__OR__N:                // 0xf6
+        case Z80__DD_OR_FD__RST__30:                // 0xf7
+        case Z80__DD_OR_FD__RET__M:                // 0xf8
+        case Z80__DD_OR_FD__LD__SP__IX_OR_IY:                // 0xf9
+        case Z80__DD_OR_FD__JP__M__NN:                // 0xfa
+        case Z80__DD_OR_FD__EI:                // 0xfb
+        case Z80__DD_OR_FD__CALL__M__NN:                // 0xfc
+        case Z80__DD_OR_FD__PREFIX__FD:                // 0xfd
+        case Z80__DD_OR_FD__CP__N:                // 0xfe
+        case Z80__DD_OR_FD__RST__38:                // 0xff
+        {
+            auto mnemonic = disassembleOnePlain(machineCode);
+            ++mnemonic.size;
+            return mnemonic;
+        }
+    }
+
+
+    std::cerr << "disassembly of opcode " << (Register16::IX == reg ? "0xdd " : "0xfd ") << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(*machineCode) << " not yet implemented\n" << std::setfill('0') << std::dec;
     return {
             Instruction::NOP,
             {},

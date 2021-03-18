@@ -40,9 +40,8 @@ int main(int argc, char ** argv)
 
     Disassembler disassembler(memory, sizeof(memory));
     std::cout << std::hex << std::setfill('0');
-    auto count = 0;
 
-    while (count < 50 && disassembler.canDisassembleMore()) {
+    while (disassembler.canDisassembleMore()) {
         auto address = disassembler.address();
 
         std::cout << "0x" << std::setw(4) << disassembler.address()
@@ -64,6 +63,5 @@ int main(int argc, char ** argv)
         }
 
         std::cout << "]\n";
-        ++count;
     }
 }

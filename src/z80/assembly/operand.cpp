@@ -53,7 +53,11 @@ std::string std::to_string(const Operand & op)
             out << to_string(op.register16);
             break;
 
-        case AddressingMode::RegisterIndirect:
+        case AddressingMode::Register8Indirect:
+            out << '(' << to_string(op.register8) << ')';
+            break;
+
+        case AddressingMode::Register16Indirect:
             out << '(' << to_string(op.register16) << ')';
             break;
 
