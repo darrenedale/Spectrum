@@ -200,7 +200,7 @@ namespace Z80::Assembly
          */
         static Mnemonic disassembleOneDdOrFd(Register16, const Z80::UnsignedByte *);
 
-        // TODO Mnemonic disassembleOneDdCbOrFdCb(Register16, const Z80::UnsignedByte *);
+        static Mnemonic disassembleOneDdCbOrFdCb(Register16, const Z80::UnsignedByte *);
 
     private:
         // the memory image the disassembler will work with

@@ -28,7 +28,7 @@ int main(int argc, char ** argv)
 
     if (argc > 2) {
         char * endPtr;
-        maxInstructions = std::strtol(argv[2], &endPtr, 10);
+        maxInstructions = static_cast<int>(std::strtol(argv[2], &endPtr, 10));
 
         if (0 != *endPtr) {
             std::cerr << "invalid instruction count provided (" << argv[2] << "): must be a positive integer\n";

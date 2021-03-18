@@ -6102,8 +6102,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(Register16 reg, const Z80::UnsignedB
             };
 
         case Z80__DD_OR_FD__PREFIX__CB:                // 0xcb
-            // TODO disassemble 0xdd 0xcb and 0xfd 0xcb opcodes
-            return {};
+            return disassembleOneDdCbOrFdCb(reg, machineCode + 1);
 
         // these are all expensive replicas of the plain instructions
         case Z80__DD_OR_FD__NOP:                // 0x00
@@ -6343,6 +6342,2770 @@ Mnemonic Disassembler::disassembleOneDdOrFd(Register16 reg, const Z80::UnsignedB
     }
 
     std::cerr << "disassembly of opcode " << (Register16::IX == reg ? "0xdd " : "0xfd ") << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(*machineCode) << " not yet implemented\n" << std::setfill('0') << std::dec;
+    return {
+            Instruction::NOP,
+            {},
+            1,
+    };
+}
+
+Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const Z80::UnsignedByte * machineCode)
+{
+    static constexpr const int OpcodeSize = 3;
+    
+    switch (*machineCode) {
+        case Z80__DD_OR_FD__CB__RLC__INDIRECT_IX_d_OR_IY_d__B:                       // 0x00
+            return {
+                Instruction::RLC,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RLC__INDIRECT_IX_d_OR_IY_d__C:                       // 0x01
+            return {
+                Instruction::RLC,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RLC__INDIRECT_IX_d_OR_IY_d__D:                       // 0x02
+            return {
+                Instruction::RLC,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RLC__INDIRECT_IX_d_OR_IY_d__E:                       // 0x03
+            return {
+                Instruction::RLC,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RLC__INDIRECT_IX_d_OR_IY_d__H:                       // 0x04
+            return {
+                Instruction::RLC,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RLC__INDIRECT_IX_d_OR_IY_d__L:                       // 0x05
+            return {
+                Instruction::RLC,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RLC__INDIRECT_IX_d_OR_IY_d:                          // 0x06
+            return {
+                    Instruction::RLC,
+                    {
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RLC__INDIRECT_IX_d_OR_IY_d__A:                       // 0x07
+            return {
+                Instruction::RLC,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RRC__INDIRECT_IX_d_OR_IY_d__B:                       // 0x08
+            return {
+                Instruction::RRC,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RRC__INDIRECT_IX_d_OR_IY_d__C:                       // 0x09
+            return {
+                Instruction::RRC,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RRC__INDIRECT_IX_d_OR_IY_d__D:                       // 0x0a
+            return {
+                Instruction::RRC,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RRC__INDIRECT_IX_d_OR_IY_d__E:                       // 0x0b
+            return {
+                Instruction::RRC,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RRC__INDIRECT_IX_d_OR_IY_d__H:                       // 0x0c
+            return {
+                Instruction::RRC,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RRC__INDIRECT_IX_d_OR_IY_d__L:                       // 0x0d
+            return {
+                Instruction::RRC,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RRC__INDIRECT_IX_d_OR_IY_d:                          // 0x0e
+            return {
+                    Instruction::RRC,
+                    {
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RRC__INDIRECT_IX_d_OR_IY_d__A:                       // 0x0f
+            return {
+                Instruction::RRC,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize,
+            };
+
+
+        case Z80__DD_OR_FD__CB__RL__INDIRECT_IX_d_OR_IY_d__B:                        // 0x10
+            return {
+                Instruction::RL,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RL__INDIRECT_IX_d_OR_IY_d__C:                        // 0x11
+            return {
+                Instruction::RL,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RL__INDIRECT_IX_d_OR_IY_d__D:                        // 0x12
+            return {
+                Instruction::RL,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RL__INDIRECT_IX_d_OR_IY_d__E:                        // 0x13
+            return {
+                Instruction::RL,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RL__INDIRECT_IX_d_OR_IY_d__H:                        // 0x14
+            return {
+                Instruction::RL,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RL__INDIRECT_IX_d_OR_IY_d__L:                        // 0x15
+            return {
+                Instruction::RL,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RL__INDIRECT_IX_d_OR_IY_d:                           // 0x16
+            return {
+                Instruction::RL,
+                    {
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RL__INDIRECT_IX_d_OR_IY_d__A:                        // 0x17
+            return {
+                Instruction::RL,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize,
+            };
+
+
+        case Z80__DD_OR_FD__CB__RR__INDIRECT_IX_d_OR_IY_d__B:                        // 0x18
+            return {
+                Instruction::RR,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RR__INDIRECT_IX_d_OR_IY_d__C:                        // 0x19
+            return {
+                Instruction::RR,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RR__INDIRECT_IX_d_OR_IY_d__D:                        // 0x1a
+            return {
+                Instruction::RR,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RR__INDIRECT_IX_d_OR_IY_d__E:                        // 0x1b
+            return {
+                Instruction::RR,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RR__INDIRECT_IX_d_OR_IY_d__H:                        // 0x1c
+            return {
+                Instruction::RR,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RR__INDIRECT_IX_d_OR_IY_d__L:                        // 0x1d
+            return {
+                Instruction::RR,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RR__INDIRECT_IX_d_OR_IY_d:                          // 0x1e
+            return {
+                    Instruction::RR,
+                    {
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RR__INDIRECT_IX_d_OR_IY_d__A:                        // 0x1f
+            return {
+                Instruction::RR,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize,
+            };
+
+
+        case Z80__DD_OR_FD__CB__SLA__INDIRECT_IX_d_OR_IY_d__B:                       // 0x20
+            return {
+                Instruction::SLA,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SLA__INDIRECT_IX_d_OR_IY_d__C:                       // 0x21
+            return {
+                Instruction::SLA,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SLA__INDIRECT_IX_d_OR_IY_d__D:                       // 0x22
+            return {
+                Instruction::SLA,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SLA__INDIRECT_IX_d_OR_IY_d__E:                       // 0x23
+            return {
+                Instruction::SLA,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SLA__INDIRECT_IX_d_OR_IY_d__H:                       // 0x24
+            return {
+                Instruction::SLA,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SLA__INDIRECT_IX_d_OR_IY_d__L:                       // 0x25
+            return {
+                Instruction::SLA,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SLA__INDIRECT_IX_d_OR_IY_d:                          // 0x26
+            return {
+                    Instruction::SLA,
+                    {
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SLA__INDIRECT_IX_d_OR_IY_d__A:                       // 0x27
+            return {
+                Instruction::SLA,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize,
+            };
+
+
+        case Z80__DD_OR_FD__CB__SRA__INDIRECT_IX_d_OR_IY_d__B:                       // 0x28
+            return {
+                Instruction::SRA,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SRA__INDIRECT_IX_d_OR_IY_d__C:                       // 0x29
+            return {
+                Instruction::SRA,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SRA__INDIRECT_IX_d_OR_IY_d__D:                       // 0x2a
+            return {
+                Instruction::SRA,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SRA__INDIRECT_IX_d_OR_IY_d__E:                       // 0x2b
+            return {
+                Instruction::SRA,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SRA__INDIRECT_IX_d_OR_IY_d__H:                       // 0x2c
+            return {
+                Instruction::SRA,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SRA__INDIRECT_IX_d_OR_IY_d__L:                       // 0x2d
+            return {
+                Instruction::SRA,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SRA__INDIRECT_IX_d_OR_IY_d:                          // 0x2e
+            return {
+                    Instruction::SRA,
+                    {
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SRA__INDIRECT_IX_d_OR_IY_d__A:                       // 0x2f
+            return {
+                Instruction::SRA,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize,
+            };
+
+
+        case Z80__DD_OR_FD__CB__SLL__INDIRECT_IX_d_OR_IY_d__B:                       // 0x30
+            return {
+                Instruction::SLL,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SLL__INDIRECT_IX_d_OR_IY_d__C:                       // 0x31
+            return {
+                Instruction::SLL,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SLL__INDIRECT_IX_d_OR_IY_d__D:                       // 0x32
+            return {
+                Instruction::SLL,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SLL__INDIRECT_IX_d_OR_IY_d__E:                       // 0x33
+            return {
+                Instruction::SLL,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SLL__INDIRECT_IX_d_OR_IY_d__H:                       // 0x34
+            return {
+                Instruction::SLL,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SLL__INDIRECT_IX_d_OR_IY_d__L:                       // 0x35
+            return {
+                Instruction::SLL,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SLL__INDIRECT_IX_d_OR_IY_d:                          // 0x36
+            return {
+                    Instruction::SLL,
+                    {
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SLL__INDIRECT_IX_d_OR_IY_d__A:                       // 0x37
+            return {
+                Instruction::SLL,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize,
+            };
+
+
+        case Z80__DD_OR_FD__CB__SRL__INDIRECT_IX_d_OR_IY_d__B:                       // 0x38
+            return {
+                Instruction::SRL,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SRL__INDIRECT_IX_d_OR_IY_d__C:                       // 0x39
+            return {
+                Instruction::SRL,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SRL__INDIRECT_IX_d_OR_IY_d__D:                       // 0x3a
+            return {
+                Instruction::SRL,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SRL__INDIRECT_IX_d_OR_IY_d__E:                       // 0x3b
+            return {
+                Instruction::SRL,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SRL__INDIRECT_IX_d_OR_IY_d__H:                       // 0x3c
+            return {
+                Instruction::SRL,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SRL__INDIRECT_IX_d_OR_IY_d__L:                       // 0x3d
+            return {
+                Instruction::SRL,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SRL__INDIRECT_IX_d_OR_IY_d:                          // 0x3e
+            return {
+                    Instruction::SRL,
+                    {
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SRL__INDIRECT_IX_d_OR_IY_d__A:                       // 0x3f
+            return {
+                Instruction::SRL,
+                {
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__B:                    // 0x40
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 0, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__C:                    // 0x41
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 0, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__D:                    // 0x42
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 0, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__E:                    // 0x43
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 0, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__H:                    // 0x44
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 0, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__L:                    // 0x45
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 0, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d:                          // 0x06
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__A:                    // 0x47
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 0, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize
+            };
+
+
+        case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__B:                    // 0x48
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 1, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__C:                    // 0x49
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 1, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__D:                    // 0x4a
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 1, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__E:                    // 0x4b
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 1, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__H:                    // 0x4c
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 1, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__L:                    // 0x4d
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 1, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d:                          // 0x4e
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__A:                    // 0x4f
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 1, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize
+            };
+
+
+        case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__B:                    // 0x50
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 2, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__C:                    // 0x51
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 2, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__D:                    // 0x52
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 2, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__E:                    // 0x53
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 2, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__H:                    // 0x54
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 2, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__L:                    // 0x55
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 2, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d:                          // 0x56
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__A:                    // 0x57
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 2, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize
+            };
+
+
+        case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__B:                    // 0x58
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 3, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__C:                    // 0x59
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 3, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__D:                    // 0x5a
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 3, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__E:                    // 0x5b
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 3, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__H:                    // 0x5c
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 3, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__L:                    // 0x5d
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 3, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d:                          // 0x5e
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__A:                    // 0x5f
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = OpcodeSize },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                3,
+            };
+
+
+        case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__B:                    // 0x60
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 4, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__C:                    // 0x61
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 4, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__D:                    // 0x62
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 4, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__E:                    // 0x63
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 4, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__H:                    // 0x64
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 4, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__L:                    // 0x65
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 4, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d:                          // 0x66
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 4, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__A:                    // 0x67
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 4, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize
+            };
+
+
+        case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__B:                    // 0x68
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 5, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__C:                    // 0x69
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 5, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__D:                    // 0x6a
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 5, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__E:                    // 0x6b
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 5, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__H:                    // 0x6c
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 5, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__L:                    // 0x6d
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 5, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d:                          // 0x6e
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__A:                    // 0x6f
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 5, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize
+            };
+
+
+        case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__B:                    // 0x70
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 6, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__C:                    // 0x71
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 6, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__D:                    // 0x72
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 6, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__E:                    // 0x73
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 6, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__H:                    // 0x74
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 6, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__L:                    // 0x75
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 6, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d:                          // 0x76
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 6, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__A:                    // 0x77
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 6, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize
+            };
+
+
+        case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__B:                    // 0x78
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 7, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__C:                    // 0x79
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 7, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__D:                    // 0x7a
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 7, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__E:                    // 0x7b
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 7, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__H:                    // 0x7c
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 7, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__L:                    // 0x7d
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 7, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d:                          // 0x7e
+            return {
+                    Instruction::BIT,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__A:                    // 0x7f
+            return {
+                Instruction::BIT,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 7, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize
+            };
+
+
+        case Z80__DD_OR_FD__CB__RES__0__INDIRECT_IX_d_OR_IY_d__B:                    // 0x80
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 0, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__0__INDIRECT_IX_d_OR_IY_d__C:                    // 0x81
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 0, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__0__INDIRECT_IX_d_OR_IY_d__D:                    // 0x82
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 0, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__0__INDIRECT_IX_d_OR_IY_d__E:                    // 0x83
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 0, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__0__INDIRECT_IX_d_OR_IY_d__H:                    // 0x84
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 0, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__0__INDIRECT_IX_d_OR_IY_d__L:                    // 0x85
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 0, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__0__INDIRECT_IX_d_OR_IY_d:                          // 0x86
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RES__0__INDIRECT_IX_d_OR_IY_d__A:                    // 0x87
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 0, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize
+            };
+
+
+        case Z80__DD_OR_FD__CB__RES__1__INDIRECT_IX_d_OR_IY_d__B:                    // 0x88
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 1, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__1__INDIRECT_IX_d_OR_IY_d__C:                    // 0x89
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 1, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__1__INDIRECT_IX_d_OR_IY_d__D:                    // 0x8a
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 1, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__1__INDIRECT_IX_d_OR_IY_d__E:                    // 0x8b
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 1, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__1__INDIRECT_IX_d_OR_IY_d__H:                    // 0x8c
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 1, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__1__INDIRECT_IX_d_OR_IY_d__L:                    // 0x8d
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 1, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__1__INDIRECT_IX_d_OR_IY_d:                          // 0x8e
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RES__1__INDIRECT_IX_d_OR_IY_d__A:                    // 0x8f
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 1, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize
+            };
+
+
+        case Z80__DD_OR_FD__CB__RES__2__INDIRECT_IX_d_OR_IY_d__B:                    // 0x90
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 2, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__2__INDIRECT_IX_d_OR_IY_d__C:                    // 0x91
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 2, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__2__INDIRECT_IX_d_OR_IY_d__D:                    // 0x92
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 2, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__2__INDIRECT_IX_d_OR_IY_d__E:                    // 0x93
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 2, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__2__INDIRECT_IX_d_OR_IY_d__H:                    // 0x94
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 2, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__2__INDIRECT_IX_d_OR_IY_d__L:                    // 0x95
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 2, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__2__INDIRECT_IX_d_OR_IY_d:                          // 0x96
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RES__2__INDIRECT_IX_d_OR_IY_d__A:                    // 0x97
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 2, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize
+            };
+
+
+        case Z80__DD_OR_FD__CB__RES__3__INDIRECT_IX_d_OR_IY_d__B:                    // 0x98
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 3, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__3__INDIRECT_IX_d_OR_IY_d__C:                    // 0x99
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 3, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__3__INDIRECT_IX_d_OR_IY_d__D:                    // 0x9a
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 3, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__3__INDIRECT_IX_d_OR_IY_d__E:                    // 0x9b
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 3, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__3__INDIRECT_IX_d_OR_IY_d__H:                    // 0x9c
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 3, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__3__INDIRECT_IX_d_OR_IY_d__L:                    // 0x9d
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 3, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__3__INDIRECT_IX_d_OR_IY_d:                          // 0x9e
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RES__3__INDIRECT_IX_d_OR_IY_d__A:                    // 0x9f
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 3, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize
+            };
+
+
+        case Z80__DD_OR_FD__CB__RES__4__INDIRECT_IX_d_OR_IY_d__B:                    // 0xa0
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 4, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__4__INDIRECT_IX_d_OR_IY_d__C:                    // 0xa1
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 4, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__4__INDIRECT_IX_d_OR_IY_d__D:                    // 0xa2
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 4, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__4__INDIRECT_IX_d_OR_IY_d__E:                    // 0xa3
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 4, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__4__INDIRECT_IX_d_OR_IY_d__H:                    // 0xa4
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 4, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__4__INDIRECT_IX_d_OR_IY_d__L:                    // 0xa5
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 4, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__4__INDIRECT_IX_d_OR_IY_d:                          // 0xa6
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 4, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RES__4__INDIRECT_IX_d_OR_IY_d__A:                    // 0xa7
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 4, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize
+            };
+
+
+        case Z80__DD_OR_FD__CB__RES__5__INDIRECT_IX_d_OR_IY_d__B:                    // 0xa8
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 5, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__5__INDIRECT_IX_d_OR_IY_d__C:                    // 0xa9
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 5, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__5__INDIRECT_IX_d_OR_IY_d__D:                    // 0xaa
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 5, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__5__INDIRECT_IX_d_OR_IY_d__E:                    // 0xab
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 5, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__5__INDIRECT_IX_d_OR_IY_d__H:                    // 0xac
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 5, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__5__INDIRECT_IX_d_OR_IY_d__L:                    // 0xad
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 5, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__5__INDIRECT_IX_d_OR_IY_d:                          // 0xae
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RES__5__INDIRECT_IX_d_OR_IY_d__A:                    // 0xaf
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 5, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize
+            };
+
+
+        case Z80__DD_OR_FD__CB__RES__6__INDIRECT_IX_d_OR_IY_d__B:                    // 0xb0
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 6, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__6__INDIRECT_IX_d_OR_IY_d__C:                    // 0xb1
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 6, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__6__INDIRECT_IX_d_OR_IY_d__D:                    // 0xb2
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 6, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__6__INDIRECT_IX_d_OR_IY_d__E:                    // 0xb3
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 6, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__6__INDIRECT_IX_d_OR_IY_d__H:                    // 0xb4
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 6, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__6__INDIRECT_IX_d_OR_IY_d__L:                    // 0xb5
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 6, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__6__INDIRECT_IX_d_OR_IY_d:                          // 0xb6
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 6, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RES__6__INDIRECT_IX_d_OR_IY_d__A:                    // 0xb7
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 6, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize
+            };
+
+
+        case Z80__DD_OR_FD__CB__RES__7__INDIRECT_IX_d_OR_IY_d__B:                    // 0xb8
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 7, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__7__INDIRECT_IX_d_OR_IY_d__C:                    // 0xb9
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 7, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__7__INDIRECT_IX_d_OR_IY_d__D:                    // 0xba
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 7, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__7__INDIRECT_IX_d_OR_IY_d__E:                    // 0xbb
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 7, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__7__INDIRECT_IX_d_OR_IY_d__H:                    // 0xbc
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 7, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__7__INDIRECT_IX_d_OR_IY_d__L:                    // 0xbd
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 7, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__RES__7__INDIRECT_IX_d_OR_IY_d:                          // 0xbe
+            return {
+                    Instruction::RES,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__RES__7__INDIRECT_IX_d_OR_IY_d__A:                    // 0xbf
+            return {
+                Instruction::RES,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 7, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize
+            };
+
+
+        case Z80__DD_OR_FD__CB__SET__0__INDIRECT_IX_d_OR_IY_d__B:                    // 0xc0
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 0, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__0__INDIRECT_IX_d_OR_IY_d__C:                    // 0xc1
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 0, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__0__INDIRECT_IX_d_OR_IY_d__D:                    // 0xc2
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 0, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__0__INDIRECT_IX_d_OR_IY_d__E:                    // 0xc3
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 0, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__0__INDIRECT_IX_d_OR_IY_d__H:                    // 0xc4
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 0, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__0__INDIRECT_IX_d_OR_IY_d__L:                    // 0xc5
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 0, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize
+            };
+
+       case Z80__DD_OR_FD__CB__SET__0__INDIRECT_IX_d_OR_IY_d:                          // 0xc6
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 0, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SET__0__INDIRECT_IX_d_OR_IY_d__A:                    // 0xc7
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 0, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize
+            };
+
+
+        case Z80__DD_OR_FD__CB__SET__1__INDIRECT_IX_d_OR_IY_d__B:                    // 0xc8
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 1, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__1__INDIRECT_IX_d_OR_IY_d__C:                    // 0xc9
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 1, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__1__INDIRECT_IX_d_OR_IY_d__D:                    // 0xca
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 1, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__1__INDIRECT_IX_d_OR_IY_d__E:                    // 0xcb
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 1, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__1__INDIRECT_IX_d_OR_IY_d__H:                    // 0xcc
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 1, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__1__INDIRECT_IX_d_OR_IY_d__L:                    // 0xcd
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 1, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__1__INDIRECT_IX_d_OR_IY_d:                          // 0xce
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 1, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SET__1__INDIRECT_IX_d_OR_IY_d__A:                    // 0xcf
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 1, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize
+            };
+
+
+        case Z80__DD_OR_FD__CB__SET__2__INDIRECT_IX_d_OR_IY_d__B:                    // 0xd0
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 2, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__2__INDIRECT_IX_d_OR_IY_d__C:                    // 0xd1
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 2, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__2__INDIRECT_IX_d_OR_IY_d__D:                    // 0xd2
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 2, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__2__INDIRECT_IX_d_OR_IY_d__E:                    // 0xd3
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 2, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__2__INDIRECT_IX_d_OR_IY_d__H:                    // 0xd4
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 2, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__2__INDIRECT_IX_d_OR_IY_d__L:                    // 0xd5
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 2, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__2__INDIRECT_IX_d_OR_IY_d:                          // 0xd6
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 2, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SET__2__INDIRECT_IX_d_OR_IY_d__A:                    // 0xd7
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 2, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize
+            };
+
+
+        case Z80__DD_OR_FD__CB__SET__3__INDIRECT_IX_d_OR_IY_d__B:                    // 0xd8
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 3, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__3__INDIRECT_IX_d_OR_IY_d__C:                    // 0xd9
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 3, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__3__INDIRECT_IX_d_OR_IY_d__D:                    // 0xda
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 3, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__3__INDIRECT_IX_d_OR_IY_d__E:                    // 0xdb
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 3, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__3__INDIRECT_IX_d_OR_IY_d__H:                    // 0xdc
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 3, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__3__INDIRECT_IX_d_OR_IY_d__L:                    // 0xdd
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 3, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__3__INDIRECT_IX_d_OR_IY_d:                          // 0xde
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 3, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SET__3__INDIRECT_IX_d_OR_IY_d__A:                    // 0xdf
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 3, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize
+            };
+
+
+        case Z80__DD_OR_FD__CB__SET__4__INDIRECT_IX_d_OR_IY_d__B:                    // 0xe0
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 4, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__4__INDIRECT_IX_d_OR_IY_d__C:                    // 0xe1
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 4, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__4__INDIRECT_IX_d_OR_IY_d__D:                    // 0xe2
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 4, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__4__INDIRECT_IX_d_OR_IY_d__E:                    // 0xe3
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 4, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__4__INDIRECT_IX_d_OR_IY_d__H:                    // 0xe4
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 4, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__4__INDIRECT_IX_d_OR_IY_d__L:                    // 0xe5
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 4, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__4__INDIRECT_IX_d_OR_IY_d:                          // 0xe6
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 4, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SET__4__INDIRECT_IX_d_OR_IY_d__A:                    // 0xe7
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 4, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize
+            };
+
+
+        case Z80__DD_OR_FD__CB__SET__5__INDIRECT_IX_d_OR_IY_d__B:                    // 0xe8
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 5, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__5__INDIRECT_IX_d_OR_IY_d__C:                    // 0xe9
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 5, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__5__INDIRECT_IX_d_OR_IY_d__D:                    // 0xea
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 5, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__5__INDIRECT_IX_d_OR_IY_d__E:                    // 0xeb
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 5, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__5__INDIRECT_IX_d_OR_IY_d__H:                    // 0xec
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 5, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__5__INDIRECT_IX_d_OR_IY_d__L:                    // 0xed
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 5, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__5__INDIRECT_IX_d_OR_IY_d:                          // 0xee
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 5, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SET__5__INDIRECT_IX_d_OR_IY_d__A:                    // 0xef
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 5, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize
+            };
+
+
+        case Z80__DD_OR_FD__CB__SET__6__INDIRECT_IX_d_OR_IY_d__B:                    // 0xf0
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 6, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__6__INDIRECT_IX_d_OR_IY_d__C:                    // 0xf1
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 6, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__6__INDIRECT_IX_d_OR_IY_d__D:                    // 0xf2
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 6, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__6__INDIRECT_IX_d_OR_IY_d__E:                    // 0xf3
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 6, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__6__INDIRECT_IX_d_OR_IY_d__H:                    // 0xf4
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 6, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__6__INDIRECT_IX_d_OR_IY_d__L:                    // 0xf5
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 6, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__6__INDIRECT_IX_d_OR_IY_d:                          // 0xf6
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 6, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SET__6__INDIRECT_IX_d_OR_IY_d__A:                    // 0xf7
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 6, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize
+            };
+
+
+        case Z80__DD_OR_FD__CB__SET__7__INDIRECT_IX_d_OR_IY_d__B:                    // 0xf8
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 7, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::B,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__7__INDIRECT_IX_d_OR_IY_d__C:                    // 0xf9
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 7, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::C,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__7__INDIRECT_IX_d_OR_IY_d__D:                    // 0xfa
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 7, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::D,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__7__INDIRECT_IX_d_OR_IY_d__E:                    // 0xfb
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 7, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::E,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__7__INDIRECT_IX_d_OR_IY_d__H:                    // 0xfc
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 7, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::H,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__7__INDIRECT_IX_d_OR_IY_d__L:                    // 0xfd
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 7, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::L,},
+                },
+                OpcodeSize
+            };
+
+        case Z80__DD_OR_FD__CB__SET__7__INDIRECT_IX_d_OR_IY_d:                          // 0x06
+            return {
+                    Instruction::SET,
+                    {
+                            {.mode = AddressingMode::Bit, .unsignedByte = 7, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    },
+                    OpcodeSize,
+            };
+
+        case Z80__DD_OR_FD__CB__SET__7__INDIRECT_IX_d_OR_IY_d__A:                    // 0xff
+            return {
+                Instruction::SET,
+                {
+                    {.mode = AddressingMode::Bit, .unsignedByte = 7, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Register8, .register8 = Register8::A,},
+                },
+                OpcodeSize
+            };
+
+    }
+
+    std::cerr << "disassembly of opcode " << (Register16::IX == reg ? "0xdd " : "0xfd ") << "0xcb " << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(*machineCode) << " not yet implemented\n" << std::setfill('0') << std::dec;
     return {
             Instruction::NOP,
             {},
