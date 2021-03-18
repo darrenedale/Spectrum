@@ -67,6 +67,8 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
   m_cpuObserver((*this)),
   m_breakpoints()
 {
+    m_disassembly.enablePcIndicator(true);
+
     m_pc.setMinimum(0);
     m_pc.setMaximum(0xffff);
     m_sp.setMinimum(0);
@@ -373,7 +375,9 @@ void DebugWindow::updateStateDisplay()
 	m_memoryWidget.setHighlight(m_sp.value(), qRgb(0x80, 0x80, 0xe0), qRgba(0, 0, 0, 0.0));
 	m_memoryWidget.update();
 	m_keyboardMonitor.updateStateDisplay();
-	m_disassembly.setFirstAddress(cpu->pc());
+	m_disassembly.updateMnemonics(cpu->pc());
+	m_disassembly.setPc(cpu->pc());
+	m_disassembly.scrollToPc();
 }
 
 void DebugWindow::pauseResumeTriggered()
@@ -398,9 +402,9 @@ void DebugWindow::threadPaused()
     m_pauseResume.setIcon(QIcon::fromTheme(QStringLiteral("media-playback-start")));
     m_pauseResume.setText(tr("Resume"));
     centralWidget()->setEnabled(true);
+    m_poke.setEnabled(true);
     m_shadowRegistersDock->setEnabled(true);
     m_memoryDock->setEnabled(true);
-    m_pokeDock->setEnabled(true);
     m_keyboardDock->setEnabled(true);
     m_step.setEnabled(true);
     updateStateDisplay();
@@ -415,7 +419,6 @@ void DebugWindow::threadResumed()
     m_poke.setEnabled(false);
     m_shadowRegistersDock->setEnabled(false);
     m_memoryDock->setEnabled(false);
-    m_pokeDock->setEnabled(false);
     m_keyboardDock->setEnabled(false);
     m_step.setEnabled(false);
     disconnect(m_thread, &Thread::stepped, this, &DebugWindow::threadStepped);

@@ -30,15 +30,68 @@ namespace Spectrum::Qt
         void operator=(DisassemblyWidget &&) = delete;
         ~DisassemblyWidget() override;
 
-        void setFirstAddress(Z80::UnsignedWord address);
+        /**
+         * Update the disassembly from a given address.
+         *
+         * This is a relatively expensive operation so should only be called when necessary. The internal disassembly
+         * is updated, but the view is not. Call update() if you also want the view updated.
+         *
+         * @param fromAddress
+         */
+        void updateMnemonics(Z80::UnsignedWord fromAddress);
+
+        /**
+         * Scroll the view if necessary so that a given address is visible.
+         *
+         * @param address
+         */
+        void scrollToAddress(Z80::UnsignedWord address);
+
+        /**
+         * Scroll the view if necessary so that the current PC is visible.
+         */
+        void scrollToPc()
+        {
+            scrollToAddress(pc());
+        }
+
+        /**
+         * Set the current PC in the disassembly.
+         *
+         * The current PC can be visibly indicated to aid debugging.
+         *
+         * @param pc
+         */
+        void setPc(Z80::UnsignedWord pc);
+
+        /**
+         * Fetch the current PC in the disassembly.
+         *
+         * @param pc
+         */
+        [[nodiscard]] Z80::UnsignedWord pc() const;
+
+        /**
+         * Determine whether the current PC is being indicated in the disassembly.
+         *
+         * @return
+         */
+        bool pcIndicatorEnabled() const;
+
+        /**
+         * Show or hide the indicator for the current PC.
+         *
+         * @param enabled
+         */
+        void enablePcIndicator(bool enabled = true);
+
+        void disablePcIndicator()
+        {
+            enablePcIndicator(false);
+        }
 
         QWidget * takeWidget() = delete;
         void  setWidget(QWidget *) = delete;
-
-    private:
-        using Disassembler = ::Z80::Assembly::Disassembler;
-
-        Disassembler m_disassembler;
     };
 }
 

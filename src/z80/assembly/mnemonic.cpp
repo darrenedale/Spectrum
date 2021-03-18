@@ -172,43 +172,43 @@ std::string std::to_string(const Instruction & instruction)
             return "JP";
 
         case Instruction::JPNZ:
-            return "JPNZ";
+            return "JP NZ";
 
         case Instruction::JPZ:
-            return "JPZ";
+            return "JP Z";
 
         case Instruction::JPNC:
-            return "JPNC";
+            return "JP NC";
 
         case Instruction::JPC:
-            return "JPC";
+            return "JP C";
 
         case Instruction::JPPO:
-            return "JPPO";
+            return "JP PO";
 
         case Instruction::JPPE:
-            return "JPPE";
+            return "JP PE";
 
         case Instruction::JPP:
-            return "JPP";
+            return "JP P";
 
         case Instruction::JPM:
-            return "JPM";
+            return "JP M";
 
         case Instruction::JR:
             return "JR";
 
         case Instruction::JRNZ:
-            return "JRNZ";
+            return "JR NZ";
 
         case Instruction::JRZ:
-            return "JRZ";
+            return "JR Z";
 
         case Instruction::JRNC:
-            return "JRNC";
+            return "JR NC";
 
         case Instruction::JRC:
-            return "JRC";
+            return "JR C";
 
         case Instruction::DJNZ:
             return "DJNZ";

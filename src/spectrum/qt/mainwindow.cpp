@@ -92,7 +92,12 @@ MainWindow::MainWindow(QWidget * parent)
     m_spectrum.setJoystickInterface(&m_joystick);
     m_spectrum.setKeyboard(&m_keyboard);
 	m_spectrum.addDisplayDevice(&m_display);
-	setCentralWidget(&m_displayWidget);
+
+	// reset() ensures the ROM is loaded, which we want for the first disassembly and memory view in the debug window
+    m_spectrum.reset();
+    m_debugWindow.updateStateDisplay();
+
+    setCentralWidget(&m_displayWidget);
 
 	connect(&m_spectrumThread, &Thread::paused, this, &MainWindow::threadPaused);
 	connect(&m_spectrumThread, &Thread::resumed, this, &MainWindow::threadResumed);

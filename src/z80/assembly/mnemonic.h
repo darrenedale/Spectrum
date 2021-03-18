@@ -31,7 +31,6 @@ namespace Z80::Assembly
 
     struct Mnemonic
     {
-
         Instruction instruction;
         std::vector<Operand> operands;
         UnsignedByte size = 1;                  // size in bytes of the instruction
