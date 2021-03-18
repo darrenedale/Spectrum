@@ -26,12 +26,12 @@ namespace
     }
 }
 
-Disassembler::Mnemonics Disassembler::disassembleFrom(int address) const
+Disassembler::Mnemonics Disassembler::disassembleFrom(int address, int maxCount) const
 {
     static UnsignedByte overflowBuffer[4];
     Mnemonics ret;
 
-    while (address < m_memorySize) {
+    while (0 < maxCount && address < m_memorySize) {
         UnsignedByte * machineCode = m_memory + address;
         auto bytesAvailable = m_memorySize - address;
 
@@ -44,6 +44,10 @@ Disassembler::Mnemonics Disassembler::disassembleFrom(int address) const
         auto mnemonic = disassembleOne(machineCode);
         address += mnemonic.size;
         ret.push_back(std::move(mnemonic));
+
+        if (0 < maxCount) {
+            --maxCount;
+        }
     }
 
     return ret;
@@ -5867,8 +5871,9 @@ Mnemonic Disassembler::disassembleOneDdOrFd(Register16 reg, const Z80::UnsignedB
                 Instruction::LD,
                 {
                         { .mode = AddressingMode::Indexed, .indexedAddress = { .register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)),}, },
+                        { .mode = AddressingMode::Immediate, .unsignedByte = *(machineCode + 1), },
                 },
-                3,
+                4,
             };
 
         case Z80__DD_OR_FD__JR__C__d:                // 0x38
@@ -6336,7 +6341,6 @@ Mnemonic Disassembler::disassembleOneDdOrFd(Register16 reg, const Z80::UnsignedB
             return mnemonic;
         }
     }
-
 
     std::cerr << "disassembly of opcode " << (Register16::IX == reg ? "0xdd " : "0xfd ") << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(*machineCode) << " not yet implemented\n" << std::setfill('0') << std::dec;
     return {
