@@ -19,11 +19,14 @@ namespace Spectrum
     :	public Computer<>
     {
 		public:
+            using DisplayDevices = std::vector<DisplayDevice *>;
+
             static constexpr const int DisplayMemoryOffset = 0x4000;
             static constexpr const int DisplayMemorySize = 6912;
             static constexpr const int DefaultClockSpeed = 3500000;
 
 			explicit Spectrum(int = 65536, uint8_t * mem = nullptr);
+			explicit Spectrum(const std::string & romFile, int = 65536, uint8_t * mem = nullptr);
 			~Spectrum() override;
 
 			inline Z80 * z80() const
@@ -36,12 +39,12 @@ namespace Spectrum
 				return m_interruptCycleCounter;
 			}
 
-			std::uint8_t * displayMemory() const
+			[[nodiscard]] std::uint8_t * displayMemory() const
 			{
 				return memory() + DisplayMemoryOffset;
 			}
 
-			int displayMemorySize() const
+			[[nodiscard]] int displayMemorySize() const
 			{
 				return DisplayMemorySize;
 			}
@@ -66,25 +69,15 @@ namespace Spectrum
              *
              * @return
              */
-            bool executionSpeedConstrained() const
+            [[nodiscard]] bool executionSpeedConstrained() const
             {
 			    return m_constrainExecutionSpeed;
             }
 
 			void addDisplayDevice(DisplayDevice * dev);
+			void removeDisplayDevice(DisplayDevice * dev);
 
-			void removeDisplayDevice(DisplayDevice * dev)
-			{
-			    const auto pos = std::find(m_displayDevices.begin(), m_displayDevices.end(), dev);
-
-			    if (pos == m_displayDevices.end()) {
-			        return;
-			    }
-
-				m_displayDevices.erase(pos, pos);
-			}
-
-			[[nodiscard]] const std::vector<DisplayDevice *> & displayDevices() const
+			[[nodiscard]] const DisplayDevices & displayDevices() const
             {
 			    return m_displayDevices;
             }
@@ -106,14 +99,15 @@ namespace Spectrum
 
 		protected:
 	        void clearMemory() const;
-			bool loadRom(const std::string & fileName) const;
+			bool loadRom(const std::string & fileName);
 
 		private:
 			int m_interruptCycleCounter;
 			bool m_constrainExecutionSpeed;
-			std::vector<DisplayDevice *> m_displayDevices;
+            DisplayDevices m_displayDevices;
             Keyboard * m_keyboard;
             JoystickInterface * m_joystick;
+            std::string m_romFile;
     };
 }
 

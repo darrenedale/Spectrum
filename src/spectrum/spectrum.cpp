@@ -2,9 +2,9 @@
 
 #include <cstring>
 #include <iostream>
+#include <fstream>
 #include <chrono>
-
-#include <QThread>
+#include <thread>
 
 #include "displaydevice.h"
 #include "joystickinterface.h"
@@ -18,23 +18,31 @@ namespace
 
 namespace Spectrum
 {
-    Spectrum::Spectrum(int memsize, uint8_t * mem)
-    : Computer(memsize, mem),
+    Spectrum::Spectrum(const std::string & romFile, int memSize, uint8_t * mem)
+    : Spectrum(memSize, mem)
+    {
+        (void) loadRom(romFile);
+    }
+
+    Spectrum::Spectrum(int memSize, uint8_t * mem)
+    : Computer(memSize, mem),
       m_interruptCycleCounter(0),
       m_displayDevices(),
       m_constrainExecutionSpeed(true),
       m_keyboard(nullptr),
       m_joystick(nullptr)
     {
-        Cpu * z80 = new Z80(memory(), memorySize());
+        auto * z80 = new Z80(memory(), memorySize());
         z80->setClockSpeed(DefaultClockSpeed);
         addCpu(z80);
+        clearMemory();
+        z80->reset();
     }
 
     Spectrum::~Spectrum()
     {
         // base class takes care of RAM
-        Cpu * cpu = z80();
+        auto * cpu = z80();
         removeCpu(cpu);
         delete cpu;
     }
@@ -43,14 +51,15 @@ namespace Spectrum
     {
         clearMemory();
 
-        if (!loadRom("spectrum48.rom")) {
+        // TODO load the ROM file
+        if (!loadRom(m_romFile)) {
             return;
         }
 
         refreshDisplays();
 
         // fetch the CPU to work with
-        auto * z80 = dynamic_cast<Z80 *>(cpu());
+        auto * z80 = this->z80();
 
         if (!z80) {
             std::cerr << "cpu is not a Z80.\n";
@@ -82,12 +91,12 @@ namespace Spectrum
 
         static steady_clock::time_point lastInterrupt = steady_clock::now();
         // TODO spectrum refresh is not exactly 50FPS
-        int interruptThreshold = z80()->clockSpeed() / 50;
+        int interruptThreshold = static_cast<int>(z80()->clockSpeed() / 50);
 
         while (0 < instructionCount) {
             m_interruptCycleCounter += z80()->fetchExecuteCycle();
 
-            // check nmi counter against threshold and raise NMI in CPU if required
+            // check interrupt counter against threshold and raise NMI in CPU if required
             if (m_interruptCycleCounter > interruptThreshold) {
                 z80()->interrupt();
                 refreshDisplays();
@@ -110,31 +119,24 @@ namespace Spectrum
         }
     }
 
-    bool Spectrum::loadRom(const std::string & fileName) const
+    bool Spectrum::loadRom(const std::string & fileName)
     {
-        // load ROM into lowest 16K of RAM
-        uint8_t * rom = memory();
-        std::FILE * romFile = std::fopen(fileName.c_str(), "rb");
+        static constexpr const std::size_t RomFileSize = 0x4000;
+        std::ifstream inFile(fileName);
 
-        if (!romFile) {
+        if (!inFile) {
             std::cerr << "spectrum ROM file \"" << fileName << "\" could not be opened.\n";
             return false;
         }
 
-        std::size_t bytesToRead = 16384;
+        inFile.read(reinterpret_cast<std::ifstream::char_type *>(memory()), RomFileSize);
 
-        while (0 < bytesToRead && !std::feof(romFile)) {
-            auto bytesRead = std::fread(rom, sizeof(uint8_t), bytesToRead, romFile);
-
-            if (0 == bytesRead) {
-                std::cerr << "failed to load spectrum ROM.\n";
-                return false;
-            }
-
-            rom += bytesRead;
-            bytesToRead -= bytesRead;
+        if (inFile.fail()) {
+            std::cerr << "failed to load spectrum ROM file \"" << fileName << "\".\n";
+            return false;
         }
 
+        m_romFile = fileName;
         return true;
     }
 
@@ -177,5 +179,16 @@ namespace Spectrum
         if (cpu) {
             cpu->connectIODevice(dev);
         }
+    }
+
+    void Spectrum::removeDisplayDevice(DisplayDevice * dev)
+    {
+        const auto pos = std::find(m_displayDevices.begin(), m_displayDevices.end(), dev);
+
+        if (pos == m_displayDevices.end()) {
+            return;
+        }
+
+        m_displayDevices.erase(pos, pos);
     }
 }
