@@ -840,6 +840,15 @@ using SignedWord = ::Z80::SignedWord;
 namespace
 {
     constexpr const int DefaultClockSpeed = 3500000;
+
+    inline bool isEvenParity(UnsignedByte value)
+    {
+        static bool parity[256] = {
+#include "includes/8bit_parity.inc"
+        };
+
+        return parity[value];
+    }
 }
 
 constexpr const int Z80::Z80::PlainOpcodeSizes[256] = {
@@ -892,15 +901,6 @@ Z80::Z80::Z80(unsigned char * mem, int memSize)
 }
 
 Z80::Z80::~Z80() = default;
-
-bool Z80::Z80::isEvenParity(UnsignedByte value)
-{
-	static bool parity[256] = {
-#include "includes/8bit_parity.inc"
-	};
-
-	return parity[value];
-}
 
 bool Z80::Z80::connectIODevice(IODevice * device)
 {
@@ -1280,7 +1280,7 @@ void Z80::Z80::executePlainInstruction(const UnsignedByte * instruction, bool * 
 			break;
 
 		case Z80__PLAIN__JR__d:						// 0x18
-			m_registers.pc += SignedByte(*(instruction + 1));
+			m_registers.pc += static_cast<SignedByte>(*(instruction + 1));
 			Z80_USE_JUMP_CYCLE_COST;
 			break;
 
@@ -1327,7 +1327,6 @@ void Z80::Z80::executePlainInstruction(const UnsignedByte * instruction, bool * 
 		case Z80__PLAIN__JR__NZ__d:					// 0x20
 			if (!Z80_FLAG_Z_ISSET) {
 				m_registers.pc += static_cast<SignedByte>(*(instruction + 1));
-//				Z80_DONT_UPDATE_PC;
 				Z80_USE_JUMP_CYCLE_COST;
 			}
 			break;
@@ -1399,7 +1398,6 @@ void Z80::Z80::executePlainInstruction(const UnsignedByte * instruction, bool * 
 		case Z80__PLAIN__JR__Z__d:					// 0x28
 			if (Z80_FLAG_Z_ISSET) {
 				m_registers.pc += static_cast<SignedByte>(*(instruction + 1));
-//				Z80_DONT_UPDATE_PC;
 				Z80_USE_JUMP_CYCLE_COST;
 			}
 			break;
@@ -1443,7 +1441,6 @@ void Z80::Z80::executePlainInstruction(const UnsignedByte * instruction, bool * 
 		case Z80__PLAIN__JR__NC__d:					// 0x30
 			if (!Z80_FLAG_C_ISSET) {
 				m_registers.pc += static_cast<SignedByte>(*(instruction + 1));
-//				Z80_DONT_UPDATE_PC;
 				Z80_USE_JUMP_CYCLE_COST;
 			}
 			break;
@@ -2828,7 +2825,7 @@ void Z80::Z80::executeCbInstruction(const UnsignedByte * instruction, int * tSta
 			break;
 
 		case Z80__CB__BIT__2__INDIRECT_HL:		/* 0xcb 0x56 */
-			Z80__BIT__N__INDIRECT_REG16(2, m_registers.b);
+			Z80__BIT__N__INDIRECT_REG16(2, m_registers.hl);
 			break;
 
 		case Z80__CB__BIT__2__A:		/* 0xcb 0x57 */

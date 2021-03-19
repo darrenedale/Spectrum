@@ -78,8 +78,6 @@ namespace Z80
             return swapByteOrder(v);
         }
 
-        static inline bool isEvenParity(UnsignedByte v);
-
         [[nodiscard]] bool isValid() const
         {
             return m_memory;
