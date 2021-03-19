@@ -25,6 +25,8 @@
 
 using namespace Spectrum::Qt;
 
+using InterruptMode = ::Z80::InterruptMode;
+
 /**
  * TODO refactor the rough snapshot read methods into helper classes, and add buffer overflow checking
  */
@@ -293,7 +295,7 @@ void MainWindow::loadSnaSnapshot(const QString & fileName)
         *reg = *(byte++);
     }
 
-    cpu.setInterruptMode(static_cast<Z80::Z80::InterruptMode>(*(byte++) & 0x03));
+    cpu.setInterruptMode(static_cast<InterruptMode>(*(byte++) & 0x03));
     m_display.setBorder(static_cast<Colour>(*(byte++) & 0x07));
     std::memcpy(ram, byte, 0xc000);
 
@@ -464,7 +466,7 @@ void MainWindow::loadZ80Snapshot(const QString & fileName)
     // bits 0 and 1 contain the interrupt mode
     //
     // for the meaning of other bits, see https://worldofspectrum.org/faq/reference/z80format.htm
-    cpu.setInterruptMode(static_cast<Z80::Z80::InterruptMode>(featureFlags & 0x03));
+    cpu.setInterruptMode(static_cast<InterruptMode>(featureFlags & 0x03));
 
     if (Format::Version1 != format) {
         std::cerr << "skipping extended header length word, we already know it\n";
@@ -706,7 +708,7 @@ void MainWindow::loadSpSnapshot(const QString & fileName)
     cpu.setIff2(header.status & 0x0004);
 
     // bit 1 = IM
-    cpu.setInterruptMode(header.status & 0x0002 ? ::Z80::Z80::InterruptMode::IM2 : ::Z80::Z80::InterruptMode::IM1);
+    cpu.setInterruptMode(header.status & 0x0002 ? ::InterruptMode::IM2 : ::InterruptMode::IM1);
 
     // bit 4 = interrupt pending
     if (header.status & 0x0010) {

@@ -70,7 +70,7 @@ namespace Spectrum
         Colour border;
         bool iff1;
         bool iff2;
-        Z80::Z80::InterruptMode im;
+        ::Z80::InterruptMode im;
 
         explicit Snapshot(const Spectrum &);
         explicit Snapshot(Z80::UnsignedByte * memory = nullptr, int memorySize = 0xffff);

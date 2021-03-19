@@ -9,6 +9,8 @@
 
 using namespace Spectrum;
 
+using InterruptMode = ::Z80::InterruptMode;
+
 Snapshot::Snapshot(const Spectrum & spectrum)
 : Snapshot(spectrum.z80()->registers(), spectrum.memory(), spectrum.memorySize())
 {
@@ -32,7 +34,7 @@ Snapshot::Snapshot(const ::Z80::Registers & registers, Z80::UnsignedByte * memor
   m_memory{nullptr, memorySize},
   iff1(false),
   iff2(false),
-  im(Z80::Z80::InterruptMode::IM0),
+  im(InterruptMode::IM0),
   border(Colour::White)
 {
     copyRegisters(registers);

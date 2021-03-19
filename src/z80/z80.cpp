@@ -8,7 +8,7 @@
  * This emulation is based on interpretation. There is no dynamic compilation and no cross-assembly.
  *
  * \todo
- * - interrupt modes 0 multi-byte instructions
+ * - interrupt mode 0 multi-byte instructions
  */
 #include <iostream>
 #include <iomanip>
@@ -19,10 +19,6 @@
 #include "invalidopcode.h"
 #include "invalidinterruptmode.h"
 #include "opcodes.h"
-
-// cast values to Z80 data types
-#define Z80_CUBYTE(v) static_cast<UnsignedByte>((v) & 0x00ff)
-#define Z80_CUWORD(v) static_cast<UnsignedWord>((v) & 0x0000ffff)
 
 #define Z80_FLAG_C_SET (m_registers.f |= Z80_FLAG_C_MASK)
 #define Z80_FLAG_Z_SET (m_registers.f |= Z80_FLAG_Z_MASK)
@@ -163,9 +159,9 @@
     Z80_FLAG_P_UPDATE(tmpOverflow == 1 || tmpOverflow == 6);\
 }
 
-/*
- * macros implementing common instruction semantics using different combinations of like operands
- */
+//
+//macros implementing common instruction semantics using different combinations of like operands
+//
 
 // data loading instructions
 //
@@ -1123,7 +1119,6 @@ int Z80::Z80::fetchExecuteCycle()
 	execute(m_memory + m_registers.pc, true, &tStates, &size);
 	return tStates;
 }
-
 
 void Z80::Z80::executePlainInstruction(const UnsignedByte * instruction, bool * doPc, int * tStates, int * size)
 {
@@ -2472,7 +2467,6 @@ void Z80::Z80::executePlainInstruction(const UnsignedByte * instruction, bool * 
 	}
 }
 
-
 // no 0xcb instructions directly modify the PC so we don't need to receive the (bool *) doPc parameter to indicate this
 void Z80::Z80::executeCbInstruction(const UnsignedByte * instruction, int * tStates, int * size)
 {
@@ -3520,7 +3514,6 @@ void Z80::Z80::executeCbInstruction(const UnsignedByte * instruction, int * tSta
 	}
 }
 
-
 void Z80::Z80::executeEdInstruction(const UnsignedByte * instruction, bool * doPc, int * tStates, int * size)
 {
 	bool useJumpCycleCost = false;
@@ -4387,7 +4380,6 @@ void Z80::Z80::executeEdInstruction(const UnsignedByte * instruction, bool * doP
 	}
 }
 
-
 void Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, const UnsignedByte * instruction, bool * doPc, int * tStates, int * size)
 {
 	bool useJumpCycleCost = false;
@@ -4493,11 +4485,9 @@ void Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, const UnsignedByte *
 			Z80__LD__REG8__REG8(m_registers.c, *regHigh);
 			break;
 
-
 		case Z80__DD_OR_FD__LD__C__IXL_OR_IYL: /*  0x4d */
 			Z80__LD__REG8__REG8(m_registers.c, *regLow);
 			break;
-
 
 		case Z80__DD_OR_FD__LD__C__INDIRECT_IX_d_OR_IY_d: /*  0x4e */
 			Z80__LD__REG8__INDIRECT_REG16_D(m_registers.c, reg, SignedByte(*(instruction + 1)));
@@ -4507,11 +4497,9 @@ void Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, const UnsignedByte *
 			Z80__LD__REG8__REG8(m_registers.d, *regHigh);
 			break;
 
-
 		case Z80__DD_OR_FD__LD__D__IXL_OR_IYL: /*  0x55 */
 			Z80__LD__REG8__REG8(m_registers.d, *regLow);
 			break;
-
 
 		case Z80__DD_OR_FD__LD__D__INDIRECT_IX_d_OR_IY_d: /*  0x56 */
 			Z80__LD__REG8__INDIRECT_REG16_D(m_registers.d, reg, SignedByte(*(instruction + 1)));
@@ -4520,7 +4508,6 @@ void Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, const UnsignedByte *
 		case Z80__DD_OR_FD__LD__E__IXH_OR_IYH: /*  0x5c */
 			Z80__LD__REG8__REG8(m_registers.e, *regHigh);
 			break;
-
 
 		case Z80__DD_OR_FD__LD__E__IXL_OR_IYL: /*  0x5d */
 			Z80__LD__REG8__REG8(m_registers.e, *regLow);
@@ -4995,7 +4982,6 @@ void Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, const UnsignedByte *
 	    *size = DdOrFdOpcodeSizes[*instruction];
 	}
 }
-
 
 void Z80::Z80::executeDdcbOrFdcbInstruction(UnsignedWord & reg, const UnsignedByte * instruction, int * tStates, int * size)
 {

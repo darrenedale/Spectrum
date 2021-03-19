@@ -23,6 +23,8 @@
 
 using namespace Spectrum::Qt;
 
+using InterruptMode = ::Z80::InterruptMode;
+
 DebugWindow::DebugWindow(QWidget * parent )
 : DebugWindow(nullptr, parent)
 {
@@ -322,7 +324,7 @@ void DebugWindow::connectWidgets()
         assert(m_thread);
         auto * cpu = m_thread->spectrum().z80();
         assert(cpu);
-        cpu->setInterruptMode(static_cast<::Z80::Z80::InterruptMode>(value));
+        cpu->setInterruptMode(static_cast<InterruptMode>(value));
     });
 }
 

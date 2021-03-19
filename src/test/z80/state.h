@@ -14,7 +14,7 @@ namespace Test::Z80
 {
     using UnsignedByte = ::Z80::UnsignedByte;
     using UnsignedWord = ::Z80::UnsignedWord;
-    using InterruptMode = ::Z80::Z80::InterruptMode;
+    using InterruptMode = ::Z80::InterruptMode;
 
     struct State
     {

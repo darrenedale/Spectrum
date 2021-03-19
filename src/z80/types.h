@@ -31,6 +31,13 @@ namespace Z80
         AShadow, FShadow, BShadow, CShadow, DShadow, EShadow, HShadow, LShadow
     };
 
+    enum class InterruptMode : std::uint8_t
+    {
+        IM0 = 0,
+        IM1,
+        IM2,
+    };
+
     constexpr const std::endian HostByteOrder = std::endian::native;
     constexpr const std::endian Z80ByteOrder = std::endian::little;
 }

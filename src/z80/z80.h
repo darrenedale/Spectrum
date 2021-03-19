@@ -33,7 +33,8 @@ namespace Z80
     class IODevice;
 
     class Z80
-    : public Cpu {
+    : public Cpu
+    {
     public:
         using UnsignedByte = ::Z80::UnsignedByte;
         using UnsignedWord = ::Z80::UnsignedWord;
@@ -42,21 +43,14 @@ namespace Z80
         using Register8 = ::Z80::Register8;
         using Register16 = ::Z80::Register16;
 
-        enum class InterruptMode : std::uint8_t
-        {
-            IM0 = 0,
-            IM1,
-            IM2,
-        };
-
         static constexpr const std::endian Z80ByteOrder = std::endian::little;
         static constexpr const std::endian HostByteOrder = std::endian::native;
 
         Z80(UnsignedByte * memory, int memorySize);
-
         ~Z80() override;
 
-        static inline UnsignedWord swapByteOrder(UnsignedWord value) {
+        static inline UnsignedWord swapByteOrder(UnsignedWord value)
+        {
             return (((value & 0xff00) >> 8) & 0x00ff) | (((value & 0x00ff) << 8) & 0xff00);
         }
 
@@ -83,11 +77,13 @@ namespace Z80
             return m_memory;
         }
 
-        [[nodiscard]] inline int ramSize() const {
+        [[nodiscard]] inline int ramSize() const
+        {
             return m_memorySize;
         }
 
-        [[nodiscard]] inline UnsignedByte * memory() const {
+        [[nodiscard]] inline UnsignedByte * memory() const
+        {
             return m_memory;
         }
 
@@ -102,6 +98,10 @@ namespace Z80
             return m_registers;
         }
 
+        //
+        // register values in host byte order
+        //
+        
         /**
          * Retrieve the value of a register pair in host byte order.
          *
@@ -129,210 +129,290 @@ namespace Z80
         [[nodiscard]] UnsignedByte registerValue(Register8 reg) const;
 
         /* 16-bit registers */
-        inline UnsignedWord afRegisterValue() const {
-            return registerValue(Register16::AF);
+        [[nodiscard]] inline UnsignedWord afRegisterValue() const
+        {
+            return m_registers.af;
         }
 
-        inline UnsignedWord bcRegisterValue() const {
-            return registerValue(Register16::BC);
+        [[nodiscard]] inline UnsignedWord bcRegisterValue() const
+        {
+            return m_registers.bc;
         }
 
-        inline UnsignedWord deRegisterValue() const {
-            return registerValue(Register16::DE);
+        [[nodiscard]] inline UnsignedWord deRegisterValue() const
+        {
+            return m_registers.de;
         }
 
-        inline UnsignedWord hlRegisterValue() const {
-            return registerValue(Register16::HL);
+        [[nodiscard]] inline UnsignedWord hlRegisterValue() const
+        {
+            return m_registers.hl;
         }
 
-        inline UnsignedWord ixRegisterValue() const {
-            return registerValue(Register16::IX);
+        [[nodiscard]] inline UnsignedWord ixRegisterValue() const
+        {
+            return m_registers.ix;
         }
 
-        inline UnsignedWord iyRegisterValue() const {
-            return registerValue(Register16::IY);
+        [[nodiscard]] inline UnsignedWord iyRegisterValue() const
+        {
+            return m_registers.iy;
         }
 
-        /* stack pointer */
-        inline UnsignedWord sp() const {
-            return registerValue(Register16::SP);
+        /**
+         * The stack pointer in host byte order.
+         */
+        [[nodiscard]] inline UnsignedWord sp() const
+        {
+            return m_registers.sp;
         }
 
-        inline UnsignedWord stackPointer() const {
+        /**
+         * The stack pointer in host byte order.
+         */
+        [[nodiscard]] inline UnsignedWord stackPointer() const
+        {
             return sp();
         }
 
-        /* program counter */
-        inline UnsignedWord pc() const {
-            return registerValue(Register16::PC);
+        /**
+         * The program counter in host byte order.
+         */
+        [[nodiscard]] inline UnsignedWord pc() const
+        {
+            return m_registers.pc;
         }
 
-        inline UnsignedWord programCounter() const {
+        /**
+         * The program counter in host byte order.
+         */
+        [[nodiscard]] inline UnsignedWord programCounter() const
+        {
             return pc();
         }
 
-        inline UnsignedWord afShadowRegisterValue() const {
-            return registerValue(Register16::AFShadow);
+        //
+        // shadow registers in host byte order
+        //
+        
+        [[nodiscard]] inline UnsignedWord afShadowRegisterValue() const
+        {
+            return m_registers.afShadow;
         }
 
-        inline UnsignedWord bcShadowRegisterValue() const {
-            return registerValue(Register16::BCShadow);
+        [[nodiscard]] inline UnsignedWord bcShadowRegisterValue() const
+        {
+            return m_registers.bcShadow;
         }
 
-        inline UnsignedWord deShadowRegisterValue() const {
-            return registerValue(Register16::DEShadow);
+        [[nodiscard]] inline UnsignedWord deShadowRegisterValue() const
+        {
+            return m_registers.deShadow;
         }
 
-        inline UnsignedWord hlShadowRegisterValue() const {
-            return registerValue(Register16::HLShadow);
+        [[nodiscard]] inline UnsignedWord hlShadowRegisterValue() const
+        {
+            return m_registers.hlShadow;
         }
 
-        inline UnsignedWord afRegisterValueZ80() const {
+        //
+        // register values in Z80 byte order
+        //
+        
+        [[nodiscard]] inline UnsignedWord afRegisterValueZ80() const
+        {
             return registerValueZ80(Register16::AF);
         }
 
-        inline UnsignedWord bcRegisterValueZ80() const {
+        [[nodiscard]] inline UnsignedWord bcRegisterValueZ80() const
+        {
             return registerValueZ80(Register16::BC);
         }
 
-        inline UnsignedWord deRegisterValueZ80() const {
+        [[nodiscard]] inline UnsignedWord deRegisterValueZ80() const
+        {
             return registerValueZ80(Register16::DE);
         }
 
-        inline UnsignedWord hlRegisterValueZ80() const {
+        [[nodiscard]] inline UnsignedWord hlRegisterValueZ80() const
+        {
             return registerValueZ80(Register16::HL);
         }
 
-        inline UnsignedWord ixRegisterValueZ80() const {
+        [[nodiscard]] inline UnsignedWord ixRegisterValueZ80() const
+        {
             return registerValueZ80(Register16::IX);
         }
 
-        inline UnsignedWord iyRegisterValueZ80() const {
+        [[nodiscard]] inline UnsignedWord iyRegisterValueZ80() const
+        {
             return registerValueZ80(Register16::IY);
         }
 
-        /* stack pointer */
-        inline UnsignedWord spZ80() const {
+        /**
+         * The stack pointer in Z80 byte order.
+         */
+        [[nodiscard]] inline UnsignedWord spZ80() const
+        {
             return registerValueZ80(Register16::SP);
         }
 
-        inline UnsignedWord stackPointerZ80() const {
+        /**
+         * The stack pointer in Z80 byte order.
+         */
+        [[nodiscard]] inline UnsignedWord stackPointerZ80() const
+        {
             return spZ80();
         }
 
-        /* program counter */
-        inline UnsignedWord pcZ80() const {
+        /**
+         * The program counter in Z80 byte order.
+         */
+        [[nodiscard]] inline UnsignedWord pcZ80() const
+        {
             return registerValueZ80(Register16::PC);
         }
 
-        inline UnsignedWord programCounterZ80() const {
+        /**
+         * The program counter in Z80 byte order.
+         */
+        [[nodiscard]] inline UnsignedWord programCounterZ80() const
+        {
             return pcZ80();
         }
 
-        inline UnsignedWord afShadowRegisterValueZ80() const {
+        [[nodiscard]] inline UnsignedWord afShadowRegisterValueZ80() const
+        {
             return registerValueZ80(Register16::AFShadow);
         }
 
-        inline UnsignedWord bcShadowRegisterValueZ80() const {
+        [[nodiscard]] inline UnsignedWord bcShadowRegisterValueZ80() const
+        {
             return registerValueZ80(Register16::BCShadow);
         }
 
-        inline UnsignedWord deShadowRegisterValueZ80() const {
+        [[nodiscard]] inline UnsignedWord deShadowRegisterValueZ80() const
+        {
             return registerValueZ80(Register16::DEShadow);
         }
 
-        inline UnsignedWord hlShadowRegisterValueZ80() const {
+        [[nodiscard]] inline UnsignedWord hlShadowRegisterValueZ80() const
+        {
             return registerValueZ80(Register16::HLShadow);
         }
 
-        /* 8-bit registers */
-        inline UnsignedByte aRegisterValue() const {
+        //
+        // 8-bit registers
+        //
 
-            return registerValue(Register8::A);
+        [[nodiscard]] inline UnsignedByte aRegisterValue() const
+        {
+            return m_registers.a;
         }
 
-        inline UnsignedByte fRegisterValue() const {
-            return registerValue(Register8::F);
+        [[nodiscard]] inline UnsignedByte fRegisterValue() const
+        {
+            return m_registers.f;
         }
 
-        inline UnsignedByte bRegisterValue() const {
-            return registerValue(Register8::B);
+        [[nodiscard]] inline UnsignedByte bRegisterValue() const
+        {
+            return m_registers.b;
         }
 
-        inline UnsignedByte cRegisterValue() const {
-            return registerValue(Register8::C);
+        [[nodiscard]] inline UnsignedByte cRegisterValue() const
+        {
+            return m_registers.c;
         }
 
-        inline UnsignedByte dRegisterValue() const {
-            return registerValue(Register8::D);
+        [[nodiscard]] inline UnsignedByte dRegisterValue() const
+        {
+            return m_registers.d;
         }
 
-        inline UnsignedByte eRegisterValue() const {
-            return registerValue(Register8::E);
+        [[nodiscard]] inline UnsignedByte eRegisterValue() const
+        {
+            return m_registers.e;
         }
 
-        inline UnsignedByte hRegisterValue() const {
-            return registerValue(Register8::H);
+        [[nodiscard]] inline UnsignedByte hRegisterValue() const
+        {
+            return m_registers.h;
         }
 
-        inline UnsignedByte lRegisterValue() const {
-            return registerValue(Register8::L);
+        [[nodiscard]] inline UnsignedByte lRegisterValue() const
+        {
+            return m_registers.l;
         }
 
-        inline UnsignedByte iRegisterValue() const {
-            return registerValue(Register8::L);
+        [[nodiscard]] inline UnsignedByte iRegisterValue() const
+        {
+            return m_registers.i;
         }
 
-        inline UnsignedByte rRegisterValue() const {
-            return registerValue(Register8::R);
+        [[nodiscard]] inline UnsignedByte rRegisterValue() const
+        {
+            return m_registers.r;
         }
 
-        inline UnsignedByte ixhRegisterValue() const {
-            return registerValue(Register8::IXH);
+        [[nodiscard]] inline UnsignedByte ixhRegisterValue() const
+        {
+            return m_registers.ixh;
         }
 
-        inline UnsignedByte ixlRegisterValue() const {
-            return registerValue(Register8::IXL);
+        [[nodiscard]] inline UnsignedByte ixlRegisterValue() const
+        {
+            return m_registers.ixl;
         }
 
-        inline UnsignedByte iyhRegisterValue() const {
-            return registerValue(Register8::IYH);
+        [[nodiscard]] inline UnsignedByte iyhRegisterValue() const
+        {
+            return m_registers.iyh;
         }
 
-        inline UnsignedByte iylRegisterValue() const {
-            return registerValue(Register8::IYL);
+        [[nodiscard]] inline UnsignedByte iylRegisterValue() const
+        {
+            return m_registers.iyl;
         }
 
-        inline UnsignedByte aShadowRegisterValue() const {
-            return registerValue(Register8::AShadow);
+        [[nodiscard]] inline UnsignedByte aShadowRegisterValue() const
+        {
+            return m_registers.aShadow;
         }
 
-        inline UnsignedByte fShadowRegisterValue() const {
-            return registerValue(Register8::FShadow);
+        [[nodiscard]] inline UnsignedByte fShadowRegisterValue() const
+        {
+            return m_registers.fShadow;
         }
 
-        inline UnsignedByte bShadowRegisterValue() const {
-            return registerValue(Register8::BShadow);
+        [[nodiscard]] inline UnsignedByte bShadowRegisterValue() const
+        {
+            return m_registers.bShadow;
         }
 
-        inline UnsignedByte cShadowRegisterValue() const {
-            return registerValue(Register8::CShadow);
+        [[nodiscard]] inline UnsignedByte cShadowRegisterValue() const
+        {
+            return m_registers.cShadow;
         }
 
-        inline UnsignedByte dShadowRegisterValue() const {
-            return registerValue(Register8::DShadow);
+        [[nodiscard]] inline UnsignedByte dShadowRegisterValue() const
+        {
+            return m_registers.dShadow;
         }
 
-        inline UnsignedByte eShadowRegisterValue() const {
-            return registerValue(Register8::EShadow);
+        [[nodiscard]] inline UnsignedByte eShadowRegisterValue() const
+        {
+            return m_registers.eShadow;
         }
 
-        inline UnsignedByte hShadowRegisterValue() const {
-            return registerValue(Register8::HShadow);
+        [[nodiscard]] inline UnsignedByte hShadowRegisterValue() const
+        {
+            return m_registers.hShadow;
         }
 
-        inline UnsignedByte lShadowRegisterValue() const {
-            return registerValue(Register8::LShadow);
+        [[nodiscard]] inline UnsignedByte lShadowRegisterValue() const
+        {
+            return m_registers.lShadow;
         }
 
         inline void setInterruptMode(InterruptMode mode)
@@ -340,7 +420,7 @@ namespace Z80
             m_interruptMode = mode;
         }
 
-        inline InterruptMode interruptMode() const
+        [[nodiscard]] inline InterruptMode interruptMode() const
         {
             return m_interruptMode;
         }
@@ -350,7 +430,8 @@ namespace Z80
             m_iff1 = iff;
         }
 
-        inline bool iff1() const {
+        [[nodiscard]] inline bool iff1() const
+        {
             return m_iff1;
         }
 
@@ -359,11 +440,15 @@ namespace Z80
             m_iff2 = iff;
         }
 
-        inline bool iff2() const {
+        [[nodiscard]] inline bool iff2() const
+        {
             return m_iff2;
         }
 
-        /* Register setters */
+        //
+        // Register setters
+        //
+
         /**
          * Set the value of a register using an unsigned word in host byte order.
          *
@@ -455,7 +540,10 @@ namespace Z80
             m_registers.hlShadow = value;
         }
 
+        //
         // set 16-bit register pairs using values in Z80 byte order
+        //
+
         inline void setAfZ80(UnsignedWord value)
         {
             m_registers.af = z80ToHostByteOrder(value);
@@ -516,7 +604,10 @@ namespace Z80
             m_registers.hlShadow = z80ToHostByteOrder(value);
         }
 
-        /* 8-bit Registers */
+        //
+        // 8-bit Registers
+        //
+
         inline void setA(UnsignedByte value)
         {
             m_registers.a = value;
@@ -616,7 +707,7 @@ namespace Z80
          * @tparam mask 
          * @return
          */
-        template <UnsignedByte mask>
+        template<UnsignedByte mask>
         [[nodiscard]] inline bool checkFlags() const
         {
             return mask == (m_registers.f & mask);
@@ -662,7 +753,7 @@ namespace Z80
             return checkFlags<Z80_FLAG_C_MASK>();
         }
 
-        template <UnsignedByte mask>
+        template<UnsignedByte mask>
         [[nodiscard]] inline bool checkShadowFlags() const
         {
             return m_registers.fShadow & mask;
@@ -837,7 +928,8 @@ namespace Z80
          */
         [[nodiscard]] UnsignedWord peekUnsignedWordZ80(int addr) const;
 
-        inline SignedByte peekSigned(int addr) const {
+        inline SignedByte peekSigned(int addr) const
+        {
             return static_cast<SignedByte>(peekUnsigned(addr));
         }
 
@@ -847,7 +939,8 @@ namespace Z80
          * @param addr The address to write the 8-bit value. The address is given in host byte order.
          * @param value
          */
-        inline void pokeUnsigned(int addr, UnsignedByte value) {
+        inline void pokeUnsigned(int addr, UnsignedByte value)
+        {
             if (addr < 0 || addr > m_memorySize) {
                 return;
             }
@@ -874,36 +967,39 @@ namespace Z80
         void reset();
 
         bool connectIODevice(IODevice * device);
+
         void disconnectIODevice(IODevice * device);
 
         void nmi();
+
         void interrupt(UnsignedByte data = 0x00);
 
-        virtual void execute(const UnsignedByte *instruction, bool doPc = true, int *tStates = 0, int *size = 0);
+        virtual void execute(const UnsignedByte * instruction, bool doPc = true, int * tStates = 0, int * size = 0);
 
         // fetches and executes a single instruction, returns the number of t-states
         virtual int fetchExecuteCycle();
 
     protected:
         virtual void handleNmi();
+
         virtual int handleInterrupt();
 
         // doPc is altered to be false if the instruction is a jump that is taken; tStates is filled with clock cycles
         // consumed; size is filled with byte size of instruction and operands; doPc is set to false if the instruction
         // has modified the PC. returns true if execution of instruction was successful, false otherwise
-        void executePlainInstruction(const UnsignedByte *instruction, bool *doPc = nullptr, int *tStates = nullptr,
-                                     int *size = nullptr);
+        void executePlainInstruction(const UnsignedByte * instruction, bool * doPc = nullptr, int * tStates = nullptr,
+                                     int * size = nullptr);
 
-        void executeCbInstruction(const UnsignedByte *instruction, int *tStates = nullptr, int *size = nullptr);
+        void executeCbInstruction(const UnsignedByte * instruction, int * tStates = nullptr, int * size = nullptr);
 
-        void executeEdInstruction(const UnsignedByte *instruction, bool *doPc = nullptr, int *tStates = nullptr,
-                                  int *size = nullptr);
+        void executeEdInstruction(const UnsignedByte * instruction, bool * doPc = nullptr, int * tStates = nullptr,
+                                  int * size = nullptr);
 
-        void executeDdOrFdInstruction(UnsignedWord &reg, const UnsignedByte *instruction, bool *doPc = nullptr,
-                                      int *tStates = nullptr, int *size = nullptr);
+        void executeDdOrFdInstruction(UnsignedWord & reg, const UnsignedByte * instruction, bool * doPc = nullptr,
+                                      int * tStates = nullptr, int * size = nullptr);
 
-        void executeDdcbOrFdcbInstruction(UnsignedWord &reg, const UnsignedByte *instruction, int *tStates = nullptr,
-                                          int *size = nullptr);
+        void executeDdcbOrFdcbInstruction(UnsignedWord & reg, const UnsignedByte * instruction, int * tStates = nullptr,
+                                          int * size = nullptr);
 
     private:
         static const int PlainOpcodeTStates[256];
