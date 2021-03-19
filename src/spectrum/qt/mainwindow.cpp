@@ -37,7 +37,7 @@ namespace
 
 MainWindow::MainWindow(QWidget * parent)
 : QMainWindow(parent),
-  m_spectrum(),
+  m_spectrum("spectrum48.rom"),
   m_spectrumThread(m_spectrum),
   m_display(),
   m_displayWidget(),
@@ -92,10 +92,6 @@ MainWindow::MainWindow(QWidget * parent)
     m_spectrum.setJoystickInterface(&m_joystick);
     m_spectrum.setKeyboard(&m_keyboard);
 	m_spectrum.addDisplayDevice(&m_display);
-
-	// reset() ensures the ROM is loaded, which we want for the first disassembly and memory view in the debug window
-    m_spectrum.reset();
-    m_debugWindow.updateStateDisplay();
 
     setCentralWidget(&m_displayWidget);
 
