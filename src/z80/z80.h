@@ -54,22 +54,22 @@ namespace Z80
             return (((value & 0xff00) >> 8) & 0x00ff) | (((value & 0x00ff) << 8) & 0xff00);
         }
 
-        static inline UnsignedWord z80ToHostByteOrder(UnsignedWord v)
+        static inline UnsignedWord z80ToHostByteOrder(UnsignedWord value)
         {
-            if (Z80ByteOrder == HostByteOrder) {
-                return v;
+            if constexpr (Z80ByteOrder == HostByteOrder) {
+                return value;
             }
 
-            return swapByteOrder(v);
+            return swapByteOrder(value);
         }
 
-        static inline UnsignedWord hostToZ80ByteOrder(UnsignedWord v)
+        static inline UnsignedWord hostToZ80ByteOrder(UnsignedWord value)
         {
-            if (Z80ByteOrder == HostByteOrder) {
-                return v;
+            if constexpr (Z80ByteOrder == HostByteOrder) {
+                return value;
             }
 
-            return swapByteOrder(v);
+            return swapByteOrder(value);
         }
 
         [[nodiscard]] bool isValid() const
