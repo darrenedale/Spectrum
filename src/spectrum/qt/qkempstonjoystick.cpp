@@ -78,45 +78,30 @@ bool QKempstonJoystick::eventFilter(QObject * target, QEvent * event)
                 case ::Qt::Key::Key_Up:
                     if (joystick1IsUp() != keyPressed) {
                         setJoystick1Up(keyPressed);
-                        std::cout << "Kempston joystick state: 0x" << std::hex << std::setfill('0') << std::setw(4)
-                                  << m_state
-                                  << std::dec << std::setfill(' ') << '\n';
                     }
                     return true;
 
                 case ::Qt::Key::Key_Down:
                     if (joystick1IsDown() != keyPressed) {
                         setJoystick1Down(keyPressed);
-                        std::cout << "Kempston joystick state: 0x" << std::hex << std::setfill('0') << std::setw(4)
-                                  << m_state
-                                  << std::dec << std::setfill(' ') << '\n';
                     }
                     return true;
 
                 case ::Qt::Key::Key_Left:
                     if (joystick1IsLeft() != keyPressed) {
                         setJoystick1Left(keyPressed);
-                        std::cout << "Kempston joystick state: 0x" << std::hex << std::setfill('0') << std::setw(4)
-                                  << m_state
-                                  << std::dec << std::setfill(' ') << '\n';
                     }
                     return true;
 
                 case ::Qt::Key::Key_Right:
                     if (joystick1IsRight() != keyPressed) {
                         setJoystick1Right(keyPressed);
-                        std::cout << "Kempston joystick state: 0x" << std::hex << std::setfill('0') << std::setw(4)
-                                  << m_state
-                                  << std::dec << std::setfill(' ') << '\n';
                     }
                     return true;
 
                 case ::Qt::Key::Key_Control:
                     if (joystick1Button1IsPressed() != keyPressed) {
                         setJoystick1Button1Pressed(keyPressed);
-                        std::cout << "Kempston joystick state: 0x" << std::hex << std::setfill('0') << std::setw(4)
-                                  << m_state
-                                  << std::dec << std::setfill(' ') << '\n';
                     }
                     return true;
             }

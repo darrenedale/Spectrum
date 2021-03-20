@@ -26,6 +26,7 @@ namespace Spectrum
 
     Spectrum::Spectrum(int memSize, uint8_t * mem)
     : Computer(memSize, mem),
+      m_executionSpeed(1.0),
       m_interruptCycleCounter(0),
       m_displayDevices(),
       m_constrainExecutionSpeed(true),
@@ -107,7 +108,7 @@ namespace Spectrum
                     auto actualInterruptInterval = steady_clock::now() - lastInterrupt;
 
                     if (actualInterruptInterval < 20ms) {
-                        auto sleepFor = 20ms - actualInterruptInterval;
+                        duration sleepFor = (20ms - actualInterruptInterval) / m_executionSpeed;
                         std::this_thread::sleep_for(sleepFor);
                     }
 

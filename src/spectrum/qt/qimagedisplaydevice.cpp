@@ -44,7 +44,7 @@ QImageDisplayDevice::QImageDisplayDevice()
 void QImageDisplayDevice::redrawDisplay(const uint8_t * displayMemory)
 {
     ++m_frameCounter;
-    bool flashInvert = m_frameCounter & 0x20;
+    bool flashInvert = m_frameCounter & 0x10;
 
 #if defined(QSPECTRUMDISPLAY_USEPAINTER)
     QPainter painter(&image());

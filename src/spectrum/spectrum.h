@@ -53,6 +53,56 @@ namespace Spectrum
 			void run(int instructionCount) override;
 
 			/**
+			 * Set the execution speed as a percentage of that of a real Spectrum 48k.
+			 *
+			 * Note that this does not automatically turn on constrained speed - if speed is not currently constrained
+			 * you also need to call setExecutionSpeedConstrained().
+			 *
+			 * @param percent
+			 */
+			void setExecutionSpeed(int percent)
+            {
+			    m_executionSpeed = (percent / 100.0);
+            }
+
+            /**
+             * Set the execution speed as a ratio of that of a real Spectrum 48k.
+             *
+             * Note that this does not automatically turn on constrained speed - if speed is not currently constrained
+             * you also need to call setExecutionSpeedConstrained().
+             *
+             * @param percent
+             */
+			void setExecutionSpeed(float ratio)
+            {
+			    m_executionSpeed = ratio;
+            }
+
+            /**
+             * Fetch the current execution speed ratio.
+             *
+             * Note that this provides the speed ratio that has been set even if the speed is not currently constrained.
+             *
+             * @return
+             */
+            [[nodiscard]] double executionSpeed() const
+            {
+			    return m_executionSpeed;
+            }
+
+            /**
+             * Fetch the current execution speed in %.
+             *
+             * Note that this provides the speed ratio that has been set even if the speed is not currently constrained.
+             *
+             * @return
+             */
+            [[nodiscard]] double executionSpeedPercent() const
+            {
+			    return static_cast<int>(m_executionSpeed * 100);
+            }
+
+			/**
 			 * If set, the Spectrum will be constrained to run no faster than the clock speed set.
 			 *
 			 * If not set, it will run as fast as the host CPU will allow.
@@ -102,6 +152,7 @@ namespace Spectrum
 			bool loadRom(const std::string & fileName);
 
 		private:
+            double m_executionSpeed;
 			int m_interruptCycleCounter;
 			bool m_constrainExecutionSpeed;
             DisplayDevices m_displayDevices;

@@ -4,6 +4,7 @@
 #include <fstream>
 
 #include <QToolBar>
+#include <QStatusBar>
 #include <QAction>
 #include <QLabel>
 #include <QSlider>
@@ -33,6 +34,7 @@ using InterruptMode = ::Z80::InterruptMode;
 
 namespace
 {
+    constexpr const int DefaultStatusBarMessageTimeout = 5000;
     auto z80ToHostByteOrder = ::Z80::Z80::z80ToHostByteOrder;
     auto hostToZ80ByteOrder = ::Z80::Z80::hostToZ80ByteOrder;
 };
@@ -85,12 +87,17 @@ MainWindow::MainWindow(QWidget * parent)
     m_emulationSpeedSpin.setSuffix(QStringLiteral("%"));
     m_emulationSpeedSpin.setSpecialValueText(tr("Unlimited"));
 
+    m_statusBarEmulationSpeed.setToolTip(tr("Current emulation speed."));
+    m_statusBarMHz.setToolTip(tr("Current speed of the emulated Z80."));
+
     // update screen at 100 FPS
     m_displayRefreshTimer.setTimerType(::Qt::TimerType::PreciseTimer);
     m_displayRefreshTimer.setInterval(10);
     connect(&m_displayRefreshTimer, &QTimer::timeout, this, &MainWindow::refreshSpectrumDisplay);
 
     createToolbars();
+    createStatusBar();
+
     m_spectrum.setJoystickInterface(&m_joystick);
     m_spectrum.setKeyboard(&m_keyboard);
 	m_spectrum.addDisplayDevice(&m_display);
@@ -104,13 +111,14 @@ MainWindow::MainWindow(QWidget * parent)
     connectSignals();
 	m_spectrumThread.start();
 	threadResumed();
+    updateStatusBarSpeedWidget();
 }
 
 MainWindow::~MainWindow()
 {
     m_spectrum.setKeyboard(nullptr);
     m_spectrum.removeDisplayDevice(&m_display);
-	m_spectrumThread.quit();
+	m_spectrumThread.stop();
 
 	if (!m_spectrumThread.wait(250)) {
         std::cout << "Waiting for Spectrum thread to finish ";
@@ -149,6 +157,16 @@ void MainWindow::createToolbars()
     tempToolBar->addWidget(new QLabel(tr("Speed")));
     tempToolBar->addWidget(&m_emulationSpeedSlider);
     tempToolBar->addWidget(&m_emulationSpeedSpin);
+}
+
+void MainWindow::createStatusBar()
+{
+    auto * statusBar = new QStatusBar(this);
+    statusBar->setSizeGripEnabled(true);
+    statusBar->addPermanentWidget(&m_statusBarPause);
+    statusBar->addPermanentWidget(&m_statusBarEmulationSpeed);
+    statusBar->addPermanentWidget(&m_statusBarMHz);
+    setStatusBar(statusBar);
 }
 
 void MainWindow::connectSignals()
@@ -236,6 +254,10 @@ void MainWindow::loadSnapshot(const QString & fileName, QString format)
 {
     if (format.isEmpty()) {
         format = guessSnapshotFormat(fileName);
+
+        if (format.isEmpty()) {
+            statusBar()->showMessage(tr("The snapshot format for %1 could not be determined.").arg(fileName), DefaultStatusBarMessageTimeout);
+        }
     }
 
     if ("sna" == format) {
@@ -246,6 +268,7 @@ void MainWindow::loadSnapshot(const QString & fileName, QString format)
         loadSpSnapshot(fileName);
     } else {
         std::cerr << "unrecognised format '" << format.toStdString() << "' from filename '" << fileName.toStdString() << "'\n";
+        statusBar()->showMessage(tr("The snapshot format for %1 could not be determined.").arg(fileName), DefaultStatusBarMessageTimeout);
     }
 }
 
@@ -260,6 +283,7 @@ void MainWindow::loadSnaSnapshot(const QString & fileName)
         if (!in.is_open()) {
             // TODO display "not found" message
             std::cout << "Could not open file '" << fileName.toStdString() << "'\n";
+            statusBar()->showMessage(tr("The snapshot file %1 could not be opened.").arg(fileName), DefaultStatusBarMessageTimeout);
             return;
         }
 
@@ -274,6 +298,7 @@ void MainWindow::loadSnaSnapshot(const QString & fileName)
         if (-1 != bytesIn && sizeof(buffer) != bytesIn) {
             // TODO display "read error" message
             std::cout << "Error reading file '" << fileName.toStdString() << "'\n";
+            statusBar()->showMessage(tr("The snapshot file %1 could not be read.").arg(fileName), DefaultStatusBarMessageTimeout);
             return;
         }
     }
@@ -306,6 +331,7 @@ void MainWindow::loadSnaSnapshot(const QString & fileName)
 
     // RETN instruction is required to resume execution of the .SNA
     cpu.execute(retn);
+    statusBar()->showMessage(tr("The snapshot file %1 was successfully loaded.").arg(fileName), DefaultStatusBarMessageTimeout);
 }
 
 void MainWindow::loadZ80Snapshot(const QString & fileName)
@@ -316,6 +342,7 @@ void MainWindow::loadZ80Snapshot(const QString & fileName)
 
     if (err) {
         std::cerr << "failed to determine file size for .z80 file '" << fileName.toStdString() << "'\n";
+        statusBar()->showMessage(tr("The size of the snapshot file %1 could not be determined.").arg(fileName), DefaultStatusBarMessageTimeout);
         return;
     }
 
@@ -326,6 +353,7 @@ void MainWindow::loadZ80Snapshot(const QString & fileName)
         if (!in.is_open()) {
             // TODO display "not found" message
             std::cout << "Could not open file '" << fileName.toStdString() << "'\n";
+            statusBar()->showMessage(tr("The snapshot file %1 could not be opened.").arg(fileName), DefaultStatusBarMessageTimeout);
             return;
         }
 
@@ -336,6 +364,7 @@ void MainWindow::loadZ80Snapshot(const QString & fileName)
         if (in.fail() && !in.eof()) {
             // TODO display "read error" message
             std::cout << "Error reading file '" << fileName.toStdString() << "'\n";
+            statusBar()->showMessage(tr("The snapshot file %1 could not be read.").arg(fileName), DefaultStatusBarMessageTimeout);
             return;
         }
     }
@@ -417,6 +446,7 @@ void MainWindow::loadZ80Snapshot(const QString & fileName)
                     machine != static_cast<std::uint8_t>(V2MachineType::Spectrum48kInterface1)) {
                     std::cerr << "The .z80 file '" << fileName.toStdString()
                               << "' is for a Spectrum model not supported by this emulator.\n";
+                    statusBar()->showMessage(tr("The snapshot file %1 is for a Spectrum model not supported by this emulator.").arg(fileName), DefaultStatusBarMessageTimeout);
                     return;
                 }
                 break;
@@ -428,6 +458,7 @@ void MainWindow::loadZ80Snapshot(const QString & fileName)
                     machine != static_cast<std::uint8_t>(V3MachineType::Spectrum48kMgt)) {
                     std::cerr << "The .z80 file '" << fileName.toStdString()
                               << "' is for a Spectrum model not supported by this emulator.\n";
+                    statusBar()->showMessage(tr("The snapshot file %1 is for a Spectrum model not supported by this emulator.").arg(fileName), DefaultStatusBarMessageTimeout);
                     return;
                 }
                 break;
@@ -435,6 +466,7 @@ void MainWindow::loadZ80Snapshot(const QString & fileName)
             default:
                 std::cerr << "The version (" << static_cast<uint32_t>(format) << ") of the .z80 file '"
                           << fileName.toStdString() << "' is not recognised.\n";
+                statusBar()->showMessage(tr("The version of the snapshot file %1 is not recognised.").arg(fileName), DefaultStatusBarMessageTimeout);
                 return;
         }
     } else {
@@ -469,17 +501,12 @@ void MainWindow::loadZ80Snapshot(const QString & fileName)
     cpu.setInterruptMode(static_cast<InterruptMode>(featureFlags & 0x03));
 
     if (Format::Version1 != format) {
-        std::cerr << "skipping extended header length word, we already know it\n";
         byte += 2;
-        std::cerr << "reading PC for version2/3 format file\n";
-        std::cerr << "PC from V1 header was " << registers.pc;
         registers.pcL = *(byte++);
         registers.pcH = *(byte++);
-        std::cerr << "; now " << registers.pc << "\n";
 
         // none of the remainder of the extra header is relevant to us at present. for the meaning of the fields see
         // https://worldofspectrum.org/faq/reference/z80format.htm
-        std::cerr << "skipping remaining " << (static_cast<std::uint16_t>(format) - 2) << " bytes of extended header\n";
         byte += static_cast<std::uint16_t>(format) - 2;
     }
 
@@ -500,6 +527,7 @@ void MainWindow::loadZ80Snapshot(const QString & fileName)
 
             if (end > bufferMax) {
                 std::cerr << "failed to find end of memory image marker in file '" << fileName.toStdString() << "'\n";
+                statusBar()->showMessage(tr("The snapshot file %1 is not valid (memory image corrupt).").arg(fileName), DefaultStatusBarMessageTimeout);
                 return;
             }
 
@@ -551,7 +579,6 @@ void MainWindow::loadZ80Snapshot(const QString & fileName)
             }
 
             if (readPage) {
-                std::cout << "reading page #" << static_cast<std::uint16_t >(page) << " of " << dataSize << " bytes\n";
                 auto * end = byte + dataSize;
                 const std::uint16_t rleMarker = 0xeded;
 
@@ -573,6 +600,7 @@ void MainWindow::loadZ80Snapshot(const QString & fileName)
     // update the display
     m_display.redrawDisplay(ram);
     m_displayWidget.setImage(m_display.image());
+    statusBar()->showMessage(tr("The snapshot file %1 was successfully loaded.").arg(fileName), DefaultStatusBarMessageTimeout);
 }
 
 void MainWindow::loadSpSnapshot(const QString & fileName)
@@ -627,6 +655,7 @@ void MainWindow::loadSpSnapshot(const QString & fileName)
         if (!in) {
             // TODO display "not found" message
             std::cerr << "Could not open file '" << fileName.toStdString() << "'\n";
+            statusBar()->showMessage(tr("The snapshot file %1 could not be opened.").arg(fileName), DefaultStatusBarMessageTimeout);
             return;
         }
 
@@ -635,12 +664,14 @@ void MainWindow::loadSpSnapshot(const QString & fileName)
 
         if (in.fail()) {
             std::cerr << "Error reading header from '" << fileName.toStdString() << "'\n";
+            statusBar()->showMessage(tr("The snapshot file %1 could not be read.").arg(fileName), DefaultStatusBarMessageTimeout);
             return;
         }
 
         // validate header
         if (*reinterpret_cast<const std::uint16_t *>("SP") != *reinterpret_cast<const std::uint16_t *>(header.signature)) {
             std::cerr << "Not an SP file.";
+            statusBar()->showMessage(tr("The snapshot file %1 is not valid (not an SP file).").arg(fileName), DefaultStatusBarMessageTimeout);
             return;
         }
 
@@ -656,6 +687,7 @@ void MainWindow::loadSpSnapshot(const QString & fileName)
             std::cerr << "End address : 0x" << std::hex <<  std::setw(5) << (static_cast<std::uint32_t>(header.baseAddress) + header.length) << "\n";
             std::cerr << "Program extends beyond upper bounds of RAM (0x" << std::setw(4) << header.baseAddress << " + " << std::dec << header.length << ") > 0xffff\n";
             std::cerr << std::setfill(' ');
+            statusBar()->showMessage(tr("The snapshot file %1 is not valid (program machine code image too large).").arg(fileName), DefaultStatusBarMessageTimeout);
             return;
         }
 
@@ -667,11 +699,12 @@ void MainWindow::loadSpSnapshot(const QString & fileName)
         if (in.fail()) {
             std::cerr << "Error reading program from '" << fileName.toStdString() << "'\n";
             delete[] programBuffer;
+            statusBar()->showMessage(tr("The snapshot file %1 could not be read.").arg(fileName), DefaultStatusBarMessageTimeout);
             return;
         }
 
         if (!in.eof()) {
-            std::cerr << "Warning: ignored extraneous content at end of file (from byte " << in.tellg() << " onward.\n";
+            std::cerr << "Warning: ignored extraneous content at end of file (from byte " << in.tellg() << " onward).\n";
         }
     }
 
@@ -720,6 +753,7 @@ void MainWindow::loadSpSnapshot(const QString & fileName)
     std::memcpy(memory + header.baseAddress, programBuffer, header.length);
 
     delete[] programBuffer;
+    statusBar()->showMessage(tr("The snapshot file %1 was successfully loaded.").arg(fileName), DefaultStatusBarMessageTimeout);
 }
 
 void MainWindow::saveSnapshot(const QString & fileName, QString format)
@@ -728,6 +762,11 @@ void MainWindow::saveSnapshot(const QString & fileName, QString format)
 
     if (format.isEmpty()) {
         format = guessSnapshotFormat(fileName);
+
+        if (format.isEmpty()) {
+            statusBar()->showMessage(tr("The snapshot format to use could not be determined from the filename %1.").arg(fileName), DefaultStatusBarMessageTimeout);
+            return;
+        }
     }
 
     if ("sna" == format) {
@@ -738,17 +777,25 @@ void MainWindow::saveSnapshot(const QString & fileName, QString format)
 
         if (!writer.writeTo(fileName.toStdString())) {
             std::cerr << "failed to write snapshot to '" << fileName.toStdString() << "'\n";
+            statusBar()->showMessage(tr("Failed to save snapshot to %1.").arg(fileName), DefaultStatusBarMessageTimeout);
+        } else {
+            statusBar()->showMessage(tr("Snapshot successfully saved to %1.").arg(fileName), DefaultStatusBarMessageTimeout);
         }
     } else if ("z80" == format) {
         Z80SnapshotWriter writer(Snapshot{m_spectrum});
 
         if (!writer.writeTo(fileName.toStdString())) {
             std::cerr << "failed to write snapshot to '" << fileName.toStdString() << "'\n";
+            statusBar()->showMessage(tr("Failed to save snapshot to %1.").arg(fileName), DefaultStatusBarMessageTimeout);
+        } else {
+            statusBar()->showMessage(tr("Snapshot successfully saved to %1.").arg(fileName), DefaultStatusBarMessageTimeout);
         }
     } else if ("sp" == format) {
         std::cerr << "Not yet implemented.\n";
+        statusBar()->showMessage(tr("Saving .sp snapshots is not yet implemented.").arg(fileName), DefaultStatusBarMessageTimeout);
     } else {
         std::cerr << "unrecognised format '" << format.toStdString() << "' from filename '" << fileName.toStdString() << "'\n";
+        statusBar()->showMessage(tr("Unrecognised snapshot format %1.").arg(format), DefaultStatusBarMessageTimeout);
     }
 }
 
@@ -762,6 +809,7 @@ bool MainWindow::eventFilter(QObject * target, QEvent * event)
             case QEvent::Type::KeyPress:
                 if (::Qt::Key::Key_Tab == dynamic_cast<QKeyEvent *>(event)->key()) {
                     m_spectrum.setExecutionSpeedConstrained(false);
+                    updateStatusBarSpeedWidget();
                     return true;
                 }
                 break;
@@ -770,6 +818,7 @@ bool MainWindow::eventFilter(QObject * target, QEvent * event)
             case QEvent::Type::KeyRelease:
                 if (::Qt::Key::Key_Tab == dynamic_cast<QKeyEvent *>(event)->key()) {
                     m_spectrum.setExecutionSpeedConstrained(0 < m_emulationSpeedSlider.value());
+                    updateStatusBarSpeedWidget();
                     return true;
                 }
                 break;
@@ -829,7 +878,8 @@ void MainWindow::showEvent(QShowEvent * ev)
 void MainWindow::keyPressEvent(QKeyEvent * event)
 {
     if (!event->isAutoRepeat() && ::Qt::Key::Key_Tab == event->key()) {
-        m_spectrumThread.spectrum().setExecutionSpeedConstrained(false);
+        m_spectrum.setExecutionSpeedConstrained(false);
+        updateStatusBarSpeedWidget();
         return;
     }
 
@@ -839,7 +889,8 @@ void MainWindow::keyPressEvent(QKeyEvent * event)
 void MainWindow::keyReleaseEvent(QKeyEvent * event)
 {
     if (::Qt::Key::Key_Tab == event->key()) {
-        m_spectrumThread.spectrum().setExecutionSpeedConstrained(0 < m_emulationSpeedSlider.value());
+        m_spectrum.setExecutionSpeedConstrained(0 < m_emulationSpeedSlider.value());
+        updateStatusBarSpeedWidget();
         return;
     }
 
@@ -973,8 +1024,31 @@ void MainWindow::emulationSpeedChanged(int speed)
         m_spectrum.setExecutionSpeedConstrained(false);
     } else {
         m_spectrum.setExecutionSpeedConstrained(true);
-        m_spectrum.z80()->setClockSpeed(static_cast<int>(Spectrum::DefaultClockSpeed * (speed / 100.0)));
+        m_spectrum.setExecutionSpeed(speed);
+//        m_spectrum.z80()->setClockSpeed(static_cast<int>(Spectrum::DefaultClockSpeed * (speed / 100.0)));
     }
+
+    updateStatusBarSpeedWidget();
+}
+
+void MainWindow::updateStatusBarSpeedWidget()
+{
+    if (m_spectrum.executionSpeedConstrained()) {
+        m_statusBarEmulationSpeed.setText(tr("%1%").arg(m_spectrum.executionSpeedPercent()));
+    } else {
+        m_statusBarEmulationSpeed.setText(tr("%1%").arg("∞"));    // infinity
+    }
+
+    auto mhz = m_spectrum.z80()->clockSpeedMHz();
+    int precision = 2;
+    auto tmpMhz = mhz;
+
+    while (tmpMhz > 10) {
+        ++precision;
+        tmpMhz /= 10;
+    }
+
+    m_statusBarMHz.setText(tr("%1 MHz").arg(mhz, 0, 'g', precision));
 }
 
 void MainWindow::debugTriggered()
@@ -1002,6 +1076,7 @@ void MainWindow::threadPaused()
     refreshSpectrumDisplay();
     m_pauseResume.setIcon(QIcon::fromTheme(QStringLiteral("media-playback-start")));
     m_pauseResume.setText(tr("Resume"));
+    m_statusBarPause.setText(tr("Paused"));
 
     // TODO enable widgets
     m_debugStep.setEnabled(true);
@@ -1013,6 +1088,7 @@ void MainWindow::threadResumed()
     m_displayRefreshTimer.start();
     m_pauseResume.setIcon(QIcon::fromTheme(QStringLiteral("media-playback-pause")));
     m_pauseResume.setText(tr("Pause"));
+    m_statusBarPause.setText(tr("Running"));
 
     // TODO disable widgets
     m_debugStep.setEnabled(false);

@@ -89,7 +89,6 @@ RegisterPairWidget::RegisterPairWidget(const QString & registerName, UnsignedWor
     connect(&m_spinHigh, qOverload<int>(&QSpinBox::valueChanged), this, &RegisterPairWidget::setRegisterPairForBytes);
 
     auto emitValueChanged = [this]() {
-        std::cout << "emitting value changed to " << this->value() << " for " << this->registerName().toStdString() << "\n";
         Q_EMIT this->valueChanged(this->value());
         Q_EMIT this->valueChangedZ80(valueZ80());
     };

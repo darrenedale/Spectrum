@@ -61,10 +61,13 @@ namespace Spectrum::Qt
 	    void dropEvent(QDropEvent *) override;
         void refreshSpectrumDisplay();
 
+        void updateStatusBarSpeedWidget();
+
     private:
         using Joystick = QKempstonJoystick;
 
         void createToolbars();
+        void createStatusBar();
         void connectSignals();
 
         void pauseResumeTriggered();
@@ -100,6 +103,12 @@ namespace Spectrum::Qt
         QSlider m_emulationSpeedSlider;
         QSpinBox m_emulationSpeedSpin;
         DebugWindow m_debugWindow;
+
+        // status bar widgets
+        QLabel m_statusBarPause;
+        QLabel m_statusBarEmulationSpeed;
+        QLabel m_statusBarMHz;
+
         QTimer m_displayRefreshTimer;
         Joystick m_joystick;
 	};
