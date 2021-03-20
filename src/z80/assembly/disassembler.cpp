@@ -6299,7 +6299,6 @@ Mnemonic Disassembler::disassembleOneDdOrFd(Register16 reg, const Z80::UnsignedB
         case Z80__DD_OR_FD__JP__C__NN:                // 0xda
         case Z80__DD_OR_FD__IN__A__INDIRECT_N:                // 0xdb
         case Z80__DD_OR_FD__CALL__C__NN:                // 0xdc
-        case Z80__DD_OR_FD__PREFIX__DD:                // 0xdd
         case Z80__DD_OR_FD__SBC__A__N:                // 0xde
         case Z80__DD_OR_FD__RST__18:                // 0xdf
         case Z80__DD_OR_FD__RET__PO:                // 0xe0
@@ -6331,13 +6330,24 @@ Mnemonic Disassembler::disassembleOneDdOrFd(Register16 reg, const Z80::UnsignedB
         case Z80__DD_OR_FD__JP__M__NN:                // 0xfa
         case Z80__DD_OR_FD__EI:                // 0xfb
         case Z80__DD_OR_FD__CALL__M__NN:                // 0xfc
-        case Z80__DD_OR_FD__PREFIX__FD:                // 0xfd
         case Z80__DD_OR_FD__CP__N:                // 0xfe
         case Z80__DD_OR_FD__RST__38:                // 0xff
         {
             auto mnemonic = disassembleOnePlain(machineCode);
             ++mnemonic.size;
             return mnemonic;
+        }
+
+        case Z80__DD_OR_FD__PREFIX__DD:                // 0xdd
+        case Z80__DD_OR_FD__PREFIX__FD:                // 0xfd
+        {
+            // TODO this is not strictly correct - sequences of 0xdd/0xfd result in an IX/IY instruction based on the
+            //  byte following the last 0xdd/0xfd in the sequence.
+            return {
+                Instruction::NOP,
+                {},
+                2,
+            };
         }
     }
 
