@@ -41,6 +41,13 @@ namespace Spectrum::Qt
 			    return m_debugMode;
             }
 
+			void setDebugMode(bool debug = true);
+			void pause();
+			void reset();
+			void resume();
+			void stop();
+			void step();
+
 		Q_SIGNALS:
 	        void paused();
 	        void resumed();
@@ -48,24 +55,16 @@ namespace Spectrum::Qt
 			void debuggingStarted();
 			void debuggingFinished();
 
-		public Q_SLOTS:
-			void setDebugMode(bool debug = true);
-			void pause();
-			void reset();
-			void resume();
-			void quit();
-			void step();
-
 		protected:
 			void run() override;
 
 		private:
-			QMutex m_spectrumLock;
 			QMutex m_threadLock;
 			QWaitCondition m_waitCondition;
 			Spectrum & m_spectrum;
 			bool m_pause;
 			bool m_quit;
+			bool m_reset;
 			bool m_step;
 			bool m_debugMode;
 	};
