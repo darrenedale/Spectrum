@@ -62,7 +62,7 @@ std::string std::to_string(const Operand & op)
             break;
 
         case AddressingMode::Bit:
-            out << std::dec << std::setfill(' ') << std::setw(0) << op.bit;
+            out << std::dec << std::setfill(' ') << std::setw(0) << static_cast<std::uint16_t>(op.bit);
             break;
     }
 
