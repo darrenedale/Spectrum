@@ -1,14 +1,15 @@
 #include "cpu.h"
 
-Cpu::Cpu( unsigned char * mem, int memsize )
-:	m_ram(mem),
-	m_ramSize(memsize) {}
+Cpu::Cpu(unsigned char * memory, int memorySize)
+: m_memory(memory),
+  m_memorySize(memorySize),
+  m_clockSpeed(0)
+{}
 
+Cpu::~Cpu() = default;
 
-Cpu::~Cpu( void ) {}
-
-
-void Cpu::setMemory( unsigned char * mem, int memsize ) {
-	m_ram = mem;
-	m_ramSize = memsize;
+void Cpu::setMemory(unsigned char * memory, int memorySize)
+{
+    m_memory = memory;
+    m_memorySize = memorySize;
 }

@@ -6,19 +6,33 @@
 class Cpu
 {
 public:
-    Cpu(std::uint8_t * mem, int memSize);
+    /**
+     * Memory is borrowed, not owned. Caller is responsible for deallocating memory when no longer needed, and ensuring
+     * that CPU no longer keeps a reference to the memory once it has been discarded.
+     *
+     * @param memory
+     * @param memorySize
+     */
+    Cpu(std::uint8_t * memory, int memorySize);
     virtual ~Cpu();
 
-    void setMemory(std::uint8_t * mem, int memsize);
+    /**
+     * Memory is borrowed, not owned. Caller is responsible for deallocating memory when no longer needed, and ensuring
+     * that CPU no longer keeps a reference to the memory once it has been discarded.
+     *
+     * @param memory
+     * @param memorySize
+     */
+    void setMemory(std::uint8_t * memory, int memorySize);
 
     inline std::uint8_t * memory()
     {
-        return m_ram;
+        return m_memory;
     }
 
-    inline int memorySize() const
+    [[nodiscard]] inline int memorySize() const
     {
-        return m_ramSize;
+        return m_memorySize;
     }
 
     inline void setClockSpeed(unsigned long long hz)
@@ -31,19 +45,19 @@ public:
         m_clockSpeed = static_cast<unsigned long long>(mhz * 1000000);
     }
 
-    inline unsigned long long clockSpeed() const
+    [[nodiscard]] inline unsigned long long clockSpeed() const
     {
         return m_clockSpeed;
     }
 
-    inline double clockSpeedMHz() const
+    [[nodiscard]] inline double clockSpeedMHz() const
     {
         return static_cast<double>(m_clockSpeed) / 1000000.0;
     }
 
 protected:
-    std::uint8_t * m_ram;
-    int m_ramSize;
+    std::uint8_t * m_memory;
+    int m_memorySize;
     unsigned long long m_clockSpeed;
 };
 

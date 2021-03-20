@@ -258,7 +258,7 @@ pokeHostWord(m_registers.sp, (reg));
 }
 
 #define Z80__ADD__REG8__REG8(dest,src) Z80__ADD__REG8__N(dest,src)
-#define Z80__ADD__REG8__INDIRECT_REG16(dest,src) Z80__ADD__REG8__N(dest,(*(m_ram + (src))))
+#define Z80__ADD__REG8__INDIRECT_REG16(dest,src) Z80__ADD__REG8__N(dest,(*(m_memory + (src))))
 
 #define Z80__ADD__REG16__REG16(dest,src) \
 {       \
@@ -273,7 +273,7 @@ pokeHostWord(m_registers.sp, (reg));
     Z80_FLAG_F3_UPDATE((dest) & (Z80_FLAG_F3_MASK << 8)); \
 }
 
-#define Z80__ADD__REG8__INDIRECT_REG16_D(dest, reg, d) Z80__ADD__REG8__N((dest),(*(m_ram + (reg) + (d))))
+#define Z80__ADD__REG8__INDIRECT_REG16_D(dest, reg, d) Z80__ADD__REG8__N((dest),(*(m_memory + (reg) + (d))))
 
 //
 // addition with carry instructions
@@ -387,10 +387,10 @@ Z80_FLAG_S_UPDATE((reg) & 0x80);        \
 Z80_FLAG_F3_UPDATE((reg) & Z80_FLAG_F3_MASK); \
 Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
 
-#define Z80__INC__INDIRECT_REG16(reg) Z80__INC__REG8(*(m_ram + (reg)))
+#define Z80__INC__INDIRECT_REG16(reg) Z80__INC__REG8(*(m_memory + (reg)))
 #define Z80__INC__REG16(reg) (reg)++;
 // TODO memptr
-#define Z80__INC__INDIRECT_REG16_D(reg, d) Z80__INC__REG8(*(m_ram + (reg) + (d)))
+#define Z80__INC__INDIRECT_REG16_D(reg, d) Z80__INC__REG8(*(m_memory + (reg) + (d)))
 
 //
 // decrement instructions
@@ -405,10 +405,10 @@ Z80_FLAG_S_UPDATE((reg) & 0x80); \
 Z80_FLAG_F3_UPDATE((reg) & Z80_FLAG_F3_MASK); \
 Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
 
-#define Z80__DEC__INDIRECT_REG16(reg) Z80__DEC__REG8(*(m_ram + (reg)))
+#define Z80__DEC__INDIRECT_REG16(reg) Z80__DEC__REG8(*(m_memory + (reg)))
 #define Z80__DEC__REG16(reg) (reg)--;
 // TODO memptr
-#define Z80__DEC__INDIRECT_REG16_D(reg, d) Z80__DEC__REG8(*(m_ram + (reg) + (d)));
+#define Z80__DEC__INDIRECT_REG16_D(reg, d) Z80__DEC__REG8(*(m_memory + (reg) + (d)));
 
 //
 // negation instruction
