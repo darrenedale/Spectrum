@@ -37,7 +37,7 @@ namespace
     constexpr const int DefaultStatusBarMessageTimeout = 5000;
     auto z80ToHostByteOrder = ::Z80::Z80::z80ToHostByteOrder;
     auto hostToZ80ByteOrder = ::Z80::Z80::hostToZ80ByteOrder;
-};
+}
 
 MainWindow::MainWindow(QWidget * parent)
 : QMainWindow(parent),
@@ -213,7 +213,7 @@ void MainWindow::refreshSpectrumDisplay()
         painter.drawText(2, y += 10, QStringLiteral("AF: $%1").arg(registers.af, 4, 16, fill));
         painter.drawText(2, y += 10, QStringLiteral("BC: $%1").arg(registers.bc, 4, 16, fill));
         painter.drawText(2, y += 10, QStringLiteral("DE: $%1").arg(registers.de, 4, 16, fill));
-        painter.drawText(2, y += 10, QStringLiteral("HL: $%1").arg(registers.hl, 4, 16, fill));
+        painter.drawText(2, y, QStringLiteral("HL: $%1").arg(registers.hl, 4, 16, fill));
         painter.end();
 
         m_displayWidget.setImage(image);
@@ -325,12 +325,11 @@ void MainWindow::loadSnaSnapshot(const QString & fileName)
     std::memcpy(ram, byte, 0xc000);
 
     // update the display
-    Z80::UnsignedByte retn[2] = {0xed, 0x45};
     m_display.redrawDisplay(ram);
     m_displayWidget.setImage(m_display.image());
 
     // RETN instruction is required to resume execution of the .SNA
-    cpu.execute(retn);
+    cpu.execute(reinterpret_cast<const Z80::UnsignedByte *>("\xed\x45"));
     statusBar()->showMessage(tr("The snapshot file %1 was successfully loaded.").arg(fileName), DefaultStatusBarMessageTimeout);
 }
 
@@ -350,19 +349,15 @@ void MainWindow::loadZ80Snapshot(const QString & fileName)
     {
         std::ifstream in(fileName.toStdString());
 
-        if (!in.is_open()) {
-            // TODO display "not found" message
+        if (!in) {
             std::cout << "Could not open file '" << fileName.toStdString() << "'\n";
             statusBar()->showMessage(tr("The snapshot file %1 could not be opened.").arg(fileName), DefaultStatusBarMessageTimeout);
             return;
         }
 
-        while (!in.fail() && !in.eof() && in.tellg() < fileSize) {
-            in.read(buffer + in.tellg(), fileSize - in.tellg());
-        }
+        in.read(buffer, static_cast<std::streamsize>(fileSize - in.tellg()));
 
-        if (in.fail() && !in.eof()) {
-            // TODO display "read error" message
+        if (in.fail()) {
             std::cout << "Error reading file '" << fileName.toStdString() << "'\n";
             statusBar()->showMessage(tr("The snapshot file %1 could not be read.").arg(fileName), DefaultStatusBarMessageTimeout);
             return;
@@ -434,7 +429,7 @@ void MainWindow::loadZ80Snapshot(const QString & fileName)
     // bytes 6 and 7 will both be 0 if it's v2 or v3 file (with extended header); anything else is v1 file (no extended
     // header)
     Format format;
-    std::uint8_t machine = 0;
+    std::uint8_t machine;
 
     if (0 == (buffer[6] | buffer[7])) {
         format = static_cast<Format>(buffer[30] | (static_cast<std::uint16_t>(buffer[31]) << 8));
@@ -647,13 +642,12 @@ void MainWindow::loadSpSnapshot(const QString & fileName)
 
     // read file
     Header header = {};
-    std::ifstream::char_type * programBuffer = nullptr;
+    std::ifstream::char_type * programBuffer;
 
     {
         std::ifstream in(fileName.toStdString());
 
         if (!in) {
-            // TODO display "not found" message
             std::cerr << "Could not open file '" << fileName.toStdString() << "'\n";
             statusBar()->showMessage(tr("The snapshot file %1 could not be opened.").arg(fileName), DefaultStatusBarMessageTimeout);
             return;
@@ -899,7 +893,7 @@ void MainWindow::keyReleaseEvent(QKeyEvent * event)
 
 void MainWindow::dragEnterEvent(QDragEnterEvent * event)
 {
-    if (event->mimeData()->hasUrls() && QStringLiteral("file") == event->mimeData()->urls().first().scheme()) {
+    if (event->mimeData()->hasUrls() && !event->mimeData()->urls().isEmpty() && QStringLiteral("file") == event->mimeData()->urls().first().scheme()) {
         event->acceptProposedAction();
     }
 }
@@ -973,7 +967,7 @@ void MainWindow::loadSnapshotTriggered()
     auto format = lastFilter;
 
     if (!format.isEmpty()) {
-        if (auto matches = QRegularExpression("^.*\\(\\*\\.([a-zA-Z0-9_-]+)\\)$").match(format); matches.hasMatch()) {
+        if (auto matches = QRegularExpression(R"(^.*\(\*\.([a-zA-Z0-9_-]+)\)$)").match(format); matches.hasMatch()) {
             format = matches.captured(1).toLower();
         } else {
             format.clear();
@@ -1006,7 +1000,7 @@ void MainWindow::saveSnapshotTriggered()
     auto format = lastFilter;
 
     if (!format.isEmpty()) {
-        if (auto matches = QRegularExpression("^.*\\(\\*\\.([a-zA-Z0-9_-]+)\\)$").match(format); matches.hasMatch()) {
+        if (auto matches = QRegularExpression(R"(^.*\(\*\.([a-zA-Z0-9_-]+)\)$)").match(format); matches.hasMatch()) {
             format = matches.captured(1).toLower();
         } else {
             format.clear();
@@ -1078,7 +1072,6 @@ void MainWindow::threadPaused()
     m_pauseResume.setText(tr("Resume"));
     m_statusBarPause.setText(tr("Paused"));
 
-    // TODO enable widgets
     m_debugStep.setEnabled(true);
     connect(&m_spectrumThread, &Thread::stepped, this, &MainWindow::threadStepped, ::Qt::UniqueConnection);
 }
@@ -1090,7 +1083,6 @@ void MainWindow::threadResumed()
     m_pauseResume.setText(tr("Pause"));
     m_statusBarPause.setText(tr("Running"));
 
-    // TODO disable widgets
     m_debugStep.setEnabled(false);
     disconnect(&m_spectrumThread, &Thread::stepped, this, &MainWindow::threadStepped);
 }

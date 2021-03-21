@@ -52,7 +52,6 @@ namespace Spectrum
     {
         clearMemory();
 
-        // TODO load the ROM file
         if (!loadRom(m_romFile)) {
             return;
         }
