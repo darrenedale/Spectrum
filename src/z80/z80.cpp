@@ -56,8 +56,6 @@
 #define Z80_FLAG_S_ISSET (0 != (m_registers.f & Z80_FLAG_S_MASK))
 #define Z80_FLAG_N_ISSET (0 != (m_registers.f & Z80_FLAG_N_MASK))
 #define Z80_FLAG_H_ISSET (0 != (m_registers.f & Z80_FLAG_H_MASK))
-#define Z80_FLAG_F3_ISSET (0 != (m_registers.f & Z80_FLAG_F3_MASK))
-#define Z80_FLAG_F5_ISSET (0 != (m_registers.f & Z80_FLAG_F5_MASK))
 
 /* used in instruction execution methods to force the PC NOT to be updated with
  * the size of the instruction in execute() in cases where the instruction
@@ -656,17 +654,19 @@ Z80__RES__N__INDIRECT_REG16_D(n,(reg16),(d));               \
 //
 // arithmetic right shift instructions
 //
-#define Z80__SRA__REG8(reg) {            \
-	Z80_FLAG_C_UPDATE((reg) & 0x01);     \
-    (reg) = ((reg) & 0x80) | ((reg) >>= 1);\
-	Z80_FLAG_H_CLEAR;                    \
-	Z80_FLAG_N_CLEAR;                    \
-	Z80_FLAG_P_UPDATE(isEvenParity(reg));\
-	Z80_FLAGS_S53_UPDATE((reg));         \
-	Z80_FLAG_Z_UPDATE(0 == (reg));       \
+#define Z80__SRA__REG8(reg)                \
+{                                          \
+	Z80_FLAG_C_UPDATE((reg) & 0x01);       \
+    (reg) = ((reg) & 0x80) | ((reg) >> 1); \
+	Z80_FLAG_H_CLEAR;                      \
+	Z80_FLAG_N_CLEAR;                      \
+	Z80_FLAG_P_UPDATE(isEvenParity(reg));  \
+	Z80_FLAGS_S53_UPDATE((reg));           \
+	Z80_FLAG_Z_UPDATE(0 == (reg));         \
 }
 
-#define Z80__SRA__INDIRECT_REG16(reg) {     \
+#define Z80__SRA__INDIRECT_REG16(reg)       \
+{                                           \
     UnsignedByte & tmpValue = memory()[reg];\
     Z80__SRA__REG8(tmpValue);               \
 }
@@ -831,7 +831,6 @@ m_iff1 = m_iff2;                 \
 using UnsignedByte = ::Z80::UnsignedByte;
 using UnsignedWord = ::Z80::UnsignedWord;
 using SignedByte = ::Z80::SignedByte;
-using SignedWord = ::Z80::SignedWord;
 
 namespace
 {
@@ -3506,7 +3505,7 @@ void Z80::Z80::executeCbInstruction(const UnsignedByte * instruction, int * tSta
 	}
 
 	if (tStates) {
-	    *tStates = (useJumpCycleCost ? Z80_TSTATES_JUMP(CbOpcodeTStates[*instruction]) : Z80_TSTATES_NOJUMP(CbOpcodeTStates[*instruction]));
+	    *tStates = static_cast<int>(useJumpCycleCost ? Z80_TSTATES_JUMP(CbOpcodeTStates[*instruction]) : Z80_TSTATES_NOJUMP(CbOpcodeTStates[*instruction]));
 	}
 
 	if (size) {
@@ -4372,7 +4371,7 @@ void Z80::Z80::executeEdInstruction(const UnsignedByte * instruction, bool * doP
 	}
 
 	if (tStates) {
-	    *tStates = (useJumpCycleCost ? Z80_TSTATES_JUMP(EdOpcodeTStates[*instruction]) : Z80_TSTATES_NOJUMP(EdOpcodeTStates[*instruction]));
+	    *tStates = static_cast<int>(useJumpCycleCost ? Z80_TSTATES_JUMP(EdOpcodeTStates[*instruction]) : Z80_TSTATES_NOJUMP(EdOpcodeTStates[*instruction]));
 	}
 
 	if (size) {
@@ -4975,7 +4974,7 @@ void Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, const UnsignedByte *
     }
 
 	if (tStates) {
-	    *tStates = (useJumpCycleCost ? Z80_TSTATES_JUMP(DdOrFdOpcodeTStates[*instruction]) : Z80_TSTATES_NOJUMP(DdOrFdOpcodeTStates[*instruction]));
+	    *tStates = static_cast<int>(useJumpCycleCost ? Z80_TSTATES_JUMP(DdOrFdOpcodeTStates[*instruction]) : Z80_TSTATES_NOJUMP(DdOrFdOpcodeTStates[*instruction]));
 	}
 
 	if (size) {
@@ -4987,7 +4986,7 @@ void Z80::Z80::executeDdcbOrFdcbInstruction(UnsignedWord & reg, const UnsignedBy
 {
 	// NOTE these opcodes are of the form 0xdd 0xcb DD II or 0xfd 0xcb DD II where II is the 8-bit opcode and DD is the
 	// 8-bit 2s-complement offset to use with IX or IY
-	SignedByte d(*(instruction));
+	auto d = static_cast<SignedByte>(*(instruction));
 	auto opcodeByte = *(instruction + 1);
 
 	switch(opcodeByte) {
