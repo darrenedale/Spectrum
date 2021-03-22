@@ -79,6 +79,7 @@ void Snapshot::applyTo(Spectrum & spectrum) const
 {
     // TODO throw if spectrum has insufficient memory
     // TODO throw if snapshot has no memory
+    spectrum.reset();
     auto * cpu = spectrum.z80();
     auto & registers = cpu->registers();
     registers.af = m_registers.af;

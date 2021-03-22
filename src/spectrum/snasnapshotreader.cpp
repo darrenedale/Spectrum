@@ -75,7 +75,7 @@ bool SnaSnapshotReader::readInto(Snapshot & snapshot) const
     registers.iy = Z80::z80ToHostByteOrder(header.iy);
 
     registers.sp = Z80::z80ToHostByteOrder(header.sp);
-    registers.sp = 0x0000;      // .sna snapshots have pc set by calling RETN (i.e. PC in on the stack)
+    registers.pc = 0x0000;      // .sna snapshots have pc set by calling RETN (i.e. PC in on the stack)
 
     registers.afShadow = Z80::z80ToHostByteOrder(header.afShadow);
     registers.bcShadow = Z80::z80ToHostByteOrder(header.bcShadow);
@@ -83,7 +83,7 @@ bool SnaSnapshotReader::readInto(Snapshot & snapshot) const
     registers.hlShadow = Z80::z80ToHostByteOrder(header.hlShadow);
 
     registers.i = header.i;
-    registers.i = header.r;
+    registers.r = header.r;
 
     snapshot.iff1 = header.iff & 0x04;
     snapshot.iff2 = snapshot.iff1;

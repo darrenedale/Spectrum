@@ -48,7 +48,6 @@ namespace
             m_addressWidth = 20 + metrics.horizontalAdvance(QStringLiteral("0x0000"));
             m_cellHeight = metrics.height();
             setMinimumSize(3 * m_addressWidth + (2 * Margin), (MinimumLines * m_cellHeight) + (2 * Margin));
-            std::cout << "disassembly view minimum size: " << minimumSize().width() << " x " << minimumSize().height() << '\n';
             updateMnemonics();
         }
 

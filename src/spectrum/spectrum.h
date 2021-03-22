@@ -147,6 +147,9 @@ namespace Spectrum
 
 			inline void refreshDisplays() const;
 
+#if(!defined(NDEBUG))
+            void dumpState() const;
+#endif
 		protected:
 	        void clearMemory() const;
 			bool loadRom(const std::string & fileName);

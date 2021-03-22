@@ -70,6 +70,38 @@ namespace Spectrum
         z80->reset();
     }
 
+#if(!defined(NDEBUG))
+#include <zlib.h>
+    void Spectrum::dumpState() const
+    {
+        std::cout << "Spectrum state:\n"
+            << std::hex << std::setfill('0')
+            << "   AF     BC     DE     HL     IX     IY    AF'    BC'    DE'    HL'\n"
+            << " $" << std::setw(4) << z80()->registers().af << ' '
+            << " $" << std::setw(4) << z80()->registers().bc << ' '
+            << " $" << std::setw(4) << z80()->registers().de << ' '
+            << " $" << std::setw(4) << z80()->registers().hl << ' '
+            << " $" << std::setw(4) << z80()->registers().ix << ' '
+            << " $" << std::setw(4) << z80()->registers().iy << ' '
+            << " $" << std::setw(4) << z80()->registers().afShadow << ' '
+            << " $" << std::setw(4) << z80()->registers().bcShadow << ' '
+            << " $" << std::setw(4) << z80()->registers().deShadow << ' '
+            << " $" << std::setw(4) << z80()->registers().hlShadow << "\n\n"
+            << "   PC     SP      I      R     IM   IFF1  IFF2\n"
+            << " $" << std::setw(4) << z80()->registers().pc
+            << "  $" << std::setw(4) << z80()->registers().sp
+            << "    $" << std::setw(2) << static_cast<std::uint16_t>(z80()->registers().i)
+            << "    $" << std::setw(2) << static_cast<std::uint16_t>(z80()->registers().r)
+            << "     " << static_cast<std::uint16_t>(z80()->interruptMode())
+            << "     " << (z80()->iff1() ? '1' : '0')
+            << "     " << (z80()->iff2() ? '1' : '0') << "\n\n";
+            unsigned long  crc = crc32(0L, nullptr, 0);
+            crc = crc32(crc, memory(), memorySize());
+            std::cout << "Memory checksum: 0x" << crc << '\n'
+                << std::dec << std::setfill(' ');
+    }
+#endif
+
     void Spectrum::clearMemory() const
     {
         std::memset(m_ram, 0, memorySize());
