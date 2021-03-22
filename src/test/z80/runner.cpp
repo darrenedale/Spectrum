@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <sstream>
 #include <cstring>
 
 #include "runner.h"
@@ -141,12 +142,12 @@ namespace
             logFailures(failures);
         }
 
-        return failures.size();
+        return static_cast<int>(failures.size());
     }
 }
 
 Runner::Runner(std::string testFileBaseName)
-: Runner(testFileBaseName, new ::Z80::Z80(new UnsignedByte[65536], 65536))
+: Runner(std::move(testFileBaseName), new ::Z80::Z80(new UnsignedByte[65536], 65536))
 {
     m_borrowedCpu = false;
     m_ioDevice = std::make_unique<TestIoDevice>();
@@ -154,12 +155,12 @@ Runner::Runner(std::string testFileBaseName)
 }
 
 Runner::Runner(std::string testFileBaseName, ::Z80::Z80 & cpu)
-: Runner(testFileBaseName, &cpu)
+: Runner(std::move(testFileBaseName), &cpu)
 {
 }
 
 Runner::Runner(std::string testFileBaseName, ::Z80::Z80 * cpu)
-: m_tests(testFileBaseName),
+: m_tests(std::move(testFileBaseName)),
   m_borrowedCpu(true),
   m_testsRead(false),
   m_cpu(cpu),
@@ -173,7 +174,7 @@ Runner::~Runner()
         delete[] m_cpu->memory();
         delete m_cpu;
     }
-};
+}
 
 int Runner::runNextTest()
 {
@@ -206,7 +207,7 @@ std::tuple<int, int> Runner::runAllTests()
     while (m_tests.hasMoreTestCases()) {
         failureCount += runNextTest();
         ++testCount;
-    };
+    }
 
     if (0 == testCount) {
         std::cout << "No tests executed.\n";
