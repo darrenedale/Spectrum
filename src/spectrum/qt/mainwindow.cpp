@@ -17,20 +17,20 @@
 #include <QSettings>
 #include <QDateTime>
 #include <QPainter>
+#include <memory>
 
 #include "mainwindow.h"
 #include "threadpauser.h"
 #include "../snapshot.h"
+#include "../snasnapshotreader.h"
+#include "../z80snapshotreader.h"
+#include "../zxsnapshotreader.h"
 #include "../z80snapshotwriter.h"
 #include "../snasnapshotwriter.h"
 
 using namespace Spectrum::Qt;
 
 using InterruptMode = ::Z80::InterruptMode;
-
-/**
- * TODO refactor the rough snapshot read methods into helper classes, and add buffer overflow checking
- */
 
 namespace
 {
@@ -213,7 +213,7 @@ void MainWindow::refreshSpectrumDisplay()
         painter.drawText(2, y += 10, QStringLiteral("AF: $%1").arg(registers.af, 4, 16, fill));
         painter.drawText(2, y += 10, QStringLiteral("BC: $%1").arg(registers.bc, 4, 16, fill));
         painter.drawText(2, y += 10, QStringLiteral("DE: $%1").arg(registers.de, 4, 16, fill));
-        painter.drawText(2, y, QStringLiteral("HL: $%1").arg(registers.hl, 4, 16, fill));
+        painter.drawText(2, y + 10, QStringLiteral("HL: $%1").arg(registers.hl, 4, 16, fill));
         painter.end();
 
         m_displayWidget.setImage(image);
@@ -252,6 +252,8 @@ QString MainWindow::guessSnapshotFormat(const QString & fileName)
 
 void MainWindow::loadSnapshot(const QString & fileName, QString format)
 {
+    ThreadPauser pauser(m_spectrumThread);
+
     if (format.isEmpty()) {
         format = guessSnapshotFormat(fileName);
 
@@ -260,344 +262,53 @@ void MainWindow::loadSnapshot(const QString & fileName, QString format)
         }
     }
 
+    // TODO use a factory to get a reader for a format
+    std::unique_ptr<SnapshotReader> reader;
+
     if ("sna" == format) {
-        loadSnaSnapshot(fileName);
+        reader = std::make_unique<SnaSnapshotReader>(fileName.toStdString());
     } else if ("z80" == format) {
-        loadZ80Snapshot(fileName);
+        reader = std::make_unique<Z80SnapshotReader>(fileName.toStdString());
     } else if ("sp" == format) {
+        // TODO SP snapshot reader class
         loadSpSnapshot(fileName);
-    } else {
+        return;
+    } else if ("zx" == format) {
+        reader = std::make_unique<ZXSnapshotReader>(fileName.toStdString());
+    }
+
+    if (!reader) {
         std::cerr << "unrecognised format '" << format.toStdString() << "' from filename '" << fileName.toStdString() << "'\n";
         statusBar()->showMessage(tr("The snapshot format for %1 could not be determined.").arg(fileName), DefaultStatusBarMessageTimeout);
     }
-}
 
-void MainWindow::loadSnaSnapshot(const QString & fileName)
-{
-    ThreadPauser pauser(m_spectrumThread);
-
-    char buffer[49179];
-    {
-        std::ifstream in(fileName.toStdString());
-
-        if (!in.is_open()) {
-            // TODO display "not found" message
-            std::cout << "Could not open file '" << fileName.toStdString() << "'\n";
-            statusBar()->showMessage(tr("The snapshot file %1 could not be opened.").arg(fileName), DefaultStatusBarMessageTimeout);
-            return;
-        }
-
-        int bytesToRead = sizeof(buffer);
-        auto bytesIn = in.tellg();
-
-        while (!in.eof() && 0 < bytesToRead - bytesIn) {
-            in.read(buffer + bytesIn, bytesToRead);
-            bytesIn = in.tellg();
-        }
-
-        if (-1 != bytesIn && sizeof(buffer) != bytesIn) {
-            // TODO display "read error" message
-            std::cout << "Error reading file '" << fileName.toStdString() << "'\n";
-            statusBar()->showMessage(tr("The snapshot file %1 could not be read.").arg(fileName), DefaultStatusBarMessageTimeout);
-            return;
-        }
-    }
-
-    auto * ram = m_spectrum.memory() + 16384;
-    auto & cpu = *(m_spectrum.z80());
-    auto & registers = cpu.registers();
-    auto * byte = buffer;
-
-    for (auto * reg : {&registers.i, &registers.lShadow, &registers.hShadow, &registers.eShadow, &registers.dShadow, &registers.cShadow, &registers.bShadow, &registers.fShadow, &registers.aShadow, &registers.l, &registers.h, &registers.e, &registers.d, &registers.c, &registers.b, &registers.iyl, &registers.iyh, &registers.ixl, &registers.ixh}) {
-        *reg = *(byte++);
-    }
-
-    bool iff = *(byte++) & 0x04;
-    cpu.setIff1(iff);
-    cpu.setIff2(iff);
-
-    for (auto * reg : {&registers.r, &registers.f, &registers.a, &registers.spL, &registers.spH}) {
-        *reg = *(byte++);
-    }
-
-    cpu.setInterruptMode(static_cast<InterruptMode>(*(byte++) & 0x03));
-    m_display.setBorder(static_cast<Colour>(*(byte++) & 0x07));
-    std::memcpy(ram, byte, 0xc000);
-
-    // update the display
-    m_display.redrawDisplay(ram);
-    m_displayWidget.setImage(m_display.image());
-
-    // RETN instruction is required to resume execution of the .SNA
-    cpu.execute(reinterpret_cast<const Z80::UnsignedByte *>("\xed\x45"));
-    statusBar()->showMessage(tr("The snapshot file %1 was successfully loaded.").arg(fileName), DefaultStatusBarMessageTimeout);
-}
-
-void MainWindow::loadZ80Snapshot(const QString & fileName)
-{
-    ThreadPauser pauser(m_spectrumThread);
-    std::error_code err;
-    auto fileSize = std::filesystem::file_size(fileName.toStdString(), err);
-
-    if (err) {
-        std::cerr << "failed to determine file size for .z80 file '" << fileName.toStdString() << "'\n";
-        statusBar()->showMessage(tr("The size of the snapshot file %1 could not be determined.").arg(fileName), DefaultStatusBarMessageTimeout);
+    if (!reader->isOpen()) {
+        std::cerr << "Snapshot file '" << fileName.toStdString() << "' could not be opened.\n";
+        statusBar()->showMessage(tr("The snapshot file %1 could not be opened.").arg(fileName), DefaultStatusBarMessageTimeout);
         return;
     }
 
-    char buffer[49186];
-    {
-        std::ifstream in(fileName.toStdString());
+    bool successful;
+    const auto & snapshot = reader->read(successful);
 
-        if (!in) {
-            std::cout << "Could not open file '" << fileName.toStdString() << "'\n";
-            statusBar()->showMessage(tr("The snapshot file %1 could not be opened.").arg(fileName), DefaultStatusBarMessageTimeout);
-            return;
-        }
-
-        in.read(buffer, static_cast<std::streamsize>(fileSize - in.tellg()));
-
-        if (in.fail()) {
-            std::cout << "Error reading file '" << fileName.toStdString() << "'\n";
-            statusBar()->showMessage(tr("The snapshot file %1 could not be read.").arg(fileName), DefaultStatusBarMessageTimeout);
-            return;
-        }
+    if (!successful) {
+        statusBar()->showMessage(tr("The snapshot file %1 is not valid.").arg(fileName), DefaultStatusBarMessageTimeout);
+        return;
     }
 
-    auto * ram = m_spectrum.memory() + 0x4000;
-    auto & cpu = *(m_spectrum.z80());
-    auto & registers = cpu.registers();
-    auto * byte = buffer;
-
-    // see https://worldofspectrum.org/faq/reference/z80format.htm
-
-    // NOTE the enumerated values are the lengths, in bytes, of the additional header
-    enum class Format : uint8_t
-    {
-        Version1 = 0,
-        Version2 = 23,
-        Version3 = 54,
-        Version3WithPort1ffdOut = 55,
-    };
-
-    enum class V1MachineType : uint8_t
-    {
-        Spectrum48k = 0,
-    };
-
-    enum class V2MachineType : uint8_t
-    {
-        Spectrum48k = 0,
-        Spectrum48kInterface1,
-        SamRam,
-        Spectrum128k,
-        Spectrum128kInterface1,
-        SpectrumPlus3 = 7,
-        SpectrumPlus3Mistaken,
-        Pentagon128k,
-        Scorpion256k,
-        DidaktikKompakt,
-        SpectrumPlus2,
-        SpectrumPlus2A,
-        TC2048,
-        TC2068,
-        TS2068,
-    };
-
-    enum class V3MachineType : uint8_t
-    {
-        Spectrum48k = 0,
-        Spectrum48kInterface1,
-        SamRam,
-        Spectrum48kMgt,
-        Spectrum128k,
-        Spectrum128kInterface1,
-        Spectrum128kMgt,
-        SpectrumPlus3,
-        SpectrumPlus3Mistaken,
-        Pentagon128k,
-        Scorpion256k,
-        DidaktikKompakt,
-        SpectrumPlus2,
-        SpectrumPlus2A,
-        TC2048,
-        TC2068,
-        TS2068 = 128,
-    };
-
-    // determine file format at machine type
-    // bytes 6 and 7 will both be 0 if it's v2 or v3 file (with extended header); anything else is v1 file (no extended
-    // header)
-    Format format;
-    std::uint8_t machine;
-
-    if (0 == (buffer[6] | buffer[7])) {
-        format = static_cast<Format>(buffer[30] | (static_cast<std::uint16_t>(buffer[31]) << 8));
-        machine = buffer[34];
-
-        switch (format) {
-            case Format::Version2:
-                if (machine != static_cast<std::uint8_t>(V2MachineType::Spectrum48k) &&
-                    machine != static_cast<std::uint8_t>(V2MachineType::Spectrum48kInterface1)) {
-                    std::cerr << "The .z80 file '" << fileName.toStdString()
-                              << "' is for a Spectrum model not supported by this emulator.\n";
-                    statusBar()->showMessage(tr("The snapshot file %1 is for a Spectrum model not supported by this emulator.").arg(fileName), DefaultStatusBarMessageTimeout);
-                    return;
-                }
-                break;
-
-            case Format::Version3:
-            case Format::Version3WithPort1ffdOut:
-                if (machine != static_cast<std::uint8_t>(V3MachineType::Spectrum48k) &&
-                    machine != static_cast<std::uint8_t>(V3MachineType::Spectrum48kInterface1) &&
-                    machine != static_cast<std::uint8_t>(V3MachineType::Spectrum48kMgt)) {
-                    std::cerr << "The .z80 file '" << fileName.toStdString()
-                              << "' is for a Spectrum model not supported by this emulator.\n";
-                    statusBar()->showMessage(tr("The snapshot file %1 is for a Spectrum model not supported by this emulator.").arg(fileName), DefaultStatusBarMessageTimeout);
-                    return;
-                }
-                break;
-
-            default:
-                std::cerr << "The version (" << static_cast<uint32_t>(format) << ") of the .z80 file '"
-                          << fileName.toStdString() << "' is not recognised.\n";
-                statusBar()->showMessage(tr("The version of the snapshot file %1 is not recognised.").arg(fileName), DefaultStatusBarMessageTimeout);
-                return;
-        }
-    } else {
-        format = Format::Version1;
-    }
-
-    for (auto * reg : {&registers.a, &registers.f, &registers.c, &registers.b, &registers.l, &registers.h,
-                       &registers.pcL, &registers.pcH, &registers.spL, &registers.spH, &registers.i, &registers.r,}) {
-        *reg = *(byte++);
-    }
-
-    std::uint8_t fileFormatFlags = *(byte++);
-
-    // flag byte contains bit 7 of R register in bit 0
-    registers.r |= (fileFormatFlags & 0x01) << 7;
-    m_display.setBorder(static_cast<Colour>((fileFormatFlags & 0b00001110) >> 1));
-
-    for (auto & reg : {&registers.e, &registers.d, &registers.cShadow, &registers.bShadow, &registers.eShadow,
-                       &registers.dShadow, &registers.lShadow, &registers.hShadow, &registers.aShadow,
-                       &registers.fShadow, &registers.iyl, &registers.iyh, &registers.ixl, &registers.ixh,}) {
-        *reg = *(byte++);
-    }
-
-    cpu.setIff1(*(byte++));
-    cpu.setIff2(*(byte++));
-
-    const auto featureFlags = *(byte++);
-
-    // bits 0 and 1 contain the interrupt mode
-    //
-    // for the meaning of other bits, see https://worldofspectrum.org/faq/reference/z80format.htm
-    cpu.setInterruptMode(static_cast<InterruptMode>(featureFlags & 0x03));
-
-    if (Format::Version1 != format) {
-        byte += 2;
-        registers.pcL = *(byte++);
-        registers.pcH = *(byte++);
-
-        // none of the remainder of the extra header is relevant to us at present. for the meaning of the fields see
-        // https://worldofspectrum.org/faq/reference/z80format.htm
-        byte += static_cast<std::uint16_t>(format) - 2;
-    }
-
-    // now we have the RAM image
-
-    // bit 5 of the format flag indicates whether or not the RAM image is compressed
-    if (Format::Version1 == format) {
-        if (fileFormatFlags & 0b00100000) {
-            // locate the end marker
-            auto * end = byte;
-            unsigned char endMarker[4] = {0x00, 0xed, 0xed, 0x00};
-            auto * bufferMax = buffer + fileSize - 4;
-
-            while (end <= bufferMax &&
-                   *reinterpret_cast<std::uint32_t *>(end) != *reinterpret_cast<std::uint32_t *>(endMarker)) {
-                ++end;
-            }
-
-            if (end > bufferMax) {
-                std::cerr << "failed to find end of memory image marker in file '" << fileName.toStdString() << "'\n";
-                statusBar()->showMessage(tr("The snapshot file %1 is not valid (memory image corrupt).").arg(fileName), DefaultStatusBarMessageTimeout);
-                return;
-            }
-
-            auto * ramByte = ram;
-            const std::uint16_t rleMarker = 0xeded;
-
-            while (byte < end) {
-                if (rleMarker == *(reinterpret_cast<std::uint16_t *>(byte))) {
-                    byte += 2;
-                    auto count = *reinterpret_cast<std::uint8_t *>(byte++);
-                    auto byteValue = *(byte++);
-                    std::memset(ramByte, byteValue, count);
-                    ramByte += count;
-                } else {
-                    *(ramByte++) = *(byte++);
-                }
-            }
-        } else {
-            std::memcpy(ram, byte, buffer + fileSize - byte);
-        }
-    } else {
-        while (byte < (buffer + fileSize)) {
-            auto dataSize = Z80::Z80::z80ToHostByteOrder(*reinterpret_cast<std::uint16_t *>(byte));
-            byte += 2;
-            auto page = static_cast<std::uint8_t>(*(byte++));
-            bool readPage = true;
-            decltype(ram) ramByte;
-
-            // NOTE: ram points to the first byte of addressable RAM (0x0000 - 0x3fff is ROM), whereas the .z80 defines
-            // the pages as offsets from 0x0000, so we need to adjust accordingly
-            switch (page) {
-                case 4:
-                    ramByte = ram + 0x8000 - 0x4000;
-                    break;
-
-                case 5:
-                    ramByte = ram + 0xc000 - 0x4000;
-                    break;
-
-                case 8:
-                    ramByte = ram;
-                    break;
-
-                default:
-                    std::cerr << "Ignored RAM page " << static_cast<std::uint16_t>(page) << " - not relevant to Spectrum48K\n";
-                    byte += dataSize;
-                    readPage = false;
-                    break;
-            }
-
-            if (readPage) {
-                auto * end = byte + dataSize;
-                const std::uint16_t rleMarker = 0xeded;
-
-                while (byte < end) {
-                    if (rleMarker == *(reinterpret_cast<std::uint16_t *>(byte))) {
-                        byte += 2;
-                        auto count = *reinterpret_cast<std::uint8_t *>(byte++);
-                        auto byteValue = *(byte++);
-                        std::memset(ramByte, byteValue, count);
-                        ramByte += count;
-                    } else {
-                        *(ramByte++) = *(byte++);
-                    }
-                }
-            }
-        }
-    }
-
-    // update the display
-    m_display.redrawDisplay(ram);
+    snapshot.applyTo(m_spectrum);
+    m_display.redrawDisplay(m_spectrum.displayMemory());
     m_displayWidget.setImage(m_display.image());
+
+    if ("sna" == format) {
+        // RETN instruction is required to resume execution of the .SNA
+        m_spectrum.z80()->execute(reinterpret_cast<const Z80::UnsignedByte *>("\xed\x45"));
+    }
+
     statusBar()->showMessage(tr("The snapshot file %1 was successfully loaded.").arg(fileName), DefaultStatusBarMessageTimeout);
 }
 
+// TODO extract this to a SnapshotReader class
 void MainWindow::loadSpSnapshot(const QString & fileName)
 {
     // NOTE all data is in Z80 byte order
@@ -951,10 +662,11 @@ void MainWindow::loadSnapshotTriggered()
     ThreadPauser pauser(m_spectrumThread);
 
     if(filters.isEmpty()) {
-        filters << tr("All supported snapshot files (*.sna *.z80 *.sp)");
+        filters << tr("All supported snapshot files (*.sna *.z80 *.sp *.zx)");
         filters << tr("SNA Snapshots (*.sna)");
         filters << tr("Z80 Snapshots (*.z80)");
         filters << tr("SP Snapshots (*.sp)");
+        filters << tr("ZX Snapshots (*.zx)");
     }
 
     QString fileName = QFileDialog::getOpenFileName(this, tr("Load snapshot"), m_lastSnapshotLoadDir, filters.join(";;"), &lastFilter);

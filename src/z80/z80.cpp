@@ -784,7 +784,7 @@ m_iff1 = m_iff2;                 \
     m_registers.memptr = tmpPort + 1;                  \
 }
 
-// TODO if multiple devices are writing on a given port, what happens to the result?
+// TODO if multiple devices are reading from a given port, what happens to the result?
 #define Z80__READ_IO_DEVICES(result, port) { \
     (result) = 0xff;                         \
                                              \

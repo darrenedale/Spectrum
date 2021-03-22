@@ -32,8 +32,6 @@ namespace Spectrum::Qt
         void saveScreenshot(const QString & fileName);
 
         void loadSnapshot(const QString & fileName, QString format = {});
-        void loadSnaSnapshot(const QString & fileName);
-        void loadZ80Snapshot(const QString & fileName);
         void loadSpSnapshot(const QString & fileName);
 
         // NOTE can't be const because the thread must be paused

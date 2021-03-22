@@ -16,7 +16,11 @@ add_executable(
         displaydevice.h
         snapshot.cpp
         snapshot.h
+        snapshotreader.cpp
         snapshotwriter.cpp
+        z80snapshotreader.cpp
+        snasnapshotreader.cpp
+        zxsnapshotreader.cpp
         z80snapshotwriter.cpp
         z80snapshotwriter.h
         snasnapshotwriter.cpp

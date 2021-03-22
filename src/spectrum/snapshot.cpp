@@ -41,7 +41,10 @@ Snapshot::Snapshot(const ::Z80::Registers & registers, Z80::UnsignedByte * memor
 
     if (memorySize) {
         m_memory.image = new Z80::UnsignedByte[memorySize];
-        std::memcpy(m_memory.image, memory, memorySize);
+
+        if (memory) {
+            std::memcpy(m_memory.image, memory, memorySize);
+        }
     }
 }
 
@@ -85,6 +88,9 @@ void Snapshot::applyTo(Spectrum & spectrum) const
     registers.ix = m_registers.ix;
     registers.iy = m_registers.iy;
 
+    registers.pc = m_registers.pc;
+    registers.sp = m_registers.sp;
+
     registers.afShadow = m_registers.afShadow;
     registers.bcShadow = m_registers.bcShadow;
     registers.deShadow = m_registers.deShadow;
@@ -98,7 +104,14 @@ void Snapshot::applyTo(Spectrum & spectrum) const
     cpu->setIff1(iff1);
     cpu->setIff2(iff2);
     cpu->setInterruptMode(im);
-    std::memcpy(spectrum.memory(), m_memory.image, m_memory.size);
+
+    for (auto * display : spectrum.displayDevices()) {
+        display->setBorder(border);
+    }
+
+    // TODO for now we assume that the Spectrum already has its ROM loaded but should we incorporate this into the
+    //  snapshot image so that different ROMs are supported
+    std::memcpy(spectrum.memory() + 0x4000, m_memory.image + 0x4000, m_memory.size - 0x4000);
 }
 
 void Snapshot::readFrom(Spectrum & spectrum)
