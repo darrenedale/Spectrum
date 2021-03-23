@@ -31,6 +31,8 @@ add_executable(
         qt/breakpoint.cpp
         qt/programcounterbreakpoint.cpp
         qt/debugwindow.cpp
+        qt/registerswidget.cpp
+        qt/shadowregisterswidget.cpp
         qt/pokewidget.cpp
         qt/pokewidget.h
         qt/qimagedisplaydevice.cpp

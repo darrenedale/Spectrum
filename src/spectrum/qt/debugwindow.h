@@ -7,6 +7,8 @@
 #include <QAction>
 
 #include "hexspinbox.h"
+#include "registerswidget.h"
+#include "shadowregisterswidget.h"
 #include "registerpairwidget.h"
 #include "flagswidget.h"
 #include "disassemblywidget.h"
@@ -72,24 +74,14 @@ namespace Spectrum::Qt
 
         Thread * m_thread;
 
-        RegisterPairWidget m_af;
-        RegisterPairWidget m_bc;
-        RegisterPairWidget m_de;
-        RegisterPairWidget m_hl;
-        RegisterPairWidget m_ix;
-        RegisterPairWidget m_iy;
+        RegistersWidget m_registers;
         DisassemblyWidget m_disassembly;
-        RegisterPairWidget m_afshadow;
-        RegisterPairWidget m_bcshadow;
-        RegisterPairWidget m_deshadow;
-        RegisterPairWidget m_hlshadow;
+        ShadowRegistersWidget m_shadowRegisters;
         HexSpinBox m_sp;
         HexSpinBox m_pc;
         QSpinBox m_im;
         HexSpinBox m_i;
         HexSpinBox m_r;
-        FlagsWidget m_flags;
-        FlagsWidget m_shadowFlags;
         MemoryWidget m_memoryWidget;
         HexSpinBox m_memoryLocation;
         QToolButton m_setBreakpoint;
@@ -103,7 +95,6 @@ namespace Spectrum::Qt
         KeyboardMonitorWidget m_keyboardMonitor;
         PokeWidget m_poke;
 
-        QDockWidget * m_shadowRegistersDock;
         QDockWidget * m_memoryDock;
         QDockWidget * m_keyboardDock;
         QDockWidget * m_pokeDock;

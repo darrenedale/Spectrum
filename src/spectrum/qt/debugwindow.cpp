@@ -33,24 +33,14 @@ DebugWindow::DebugWindow(QWidget * parent )
 DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
 : QMainWindow(parent),
   m_thread(thread),
-  m_af(QStringLiteral("AF")),
-  m_bc(QStringLiteral("BC")),
-  m_de(QStringLiteral("DE")),
-  m_hl(QStringLiteral("HL")),
-  m_ix(QStringLiteral("IX")),
-  m_iy(QStringLiteral("IY")),
+  m_registers(),
   m_disassembly(m_thread->spectrum()),
-  m_afshadow(QStringLiteral("AF'")),
-  m_bcshadow(QStringLiteral("BC'")),
-  m_deshadow(QStringLiteral("DE'")),
-  m_hlshadow(QStringLiteral("HL'")),
+  m_shadowRegisters(),
   m_pc(4),
   m_sp(4),
   m_i(2),
   m_r(2),
   m_im(),
-  m_flags(),
-  m_shadowFlags(),
   m_memoryWidget(thread->spectrum()),
   m_memoryLocation(),
   m_setBreakpoint(),
@@ -62,7 +52,6 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
   m_status(),
   m_keyboardMonitor(&m_thread->spectrum()),
   m_poke(),
-  m_shadowRegistersDock(nullptr),
   m_memoryDock(nullptr),
   m_keyboardDock(nullptr),
   m_pokeDock(nullptr),
@@ -89,15 +78,8 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
     m_memoryPc.setText(QStringLiteral("PC"));
     m_memorySp.setText(QStringLiteral("SP"));
 
-    QFont widgetFont = m_af.font();
+    QFont widgetFont = font();
     widgetFont.setPointSizeF(widgetFont.pointSizeF() * 0.85);
-
-    for (auto * widget : {&m_af, &m_bc, &m_de, &m_hl, &m_ix, &m_iy, &m_afshadow, &m_bcshadow, &m_deshadow, &m_hlshadow, }) {
-        widget->setFont(widgetFont);
-    }
-
-    m_flags.setFont(widgetFont);
-    m_shadowFlags.setFont(widgetFont);
     m_pc.setFont(widgetFont);
     m_sp.setFont(widgetFont);
 
@@ -159,55 +141,28 @@ void DebugWindow::createDockWidgets()
     addDockWidget(::Qt::DockWidgetArea::RightDockWidgetArea, m_pokeDock);
 
     // shadow registers
-    m_shadowRegistersDock = new QDockWidget(tr("Shadow registers"));
+    auto * dock = new QDockWidget(tr("Shadow registers"));
     auto * shadowRegisters = new QWidget();
     auto * shadowRegistersLayout = new QVBoxLayout();
 
     shadowRegistersLayout->setSpacing(2);
-    shadowRegistersLayout->addWidget(&m_afshadow);
-    shadowRegistersLayout->addWidget(&m_bcshadow);
-    shadowRegistersLayout->addWidget(&m_deshadow);
-    shadowRegistersLayout->addWidget(&m_hlshadow);
-
-    auto * flagsLayout = new QHBoxLayout();
-    auto * tmpLabel = new QLabel("Flags");
-    tmpLabel->setBuddy(&m_shadowFlags);
-    tmpLabel->setFont(m_shadowFlags.font());
-    flagsLayout->addWidget(tmpLabel);
-    flagsLayout->addWidget(&m_shadowFlags);
-    flagsLayout->addStretch(10);
-    shadowRegistersLayout->addLayout(flagsLayout);
+    shadowRegistersLayout->addWidget(&m_shadowRegisters);
     shadowRegistersLayout->addStretch(10);
-
     shadowRegisters->setLayout(shadowRegistersLayout);
-    m_shadowRegistersDock->setWidget(shadowRegisters);
-    addDockWidget(::Qt::DockWidgetArea::LeftDockWidgetArea, m_shadowRegistersDock);
+    dock->setWidget(shadowRegisters);
+    addDockWidget(::Qt::DockWidgetArea::LeftDockWidgetArea, dock);
 }
 
 void DebugWindow::layoutWidget()
 {
+	QLabel * tmpLabel;
+
 	// registers
 	auto * plainRegisters = new QGroupBox(tr("Registers"));
 	auto * plainRegistersLayout = new QVBoxLayout();
-	QLabel * tmpLabel;
 
+    plainRegistersLayout->addWidget(&m_registers);
 	plainRegistersLayout->setSpacing(2);
-	plainRegistersLayout->addWidget(&m_af);
-	plainRegistersLayout->addWidget(&m_bc);
-	plainRegistersLayout->addWidget(&m_de);
-	plainRegistersLayout->addWidget(&m_hl);
-	plainRegistersLayout->addWidget(&m_ix);
-	plainRegistersLayout->addWidget(&m_iy);
-
-	auto * flagsLayout = new QHBoxLayout();
-    tmpLabel = new QLabel("Flags");
-    tmpLabel->setBuddy(&m_flags);
-    tmpLabel->setFont(m_flags.font());
-	flagsLayout->addWidget(tmpLabel);
-	flagsLayout->addWidget(&m_flags);
-	flagsLayout->addStretch(10);
-	plainRegistersLayout->addLayout(flagsLayout);
-
 	plainRegistersLayout->addStretch(10);
 	plainRegisters->setLayout(plainRegistersLayout);
 
@@ -287,25 +242,19 @@ void DebugWindow::connectWidgets()
         updateStateDisplay();
     });
 
-    for (auto * widget : {&m_af, &m_bc, &m_de, &m_hl, &m_ix, &m_iy, &m_afshadow, &m_bcshadow, &m_deshadow, &m_hlshadow, }) {
-        connect(widget, &RegisterPairWidget::valueChanged, [this, widget]() {
-            assert(m_thread);
-            auto * cpu = m_thread->spectrum().z80();
-            assert(cpu);
-            auto & registers = cpu->registers();
+    connect(&m_registers, &RegistersWidget::registerChanged, [this](::Z80::Register16 reg, ::Z80::UnsignedWord value) {
+        assert(m_thread);
+        auto * cpu = m_thread->spectrum().z80();
+        assert(cpu);
+        cpu->setRegisterValue(reg, value);
+    });
 
-            if(widget == &m_af) registers.af = widget->value();
-            else if(widget == &m_bc) registers.bc = widget->value();
-            else if(widget == &m_de) registers.de = widget->value();
-            else if(widget == &m_hl) registers.hl = widget->value();
-            else if(widget == &m_ix) registers.ix = widget->value();
-            else if(widget == &m_iy) registers.iy = widget->value();
-            else if(widget == &m_afshadow) registers.afShadow = widget->value();
-            else if(widget == &m_bcshadow) registers.bcShadow = widget->value();
-            else if(widget == &m_deshadow) registers.deShadow = widget->value();
-            else if(widget == &m_hlshadow) registers.hlShadow = widget->value();
-        });
-    }
+    connect(&m_shadowRegisters, &ShadowRegistersWidget::registerChanged, [this](::Z80::Register16 reg, ::Z80::UnsignedWord value) {
+        assert(m_thread);
+        auto * cpu = m_thread->spectrum().z80();
+        assert(cpu);
+        cpu->setRegisterValue(reg, value);
+    });
 
     for (auto * widget : {&m_sp, &m_pc, &m_i, &m_r, }) {
         connect(widget, &QSpinBox::editingFinished, [this, widget]() {
@@ -355,23 +304,25 @@ void DebugWindow::updateStateDisplay()
 	auto * cpu = m_thread->spectrum().z80();
 	assert(cpu);
 	auto & registers = cpu->registers();
-	m_af.setValue(registers.af);
-	m_bc.setValue(registers.bc);
-	m_de.setValue(registers.de);
-	m_hl.setValue(registers.hl);
-	m_ix.setValue(registers.ix);
-	m_iy.setValue(registers.iy);
-	m_afshadow.setValue(registers.afShadow);
-	m_bcshadow.setValue(registers.bcShadow);
-	m_deshadow.setValue(registers.deShadow);
-	m_hlshadow.setValue(registers.hlShadow);
+	m_registers.setRegisters(registers);
+	m_shadowRegisters.setRegisters(registers);
+//	m_af.setValue(registers.af);
+//	m_bc.setValue(registers.bc);
+//	m_de.setValue(registers.de);
+//	m_hl.setValue(registers.hl);
+//	m_ix.setValue(registers.ix);
+//	m_iy.setValue(registers.iy);
+//	m_afshadow.setValue(registers.afShadow);
+//	m_bcshadow.setValue(registers.bcShadow);
+//	m_deshadow.setValue(registers.deShadow);
+//	m_hlshadow.setValue(registers.hlShadow);
 	m_pc.setValue(registers.pc);
 	m_sp.setValue(registers.sp);
 	m_im.setValue(static_cast<int>(cpu->interruptMode()));
 	m_i.setValue(registers.i);
 	m_r.setValue(registers.r);
-	m_flags.setAllFlags(registers.f);
-	m_shadowFlags.setAllFlags(registers.fShadow);
+//	m_flags.setAllFlags(registers.f);
+//	m_shadowFlags.setAllFlags(registers.fShadow);
 	m_memoryWidget.clearHighlights();
 	m_memoryWidget.setHighlight(m_pc.value(), qRgb(0x80, 0xe0, 0x80), qRgba(0, 0, 0, 0.0));
 	m_memoryWidget.setHighlight(m_sp.value(), qRgb(0x80, 0x80, 0xe0), qRgba(0, 0, 0, 0.0));
@@ -403,9 +354,10 @@ void DebugWindow::threadPaused()
 {
     m_pauseResume.setIcon(QIcon::fromTheme(QStringLiteral("media-playback-start")));
     m_pauseResume.setText(tr("Resume"));
-    centralWidget()->setEnabled(true);
+    m_registers.setEnabled(true);
+    m_disassembly.setEnabled(true);
     m_poke.setEnabled(true);
-    m_shadowRegistersDock->setEnabled(true);
+    m_shadowRegisters.setEnabled(true);
     m_memoryDock->setEnabled(true);
     m_keyboardDock->setEnabled(true);
     m_step.setEnabled(true);
@@ -417,9 +369,10 @@ void DebugWindow::threadResumed()
 {
     m_pauseResume.setIcon(QIcon::fromTheme(QStringLiteral("media-playback-pause")));
     m_pauseResume.setText(tr("Pause"));
-    centralWidget()->setEnabled(false);
+    m_registers.setEnabled(false);
+    m_disassembly.setEnabled(false);
     m_poke.setEnabled(false);
-    m_shadowRegistersDock->setEnabled(false);
+    m_shadowRegisters.setEnabled(false);
     m_memoryDock->setEnabled(false);
     m_keyboardDock->setEnabled(false);
     m_step.setEnabled(false);
