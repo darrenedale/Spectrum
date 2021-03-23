@@ -33,6 +33,7 @@ add_executable(
         qt/debugwindow.cpp
         qt/registerswidget.cpp
         qt/shadowregisterswidget.cpp
+        qt/interruptwidget.cpp
         qt/pokewidget.cpp
         qt/pokewidget.h
         qt/qimagedisplaydevice.cpp

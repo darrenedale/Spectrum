@@ -38,9 +38,7 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
   m_shadowRegisters(),
   m_pc(4),
   m_sp(4),
-  m_i(2),
-  m_r(2),
-  m_im(),
+  m_interrupts(),
   m_memoryWidget(thread->spectrum()),
   m_memoryLocation(),
   m_setBreakpoint(),
@@ -53,7 +51,6 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
   m_keyboardMonitor(&m_thread->spectrum()),
   m_poke(),
   m_memoryDock(nullptr),
-  m_keyboardDock(nullptr),
   m_pokeDock(nullptr),
   m_cpuObserver((*this)),
   m_breakpoints()
@@ -64,14 +61,6 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
     m_pc.setMaximum(0xffff);
     m_sp.setMinimum(0);
     m_sp.setMaximum(0xffff);
-
-    m_i.setMinimum(0);
-    m_i.setMaximum(0xff);
-    m_r.setMinimum(0);
-    m_r.setMaximum(0xff);
-
-    m_im.setMinimum(0);
-    m_im.setMaximum(2);
 
     m_memoryWidget.setContextMenuPolicy(::Qt::ContextMenuPolicy::CustomContextMenu);
     m_setBreakpoint.setIcon(QIcon::fromTheme(QStringLiteral("process-stop")));
@@ -117,9 +106,9 @@ void DebugWindow::createToolbars()
 
 void DebugWindow::createDockWidgets()
 {
-    m_keyboardDock = new QDockWidget(tr("Keyboard"), this);
-    m_keyboardDock->setWidget(&m_keyboardMonitor);
-    addDockWidget(::Qt::DockWidgetArea::BottomDockWidgetArea, m_keyboardDock);
+    auto * dock = new QDockWidget(tr("Keyboard"), this);
+    dock->setWidget(&m_keyboardMonitor);
+    addDockWidget(::Qt::DockWidgetArea::BottomDockWidgetArea, dock);
 
     m_memoryDock = new QDockWidget(tr("Memory"), this);
     auto * memory = new QWidget();
@@ -141,7 +130,7 @@ void DebugWindow::createDockWidgets()
     addDockWidget(::Qt::DockWidgetArea::RightDockWidgetArea, m_pokeDock);
 
     // shadow registers
-    auto * dock = new QDockWidget(tr("Shadow registers"));
+    dock = new QDockWidget(tr("Shadow registers"));
     auto * shadowRegisters = new QWidget();
     auto * shadowRegistersLayout = new QVBoxLayout();
 
@@ -168,20 +157,8 @@ void DebugWindow::layoutWidget()
 
 	// interrupts and instruction counter
 	auto * interrupts = new QGroupBox(tr("Interrupts/Refresh"));
-	auto * interruptsLayout =  new QHBoxLayout();
-	tmpLabel = new QLabel(tr("Mode"));
-	tmpLabel->setBuddy(&m_im);
-    interruptsLayout->addWidget(tmpLabel, 0);
-    interruptsLayout->addWidget(&m_im, 10);
-	tmpLabel = new QLabel(tr("I"));
-	tmpLabel->setBuddy(&m_i);
-    interruptsLayout->addWidget(tmpLabel, 0);
-    interruptsLayout->addWidget(&m_i, 10);
-	tmpLabel = new QLabel(tr("R"));
-	tmpLabel->setBuddy(&m_r);
-    interruptsLayout->addWidget(tmpLabel, 0);
-    interruptsLayout->addWidget(&m_r, 10);
-
+	auto * interruptsLayout =  new QVBoxLayout();
+	interruptsLayout->addWidget(&m_interrupts);
 	interrupts->setLayout(interruptsLayout);
 
 	// program counter and stack pointer
@@ -256,7 +233,21 @@ void DebugWindow::connectWidgets()
         cpu->setRegisterValue(reg, value);
     });
 
-    for (auto * widget : {&m_sp, &m_pc, &m_i, &m_r, }) {
+    connect(&m_interrupts, &InterruptWidget::registerChanged, [this](::Z80::Register8 reg, ::Z80::UnsignedByte value) {
+        assert(m_thread);
+        auto * cpu = m_thread->spectrum().z80();
+        assert(cpu);
+        cpu->setRegisterValue(reg, value);
+    });
+
+    connect(&m_interrupts, &InterruptWidget::interruptModeChanged, [this](::Z80::InterruptMode mode) {
+        assert(m_thread);
+        auto * cpu = m_thread->spectrum().z80();
+        assert(cpu);
+        cpu->setInterruptMode(mode);
+    });
+
+    for (auto * widget : {&m_sp, &m_pc,}) {
         connect(widget, &QSpinBox::editingFinished, [this, widget]() {
             assert(m_thread);
             auto * cpu = m_thread->spectrum().z80();
@@ -264,17 +255,8 @@ void DebugWindow::connectWidgets()
             auto & registers = cpu->registers();
             if(widget == &m_pc) registers.pc = widget->value();
             else if(widget == &m_sp) registers.sp = widget->value();
-            else if(widget == &m_i) registers.i = widget->value();
-            else if(widget == &m_r) registers.r = widget->value();
         });
     }
-
-    connect(&m_im, qOverload<int>(&QSpinBox::valueChanged), [this](int value) {
-        assert(m_thread);
-        auto * cpu = m_thread->spectrum().z80();
-        assert(cpu);
-        cpu->setInterruptMode(static_cast<InterruptMode>(value));
-    });
 }
 
 void DebugWindow::closeEvent(QCloseEvent * ev)
@@ -306,23 +288,10 @@ void DebugWindow::updateStateDisplay()
 	auto & registers = cpu->registers();
 	m_registers.setRegisters(registers);
 	m_shadowRegisters.setRegisters(registers);
-//	m_af.setValue(registers.af);
-//	m_bc.setValue(registers.bc);
-//	m_de.setValue(registers.de);
-//	m_hl.setValue(registers.hl);
-//	m_ix.setValue(registers.ix);
-//	m_iy.setValue(registers.iy);
-//	m_afshadow.setValue(registers.afShadow);
-//	m_bcshadow.setValue(registers.bcShadow);
-//	m_deshadow.setValue(registers.deShadow);
-//	m_hlshadow.setValue(registers.hlShadow);
 	m_pc.setValue(registers.pc);
 	m_sp.setValue(registers.sp);
-	m_im.setValue(static_cast<int>(cpu->interruptMode()));
-	m_i.setValue(registers.i);
-	m_r.setValue(registers.r);
-//	m_flags.setAllFlags(registers.f);
-//	m_shadowFlags.setAllFlags(registers.fShadow);
+	m_interrupts.setRegisters(registers);
+	m_interrupts.setInterruptMode((cpu->interruptMode()));
 	m_memoryWidget.clearHighlights();
 	m_memoryWidget.setHighlight(m_pc.value(), qRgb(0x80, 0xe0, 0x80), qRgba(0, 0, 0, 0.0));
 	m_memoryWidget.setHighlight(m_sp.value(), qRgb(0x80, 0x80, 0xe0), qRgba(0, 0, 0, 0.0));
@@ -358,8 +327,13 @@ void DebugWindow::threadPaused()
     m_disassembly.setEnabled(true);
     m_poke.setEnabled(true);
     m_shadowRegisters.setEnabled(true);
-    m_memoryDock->setEnabled(true);
-    m_keyboardDock->setEnabled(true);
+    m_memoryWidget.setEnabled(true);
+    m_interrupts.setEnabled(true);
+    m_setBreakpoint.setEnabled(true);
+    m_memoryLocation.setEnabled(true);
+    m_memoryPc.setEnabled(true);
+    m_memorySp.setEnabled(true);
+    m_keyboardMonitor.setEnabled(true);
     m_step.setEnabled(true);
     updateStateDisplay();
     connect(m_thread, &Thread::stepped, this, &DebugWindow::threadStepped, ::Qt::UniqueConnection);
@@ -373,8 +347,13 @@ void DebugWindow::threadResumed()
     m_disassembly.setEnabled(false);
     m_poke.setEnabled(false);
     m_shadowRegisters.setEnabled(false);
-    m_memoryDock->setEnabled(false);
-    m_keyboardDock->setEnabled(false);
+    m_memoryWidget.setEnabled(false);
+    m_interrupts.setEnabled(false);
+    m_setBreakpoint.setEnabled(false);
+    m_memoryLocation.setEnabled(false);
+    m_memoryPc.setEnabled(false);
+    m_memorySp.setEnabled(false);
+    m_keyboardMonitor.setEnabled(false);
     m_step.setEnabled(false);
     disconnect(m_thread, &Thread::stepped, this, &DebugWindow::threadStepped);
 }
