@@ -3,6 +3,8 @@
 #include <iostream>
 #include <fstream>
 
+#include <QMenuBar>
+#include <QMenu>
 #include <QToolBar>
 #include <QStatusBar>
 #include <QAction>
@@ -17,6 +19,8 @@
 #include <QSettings>
 #include <QDateTime>
 #include <QPainter>
+#include <QStandardPaths>
+#include <QStringBuilder>
 #include <memory>
 
 #include "mainwindow.h"
@@ -45,11 +49,11 @@ MainWindow::MainWindow(QWidget * parent)
   m_spectrumThread(m_spectrum),
   m_display(),
   m_displayWidget(),
-  m_load(QIcon::fromTheme(QStringLiteral("document-open")), tr("Load Snapshot")),
-  m_save(QIcon::fromTheme(QStringLiteral("document-save")), tr("save Snapshot")),
+  m_load(QIcon::fromTheme(QStringLiteral("document-open")), tr("Load snapshot")),
+  m_save(QIcon::fromTheme(QStringLiteral("document-save")), tr("save snapshot")),
   m_pauseResume(QIcon::fromTheme(QStringLiteral("media-playback-start")), tr("Start/Pause")),
   m_saveScreenshot(QIcon::fromTheme(QStringLiteral("image")), tr("Screenshot")),
-  m_refreshScreen(QIcon::fromTheme("view-refresh"), tr("Refresh")),
+  m_refreshScreen(QIcon::fromTheme("view-refresh"), tr("Refresh screen")),
   m_reset(QIcon::fromTheme(QStringLiteral("start-over")), tr("Reset")),
   m_debug(tr("Debug")),
   m_debugStep(QIcon::fromTheme(QStringLiteral("debug-step-instruction")), tr("Step")),
@@ -66,10 +70,10 @@ MainWindow::MainWindow(QWidget * parent)
     m_displayWidget.installEventFilter(&m_keyboard);
     m_displayWidget.installEventFilter(this);
     m_debugWindow.installEventFilter(this);
-    m_load.setShortcuts({::Qt::Key::Key_Control + ::Qt::Key::Key_O, ::Qt::Key::Key_F1});
-    m_save.setShortcuts({::Qt::Key::Key_Control + ::Qt::Key::Key_S, ::Qt::Key::Key_F2});
-    m_pauseResume.setShortcuts({::Qt::Key::Key_Pause, ::Qt::Key::Key_Escape, ::Qt::Key::Key_Control + ::Qt::Key_P,});
-    m_debug.setShortcuts({::Qt::Key::Key_Control + ::Qt::Key::Key_D, ::Qt::Key::Key_F12,});
+    m_load.setShortcut(tr("Ctrl+O"));
+    m_save.setShortcut(tr("Ctrl+S"));
+    m_pauseResume.setShortcuts({::Qt::Key::Key_Pause, ::Qt::Key::Key_Escape, tr("Ctrl+P"),});
+    m_debug.setShortcuts({tr("Ctrl+D"), ::Qt::Key::Key_F12,});
     m_debug.setCheckable(true);
     m_debugStep.setShortcut(::Qt::Key::Key_Space);
     m_saveScreenshot.setShortcut(::Qt::Key::Key_Print);
@@ -95,7 +99,8 @@ MainWindow::MainWindow(QWidget * parent)
     m_displayRefreshTimer.setInterval(10);
     connect(&m_displayRefreshTimer, &QTimer::timeout, this, &MainWindow::refreshSpectrumDisplay);
 
-    createToolbars();
+    createMenuBar();
+    createToolBars();
     createStatusBar();
 
     m_spectrum.setJoystickInterface(&m_joystick);
@@ -140,20 +145,74 @@ MainWindow::~MainWindow()
     }
 }
 
-void MainWindow::createToolbars()
+void MainWindow::createMenuBar()
 {
-	auto * tempToolBar = addToolBar(QStringLiteral("Main"));
+    auto * tempMenuBar = menuBar();
+    auto * menu = tempMenuBar->addMenu(tr("File"));
+    menu->addAction(&m_reset);
+    menu->addSeparator();
+    menu->addAction(&m_load);
+    menu->addAction(&m_save);
+
+    // F1 loads from default slot, F2 saves to default slot
+    // Shift + F1-5 loads from slot 1-5
+    // Shift + Alt + F1-5 saves to slot 1-5
+
+    auto * subMenu = menu->addMenu(tr("Load slot"));
+    subMenu->addAction(tr("Default slot"), [this]() {
+        // TODO configuration to set default slot
+        loadSnapshotFromSlot(1);
+    }, ::Qt::Key::Key_F1);
+    subMenu->addSeparator();
+
+    for (int slotIndex = 1; slotIndex <= 5; ++slotIndex) {
+        subMenu->addAction(tr("Slot %1").arg(slotIndex),  [this, slotIndex]() {
+            loadSnapshotFromSlot(slotIndex);
+        }, QKeySequence(tr("Shift+F%1").arg(slotIndex)));
+    }
+
+    subMenu = menu->addMenu(tr("Save slot"));
+    subMenu->addAction(tr("Default slot"), [this]() {
+        // TODO configuration to set default slot
+        saveSnapshotToSlot(1, QStringLiteral("z80"));
+    }, ::Qt::Key::Key_F2);
+    subMenu->addSeparator();
+
+    for (int slotIndex = 1; slotIndex <= 5; ++slotIndex) {
+        subMenu->addAction(tr("Slot %1").arg(slotIndex), [this, slotIndex]() {
+            saveSnapshotToSlot(slotIndex, QStringLiteral("z80"));
+        }, QKeySequence(tr("Shift+Ctrl+F%1").arg(slotIndex)));
+    }
+
+    menu->addSeparator();
+    menu->addAction(&m_saveScreenshot);
+    menu->addSeparator();
+    menu->addAction(QIcon::fromTheme("application-exit"), tr("Quit"), [this]() {
+        close();
+    });
+
+    menu = tempMenuBar->addMenu(tr("Debugger"));
+    menu->addAction(&m_debug);
+    menu->addAction(&m_debugStep);
+    menu->addSeparator();
+    menu->addAction(&m_refreshScreen);
+}
+
+void MainWindow::createToolBars()
+{
+	auto * tempToolBar = addToolBar(tr("Main"));
     tempToolBar->addAction(&m_load);
     tempToolBar->addAction(&m_save);
     tempToolBar->addSeparator();
     tempToolBar->addAction(&m_pauseResume);
     tempToolBar->addAction(&m_reset);
+
+    tempToolBar = addToolBar(tr("Debug"));
     tempToolBar->addAction(&m_debug);
     tempToolBar->addAction(&m_debugStep);
-    tempToolBar->addAction(&m_saveScreenshot);
     tempToolBar->addAction(&m_refreshScreen);
 
-    tempToolBar = addToolBar(QStringLiteral("Speed"));
+    tempToolBar = addToolBar(tr("Speed"));
     tempToolBar->addWidget(new QLabel(tr("Speed")));
     tempToolBar->addWidget(&m_emulationSpeedSlider);
     tempToolBar->addWidget(&m_emulationSpeedSpin);
@@ -270,9 +329,9 @@ void MainWindow::loadSnapshot(const QString & fileName, QString format)
 //        return;
         reader = std::make_unique<SnaSnapshotReader>(fileName.toStdString());
     } else if ("z80" == format) {
-        loadZ80Snapshot(fileName);
-        return;
-//        reader = std::make_unique<Z80SnapshotReader>(fileName.toStdString());
+//        loadZ80Snapshot(fileName);
+//        return;
+        reader = std::make_unique<Z80SnapshotReader>(fileName.toStdString());
     } else if ("sp" == format) {
         // TODO SP snapshot reader class
         loadSpSnapshot(fileName);
@@ -301,7 +360,11 @@ void MainWindow::loadSnapshot(const QString & fileName, QString format)
     }
 
     snapshot.applyTo(m_spectrum);
+
+#if(!defined(NDEBUG))
     m_spectrum.dumpState();
+#endif
+
     m_display.redrawDisplay(m_spectrum.displayMemory());
     m_displayWidget.setImage(m_display.image());
 
@@ -641,6 +704,10 @@ void MainWindow::loadZ80Snapshot(const QString & fileName)
             }
         }
     }
+
+#if(!defined(NDEBUG))
+    m_spectrum.dumpState();
+#endif
 
     // update the display
     m_display.redrawDisplay(ram);
@@ -1071,7 +1138,6 @@ void MainWindow::emulationSpeedChanged(int speed)
     } else {
         m_spectrum.setExecutionSpeedConstrained(true);
         m_spectrum.setExecutionSpeed(speed);
-//        m_spectrum.z80()->setClockSpeed(static_cast<int>(Spectrum::DefaultClockSpeed * (speed / 100.0)));
     }
 
     updateStatusBarSpeedWidget();
@@ -1142,4 +1208,39 @@ void MainWindow::threadResumed()
 void MainWindow::threadStepped()
 {
     refreshSpectrumDisplay();
+}
+
+void MainWindow::saveSnapshotToSlot(int slotIndex, QString format)
+{
+    assert(1 <= slotIndex && 5 >= slotIndex);
+
+    if (format.isEmpty()) {
+        format = QStringLiteral("z80");
+    }
+
+    auto slotDir = QDir(QStandardPaths::writableLocation(QStandardPaths::StandardLocation::AppDataLocation));
+
+    if (!slotDir.mkpath(QStringLiteral("slots"))) {
+        statusBar()->showMessage(tr("The save slots directory does not exist and could not be created."), DefaultStatusBarMessageTimeout);
+        return;
+    }
+
+    slotDir.cd(QStringLiteral("slots"));
+    saveSnapshot(slotDir.absoluteFilePath("%1.%2").arg(slotIndex).arg(format), format);
+}
+
+void MainWindow::loadSnapshotFromSlot(int slotIndex)
+{
+    assert(1 <= slotIndex && 5 >= slotIndex);
+
+    auto slotDir = QDir(QStandardPaths::writableLocation(QStandardPaths::StandardLocation::AppDataLocation) % QStringLiteral("/slots"));
+    auto fileName = QStringLiteral("%1.z80").arg(slotIndex);
+
+    if (!slotDir.exists(fileName)) {
+        statusBar()->showMessage(tr("Slot %1 is empty").arg(slotIndex));
+        return;
+    }
+
+    // TODO work out format from discovered file name
+    loadSnapshot(slotDir.absoluteFilePath(fileName), QStringLiteral("z80"));
 }

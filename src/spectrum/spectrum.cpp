@@ -95,9 +95,12 @@ namespace Spectrum
             << "     " << static_cast<std::uint16_t>(z80()->interruptMode())
             << "     " << (z80()->iff1() ? '1' : '0')
             << "     " << (z80()->iff2() ? '1' : '0') << "\n\n";
-            unsigned long  crc = crc32(0L, nullptr, 0);
-            crc = crc32(crc, memory(), memorySize());
-            std::cout << "Memory checksum: 0x" << crc << '\n'
+            std::uint32_t crc = crc32(0L, nullptr, 0);
+            crc = crc32(crc, memory(), 0x4000);
+            std::cout << "ROM checksum: 0x" << std::setw(8) << crc << '\n';
+            crc = crc32(0L, nullptr, 0);
+            crc = crc32(crc, memory() + 0x4000, memorySize() - 0x4000);
+            std::cout << "RAM checksum: 0x" << std::setw(8) << crc << '\n'
                 << std::dec << std::setfill(' ');
     }
 #endif

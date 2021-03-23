@@ -32,12 +32,14 @@ namespace Spectrum::Qt
         void saveScreenshot(const QString & fileName);
 
         void loadSnapshot(const QString & fileName, QString format = {});
+        void loadSnapshotFromSlot(int slotIndex);
         void loadSnaSnapshot(const QString & fileName);
         void loadZ80Snapshot(const QString & fileName);
         void loadSpSnapshot(const QString & fileName);
 
         // NOTE can't be const because the thread must be paused
         void saveSnapshot(const QString & fileName, QString format = {});
+        void saveSnapshotToSlot(int slotIndex, QString format = {});
 
         inline Spectrum & spectrum()
         {
@@ -66,7 +68,8 @@ namespace Spectrum::Qt
     private:
         using Joystick = QKempstonJoystick;
 
-        void createToolbars();
+        void createMenuBar();
+        void createToolBars();
         void createStatusBar();
         void connectSignals();
 
