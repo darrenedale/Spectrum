@@ -97,7 +97,7 @@ void RegistersWidget::setRegister(Register16 reg, UnsignedWord value)
             break;
             
         default:
-            std::cerr << "Only registers AF, BC, DE, HL, IX an IY are present in this widget.\n";
+            std::cerr << "Only registers AF, BC, DE, HL, IX and IY are present in this widget.\n";
             break;
     }
 }
@@ -124,7 +124,7 @@ UnsignedWord RegistersWidget::registerValue(Register16 reg)
             return m_iy.value();
 
         default:
-            std::cerr << "Only registers AF, BC, DE, HL, IX an IY are present in this widget.\n";
+            std::cerr << "Only registers AF, BC, DE, HL, IX and IY are present in this widget.\n";
             return 0;
     }
 }

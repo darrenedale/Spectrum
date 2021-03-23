@@ -10,6 +10,7 @@
 #include "registerswidget.h"
 #include "shadowregisterswidget.h"
 #include "interruptwidget.h"
+#include "programpointerswidget.h"
 #include "registerpairwidget.h"
 #include "flagswidget.h"
 #include "disassemblywidget.h"
@@ -79,8 +80,9 @@ namespace Spectrum::Qt
         DisassemblyWidget m_disassembly;
         ShadowRegistersWidget m_shadowRegisters;
         InterruptWidget m_interrupts;
-        HexSpinBox m_sp;
-        HexSpinBox m_pc;
+        ProgramPointersWidget m_pointers;
+//        HexSpinBox m_sp;
+//        HexSpinBox m_pc;
         MemoryWidget m_memoryWidget;
         HexSpinBox m_memoryLocation;
         QToolButton m_setBreakpoint;

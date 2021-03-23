@@ -34,6 +34,7 @@ add_executable(
         qt/registerswidget.cpp
         qt/shadowregisterswidget.cpp
         qt/interruptwidget.cpp
+        qt/programpointerswidget.cpp
         qt/pokewidget.cpp
         qt/pokewidget.h
         qt/qimagedisplaydevice.cpp

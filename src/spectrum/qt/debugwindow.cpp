@@ -36,8 +36,9 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
   m_registers(),
   m_disassembly(m_thread->spectrum()),
   m_shadowRegisters(),
-  m_pc(4),
-  m_sp(4),
+  m_pointers(),
+//  m_pc(4),
+//  m_sp(4),
   m_interrupts(),
   m_memoryWidget(thread->spectrum()),
   m_memoryLocation(),
@@ -57,21 +58,16 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
 {
     m_disassembly.enablePcIndicator(true);
 
-    m_pc.setMinimum(0);
-    m_pc.setMaximum(0xffff);
-    m_sp.setMinimum(0);
-    m_sp.setMaximum(0xffff);
-
     m_memoryWidget.setContextMenuPolicy(::Qt::ContextMenuPolicy::CustomContextMenu);
     m_setBreakpoint.setIcon(QIcon::fromTheme(QStringLiteral("process-stop")));
     m_memoryPc.setText(QStringLiteral("PC"));
     m_memorySp.setText(QStringLiteral("SP"));
 
-    QFont widgetFont = font();
-    widgetFont.setPointSizeF(widgetFont.pointSizeF() * 0.85);
-    m_pc.setFont(widgetFont);
-    m_sp.setFont(widgetFont);
-
+//    QFont widgetFont = font();
+//    widgetFont.setPointSizeF(widgetFont.pointSizeF() * 0.85);
+//    m_pc.setFont(widgetFont);
+//    m_sp.setFont(widgetFont);
+//
     setWindowTitle(tr("Spectrum Debugger"));
     createToolbars();
     createDockWidgets();
@@ -164,24 +160,25 @@ void DebugWindow::layoutWidget()
 	// program counter and stack pointer
     auto * pointers = new QGroupBox(tr("Pointers"));
     auto * pointersLayout = new QVBoxLayout();
-
-    auto * regLayout = new QHBoxLayout();
-    tmpLabel = new QLabel("SP");
-    tmpLabel->setBuddy(&m_sp);
-    tmpLabel->setFont(m_sp.font());
-    tmpLabel->setMinimumHeight(m_sp.minimumHeight());
-    regLayout->addWidget(tmpLabel, 1);
-    regLayout->addWidget(&m_sp, 10);
-    pointersLayout->addLayout(regLayout);
-
-    regLayout = new QHBoxLayout();
-    tmpLabel = new QLabel("PC");
-    tmpLabel->setBuddy(&m_pc);
-    tmpLabel->setFont(m_pc.font());
-    tmpLabel->setMinimumHeight(m_pc.minimumHeight());
-    regLayout->addWidget(tmpLabel, 1);
-    regLayout->addWidget(&m_pc, 10);
-    pointersLayout->addLayout(regLayout);
+//
+//    auto * regLayout = new QHBoxLayout();
+//    tmpLabel = new QLabel("SP");
+//    tmpLabel->setBuddy(&m_sp);
+//    tmpLabel->setFont(m_sp.font());
+//    tmpLabel->setMinimumHeight(m_sp.minimumHeight());
+//    regLayout->addWidget(tmpLabel, 1);
+//    regLayout->addWidget(&m_sp, 10);
+//    pointersLayout->addLayout(regLayout);
+//
+//    regLayout = new QHBoxLayout();
+//    tmpLabel = new QLabel("PC");
+//    tmpLabel->setBuddy(&m_pc);
+//    tmpLabel->setFont(m_pc.font());
+//    tmpLabel->setMinimumHeight(m_pc.minimumHeight());
+//    regLayout->addWidget(tmpLabel, 1);
+//    regLayout->addWidget(&m_pc, 10);
+//    pointersLayout->addLayout(regLayout);
+    pointersLayout->addWidget(&m_pointers);
     pointers->setLayout(pointersLayout);
 
     auto * disassembly = new QGroupBox(tr("Disassembly"));
@@ -233,6 +230,13 @@ void DebugWindow::connectWidgets()
         cpu->setRegisterValue(reg, value);
     });
 
+    connect(&m_pointers, &ProgramPointersWidget::registerChanged, [this](::Z80::Register16 reg, ::Z80::UnsignedWord value) {
+        assert(m_thread);
+        auto * cpu = m_thread->spectrum().z80();
+        assert(cpu);
+        cpu->setRegisterValue(reg, value);
+    });
+
     connect(&m_interrupts, &InterruptWidget::registerChanged, [this](::Z80::Register8 reg, ::Z80::UnsignedByte value) {
         assert(m_thread);
         auto * cpu = m_thread->spectrum().z80();
@@ -247,16 +251,16 @@ void DebugWindow::connectWidgets()
         cpu->setInterruptMode(mode);
     });
 
-    for (auto * widget : {&m_sp, &m_pc,}) {
-        connect(widget, &QSpinBox::editingFinished, [this, widget]() {
-            assert(m_thread);
-            auto * cpu = m_thread->spectrum().z80();
-            assert(cpu);
-            auto & registers = cpu->registers();
-            if(widget == &m_pc) registers.pc = widget->value();
-            else if(widget == &m_sp) registers.sp = widget->value();
-        });
-    }
+//    for (auto * widget : {&m_sp, &m_pc,}) {
+//        connect(widget, &QSpinBox::editingFinished, [this, widget]() {
+//            assert(m_thread);
+//            auto * cpu = m_thread->spectrum().z80();
+//            assert(cpu);
+//            auto & registers = cpu->registers();
+//            if(widget == &m_pc) registers.pc = widget->value();
+//            else if(widget == &m_sp) registers.sp = widget->value();
+//        });
+//    }
 }
 
 void DebugWindow::closeEvent(QCloseEvent * ev)
@@ -288,13 +292,14 @@ void DebugWindow::updateStateDisplay()
 	auto & registers = cpu->registers();
 	m_registers.setRegisters(registers);
 	m_shadowRegisters.setRegisters(registers);
-	m_pc.setValue(registers.pc);
-	m_sp.setValue(registers.sp);
+	m_pointers.setRegisters(registers);
+//	m_pc.setValue(registers.pc);
+//	m_sp.setValue(registers.sp);
 	m_interrupts.setRegisters(registers);
 	m_interrupts.setInterruptMode((cpu->interruptMode()));
 	m_memoryWidget.clearHighlights();
-	m_memoryWidget.setHighlight(m_pc.value(), qRgb(0x80, 0xe0, 0x80), qRgba(0, 0, 0, 0.0));
-	m_memoryWidget.setHighlight(m_sp.value(), qRgb(0x80, 0x80, 0xe0), qRgba(0, 0, 0, 0.0));
+	m_memoryWidget.setHighlight(m_pointers.registerValue(::Z80::Register16::PC), qRgb(0x80, 0xe0, 0x80), qRgba(0, 0, 0, 0.0));
+	m_memoryWidget.setHighlight(m_pointers.registerValue(::Z80::Register16::SP), qRgb(0x80, 0x80, 0xe0), qRgba(0, 0, 0, 0.0));
 	m_memoryWidget.update();
 	m_keyboardMonitor.updateStateDisplay();
 	m_disassembly.updateMnemonics(cpu->pc());
@@ -324,11 +329,12 @@ void DebugWindow::threadPaused()
     m_pauseResume.setIcon(QIcon::fromTheme(QStringLiteral("media-playback-start")));
     m_pauseResume.setText(tr("Resume"));
     m_registers.setEnabled(true);
-    m_disassembly.setEnabled(true);
-    m_poke.setEnabled(true);
-    m_shadowRegisters.setEnabled(true);
-    m_memoryWidget.setEnabled(true);
+    m_pointers.setEnabled(true);
     m_interrupts.setEnabled(true);
+    m_disassembly.setEnabled(true);
+    m_shadowRegisters.setEnabled(true);
+    m_poke.setEnabled(true);
+    m_memoryWidget.setEnabled(true);
     m_setBreakpoint.setEnabled(true);
     m_memoryLocation.setEnabled(true);
     m_memoryPc.setEnabled(true);
@@ -344,11 +350,12 @@ void DebugWindow::threadResumed()
     m_pauseResume.setIcon(QIcon::fromTheme(QStringLiteral("media-playback-pause")));
     m_pauseResume.setText(tr("Pause"));
     m_registers.setEnabled(false);
-    m_disassembly.setEnabled(false);
-    m_poke.setEnabled(false);
-    m_shadowRegisters.setEnabled(false);
-    m_memoryWidget.setEnabled(false);
+    m_pointers.setEnabled(false);
     m_interrupts.setEnabled(false);
+    m_disassembly.setEnabled(false);
+    m_shadowRegisters.setEnabled(false);
+    m_poke.setEnabled(false);
+    m_memoryWidget.setEnabled(false);
     m_setBreakpoint.setEnabled(false);
     m_memoryLocation.setEnabled(false);
     m_memoryPc.setEnabled(false);
@@ -365,14 +372,14 @@ void DebugWindow::threadStepped()
 
 void DebugWindow::scrollMemoryToPcTriggered()
 {
-    auto addr = m_pc.value();
+    auto addr = m_pointers.registerValue(::Z80::Register16::PC);
     m_memoryLocation.setValue(addr);
     m_memoryWidget.scrollToAddress(addr);
 }
 
 void DebugWindow::scrollMemoryToSpTriggered()
 {
-    auto addr = m_sp.value();
+    auto addr = m_pointers.registerValue(::Z80::Register16::SP);
     m_memoryLocation.setValue(addr);
     m_memoryWidget.scrollToAddress(addr);
 }
