@@ -4,7 +4,7 @@
 #include <QApplication>
 #include <QDebug>
 
-#include "../spectrum48k.h"
+#include "../basespectrum.h"
 #include "thread.h"
 
 namespace
@@ -14,7 +14,7 @@ namespace
 
 using namespace Spectrum::Qt;
 
-Thread::Thread(Spectrum48k & spectrum, QObject * parent )
+Thread::Thread(BaseSpectrum & spectrum, QObject * parent )
 :	QThread(parent),
     m_threadLock(),
     m_waitCondition(),

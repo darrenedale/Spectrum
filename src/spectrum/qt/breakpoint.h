@@ -30,7 +30,7 @@ namespace Spectrum::Qt
             return m_thread;
         }
 
-        virtual bool check(const Spectrum48k &) = 0;
+        virtual bool check(const BaseSpectrum &) = 0;
 
     Q_SIGNALS:
         void triggered();

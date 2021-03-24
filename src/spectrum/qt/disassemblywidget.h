@@ -20,7 +20,7 @@ namespace Spectrum::Qt
     public:
         explicit DisassemblyWidget(Z80::UnsignedByte * = nullptr, QWidget * = nullptr);
 
-        explicit DisassemblyWidget(const Spectrum48k & spectrum, QWidget * parent = nullptr)
+        explicit DisassemblyWidget(const BaseSpectrum & spectrum, QWidget * parent = nullptr)
         : DisassemblyWidget(spectrum.memory(), parent)
         {}
 

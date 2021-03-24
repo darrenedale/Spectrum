@@ -9,7 +9,7 @@
 
 using namespace Spectrum::Qt;
 
-bool ProgramCounterBreakpoint::check(const ::Spectrum::Spectrum48k & spectrum)
+bool ProgramCounterBreakpoint::check(const BaseSpectrum & spectrum)
 {
     if (spectrum.z80()->pc() == m_address) {
         trigger();

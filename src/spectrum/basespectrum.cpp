@@ -72,7 +72,7 @@ namespace Spectrum
 
 #if(!defined(NDEBUG))
 #include <zlib.h>
-    void SpectrumBase::dumpState() const
+    void BaseSpectrum::dumpState() const
     {
         std::cout << "Spectrum state:\n"
                   << std::hex << std::setfill('0')

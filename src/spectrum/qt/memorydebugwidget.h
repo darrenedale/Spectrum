@@ -22,7 +22,7 @@ namespace Spectrum::Qt
     public:
         explicit MemoryDebugWidget(Z80::UnsignedByte * = nullptr, QWidget * = nullptr);
 
-        explicit MemoryDebugWidget(const Spectrum48k & spectrum, QWidget * parent = nullptr)
+        explicit MemoryDebugWidget(const BaseSpectrum & spectrum, QWidget * parent = nullptr)
         : MemoryDebugWidget(spectrum.memory(), parent)
         {}
 

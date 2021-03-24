@@ -33,7 +33,7 @@ namespace Spectrum::Qt
             return m_address;
         }
 
-        bool check(const Spectrum48k & spectrum) override;
+        bool check(const BaseSpectrum & spectrum) override;
 
     private:
         using UnsignedWord = ::Z80::UnsignedWord;

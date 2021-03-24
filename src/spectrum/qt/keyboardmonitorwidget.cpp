@@ -10,7 +10,7 @@
 
 using namespace Spectrum::Qt;
 
-KeyboardMonitorWidget::KeyboardMonitorWidget(Spectrum48k * spectrum, QWidget * parent)
+KeyboardMonitorWidget::KeyboardMonitorWidget(BaseSpectrum * spectrum, QWidget * parent)
 :   QWidget(parent),
     m_spectrum(spectrum)
 {
@@ -175,7 +175,7 @@ KeyboardMonitorWidget::KeyboardMonitorWidget(Spectrum48k * spectrum, QWidget * p
     m_updateTimer.start();
 }
 
-void KeyboardMonitorWidget::setSpectrum(Spectrum48k * spectrum)
+void KeyboardMonitorWidget::setSpectrum(BaseSpectrum * spectrum)
 {
     m_spectrum = spectrum;
     updateStateDisplay();

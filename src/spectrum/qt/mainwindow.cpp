@@ -23,6 +23,7 @@
 #include <QStringBuilder>
 #include <memory>
 
+#include "../spectrum128k.h"
 #include "mainwindow.h"
 #include "threadpauser.h"
 #include "../snapshot.h"
@@ -45,8 +46,8 @@ namespace
 
 MainWindow::MainWindow(QWidget * parent)
 : QMainWindow(parent),
-  m_spectrum("spectrum48.rom"),
-  m_spectrumThread(m_spectrum),
+  m_spectrum(new Spectrum128k("spectrum128.rom", "spectrum48.rom")),
+  m_spectrumThread(*m_spectrum),
   m_display(),
   m_displayWidget(),
   m_load(QIcon::fromTheme(QStringLiteral("document-open")), tr("Load snapshot")),
@@ -65,7 +66,7 @@ MainWindow::MainWindow(QWidget * parent)
   m_debugWindow(&m_spectrumThread),
   m_displayRefreshTimer(nullptr)
 {
-    m_spectrum.setExecutionSpeedConstrained(true);
+    m_spectrum->setExecutionSpeedConstrained(true);
     m_displayWidget.keepAspectRatio();
     m_displayWidget.setFocusPolicy(::Qt::FocusPolicy::ClickFocus);
     m_displayWidget.setFocus();
@@ -115,9 +116,9 @@ MainWindow::MainWindow(QWidget * parent)
     createToolBars();
     createStatusBar();
 
-    m_spectrum.setJoystickInterface(&m_joystick);
-    m_spectrum.setKeyboard(&m_keyboard);
-	m_spectrum.addDisplayDevice(&m_display);
+    m_spectrum->setJoystickInterface(&m_joystick);
+    m_spectrum->setKeyboard(&m_keyboard);
+	m_spectrum->addDisplayDevice(&m_display);
 
     setCentralWidget(&m_displayWidget);
 
@@ -133,8 +134,8 @@ MainWindow::MainWindow(QWidget * parent)
 
 MainWindow::~MainWindow()
 {
-    m_spectrum.setKeyboard(nullptr);
-    m_spectrum.removeDisplayDevice(&m_display);
+    m_spectrum->setKeyboard(nullptr);
+    m_spectrum->removeDisplayDevice(&m_display);
 	m_spectrumThread.stop();
 
 	if (!m_spectrumThread.wait(250)) {
@@ -301,7 +302,7 @@ void MainWindow::refreshSpectrumDisplay()
         painter.setFont(font);
         painter.setPen(pen);
         int y = 2;
-        auto & registers = m_spectrum.z80()->registers();
+        auto & registers = m_spectrum->z80()->registers();
         QLatin1Char fill('0');
         painter.drawText(2, y += 10, QStringLiteral("PC: $%1").arg(registers.pc, 4, 16, fill));
         painter.drawText(2, y += 10, QStringLiteral("SP: $%1").arg(registers.sp, 4, 16, fill));
@@ -329,7 +330,7 @@ void MainWindow::saveScreenshot(const QString & fileName)
             return;
         }
 
-        outFile.write(reinterpret_cast<const char *>(m_spectrum.displayMemory()), m_spectrum.displayMemorySize());
+        outFile.write(reinterpret_cast<const char *>(m_spectrum->displayMemory()), m_spectrum->displayMemorySize());
         outFile.close();
     } else {
         m_display.image().save(fileName);
@@ -395,18 +396,18 @@ void MainWindow::loadSnapshot(const QString & fileName, QString format)
         return;
     }
 
-    snapshot.applyTo(m_spectrum);
+    snapshot.applyTo(*m_spectrum);
 
 #if(!defined(NDEBUG))
-    m_spectrum.dumpState();
+    m_spectrum->dumpState();
 #endif
 
-    m_display.redrawDisplay(m_spectrum.displayMemory());
+    m_display.redrawDisplay(m_spectrum->displayMemory());
     m_displayWidget.setImage(m_display.image());
 
     if ("sna" == format) {
         // RETN instruction is required to resume execution of the .SNA
-        m_spectrum.z80()->execute(reinterpret_cast<const Z80::UnsignedByte *>("\xed\x45"));
+        m_spectrum->z80()->execute(reinterpret_cast<const Z80::UnsignedByte *>("\xed\x45"));
     }
 
     statusBar()->showMessage(tr("The snapshot file %1 was successfully loaded.").arg(fileName), DefaultStatusBarMessageTimeout);
@@ -443,8 +444,8 @@ void MainWindow::loadSnaSnapshot(const QString & fileName)
         }
     }
 
-    auto * ram = m_spectrum.memory() + 16384;
-    auto & cpu = *(m_spectrum.z80());
+    auto * ram = m_spectrum->memory() + 16384;
+    auto & cpu = *(m_spectrum->z80());
     auto & registers = cpu.registers();
     auto * byte = buffer;
 
@@ -465,7 +466,7 @@ void MainWindow::loadSnaSnapshot(const QString & fileName)
     std::memcpy(ram, byte, 0xc000);
 
 #if(!defined(NDEBUG))
-    m_spectrum.dumpState();
+    m_spectrum->dumpState();
 #endif
 
     // update the display
@@ -513,8 +514,8 @@ void MainWindow::loadZ80Snapshot(const QString & fileName)
         }
     }
 
-    auto * ram = m_spectrum.memory() + 0x4000;
-    auto & cpu = *(m_spectrum.z80());
+    auto * ram = m_spectrum->memory() + 0x4000;
+    auto & cpu = *(m_spectrum->z80());
     auto & registers = cpu.registers();
     auto * byte = buffer;
 
@@ -742,7 +743,7 @@ void MainWindow::loadZ80Snapshot(const QString & fileName)
     }
 
 #if(!defined(NDEBUG))
-    m_spectrum.dumpState();
+    m_spectrum->dumpState();
 #endif
 
     // update the display
@@ -857,8 +858,8 @@ void MainWindow::loadSpSnapshot(const QString & fileName)
     }
 
     // set state
-    auto * memory = m_spectrum.memory();
-    auto & cpu = *(m_spectrum.z80());
+    auto * memory = m_spectrum->memory();
+    auto & cpu = *(m_spectrum->z80());
     auto & registers = cpu.registers();
 
     registers.bc = z80ToHostByteOrder(header.registers.bc);
@@ -918,9 +919,9 @@ void MainWindow::saveSnapshot(const QString & fileName, QString format)
     }
 
     if ("sna" == format) {
-        auto * z80 = m_spectrum.z80();
+        auto * z80 = m_spectrum->z80();
         z80->execute(reinterpret_cast<const Z80::UnsignedByte *>("\xcd\x00\x00"), false);
-        SnaSnapshotWriter writer(Snapshot{m_spectrum});
+        auto writer = SnaSnapshotWriter(Snapshot(*m_spectrum));
         z80->execute(reinterpret_cast<const Z80::UnsignedByte *>("\xed\x45"), false);
 
         if (!writer.writeTo(fileName.toStdString())) {
@@ -930,7 +931,7 @@ void MainWindow::saveSnapshot(const QString & fileName, QString format)
             statusBar()->showMessage(tr("Snapshot successfully saved to %1.").arg(fileName), DefaultStatusBarMessageTimeout);
         }
     } else if ("z80" == format) {
-        Z80SnapshotWriter writer(Snapshot{m_spectrum});
+        auto writer = Z80SnapshotWriter(Snapshot(*m_spectrum));
 
         if (!writer.writeTo(fileName.toStdString())) {
             std::cerr << "failed to write snapshot to '" << fileName.toStdString() << "'\n";
@@ -956,7 +957,7 @@ bool MainWindow::eventFilter(QObject * target, QEvent * event)
         switch (event->type()) {
             case QEvent::Type::KeyPress:
                 if (::Qt::Key::Key_Tab == dynamic_cast<QKeyEvent *>(event)->key()) {
-                    m_spectrum.setExecutionSpeedConstrained(false);
+                    m_spectrum->setExecutionSpeedConstrained(false);
                     updateStatusBarSpeedWidget();
                     return true;
                 }
@@ -965,7 +966,7 @@ bool MainWindow::eventFilter(QObject * target, QEvent * event)
 
             case QEvent::Type::KeyRelease:
                 if (::Qt::Key::Key_Tab == dynamic_cast<QKeyEvent *>(event)->key()) {
-                    m_spectrum.setExecutionSpeedConstrained(0 < m_emulationSpeedSlider.value());
+                    m_spectrum->setExecutionSpeedConstrained(0 < m_emulationSpeedSlider.value());
                     updateStatusBarSpeedWidget();
                     return true;
                 }
@@ -1026,7 +1027,7 @@ void MainWindow::showEvent(QShowEvent * ev)
 void MainWindow::keyPressEvent(QKeyEvent * event)
 {
     if (!event->isAutoRepeat() && ::Qt::Key::Key_Tab == event->key()) {
-        m_spectrum.setExecutionSpeedConstrained(false);
+        m_spectrum->setExecutionSpeedConstrained(false);
         updateStatusBarSpeedWidget();
         return;
     }
@@ -1037,7 +1038,7 @@ void MainWindow::keyPressEvent(QKeyEvent * event)
 void MainWindow::keyReleaseEvent(QKeyEvent * event)
 {
     if (::Qt::Key::Key_Tab == event->key()) {
-        m_spectrum.setExecutionSpeedConstrained(0 < m_emulationSpeedSlider.value());
+        m_spectrum->setExecutionSpeedConstrained(0 < m_emulationSpeedSlider.value());
         updateStatusBarSpeedWidget();
         return;
     }
@@ -1170,10 +1171,10 @@ void MainWindow::saveSnapshotTriggered()
 void MainWindow::emulationSpeedChanged(int speed)
 {
     if (0 == speed) {
-        m_spectrum.setExecutionSpeedConstrained(false);
+        m_spectrum->setExecutionSpeedConstrained(false);
     } else {
-        m_spectrum.setExecutionSpeedConstrained(true);
-        m_spectrum.setExecutionSpeed(speed);
+        m_spectrum->setExecutionSpeedConstrained(true);
+        m_spectrum->setExecutionSpeed(speed);
     }
 
     updateStatusBarSpeedWidget();
@@ -1181,13 +1182,13 @@ void MainWindow::emulationSpeedChanged(int speed)
 
 void MainWindow::updateStatusBarSpeedWidget()
 {
-    if (m_spectrum.executionSpeedConstrained()) {
-        m_statusBarEmulationSpeed.setText(tr("%1%").arg(m_spectrum.executionSpeedPercent()));
+    if (m_spectrum->executionSpeedConstrained()) {
+        m_statusBarEmulationSpeed.setText(tr("%1%").arg(m_spectrum->executionSpeedPercent()));
     } else {
         m_statusBarEmulationSpeed.setText(tr("%1%").arg("∞"));    // infinity
     }
 
-    auto mhz = m_spectrum.z80()->clockSpeedMHz();
+    auto mhz = m_spectrum->z80()->clockSpeedMHz();
     int precision = 2;
     auto tmpMhz = mhz;
 

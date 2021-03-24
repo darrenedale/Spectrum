@@ -7,7 +7,7 @@
 
 namespace Spectrum
 {
-    class Spectrum48k;
+    class BaseSpectrum;
 }
 
 namespace Spectrum::Qt
@@ -18,15 +18,15 @@ namespace Spectrum::Qt
 		Q_OBJECT
 
 		public:
-			explicit Thread(Spectrum48k &, QObject * parent = nullptr);
+			explicit Thread(BaseSpectrum &, QObject * parent = nullptr);
 			~Thread() override;
 
-			inline const Spectrum48k & spectrum() const
+			inline const BaseSpectrum & spectrum() const
 			{
 				return m_spectrum;
 			}
 
-			inline Spectrum48k & spectrum()
+			inline BaseSpectrum & spectrum()
 			{
 				return m_spectrum;
 			}
@@ -61,7 +61,7 @@ namespace Spectrum::Qt
 		private:
 			QMutex m_threadLock;
 			QWaitCondition m_waitCondition;
-			Spectrum48k & m_spectrum;
+			BaseSpectrum & m_spectrum;
 			bool m_pause;
 			bool m_quit;
 			bool m_reset;

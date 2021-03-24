@@ -1,13 +1,13 @@
 #ifndef SPECTRUM_EMULATOR_MAINWINDOW_H
 #define SPECTRUM_EMULATOR_MAINWINDOW_H
 
+#include <memory>
 #include <QMainWindow>
 #include <QAction>
 #include <QSlider>
 #include <QSpinBox>
 #include <QTimer>
 
-#include "../spectrum48k.h"
 #include "qimagedisplaydevice.h"
 #include "qinterfacetwojoystick.h"
 #include "qkempstonjoystick.h"
@@ -15,6 +15,11 @@
 #include "imagewidget.h"
 #include "keyboard.h"
 #include "thread.h"
+
+namespace Spectrum
+{
+    class BaseSpectrum;
+}
 
 namespace Spectrum::Qt
 {
@@ -41,14 +46,14 @@ namespace Spectrum::Qt
         void saveSnapshot(const QString & fileName, QString format = {});
         void saveSnapshotToSlot(int slotIndex, QString format = {});
 
-        inline Spectrum48k & spectrum()
+        inline BaseSpectrum & spectrum()
         {
-            return m_spectrum;
+            return *m_spectrum;
         }
 
-        inline const Spectrum48k & spectrum() const
+        inline const BaseSpectrum & spectrum() const
         {
-            return m_spectrum;
+            return *m_spectrum;
         }
 
         bool eventFilter(QObject *, QEvent *) override;
@@ -90,7 +95,7 @@ namespace Spectrum::Qt
 
         QString m_lastSnapshotLoadDir;
         QString m_lastScreenshotDir;
-        Spectrum48k m_spectrum;
+        std::unique_ptr<BaseSpectrum> m_spectrum;
         Thread m_spectrumThread;
         Keyboard m_keyboard;
         QImageDisplayDevice m_display;
