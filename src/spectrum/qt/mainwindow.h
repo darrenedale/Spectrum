@@ -100,6 +100,9 @@ namespace Spectrum::Qt
         QAction m_pauseResume;
         QAction m_refreshScreen;
         QAction m_saveScreenshot;
+        QAction m_colourDisplay;
+        QAction m_monochromeDisplay;
+        QAction m_bwDisplay;
         QAction m_reset;
         QAction m_debug;
         QAction m_debugStep;

@@ -32,12 +32,35 @@ namespace
             qRgb(0xff, 0xff, 0x00),
             qRgb(0xff, 0xff, 0xff)
     };
+
+    constexpr const QRgb monochromeMap[16] = {
+            qRgb(0x00, 0x00, 0x00),
+            qRgb(0x1d, 0x1d, 0x1d),
+            qRgb(0x3a, 0x3a, 0x3a),
+            qRgb(0x57, 0x57, 0x57),
+            qRgb(0x75, 0x75, 0x75),
+            qRgb(0x92, 0x92, 0x92),
+            qRgb(0xaf, 0xaf, 0xaf),
+            qRgb(0xcd, 0xcd, 0xcd),
+
+            qRgb(0x00, 0x00, 0x00),
+            qRgb(0x24, 0x24, 0x24),
+            qRgb(0x48, 0x48, 0x48),
+            qRgb(0x6d, 0x6d, 0x6d),
+            qRgb(0x91, 0x91, 0x91),
+            qRgb(0xb6, 0xb6, 0xb6),
+            qRgb(0xda, 0xda, 0xda),
+            qRgb(0xff, 0xff, 0xff),
+    };
 }
 
 QImageDisplayDevice::QImageDisplayDevice()
 : m_image(fullWidth(), fullHeight(), QImage::Format_ARGB32),
   m_border(Colour::White),
-  m_frameCounter(0)
+  m_frameCounter(0),
+  m_colourMode(ColourMode::Colour),
+  m_bwForeground(DefaultBlackAndWhiteForeground),
+  m_bwBackground(DefaultBlackAndWhiteBackground)
 {
 }
 
@@ -45,63 +68,77 @@ void QImageDisplayDevice::redrawDisplay(const uint8_t * displayMemory)
 {
     ++m_frameCounter;
     bool flashInvert = m_frameCounter & 0x10;
-
-#if defined(QSPECTRUMDISPLAY_USEPAINTER)
-    QPainter painter(&image());
-#else
     auto * data = reinterpret_cast<QRgb *>(image().bits());
-#endif
 
-    // 32 bytes per scanline, 192 scanlines
-    for (std::uint8_t y = 0; y < Height; ++y) {
-        for (std::uint8_t xByte = 0; xByte < 32; ++xByte) {
-            // address translation algorithm: https://zxasm.wordpress.com/2016/05/28/zx-spectrum-screen-memory-layout/
-            std::uint8_t yBits = (y & 0b11000000) | ((y & 0b00111000) >> 3) | ((y & 0b00000111) << 3);
-            std::uint16_t addr = static_cast<std::uint16_t>(xByte & 0b00011111) | (static_cast<std::uint16_t>(yBits) << 5);
-            std::uint8_t attr = displayMemory[AttributesOffset + static_cast<std::size_t>(std::floor(y / 8)) * 32 + xByte];
-            std::uint8_t mask = 0b10000000;
-            std::size_t colourIndex;
-            std::uint8_t ink;
-            std::uint8_t paper;
+    if (ColourMode::BlackAndWhite == m_colourMode) {
+        // 32 bytes per scanline, 192 scanlines
+        for (std::uint8_t y = 0; y < Height; ++y) {
+            for (std::uint8_t xByte = 0; xByte < 32; ++xByte) {
+                // address translation algorithm: https://zxasm.wordpress.com/2016/05/28/zx-spectrum-screen-memory-layout/
+                std::uint8_t yBits = (y & 0b11000000) | ((y & 0b00111000) >> 3) | ((y & 0b00000111) << 3);
+                std::uint16_t addr = static_cast<std::uint16_t>(xByte & 0b00011111) | (static_cast<std::uint16_t>(yBits) << 5);
+                std::uint8_t attr = displayMemory[AttributesOffset + static_cast<std::size_t>(std::floor(y / 8)) * 32 + xByte];
+                std::uint8_t mask = 0b10000000;
+                QRgb ink = m_bwForeground;
+                QRgb paper = m_bwBackground;
 
-            if (flashInvert && isFlashing(attr)) {
-                ink = static_cast<std::size_t>(isFlashing(attr) && flashInvert ? paperColour(attr) :  inkColour(attr));
-                paper = static_cast<std::size_t>(isFlashing(attr) && flashInvert ? inkColour(attr) :  paperColour(attr));
-            } else {
-                ink = static_cast<std::size_t>(isFlashing(attr) && flashInvert ? paperColour(attr) :  inkColour(attr));
-                paper = static_cast<std::size_t>(isFlashing(attr) && flashInvert ? inkColour(attr) :  paperColour(attr));
+                if (flashInvert && isFlashing(attr)) {
+                    ink = m_bwBackground;
+                    paper = m_bwForeground;
+                }
+
+                for (int bit = 0; bit < 8; ++bit) {
+                    data[((BorderSize + y) * fullWidth()) + BorderSize + (xByte * 8) + bit] = (displayMemory[addr] & mask ? ink : paper);
+                    mask >>= 1;
+                }
             }
+        }
+    } else {
+        const auto * palette = colourMap;
 
-            for (int bit = 0; bit < 8; ++bit) {
-#if defined(QSPECTRUMDISPLAY_USEPAINTER)
-                if (displayMemory[addr] & mask) {
-                    painter.setPen(colourMap[0]);
+        if (ColourMode::Monochrome == m_colourMode) {
+            palette = monochromeMap;
+        }
+
+        // 32 bytes per scanline, 192 scanlines
+        for (std::uint8_t y = 0; y < Height; ++y) {
+            for (std::uint8_t xByte = 0; xByte < 32; ++xByte) {
+                // address translation algorithm: https://zxasm.wordpress.com/2016/05/28/zx-spectrum-screen-memory-layout/
+                std::uint8_t yBits = (y & 0b11000000) | ((y & 0b00111000) >> 3) | ((y & 0b00000111) << 3);
+                std::uint16_t addr =
+                        static_cast<std::uint16_t>(xByte & 0b00011111) | (static_cast<std::uint16_t>(yBits) << 5);
+                std::uint8_t attr = displayMemory[AttributesOffset + static_cast<std::size_t>(std::floor(y / 8)) * 32 +
+                                                  xByte];
+                std::uint8_t mask = 0b10000000;
+                std::size_t colourIndex;
+                std::uint8_t ink;
+                std::uint8_t paper;
+
+                if (flashInvert && isFlashing(attr)) {
+                    ink = static_cast<std::size_t>(paperColour(attr));
+                    paper = static_cast<std::size_t>(inkColour(attr));
                 } else {
-                    painter.setPen(colourMap[7]);
+                    ink = static_cast<std::size_t>(inkColour(attr));
+                    paper = static_cast<std::size_t>(paperColour(attr));
                 }
 
-                painter.drawPoint(static_cast<int>(xByte * 8 + bit), static_cast<int>(y));
-#else
-                if (displayMemory[addr] & mask) {
-                    colourIndex = ink;
-                } else {
-                    colourIndex = paper;
-                }
+                for (int bit = 0; bit < 8; ++bit) {
+                    if (displayMemory[addr] & mask) {
+                        colourIndex = ink;
+                    } else {
+                        colourIndex = paper;
+                    }
 
-                if (isBright(attr)) {
-                    colourIndex += 8;
-                }
+                    if (isBright(attr)) {
+                        colourIndex += 8;
+                    }
 
-                data[((BorderSize + y) * fullWidth()) + BorderSize + (xByte * 8) + bit] = colourMap[colourIndex];
-#endif
-                mask >>= 1;
+                    data[((BorderSize + y) * fullWidth()) + BorderSize + (xByte * 8) + bit] = palette[colourIndex];
+                    mask >>= 1;
+                }
             }
         }
     }
-
-#if defined(QSPECTRUMDISPLAY_USEPAINTER)
-    painter.end();
-#endif
 }
 
 void QImageDisplayDevice::setBorder(Colour colour, bool bright)

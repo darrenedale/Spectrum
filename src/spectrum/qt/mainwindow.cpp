@@ -54,6 +54,9 @@ MainWindow::MainWindow(QWidget * parent)
   m_pauseResume(QIcon::fromTheme(QStringLiteral("media-playback-start")), tr("Start/Pause")),
   m_saveScreenshot(QIcon::fromTheme(QStringLiteral("image")), tr("Screenshot")),
   m_refreshScreen(QIcon::fromTheme("view-refresh"), tr("Refresh screen")),
+  m_colourDisplay(tr("Colour")),
+  m_monochromeDisplay(tr("Monochrome")),
+  m_bwDisplay(tr("Black and White")),
   m_reset(QIcon::fromTheme(QStringLiteral("start-over")), tr("Reset")),
   m_debug(tr("Debug")),
   m_debugStep(QIcon::fromTheme(QStringLiteral("debug-step-instruction")), tr("Step")),
@@ -78,6 +81,15 @@ MainWindow::MainWindow(QWidget * parent)
     m_debugStep.setShortcut(::Qt::Key::Key_Space);
     m_saveScreenshot.setShortcut(::Qt::Key::Key_Print);
     m_refreshScreen.setShortcut(::Qt::Key::Key_F5);
+    m_colourDisplay.setCheckable(true);
+    m_monochromeDisplay.setCheckable(true);
+    m_bwDisplay.setCheckable(true);
+    m_colourDisplay.setChecked(true);
+
+    auto * displayColourMode = new QActionGroup(this);
+    displayColourMode->addAction(&m_colourDisplay);
+    displayColourMode->addAction(&m_monochromeDisplay);
+    displayColourMode->addAction(&m_bwDisplay);
 
     m_emulationSpeedSlider.setMinimum(0);
     m_emulationSpeedSlider.setMaximum(1000);
@@ -186,6 +198,12 @@ void MainWindow::createMenuBar()
 
     menu->addSeparator();
     menu->addAction(&m_saveScreenshot);
+
+    subMenu = menu->addMenu(tr("Display Mode"));
+    subMenu->addAction(&m_colourDisplay);
+    subMenu->addAction(&m_monochromeDisplay);
+    subMenu->addAction(&m_bwDisplay);
+
     menu->addSeparator();
     menu->addAction(QIcon::fromTheme("application-exit"), tr("Quit"), [this]() {
         close();
@@ -243,6 +261,24 @@ void MainWindow::connectSignals()
 	connect(&m_debugStep, &QAction::triggered, this, &MainWindow::stepTriggered);
 	connect(&m_saveScreenshot, &QAction::triggered, this, &MainWindow::saveScreenshotTriggered);
 	connect(&m_refreshScreen, &QAction::triggered, this, &MainWindow::refreshSpectrumDisplay);
+
+	connect(&m_colourDisplay, &QAction::toggled, [this](bool colour) {
+	    if (colour) {
+            m_display.setColour();
+	    }
+	});
+
+	connect(&m_monochromeDisplay, &QAction::toggled, [this](bool mono) {
+	    if (mono) {
+            m_display.setMonochrome();
+	    }
+	});
+
+	connect(&m_bwDisplay, &QAction::toggled, [this](bool bw) {
+	    if (bw) {
+            m_display.setBlackAndWhite();
+	    }
+	});
 }
 
 void MainWindow::refreshSpectrumDisplay()
