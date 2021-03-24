@@ -7,7 +7,7 @@
 #include <QSpinBox>
 #include <QTimer>
 
-#include "../spectrum.h"
+#include "../spectrum48k.h"
 #include "qimagedisplaydevice.h"
 #include "qinterfacetwojoystick.h"
 #include "qkempstonjoystick.h"
@@ -41,12 +41,12 @@ namespace Spectrum::Qt
         void saveSnapshot(const QString & fileName, QString format = {});
         void saveSnapshotToSlot(int slotIndex, QString format = {});
 
-        inline Spectrum & spectrum()
+        inline Spectrum48k & spectrum()
         {
             return m_spectrum;
         }
 
-        inline const Spectrum & spectrum() const
+        inline const Spectrum48k & spectrum() const
         {
             return m_spectrum;
         }
@@ -90,7 +90,7 @@ namespace Spectrum::Qt
 
         QString m_lastSnapshotLoadDir;
         QString m_lastScreenshotDir;
-        Spectrum m_spectrum;
+        Spectrum48k m_spectrum;
         Thread m_spectrumThread;
         Keyboard m_keyboard;
         QImageDisplayDevice m_display;

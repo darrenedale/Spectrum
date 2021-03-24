@@ -5,12 +5,12 @@
 #include <QGridLayout>
 
 #include "keyboardmonitorwidget.h"
-#include "../spectrum.h"
+#include "../spectrum48k.h"
 #include "../keyboard.h"
 
 using namespace Spectrum::Qt;
 
-KeyboardMonitorWidget::KeyboardMonitorWidget(Spectrum * spectrum, QWidget * parent)
+KeyboardMonitorWidget::KeyboardMonitorWidget(Spectrum48k * spectrum, QWidget * parent)
 :   QWidget(parent),
     m_spectrum(spectrum)
 {
@@ -175,7 +175,7 @@ KeyboardMonitorWidget::KeyboardMonitorWidget(Spectrum * spectrum, QWidget * pare
     m_updateTimer.start();
 }
 
-void KeyboardMonitorWidget::setSpectrum(Spectrum * spectrum)
+void KeyboardMonitorWidget::setSpectrum(Spectrum48k * spectrum)
 {
     m_spectrum = spectrum;
     updateStateDisplay();

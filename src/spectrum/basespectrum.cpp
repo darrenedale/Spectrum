@@ -1,4 +1,4 @@
-#include "spectrum.h"
+#include "basespectrum.h"
 
 #include <cstring>
 #include <iostream>
@@ -13,18 +13,18 @@
 
 namespace
 {
-    const int DefaultClockSpeed = 3500000;    
+    const int DefaultClockSpeed = 3500000;
 }
 
 namespace Spectrum
 {
-    Spectrum::Spectrum(const std::string & romFile, int memSize, uint8_t * mem)
-    : Spectrum(memSize, mem)
+    BaseSpectrum::BaseSpectrum(const std::string & romFile, int memSize, uint8_t * mem)
+    : BaseSpectrum(memSize, mem)
     {
         (void) loadRom(romFile);
     }
 
-    Spectrum::Spectrum(int memSize, uint8_t * mem)
+    BaseSpectrum::BaseSpectrum(int memSize, uint8_t * mem)
     : Computer(memSize, mem),
       m_executionSpeed(1.0),
       m_interruptCycleCounter(0),
@@ -40,15 +40,15 @@ namespace Spectrum
         z80->reset();
     }
 
-    Spectrum::~Spectrum()
+    BaseSpectrum::~BaseSpectrum()
     {
-        // base class takes care of RAM
+        // base class takes care of memory
         auto * cpu = z80();
         removeCpu(cpu);
         delete cpu;
     }
 
-    void Spectrum::reset()
+    void BaseSpectrum::reset()
     {
         clearMemory();
 
@@ -72,52 +72,52 @@ namespace Spectrum
 
 #if(!defined(NDEBUG))
 #include <zlib.h>
-    void Spectrum::dumpState() const
+    void SpectrumBase::dumpState() const
     {
         std::cout << "Spectrum state:\n"
-            << std::hex << std::setfill('0')
-            << "   AF     BC     DE     HL     IX     IY    AF'    BC'    DE'    HL'\n"
-            << " $" << std::setw(4) << z80()->registers().af << ' '
-            << " $" << std::setw(4) << z80()->registers().bc << ' '
-            << " $" << std::setw(4) << z80()->registers().de << ' '
-            << " $" << std::setw(4) << z80()->registers().hl << ' '
-            << " $" << std::setw(4) << z80()->registers().ix << ' '
-            << " $" << std::setw(4) << z80()->registers().iy << ' '
-            << " $" << std::setw(4) << z80()->registers().afShadow << ' '
-            << " $" << std::setw(4) << z80()->registers().bcShadow << ' '
-            << " $" << std::setw(4) << z80()->registers().deShadow << ' '
-            << " $" << std::setw(4) << z80()->registers().hlShadow << "\n\n"
-            << "   PC     SP      I      R     IM   IFF1  IFF2\n"
-            << " $" << std::setw(4) << z80()->registers().pc
-            << "  $" << std::setw(4) << z80()->registers().sp
-            << "    $" << std::setw(2) << static_cast<std::uint16_t>(z80()->registers().i)
-            << "    $" << std::setw(2) << static_cast<std::uint16_t>(z80()->registers().r)
-            << "     " << static_cast<std::uint16_t>(z80()->interruptMode())
-            << "     " << (z80()->iff1() ? '1' : '0')
-            << "     " << (z80()->iff2() ? '1' : '0') << "\n\n";
-            std::uint32_t crc = crc32(0L, nullptr, 0);
-            crc = crc32(crc, memory(), 0x4000);
-            std::cout << "ROM checksum: 0x" << std::setw(8) << crc << '\n';
-            crc = crc32(0L, nullptr, 0);
-            crc = crc32(crc, memory() + 0x4000, memorySize() - 0x4000);
-            std::cout << "RAM checksum: 0x" << std::setw(8) << crc << '\n'
-                << std::dec << std::setfill(' ');
+                  << std::hex << std::setfill('0')
+                  << "   AF     BC     DE     HL     IX     IY    AF'    BC'    DE'    HL'\n"
+                  << " $" << std::setw(4) << z80()->registers().af << ' '
+                  << " $" << std::setw(4) << z80()->registers().bc << ' '
+                  << " $" << std::setw(4) << z80()->registers().de << ' '
+                  << " $" << std::setw(4) << z80()->registers().hl << ' '
+                  << " $" << std::setw(4) << z80()->registers().ix << ' '
+                  << " $" << std::setw(4) << z80()->registers().iy << ' '
+                  << " $" << std::setw(4) << z80()->registers().afShadow << ' '
+                  << " $" << std::setw(4) << z80()->registers().bcShadow << ' '
+                  << " $" << std::setw(4) << z80()->registers().deShadow << ' '
+                  << " $" << std::setw(4) << z80()->registers().hlShadow << "\n\n"
+                  << "   PC     SP      I      R     IM   IFF1  IFF2\n"
+                  << " $" << std::setw(4) << z80()->registers().pc
+                  << "  $" << std::setw(4) << z80()->registers().sp
+                  << "    $" << std::setw(2) << static_cast<std::uint16_t>(z80()->registers().i)
+                  << "    $" << std::setw(2) << static_cast<std::uint16_t>(z80()->registers().r)
+                  << "     " << static_cast<std::uint16_t>(z80()->interruptMode())
+                  << "     " << (z80()->iff1() ? '1' : '0')
+                  << "     " << (z80()->iff2() ? '1' : '0') << "\n\n";
+        std::uint32_t crc = crc32(0L, nullptr, 0);
+        crc = crc32(crc, memory(), 0x4000);
+        std::cout << "ROM checksum: 0x" << std::setw(8) << crc << '\n';
+        crc = crc32(0L, nullptr, 0);
+        crc = crc32(crc, memory() + 0x4000, memorySize() - 0x4000);
+        std::cout << "RAM checksum: 0x" << std::setw(8) << crc << '\n'
+                  << std::dec << std::setfill(' ');
     }
 #endif
 
-    void Spectrum::clearMemory() const
+    void BaseSpectrum::clearMemory() const
     {
-        std::memset(m_ram, 0, memorySize());
+        std::memset(m_memory, 0, memorySize());
     }
 
-    inline void Spectrum::refreshDisplays() const
+    inline void BaseSpectrum::refreshDisplays() const
     {
         for (auto * display : m_displayDevices) {
             display->redrawDisplay(displayMemory());
         }
     }
 
-    void Spectrum::run(int instructionCount)
+    void BaseSpectrum::run(int instructionCount)
     {
         using namespace std::chrono;
         using namespace std::chrono_literals;
@@ -154,7 +154,7 @@ namespace Spectrum
         }
     }
 
-    bool Spectrum::loadRom(const std::string & fileName)
+    bool BaseSpectrum::loadRom(const std::string & fileName)
     {
         static constexpr const std::size_t RomFileSize = 0x4000;
         std::ifstream inFile(fileName);
@@ -175,7 +175,7 @@ namespace Spectrum
         return true;
     }
 
-    void Spectrum::setKeyboard(Keyboard * keyboard)
+    void BaseSpectrum::setKeyboard(Keyboard * keyboard)
     {
         auto * cpu = z80();
 
@@ -190,7 +190,7 @@ namespace Spectrum
         }
     }
 
-    void Spectrum::setJoystickInterface(JoystickInterface * joystick)
+    void BaseSpectrum::setJoystickInterface(JoystickInterface * joystick)
     {
         auto * cpu = z80();
 
@@ -205,7 +205,7 @@ namespace Spectrum
         }
     }
 
-    void Spectrum::addDisplayDevice(DisplayDevice * dev)
+    void BaseSpectrum::addDisplayDevice(DisplayDevice * dev)
     {
         assert(dev);
         m_displayDevices.push_back(dev);
@@ -216,7 +216,7 @@ namespace Spectrum
         }
     }
 
-    void Spectrum::removeDisplayDevice(DisplayDevice * dev)
+    void BaseSpectrum::removeDisplayDevice(DisplayDevice * dev)
     {
         const auto pos = std::find(m_displayDevices.begin(), m_displayDevices.end(), dev);
 

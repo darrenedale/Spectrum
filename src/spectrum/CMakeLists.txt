@@ -7,7 +7,9 @@ set(CMAKE_AUTORCC ON)
 add_executable(
         spectrum
         main.cpp
-        spectrum.cpp
+        basespectrum.cpp
+        spectrum16k.cpp
+        spectrum48k.cpp
         z80.cpp
         keyboard.cpp
         joystickinterface.cpp
@@ -35,6 +37,8 @@ add_executable(
         qt/shadowregisterswidget.cpp
         qt/interruptwidget.cpp
         qt/programpointerswidget.cpp
+        qt/memoryview.cpp
+        qt/memorydebugwidget.cpp
         qt/pokewidget.cpp
         qt/pokewidget.h
         qt/qimagedisplaydevice.cpp
@@ -44,7 +48,6 @@ add_executable(
         qt/qinterfacetwojoystick.cpp
         qt/qinterfacetwojoystick.h
         qt/qkempstonjoystick.cpp
-        qt/memorywidget.cpp
         qt/disassemblywidget.cpp
         qt/threadpauser.h
         qt/keyboardmonitorwidget.cpp

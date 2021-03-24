@@ -27,6 +27,14 @@ ProgramPointersWidget::ProgramPointersWidget(QWidget * parent)
     m_sp.setMinimum(0);
     m_sp.setMaximum(0xffff);
 
+    QFont widgetFont = m_pc.font();
+    widgetFont.setPointSizeF(widgetFont.pointSizeF() * 0.85);
+    m_pc.setFont(widgetFont);
+    m_sp.setFont(widgetFont);
+
+    m_pc.setContextMenuPolicy(::Qt::ContextMenuPolicy::ActionsContextMenu);
+    m_sp.setContextMenuPolicy(::Qt::ContextMenuPolicy::ActionsContextMenu);
+
     auto * widgetLayout = new QVBoxLayout();
     auto * regLayout = new QHBoxLayout();
     auto * tmpLabel = new QLabel("SP");

@@ -8,7 +8,7 @@
 #include "../z80/registers.h"
 #include "../z80/z80.h"
 #include "types.h"
-#include "spectrum.h"
+#include "spectrum48k.h"
 
 namespace Spectrum
 {
@@ -75,7 +75,7 @@ namespace Spectrum
         /**
          * The snapshot will take a copy of the Spectrum's memory and its CPU state.
          */
-        explicit Snapshot(const Spectrum &);
+        explicit Snapshot(const Spectrum48k &);
 
         /**
          * The snapshot will take a copy of the provided memory and will default-initialise a CPU state.
@@ -102,8 +102,8 @@ namespace Spectrum
             return m_memory;
         }
 
-        void applyTo(Spectrum &) const;
-        void readFrom(Spectrum &);
+        void applyTo(Spectrum48k &) const;
+        void readFrom(Spectrum48k &);
 
         template <class Writer>
         bool saveAs(const std::string & fileName) const

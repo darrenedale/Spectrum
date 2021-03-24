@@ -7,7 +7,7 @@
 
 #include <QScrollArea>
 
-#include "../spectrum.h"
+#include "../spectrum48k.h"
 #include "../../z80/assembly/disassembler.h"
 
 namespace Spectrum::Qt
@@ -20,7 +20,7 @@ namespace Spectrum::Qt
     public:
         explicit DisassemblyWidget(Z80::UnsignedByte * = nullptr, QWidget * = nullptr);
 
-        explicit DisassemblyWidget(const Spectrum & spectrum, QWidget * parent = nullptr)
+        explicit DisassemblyWidget(const Spectrum48k & spectrum, QWidget * parent = nullptr)
         : DisassemblyWidget(spectrum.memory(), parent)
         {}
 

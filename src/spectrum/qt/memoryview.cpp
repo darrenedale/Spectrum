@@ -8,7 +8,7 @@
 #include <QPaintEvent>
 #include <QToolTip>
 
-#include "memorywidget.h"
+#include "memoryview.h"
 
 using namespace Spectrum::Qt;
 
@@ -17,11 +17,11 @@ namespace
     constexpr const int Margin = 5;
     constexpr const int FontPointSize = 8;
 
-    class MemoryView
+    class MemoryViewInternal
     : public QWidget
     {
     public:
-        MemoryView(Z80::UnsignedByte * memory, QWidget * parent)
+        MemoryViewInternal(Z80::UnsignedByte * memory, QWidget * parent)
         : QWidget(parent),
           m_memory(memory)
         {
@@ -170,38 +170,38 @@ namespace
     };
 }
 
-MemoryWidget::MemoryWidget(Z80::UnsignedByte * memory, QWidget * parent)
+MemoryView::MemoryView(Z80::UnsignedByte * memory, QWidget * parent)
 : QScrollArea(parent),
   m_memory(memory)
 {
-    QScrollArea::setWidget(new MemoryView(memory, this));
+    QScrollArea::setWidget(new MemoryViewInternal(memory, this));
 }
 
-void MemoryWidget::scrollToAddress(Z80::UnsignedWord addr)
+void MemoryView::scrollToAddress(Z80::UnsignedWord addr)
 {
-    auto y = (addr / 16) * dynamic_cast<MemoryView *>(widget())->rowHeight();
+    auto y = (addr / 16) * dynamic_cast<MemoryViewInternal *>(widget())->rowHeight();
     ensureVisible(0, y);
 }
 
-void MemoryWidget::setHighlight(Z80::UnsignedWord address, const QColor & foreground, const QColor & background)
+void MemoryView::setHighlight(Z80::UnsignedWord address, const QColor & foreground, const QColor & background)
 {
-    dynamic_cast<MemoryView *>(widget())->setHighlight(address, foreground, background);
+    dynamic_cast<MemoryViewInternal *>(widget())->setHighlight(address, foreground, background);
 }
 
-void MemoryWidget::removeHighlight(Z80::UnsignedWord address)
+void MemoryView::removeHighlight(Z80::UnsignedWord address)
 {
-    dynamic_cast<MemoryView *>(widget())->removeHighlight(address);
+    dynamic_cast<MemoryViewInternal *>(widget())->removeHighlight(address);
 }
 
-void MemoryWidget::clearHighlights()
+void MemoryView::clearHighlights()
 {
-    dynamic_cast<MemoryView *>(widget())->clearHighlights();
+    dynamic_cast<MemoryViewInternal *>(widget())->clearHighlights();
 }
 
-std::optional<Z80::UnsignedWord> MemoryWidget::addressAt(const QPoint & pos) const
+std::optional<Z80::UnsignedWord> MemoryView::addressAt(const QPoint & pos) const
 {
-    auto * view = dynamic_cast<MemoryView *>(widget());
+    auto * view = dynamic_cast<MemoryViewInternal *>(widget());
     return view->addressAt(view->mapFromParent(pos));
 }
 
-MemoryWidget::~MemoryWidget() = default;
+MemoryView::~MemoryView() = default;

@@ -11,7 +11,7 @@
 
 namespace Spectrum
 {
-    class Spectrum;
+    class Spectrum48k;
 }
 
 namespace Spectrum::Qt
@@ -23,22 +23,22 @@ namespace Spectrum::Qt
         Q_OBJECT
 
     public:
-        explicit KeyboardMonitorWidget(Spectrum * spectrum = nullptr, QWidget * parent = nullptr);
+        explicit KeyboardMonitorWidget(Spectrum48k * spectrum = nullptr, QWidget * parent = nullptr);
         explicit KeyboardMonitorWidget(QWidget * parent)
         : KeyboardMonitorWidget(nullptr, parent)
         {}
 
-        [[nodiscard]] Spectrum * spectrum() const
+        [[nodiscard]] Spectrum48k * spectrum() const
         {
             return m_spectrum;
         }
 
-        void setSpectrum(Spectrum *);
+        void setSpectrum(Spectrum48k *);
 
         void updateStateDisplay();
 
     private:
-        Spectrum * m_spectrum;
+        Spectrum48k * m_spectrum;
         QToolButton m_1;
         QToolButton m_2;
         QToolButton m_3;

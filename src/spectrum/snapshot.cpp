@@ -11,7 +11,7 @@ using namespace Spectrum;
 
 using InterruptMode = ::Z80::InterruptMode;
 
-Snapshot::Snapshot(const Spectrum & spectrum)
+Snapshot::Snapshot(const Spectrum48k & spectrum)
 : Snapshot(spectrum.z80()->registers(), spectrum.memory(), spectrum.memorySize())
 {
     auto * cpu = spectrum.z80();
@@ -75,7 +75,7 @@ Snapshot::Snapshot(Snapshot && other) noexcept
     other.m_memory.size = 0;
 }
 
-void Snapshot::applyTo(Spectrum & spectrum) const
+void Snapshot::applyTo(Spectrum48k & spectrum) const
 {
     // TODO throw if spectrum has insufficient memory
     // TODO throw if snapshot has no memory
@@ -115,7 +115,7 @@ void Snapshot::applyTo(Spectrum & spectrum) const
     std::memcpy(spectrum.memory() + 0x4000, m_memory.image + 0x4000, m_memory.size - 0x4000);
 }
 
-void Snapshot::readFrom(Spectrum & spectrum)
+void Snapshot::readFrom(Spectrum48k & spectrum)
 {
     auto * cpu = spectrum.z80();
     copyRegisters(cpu->registers());

@@ -9,7 +9,7 @@
 
 #include "thread.h"
 #include "../../z80/types.h"
-#include "../spectrum.h"
+#include "../spectrum48k.h"
 
 namespace Spectrum::Qt
 {
@@ -30,7 +30,7 @@ namespace Spectrum::Qt
             return m_thread;
         }
 
-        virtual bool check(const Spectrum &) = 0;
+        virtual bool check(const Spectrum48k &) = 0;
 
     Q_SIGNALS:
         void triggered();

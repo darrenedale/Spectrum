@@ -8,7 +8,7 @@
 #include <QObject>
 
 #include "../../z80/types.h"
-#include "../spectrum.h"
+#include "../spectrum48k.h"
 #include "breakpoint.h"
 #include "thread.h"
 
@@ -33,7 +33,7 @@ namespace Spectrum::Qt
             return m_address;
         }
 
-        bool check(const Spectrum & spectrum) override;
+        bool check(const Spectrum48k & spectrum) override;
 
     private:
         using UnsignedWord = ::Z80::UnsignedWord;

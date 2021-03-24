@@ -14,7 +14,7 @@
 #include "registerpairwidget.h"
 #include "flagswidget.h"
 #include "disassemblywidget.h"
-#include "memorywidget.h"
+#include "memorydebugwidget.h"
 #include "keyboardmonitorwidget.h"
 #include "pokewidget.h"
 
@@ -32,11 +32,16 @@ namespace Spectrum::Qt
 
     public:
         explicit DebugWindow(QWidget * = nullptr);
-        explicit DebugWindow(Thread * spectrum, QWidget * = nullptr);
+        explicit DebugWindow(Thread *, QWidget * = nullptr);
         ~DebugWindow() override;
 
         void setStatus(const QString & status);
         void clearStatus();
+
+        void locateProgramCounterInMemory();
+        void locateStackPointerInMemory();
+        void locateProgramCounterInDisassembly();
+        void locateStackPointerInDisassembly();
 
         void updateStateDisplay();
 
@@ -69,10 +74,7 @@ namespace Spectrum::Qt
         void threadPaused();
         void threadResumed();
         void threadStepped();
-        void memoryLocationChanged();
-        void setBreakpointTriggered();
-        void scrollMemoryToPcTriggered();
-        void scrollMemoryToSpTriggered();
+        void setProgramCounterBreakpointTriggered(::Z80::UnsignedWord address);
 
         Thread * m_thread;
 
@@ -81,27 +83,31 @@ namespace Spectrum::Qt
         ShadowRegistersWidget m_shadowRegisters;
         InterruptWidget m_interrupts;
         ProgramPointersWidget m_pointers;
-//        HexSpinBox m_sp;
-//        HexSpinBox m_pc;
-        MemoryWidget m_memoryWidget;
-        HexSpinBox m_memoryLocation;
-        QToolButton m_setBreakpoint;
-        QToolButton m_memoryPc;
-        QToolButton m_memorySp;
+        MemoryDebugWidget m_memoryWidget;
         QAction m_pauseResume;
         QAction m_step;
         QAction m_refresh;
         QLabel m_status;
 
+        // context menu actions for PC/SP widgets
+        QAction m_navigateToPc;
+        QAction m_breakpointAtPc;
+        QAction m_navigateToSp;
+        QAction m_breakpointAtStackTop;
+
         KeyboardMonitorWidget m_keyboardMonitor;
         PokeWidget m_poke;
 
-        QDockWidget * m_memoryDock;
-        QDockWidget * m_pokeDock;
-
         InstructionObserver m_cpuObserver;
         Breakpoints m_breakpoints;
-	};
+
+        /**
+         * Set a breakpoint when the program counter hits a given address.
+         *
+         * @param addr
+         */
+        void breakAtProgramCounter(::Z80::UnsignedWord addr);
+    };
 }
 
 #endif // QSPECTRUMDEBUGWINDOW_H

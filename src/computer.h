@@ -12,25 +12,25 @@ template<class byte_t = std::uint8_t>
 class Computer {
 	public:
 		explicit Computer(int memSize = 0, byte_t * mem = nullptr )
-		:	m_ram(mem),
-            m_ramSize(memSize),
-            m_myRam(!mem)
+		: m_memory(mem),
+          m_memorySize(memSize),
+          m_memoryOwned(!mem)
         {
 		    assert(0 <= memSize);
 
-		    if (!m_ram) {
-                m_ram = new byte_t[memSize];
+		    if (!m_memory) {
+                m_memory = new byte_t[memSize];
             }
         }
 
 		virtual ~Computer()
         {
-            if (m_myRam) {
-                delete[] m_ram;
+            if (m_memoryOwned) {
+                delete[] m_memory;
             }
 
-            m_ram = nullptr;
-            m_ramSize = 0;
+            m_memory = nullptr;
+            m_memorySize = 0;
         }
 
 		Cpu * cpu( int idx = 0 ) const
@@ -51,12 +51,12 @@ class Computer {
 
 		inline byte_t * memory() const
 		{
-			return m_ram;
+			return m_memory;
 		}
 
 		inline int memorySize() const
 		{
-			return m_ramSize;
+			return m_memorySize;
 		}
 
 		inline void addCpu(Cpu * cpu)
@@ -85,14 +85,14 @@ class Computer {
 		 */
 		inline void setMemory(byte_t * memory, int size)
         {
-		    if (m_myRam) {
-		        delete[] m_ram;
-		        m_myRam = false;
+		    if (m_memoryOwned) {
+		        delete[] m_memory;
+                m_memoryOwned = false;
 		    }
 
 		    // TODO pass the memory to the CPUs
-		    m_ram = memory;
-		    m_ramSize = size;
+		    m_memory = memory;
+            m_memorySize = size;
         }
 
         /**
@@ -103,14 +103,14 @@ class Computer {
          */
 		inline void giveMemory(byte_t * memory, int size)
         {
-		    if (m_myRam) {
-		        delete[] m_ram;
+		    if (m_memoryOwned) {
+		        delete[] m_memory;
 		    }
 
             // TODO pass the memory to the CPUs
-		    m_myRam = true;
-		    m_ram = memory;
-		    m_ramSize = size;
+		    m_memoryOwned = true;
+            m_memory = memory;
+            m_memorySize = size;
         }
 
 		virtual void reset() = 0;
@@ -118,11 +118,11 @@ class Computer {
 
 	protected:
 		std::vector<Cpu *> m_cpus;
-		std::uint8_t * m_ram;
-		int m_ramSize;
+		std::uint8_t * m_memory;
+		int m_memorySize;
 
 	private:
-		bool m_myRam;
+		bool m_memoryOwned;
 };
 
 #endif // COMPUTER_H

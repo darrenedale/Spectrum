@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <iomanip>
-#include <QSpinBox>
 #include <QLineEdit>
 #include <QGroupBox>
 #include <QHBoxLayout>
@@ -13,17 +12,15 @@
 #include <QMenu>
 #include <QSettings>
 
-#include "../spectrum.h"
-#include "../../z80/z80.h"
 #include "thread.h"
 #include "registerpairwidget.h"
-#include "keyboardmonitorwidget.h"
-#include "pokewidget.h"
 #include "programcounterbreakpoint.h"
 
 using namespace Spectrum::Qt;
 
-using InterruptMode = ::Z80::InterruptMode;
+using ::Z80::InterruptMode;
+using ::Z80::UnsignedWord;
+using ::Z80::Register16;
 
 DebugWindow::DebugWindow(QWidget * parent )
 : DebugWindow(nullptr, parent)
@@ -37,37 +34,30 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
   m_disassembly(m_thread->spectrum()),
   m_shadowRegisters(),
   m_pointers(),
-//  m_pc(4),
-//  m_sp(4),
   m_interrupts(),
   m_memoryWidget(thread->spectrum()),
-  m_memoryLocation(),
-  m_setBreakpoint(),
-  m_memoryPc(),
-  m_memorySp(),
   m_step(QIcon::fromTheme(QStringLiteral("debug-step-instruction")), tr("Step")),
   m_pauseResume(QIcon::fromTheme(QStringLiteral("media-playback-start")), tr("Resume")),
   m_refresh(QIcon::fromTheme(QStringLiteral("view-refresh")), tr("Refresh")),
   m_status(),
+  m_navigateToPc(tr("Navigate to PC")),
+  m_breakpointAtPc(tr("Set breakpoint here")),
+  m_navigateToSp(tr("Navigate to SP")),
+  m_breakpointAtStackTop(tr("Set breakpoint at address on top of stack")),
   m_keyboardMonitor(&m_thread->spectrum()),
   m_poke(),
-  m_memoryDock(nullptr),
-  m_pokeDock(nullptr),
   m_cpuObserver((*this)),
   m_breakpoints()
 {
     m_disassembly.enablePcIndicator(true);
 
     m_memoryWidget.setContextMenuPolicy(::Qt::ContextMenuPolicy::CustomContextMenu);
-    m_setBreakpoint.setIcon(QIcon::fromTheme(QStringLiteral("process-stop")));
-    m_memoryPc.setText(QStringLiteral("PC"));
-    m_memorySp.setText(QStringLiteral("SP"));
 
-//    QFont widgetFont = font();
-//    widgetFont.setPointSizeF(widgetFont.pointSizeF() * 0.85);
-//    m_pc.setFont(widgetFont);
-//    m_sp.setFont(widgetFont);
-//
+    m_pointers.addProgramCounterAction(&m_navigateToPc);
+    m_pointers.addProgramCounterAction(&m_breakpointAtPc);
+    m_pointers.addStackPointerAction(&m_navigateToSp);
+    m_pointers.addStackPointerAction(&m_breakpointAtStackTop);
+
     setWindowTitle(tr("Spectrum Debugger"));
     createToolbars();
     createDockWidgets();
@@ -92,41 +82,34 @@ DebugWindow::~DebugWindow()
 
 void DebugWindow::createToolbars()
 {
-    auto * toolbar = addToolBar(tr("Debug"));
-    toolbar->addAction(&m_pauseResume);
-    toolbar->addAction(&m_step);
-    toolbar->addSeparator();
-    toolbar->addAction(&m_refresh);
-    toolbar->addWidget(&m_status);
+    auto * toolBar = addToolBar(tr("Debug"));
+    toolBar->setObjectName(QStringLiteral("debug-toolBar"));
+    toolBar->addAction(&m_pauseResume);
+    toolBar->addAction(&m_step);
+    toolBar->addSeparator();
+    toolBar->addAction(&m_refresh);
+    toolBar->addWidget(&m_status);
 }
 
 void DebugWindow::createDockWidgets()
 {
     auto * dock = new QDockWidget(tr("Keyboard"), this);
+    dock->setObjectName(QStringLiteral("keyboard-monitor-dock"));
     dock->setWidget(&m_keyboardMonitor);
     addDockWidget(::Qt::DockWidgetArea::BottomDockWidgetArea, dock);
 
-    m_memoryDock = new QDockWidget(tr("Memory"), this);
-    auto * memory = new QWidget();
-    auto * memoryLayout = new QVBoxLayout();
-    memoryLayout->addWidget(&m_memoryWidget);
-    auto * tmpLayout = new QHBoxLayout();
-    tmpLayout->addWidget(&m_memoryLocation);
-    tmpLayout->addWidget(&m_setBreakpoint);
-    tmpLayout->addStretch(10);
-    tmpLayout->addWidget(&m_memoryPc);
-    tmpLayout->addWidget(&m_memorySp);
-    memoryLayout->addLayout(tmpLayout);
-    memory->setLayout(memoryLayout);
-    m_memoryDock->setWidget(memory);
-    addDockWidget(::Qt::DockWidgetArea::RightDockWidgetArea, m_memoryDock);
+    dock = new QDockWidget(tr("Memory"), this);
+    dock->setObjectName(QStringLiteral("memory-dock"));
+    dock->setWidget(&m_memoryWidget);
+    addDockWidget(::Qt::DockWidgetArea::RightDockWidgetArea, dock);
 
-    m_pokeDock = new QDockWidget(tr("Poke"), this);
-    m_pokeDock->setWidget(&m_poke);
-    addDockWidget(::Qt::DockWidgetArea::RightDockWidgetArea, m_pokeDock);
+    dock = new QDockWidget(tr("Poke"), this);
+    dock->setObjectName(QStringLiteral("poke-dock"));
+    dock->setWidget(&m_poke);
+    addDockWidget(::Qt::DockWidgetArea::RightDockWidgetArea, dock);
 
-    // shadow registers
     dock = new QDockWidget(tr("Shadow registers"));
+    dock->setObjectName(QStringLiteral("shadow-registers-dock"));
     auto * shadowRegisters = new QWidget();
     auto * shadowRegistersLayout = new QVBoxLayout();
 
@@ -160,24 +143,6 @@ void DebugWindow::layoutWidget()
 	// program counter and stack pointer
     auto * pointers = new QGroupBox(tr("Pointers"));
     auto * pointersLayout = new QVBoxLayout();
-//
-//    auto * regLayout = new QHBoxLayout();
-//    tmpLabel = new QLabel("SP");
-//    tmpLabel->setBuddy(&m_sp);
-//    tmpLabel->setFont(m_sp.font());
-//    tmpLabel->setMinimumHeight(m_sp.minimumHeight());
-//    regLayout->addWidget(tmpLabel, 1);
-//    regLayout->addWidget(&m_sp, 10);
-//    pointersLayout->addLayout(regLayout);
-//
-//    regLayout = new QHBoxLayout();
-//    tmpLabel = new QLabel("PC");
-//    tmpLabel->setBuddy(&m_pc);
-//    tmpLabel->setFont(m_pc.font());
-//    tmpLabel->setMinimumHeight(m_pc.minimumHeight());
-//    regLayout->addWidget(tmpLabel, 1);
-//    regLayout->addWidget(&m_pc, 10);
-//    pointersLayout->addLayout(regLayout);
     pointersLayout->addWidget(&m_pointers);
     pointers->setLayout(pointersLayout);
 
@@ -206,11 +171,29 @@ void DebugWindow::connectWidgets()
     connect(&m_refresh, &QAction::triggered, this, &DebugWindow::updateStateDisplay);
     connect(&m_step, &QAction::triggered, this, &DebugWindow::stepTriggered);
 
+    connect(&m_navigateToPc, &QAction::triggered, this, &DebugWindow::locateProgramCounterInMemory);
+    connect(&m_navigateToPc, &QAction::triggered, this, &DebugWindow::locateProgramCounterInDisassembly);
+    connect(&m_breakpointAtPc, &QAction::triggered, [this]() {
+        setProgramCounterBreakpointTriggered(m_pointers.registerValue(Register16::PC));
+    });
+
+    connect(&m_navigateToSp, &QAction::triggered, this, &DebugWindow::locateStackPointerInDisassembly);
+    connect(&m_navigateToSp, &QAction::triggered, this, &DebugWindow::locateStackPointerInMemory);
+    connect(&m_breakpointAtStackTop, &QAction::triggered, [this]() {
+        auto addr = m_pointers.registerValue(Register16::SP);
+
+        if (addr > 0xffff - 2) {
+            std::cerr << "Can't set a breakpoint at address on top of stack - stack is currently < 2 bytes in size\n";
+            m_status.setText("Can't set breakpoint - the top of the stack does not contain an address.");
+            return;
+        }
+
+        breakAtProgramCounter(m_thread->spectrum().z80()->peekUnsignedWord(addr));
+    });
+
     connect(&m_memoryWidget, &QWidget::customContextMenuRequested, this, &DebugWindow::memoryContextMenuRequested);
-    connect(&m_memoryLocation, qOverload<int>(&HexSpinBox::valueChanged), this, &DebugWindow::memoryLocationChanged);
-    connect(&m_setBreakpoint, &QToolButton::clicked, this, &DebugWindow::setBreakpointTriggered);
-    connect(&m_memoryPc, &QToolButton::clicked, this, &DebugWindow::scrollMemoryToPcTriggered);
-    connect(&m_memorySp, &QToolButton::clicked, this, &DebugWindow::scrollMemoryToSpTriggered);
+    connect(&m_memoryWidget, &MemoryDebugWidget::programCounterBreakpointRequested, this, &DebugWindow::setProgramCounterBreakpointTriggered);
+
     connect(&m_poke, &PokeWidget::pokeClicked, [this](Z80::UnsignedWord address, Z80::UnsignedByte value) -> void {
         m_thread->spectrum().memory()[address] = value;
         updateStateDisplay();
@@ -250,17 +233,6 @@ void DebugWindow::connectWidgets()
         assert(cpu);
         cpu->setInterruptMode(mode);
     });
-
-//    for (auto * widget : {&m_sp, &m_pc,}) {
-//        connect(widget, &QSpinBox::editingFinished, [this, widget]() {
-//            assert(m_thread);
-//            auto * cpu = m_thread->spectrum().z80();
-//            assert(cpu);
-//            auto & registers = cpu->registers();
-//            if(widget == &m_pc) registers.pc = widget->value();
-//            else if(widget == &m_sp) registers.sp = widget->value();
-//        });
-//    }
 }
 
 void DebugWindow::closeEvent(QCloseEvent * ev)
@@ -270,6 +242,7 @@ void DebugWindow::closeEvent(QCloseEvent * ev)
     settings.beginGroup(QStringLiteral("debugwindow"));
     settings.setValue(QStringLiteral("position"), pos());
     settings.setValue(QStringLiteral("size"), size());
+    settings.setValue(QStringLiteral("windowState"), saveState());
     settings.endGroup();
     QMainWindow::closeEvent(ev);
 }
@@ -280,6 +253,7 @@ void DebugWindow::showEvent(QShowEvent * ev)
     QSettings settings;
     settings.beginGroup(QStringLiteral("debugwindow"));
     setGeometry({settings.value(QStringLiteral("position")).toPoint(), settings.value(QStringLiteral("size")).toSize()});
+    restoreState(settings.value(QStringLiteral("windowState")).toByteArray());
     settings.endGroup();
     QMainWindow::showEvent(ev);
 }
@@ -293,8 +267,6 @@ void DebugWindow::updateStateDisplay()
 	m_registers.setRegisters(registers);
 	m_shadowRegisters.setRegisters(registers);
 	m_pointers.setRegisters(registers);
-//	m_pc.setValue(registers.pc);
-//	m_sp.setValue(registers.sp);
 	m_interrupts.setRegisters(registers);
 	m_interrupts.setInterruptMode((cpu->interruptMode()));
 	m_memoryWidget.clearHighlights();
@@ -335,10 +307,6 @@ void DebugWindow::threadPaused()
     m_shadowRegisters.setEnabled(true);
     m_poke.setEnabled(true);
     m_memoryWidget.setEnabled(true);
-    m_setBreakpoint.setEnabled(true);
-    m_memoryLocation.setEnabled(true);
-    m_memoryPc.setEnabled(true);
-    m_memorySp.setEnabled(true);
     m_keyboardMonitor.setEnabled(true);
     m_step.setEnabled(true);
     updateStateDisplay();
@@ -356,10 +324,6 @@ void DebugWindow::threadResumed()
     m_shadowRegisters.setEnabled(false);
     m_poke.setEnabled(false);
     m_memoryWidget.setEnabled(false);
-    m_setBreakpoint.setEnabled(false);
-    m_memoryLocation.setEnabled(false);
-    m_memoryPc.setEnabled(false);
-    m_memorySp.setEnabled(false);
     m_keyboardMonitor.setEnabled(false);
     m_step.setEnabled(false);
     disconnect(m_thread, &Thread::stepped, this, &DebugWindow::threadStepped);
@@ -370,34 +334,18 @@ void DebugWindow::threadStepped()
     updateStateDisplay();
 }
 
-void DebugWindow::scrollMemoryToPcTriggered()
+void DebugWindow::setProgramCounterBreakpointTriggered(UnsignedWord addr)
 {
-    auto addr = m_pointers.registerValue(::Z80::Register16::PC);
-    m_memoryLocation.setValue(addr);
-    m_memoryWidget.scrollToAddress(addr);
-}
-
-void DebugWindow::scrollMemoryToSpTriggered()
-{
-    auto addr = m_pointers.registerValue(::Z80::Register16::SP);
-    m_memoryLocation.setValue(addr);
-    m_memoryWidget.scrollToAddress(addr);
-}
-
-void DebugWindow::memoryLocationChanged()
-{
-    m_memoryWidget.scrollToAddress(m_memoryLocation.value());
-}
-
-void DebugWindow::setBreakpointTriggered()
-{
-    auto addr = m_memoryLocation.value();
-
     if (0 > addr || 0xffff < addr) {
         std::cerr << "invalid breakpoint address: " << std::hex << std::setfill('0') << std::setw(4) << addr << std::dec << std::setfill(' ') << "\n";
         return;
     }
 
+    breakAtProgramCounter(addr);
+}
+
+void DebugWindow::breakAtProgramCounter(UnsignedWord addr)
+{
     auto existingBreakpoint = std::find_if(m_breakpoints.cbegin(), m_breakpoints.cend(), [addr](const auto * breakpoint) -> bool {
         auto * pcBreakpoint = dynamic_cast<const ProgramCounterBreakpoint *>(breakpoint);
         return pcBreakpoint && pcBreakpoint->address() == addr;
@@ -419,7 +367,7 @@ void DebugWindow::setBreakpointTriggered()
         activateWindow();
         raise();
         m_memoryWidget.scrollToAddress(addr);
-        // TODO navigate disassembly to breakpoint address
+        m_disassembly.scrollToAddress(addr);
     });
 
     m_breakpoints.push_back(breakpoint);
@@ -455,6 +403,26 @@ void DebugWindow::memoryContextMenuRequested(const QPoint & pos)
     });
 
     menu.exec(m_memoryWidget.mapToGlobal(pos));
+}
+
+void DebugWindow::locateProgramCounterInMemory()
+{
+    m_memoryWidget.scrollToAddress(m_pointers.registerValue(Register16::PC));
+}
+
+void DebugWindow::locateStackPointerInMemory()
+{
+    m_memoryWidget.scrollToAddress(m_pointers.registerValue(Register16::SP));
+}
+
+void DebugWindow::locateProgramCounterInDisassembly()
+{
+    m_disassembly.scrollToAddress(m_pointers.registerValue(Register16::PC));
+}
+
+void DebugWindow::locateStackPointerInDisassembly()
+{
+    m_disassembly.scrollToAddress(m_pointers.registerValue(Register16::SP));
 }
 
 void DebugWindow::InstructionObserver::notify(::Spectrum::Z80 * cpu)

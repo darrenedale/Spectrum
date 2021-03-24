@@ -30,6 +30,12 @@ InterruptWidget::InterruptWidget(QWidget * parent)
     m_im.setMinimum(0);
     m_im.setMaximum(2);
 
+    QFont widgetFont = m_i.font();
+    widgetFont.setPointSizeF(widgetFont.pointSizeF() * 0.85);
+    m_i.setFont(widgetFont);
+    m_r.setFont(widgetFont);
+    m_im.setFont(widgetFont);
+
     auto * widgetLayout =  new QHBoxLayout();
     auto * tmpLabel = new QLabel(tr("Mode"));
     tmpLabel->setBuddy(&m_im);
