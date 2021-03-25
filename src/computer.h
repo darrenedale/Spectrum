@@ -97,7 +97,7 @@ class Computer
         }
 
         /**
-         * Proivide the computer with new memory that it owns.
+         * Provide the computer with new memory that it owns.
          *
          * @param memory
          * @param size
