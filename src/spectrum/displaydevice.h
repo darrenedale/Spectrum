@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include "types.h"
+#include "../z80/types.h"
 #include "../z80/iodevice.h"
 
 namespace Spectrum
@@ -21,7 +22,7 @@ namespace Spectrum
          * @param port
          * @return
          */
-        bool checkReadPort(Z80::UnsignedWord port) const override
+        bool checkReadPort(::Z80::UnsignedWord port) const override
         {
             return false;
         }
@@ -32,7 +33,7 @@ namespace Spectrum
          * @param port
          * @return
          */
-        bool checkWritePort(Z80::UnsignedWord port) const override
+        bool checkWritePort(::Z80::UnsignedWord port) const override
         {
             return !(port & 0x01);
         }
@@ -43,7 +44,7 @@ namespace Spectrum
          * @param port
          * @return
          */
-        Z80::UnsignedByte readByte(Z80::UnsignedWord port) override
+        Z80::UnsignedByte readByte(::Z80::UnsignedWord port) override
         {
             return 0;
         }
@@ -54,7 +55,7 @@ namespace Spectrum
          * @param port
          * @param value
          */
-        void writeByte(Z80::UnsignedWord port, Z80::UnsignedByte value) override
+        void writeByte(::Z80::UnsignedWord port, ::Z80::UnsignedByte value) override
         {
             setBorder(static_cast<Colour>(value & 0b00000111));
         }

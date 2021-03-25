@@ -7,6 +7,7 @@
 #include <set>
 
 #include "../cpu.h"
+#include "../memory.h"
 #include "registers.h"
 #include "types.h"
 
@@ -36,17 +37,12 @@ namespace Z80
     : public Cpu
     {
     public:
-        using UnsignedByte = ::Z80::UnsignedByte;
-        using UnsignedWord = ::Z80::UnsignedWord;
-        using SignedByte = ::Z80::SignedByte;
-        using SignedWord = ::Z80::SignedWord;
-        using Register8 = ::Z80::Register8;
-        using Register16 = ::Z80::Register16;
+        using Memory = ::Memory<UnsignedByte>;
 
         static constexpr const std::endian Z80ByteOrder = std::endian::little;
         static constexpr const std::endian HostByteOrder = std::endian::native;
 
-        Z80(UnsignedByte * memory, int memorySize);
+        Z80(Memory * memory);
         ~Z80() override;
 
         static inline UnsignedWord swapByteOrder(UnsignedWord value)
@@ -73,16 +69,6 @@ namespace Z80
         }
 
         [[nodiscard]] bool isValid() const
-        {
-            return m_memory;
-        }
-
-        [[nodiscard]] inline int ramSize() const
-        {
-            return m_memorySize;
-        }
-
-        [[nodiscard]] inline UnsignedByte * memory() const
         {
             return m_memory;
         }
@@ -899,11 +885,11 @@ namespace Z80
          */
         [[nodiscard]] inline UnsignedByte peekUnsigned(int addr) const
         {
-            if (addr < 0 || addr >= m_memorySize) {
+            if (addr < 0 || addr >= memorySize()) {
                 return 0;
             }
 
-            return m_memory[addr];
+            return m_memory->readByte(addr);
         }
 
         /**
@@ -941,11 +927,11 @@ namespace Z80
          */
         inline void pokeUnsigned(int addr, UnsignedByte value)
         {
-            if (addr < 0 || addr > m_memorySize) {
+            if (addr < 0 || addr > memorySize()) {
                 return;
             }
 
-            m_memory[addr] = value;
+            m_memory->writeByte(addr, value);
         }
 
         /**
@@ -1015,8 +1001,7 @@ namespace Z80
         Registers m_registers;
 
         // memory
-        UnsignedByte * m_memory;
-        int m_memorySize;
+        Memory * m_memory;
 
         // interrupt handling
         bool m_iff1;

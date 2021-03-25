@@ -23,12 +23,12 @@ namespace Spectrum
             return 1;
         }
 
-        [[nodiscard]] bool checkReadPort(Z80::UnsignedWord port) const override
+        [[nodiscard]] bool checkReadPort(::Z80::UnsignedWord port) const override
         {
             return 31 == (port & 0x00ff);
         }
 
-        Z80::UnsignedByte readByte(Z80::UnsignedWord port) override;
+        ::Z80::UnsignedByte readByte(::Z80::UnsignedWord port) override;
     };
 }
 

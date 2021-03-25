@@ -93,7 +93,7 @@ void Z80Interpreter::run()
         return;
     }
 
-    std::cout << m_cpu->clockSpeedMHz() << "MHz Z80 CPU, " << m_cpu->ramSize() << " bytes of RAM\n";
+    std::cout << m_cpu->clockSpeedMHz() << "MHz Z80 CPU, " << m_cpu->memorySize() << " bytes of RAM\n";
 
     while (handleInput(readInput())) {
     }

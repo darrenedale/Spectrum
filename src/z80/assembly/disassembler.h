@@ -7,6 +7,7 @@
 
 #include "mnemonic.h"
 #include "../types.h"
+#include "../z80.h"
 
 namespace Z80::Assembly
 {
@@ -61,9 +62,8 @@ namespace Z80::Assembly
          * @param memory
          * @param memorySize
          */
-        explicit Disassembler(UnsignedByte * memory, int memorySize)
+        explicit Disassembler(::Z80::Z80::MemoryType * memory)
         : m_memory(memory),
-          m_memorySize(memorySize),
           m_pc(0)
         {}
 
@@ -126,7 +126,7 @@ namespace Z80::Assembly
          */
         bool canDisassembleMore() const
         {
-            return m_pc < m_memorySize;
+            return m_pc < m_memory->size();
         }
 
         /**
@@ -150,7 +150,7 @@ namespace Z80::Assembly
          *
          * @return
          */
-        static Mnemonic disassembleOne(const Z80::UnsignedByte *);
+        static Mnemonic disassembleOne(const ::Z80::UnsignedByte *);
 
     protected:
         /**
@@ -161,7 +161,7 @@ namespace Z80::Assembly
          *
          * @return
          */
-        static Mnemonic disassembleOnePlain(const Z80::UnsignedByte *);
+        static Mnemonic disassembleOnePlain(const ::Z80::UnsignedByte *);
 
         /**
          * Helper to disassemble an 0xcb extended opcode from a machine code fragment.
@@ -173,7 +173,7 @@ namespace Z80::Assembly
          *
          * @return
          */
-        static Mnemonic disassembleOneCb(const Z80::UnsignedByte *);
+        static Mnemonic disassembleOneCb(const ::Z80::UnsignedByte *);
 
         /**
          * Helper to disassemble an 0xed extended opcode from a machine code fragment.
@@ -184,7 +184,7 @@ namespace Z80::Assembly
          *
          * @return
          */
-        static Mnemonic disassembleOneEd(const Z80::UnsignedByte *);
+        static Mnemonic disassembleOneEd(const ::Z80::UnsignedByte *);
 
         /**
          * Helper to disassemble an 0xdd or 0xfd extended opcode from a machine code fragment.
@@ -198,16 +198,13 @@ namespace Z80::Assembly
          *
          * @return
          */
-        static Mnemonic disassembleOneDdOrFd(Register16, const Z80::UnsignedByte *);
+        static Mnemonic disassembleOneDdOrFd(Register16, const ::Z80::UnsignedByte *);
 
-        static Mnemonic disassembleOneDdCbOrFdCb(Register16, const Z80::UnsignedByte *);
+        static Mnemonic disassembleOneDdCbOrFdCb(Register16, const ::Z80::UnsignedByte *);
 
     private:
         // the memory image the disassembler will work with
-        Z80::UnsignedByte * m_memory;
-
-        // the size of the memory image
-        int m_memorySize;
+        ::Z80::Z80::MemoryType * m_memory;
 
         // the internal address pointer for the disassembly streaming API
         int m_pc;

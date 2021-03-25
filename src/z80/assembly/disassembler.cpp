@@ -24,23 +24,34 @@ namespace
     {
         return (static_cast<UnsignedWord>(*memory) & 0x00ff) | ((static_cast<UnsignedWord>(*(memory + 1)) & 0x00ff) << 8);
     }
+
+    /**
+     * Helper to fetch enough bytes from the memory to disassemble a single instruction at a given address.
+     *
+     * @param memory
+     * @param address
+     * @param machineCode
+     */
+    void fetchInstructionMachineCode(::Z80::Z80::MemoryType * memory, int address, UnsignedByte machineCode[4])
+    {
+        auto bytesAvailable = memory->size() - address;
+
+        if (bytesAvailable < 4) {
+            memory->readBytes(address, bytesAvailable, machineCode);
+            memory->readBytes(0, 4 - bytesAvailable, machineCode + bytesAvailable);
+        } else {
+            memory->readBytes(address, 4, machineCode);
+        }
+    }
 }
 
 Disassembler::Mnemonics Disassembler::disassembleFrom(int address, int maxCount) const
 {
-    static UnsignedByte overflowBuffer[4];
+    static UnsignedByte machineCode[4];
     Mnemonics ret;
 
-    while (0 != maxCount && address < m_memorySize) {
-        UnsignedByte * machineCode = m_memory + address;
-        auto bytesAvailable = m_memorySize - address;
-
-        if (bytesAvailable < 4) {
-            std::memcpy(overflowBuffer, machineCode, bytesAvailable);
-            std::memcpy(overflowBuffer + bytesAvailable, m_memory, 4 - bytesAvailable);
-            machineCode = overflowBuffer;
-        }
-
+    while (0 != maxCount && address < m_memory->size()) {
+        fetchInstructionMachineCode(m_memory, address, machineCode);
         auto mnemonic = disassembleOne(machineCode);
         address += mnemonic.size;
         ret.push_back(std::move(mnemonic));
@@ -55,7 +66,9 @@ Disassembler::Mnemonics Disassembler::disassembleFrom(int address, int maxCount)
 
 Mnemonic Disassembler::nextMnemonic()
 {
-    if (m_pc >= m_memorySize) {
+    static UnsignedByte machineCode[4];
+
+    if (m_pc >= m_memory->size()) {
         return {
             Instruction::NOP,
             {},
@@ -63,22 +76,13 @@ Mnemonic Disassembler::nextMnemonic()
         };
     }
 
-    auto * machineCode = m_memory + m_pc;
-    UnsignedByte overflowBuffer[4];
-    auto bytesAvailable = m_memorySize - m_pc;
-
-    if (bytesAvailable < 4) {
-        std::memcpy(overflowBuffer, machineCode, bytesAvailable);
-        std::memcpy(overflowBuffer + bytesAvailable, m_memory, 4 - bytesAvailable);
-        machineCode = overflowBuffer;
-    }
-
+    fetchInstructionMachineCode(m_memory, m_pc, machineCode);
     auto mnemonic = disassembleOne(machineCode);
     m_pc += mnemonic.size;
     return mnemonic;
 }
 
-Mnemonic Disassembler::disassembleOne(const Z80::UnsignedByte * machineCode)
+Mnemonic Disassembler::disassembleOne(const ::Z80::UnsignedByte * machineCode)
 {
     switch (*machineCode) {
         case 0xcb:
@@ -98,7 +102,7 @@ Mnemonic Disassembler::disassembleOne(const Z80::UnsignedByte * machineCode)
     }
 }
 
-Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode)
+Mnemonic Disassembler::disassembleOnePlain(const ::Z80::UnsignedByte * machineCode)
 {
     switch (*machineCode) {
         case Z80__PLAIN__NOP:                // 0x00
@@ -2479,7 +2483,7 @@ Mnemonic Disassembler::disassembleOnePlain(const Z80::UnsignedByte * machineCode
     };
 }
 
-Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
+Mnemonic Disassembler::disassembleOneCb(const ::Z80::UnsignedByte * machineCode)
 {
     // NOTE all 0xcb prefix opcodes are this size
     static constexpr const UnsignedByte OpcodeSize = 2;
@@ -4990,7 +4994,7 @@ Mnemonic Disassembler::disassembleOneCb(const Z80::UnsignedByte * machineCode)
     };
 }
 
-Mnemonic Disassembler::disassembleOneEd(const Z80::UnsignedByte * machineCode)
+Mnemonic Disassembler::disassembleOneEd(const ::Z80::UnsignedByte * machineCode)
 {
     switch (*machineCode)
     {
@@ -5845,7 +5849,7 @@ Mnemonic Disassembler::disassembleOneEd(const Z80::UnsignedByte * machineCode)
     };
 }
 
-Mnemonic Disassembler::disassembleOneDdOrFd(Register16 reg, const Z80::UnsignedByte * machineCode)
+Mnemonic Disassembler::disassembleOneDdOrFd(Register16 reg, const ::Z80::UnsignedByte * machineCode)
 {
     switch (*machineCode) {
         case Z80__DD_OR_FD__INC__INDIRECT_IX_d_OR_IY_d:                // 0x34
@@ -6359,7 +6363,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(Register16 reg, const Z80::UnsignedB
     };
 }
 
-Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const Z80::UnsignedByte * machineCode)
+Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::UnsignedByte * machineCode)
 {
     static constexpr const int OpcodeSize = 3;
     

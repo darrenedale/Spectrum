@@ -68,6 +68,12 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
 
 	connectWidgets();
 
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("debugWindow"));
+    setGeometry({settings.value(QStringLiteral("position")).toPoint(), settings.value(QStringLiteral("size")).toSize()});
+    restoreState(settings.value(QStringLiteral("windowState")).toByteArray());
+    settings.endGroup();
+
 	if (m_thread->isPaused()) {
 	    threadPaused();
 	} else {
@@ -194,8 +200,8 @@ void DebugWindow::connectWidgets()
     connect(&m_memoryWidget, &QWidget::customContextMenuRequested, this, &DebugWindow::memoryContextMenuRequested);
     connect(&m_memoryWidget, &MemoryDebugWidget::programCounterBreakpointRequested, this, &DebugWindow::setProgramCounterBreakpointTriggered);
 
-    connect(&m_poke, &PokeWidget::pokeClicked, [this](Z80::UnsignedWord address, Z80::UnsignedByte value) -> void {
-        m_thread->spectrum().memory()[address] = value;
+    connect(&m_poke, &PokeWidget::pokeClicked, [this](::Z80::UnsignedWord address, ::Z80::UnsignedByte value) -> void {
+        m_thread->spectrum().memory()->writeByte(address, value);
         updateStateDisplay();
     });
 
@@ -247,15 +253,10 @@ void DebugWindow::closeEvent(QCloseEvent * ev)
     QMainWindow::closeEvent(ev);
 }
 
-void DebugWindow::showEvent(QShowEvent * ev)
+void DebugWindow::showEvent(QShowEvent * event)
 {
     m_thread->spectrum().z80()->addInstructionObserver(&m_cpuObserver);
-    QSettings settings;
-    settings.beginGroup(QStringLiteral("debugWindow"));
-    setGeometry({settings.value(QStringLiteral("position")).toPoint(), settings.value(QStringLiteral("size")).toSize()});
-    restoreState(settings.value(QStringLiteral("windowState")).toByteArray());
-    settings.endGroup();
-    QMainWindow::showEvent(ev);
+    QMainWindow::showEvent(event);
 }
 
 void DebugWindow::updateStateDisplay()
@@ -391,13 +392,13 @@ void DebugWindow::memoryContextMenuRequested(const QPoint & pos)
         return;
     }
 
-    auto value = m_thread->spectrum().memory()[*address];
+    auto value = m_thread->spectrum().memory()->readByte(*address);
     QMenu menu(this);
     menu.addSection(QStringLiteral("0x%1 : 0x%2")
         .arg(*address, 4, 16, QLatin1Char('0'))
         .arg(value, 2, 16, QLatin1Char('0')));
 
-    menu.addAction(tr("Poke..."), [this, address = *address, value = m_thread->spectrum().memory()[*address]]() {
+    menu.addAction(tr("Poke..."), [this, address = *address, value = m_thread->spectrum().memory()->readByte(*address)]() {
         m_poke.setValue(value);
         m_poke.setAddress(address);
     });

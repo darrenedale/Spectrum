@@ -13,19 +13,26 @@
 
 namespace
 {
+    // the default Z80 clock speed for a Spectrum
     const int DefaultClockSpeed = 3500000;
 }
 
 namespace Spectrum
 {
-    BaseSpectrum::BaseSpectrum(const std::string & romFile, int memSize, uint8_t * mem)
-    : BaseSpectrum(memSize, mem)
+    BaseSpectrum::BaseSpectrum(const std::string & romFile, MemoryType * memory)
+    : BaseSpectrum(memory)
     {
         (void) loadRom(romFile);
     }
 
-    BaseSpectrum::BaseSpectrum(int memSize, uint8_t * mem)
-    : Computer(memSize, mem),
+    BaseSpectrum::BaseSpectrum(const std::string & romFile, MemoryType::Size memorySize)
+    : BaseSpectrum(memorySize)
+    {
+        (void) loadRom(romFile);
+    }
+
+    BaseSpectrum::BaseSpectrum(MemoryType * memory)
+    : Computer(memory),
       m_executionSpeed(1.0),
       m_interruptCycleCounter(0),
       m_displayDevices(),
@@ -33,10 +40,26 @@ namespace Spectrum
       m_keyboard(nullptr),
       m_joystick(nullptr)
     {
-        auto * z80 = new Z80(memory(), memorySize());
+        auto * z80 = new Z80(memory);
         z80->setClockSpeed(DefaultClockSpeed);
         addCpu(z80);
-        clearMemory();
+        memory->clear();
+        z80->reset();
+    }
+
+    BaseSpectrum::BaseSpectrum(MemoryType::Size memorySize)
+    : Computer(memorySize),
+      m_executionSpeed(1.0),
+      m_interruptCycleCounter(0),
+      m_displayDevices(),
+      m_constrainExecutionSpeed(true),
+      m_keyboard(nullptr),
+      m_joystick(nullptr)
+    {
+        auto * z80 = new Z80(memory());
+        z80->setClockSpeed(DefaultClockSpeed);
+        addCpu(z80);
+        memory()->clear();
         z80->reset();
     }
 
@@ -50,7 +73,7 @@ namespace Spectrum
 
     void BaseSpectrum::reset()
     {
-        clearMemory();
+        memory()->clear();
 
         if (!loadRom(m_romFile)) {
             return;
@@ -72,7 +95,7 @@ namespace Spectrum
 
 #if(!defined(NDEBUG))
 #include <zlib.h>
-    void SpectrumBase::dumpState() const
+    void BaseSpectrum::dumpState() const
     {
         std::cout << "Spectrum state:\n"
                   << std::hex << std::setfill('0')
@@ -96,19 +119,16 @@ namespace Spectrum
                   << "     " << (z80()->iff1() ? '1' : '0')
                   << "     " << (z80()->iff2() ? '1' : '0') << "\n\n";
         std::uint32_t crc = crc32(0L, nullptr, 0);
-        crc = crc32(crc, memory(), 0x4000);
+        crc = crc32(crc, memory()->pointerTo(0), 0x4000);
         std::cout << "ROM checksum: 0x" << std::setw(8) << crc << '\n';
         crc = crc32(0L, nullptr, 0);
-        crc = crc32(crc, memory() + 0x4000, memorySize() - 0x4000);
-        std::cout << "RAM checksum: 0x" << std::setw(8) << crc << '\n'
+        crc = crc32(crc, memory()->pointerTo(0x4000), 0x4000);
+        crc = crc32(crc, memory()->pointerTo(0x8000), 0x4000);
+        crc = crc32(crc, memory()->pointerTo(0xc000), 0x4000);
+        std::cout << "48k RAM checksum: 0x" << std::setw(8) << crc << '\n'
                   << std::dec << std::setfill(' ');
     }
 #endif
-
-    void BaseSpectrum::clearMemory() const
-    {
-        std::memset(m_memory, 0, memorySize());
-    }
 
     inline void BaseSpectrum::refreshDisplays() const
     {
@@ -125,7 +145,7 @@ namespace Spectrum
         assert(z80());
 
         static steady_clock::time_point lastInterrupt = steady_clock::now();
-        // TODO spectrum refresh is not exactly 50FPS
+        // TODO spectrum refresh is not exactly 50FPS it's 50.08 (69888 t-states)
         int interruptThreshold = static_cast<int>(z80()->clockSpeed() / 50);
 
         while (0 < instructionCount) {
@@ -164,7 +184,7 @@ namespace Spectrum
             return false;
         }
 
-        inFile.read(reinterpret_cast<std::ifstream::char_type *>(memory()), RomFileSize);
+        inFile.read(reinterpret_cast<std::ifstream::char_type *>(memory()->pointerTo(0)), RomFileSize);
 
         if (inFile.fail()) {
             std::cerr << "failed to load spectrum ROM file \"" << fileName << "\".\n";

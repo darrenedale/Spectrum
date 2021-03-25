@@ -8,7 +8,7 @@
 #include <optional>
 #include <QScrollArea>
 
-#include "../spectrum48k.h"
+#include "../basespectrum.h"
 #include "../../z80/z80.h"
 
 namespace Spectrum::Qt
@@ -19,9 +19,9 @@ namespace Spectrum::Qt
         Q_OBJECT
 
     public:
-        explicit MemoryView(Z80::UnsignedByte * = nullptr, QWidget * = nullptr);
+        explicit MemoryView(BaseSpectrum::MemoryType * = nullptr, QWidget * = nullptr);
 
-        explicit MemoryView(const Spectrum48k & spectrum, QWidget * parent = nullptr)
+        explicit MemoryView(const BaseSpectrum & spectrum, QWidget * parent = nullptr)
         : MemoryView(spectrum.memory(), parent)
         {}
 
@@ -31,18 +31,18 @@ namespace Spectrum::Qt
         void operator=(MemoryView &&) = delete;
         ~MemoryView() override;
 
-        void setHighlight(Z80::UnsignedWord address, const QColor & foregroupd, const QColor & background);
-        void removeHighlight(Z80::UnsignedWord address);
+        void setHighlight(::Z80::UnsignedWord address, const QColor & foreground, const QColor & background);
+        void removeHighlight(::Z80::UnsignedWord address);
         void clearHighlights();
 
-        std::optional<Z80::UnsignedWord> addressAt(const QPoint &) const;
-        void scrollToAddress(Z80::UnsignedWord addr);
+        [[nodiscard]] std::optional<::Z80::UnsignedWord> addressAt(const QPoint &) const;
+        void scrollToAddress(::Z80::UnsignedWord addr);
 
         QWidget * takeWidget() = delete;
         void  setWidget(QWidget *) = delete;
 
     private:
-        Z80::UnsignedByte * m_memory;
+        BaseSpectrum::MemoryType * m_memory;
     };
 }
 

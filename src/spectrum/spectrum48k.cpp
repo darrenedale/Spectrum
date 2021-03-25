@@ -9,7 +9,7 @@ Spectrum48k::Spectrum48k(const std::string & romFile)
 }
 
 Spectrum48k::Spectrum48k()
-: BaseSpectrum(0xffff, nullptr)
+: BaseSpectrum(0x10000)
 {}
 
 Spectrum48k::~Spectrum48k() = default;

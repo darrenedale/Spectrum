@@ -18,9 +18,13 @@ namespace Spectrum
 			explicit Spectrum48k(const std::string & romFile);
 			~Spectrum48k() override;
 
+			/**
+			 * It's safe to use the returned pointer as a pointer to a contiguous block of 16kb of Spectrum RAM because
+			 * this page is never paged out from the address 0x4000.
+			 */
 			[[nodiscard]] std::uint8_t * displayMemory() const override
 			{
-				return memory() + DisplayMemoryOffset;
+				return memory()->pointerTo(DisplayMemoryOffset);
 			}
 
 			[[nodiscard]] int displayMemorySize() const override

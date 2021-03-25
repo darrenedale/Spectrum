@@ -280,7 +280,7 @@ bool Z80SnapshotReader::readInto(Snapshot & snapshot) const
             // decompress it into the snapshot's memory image
             decompress(snapshot.memory().image + MemoryImageOffset, buffer, *size);
         } else {
-            in.read(reinterpret_cast<std::istream::char_type *>(snapshot.memory().image + MemoryImageOffset), (0xffff - MemoryImageOffset));
+            in.read(reinterpret_cast<std::istream::char_type *>(snapshot.memory().image + MemoryImageOffset), (0x10000 - MemoryImageOffset));
         }
     } else {
         registers.pc = Z80::z80ToHostByteOrder(header.pcV2);

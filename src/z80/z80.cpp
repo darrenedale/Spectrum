@@ -9,6 +9,7 @@
  *
  * \todo
  * - interrupt mode 0 multi-byte instructions
+ * - review the memory access code now that we're using the Memory abstraction rather than a raw array of bytes
  */
 #include <iostream>
 #include <iomanip>
@@ -256,7 +257,7 @@ pokeHostWord(m_registers.sp, (reg));
 }
 
 #define Z80__ADD__REG8__REG8(dest,src) Z80__ADD__REG8__N(dest,src)
-#define Z80__ADD__REG8__INDIRECT_REG16(dest,src) Z80__ADD__REG8__N(dest,(*(m_memory + (src))))
+#define Z80__ADD__REG8__INDIRECT_REG16(dest,src) Z80__ADD__REG8__N(dest,(*(m_memory->pointerTo(src))))
 
 #define Z80__ADD__REG16__REG16(dest,src) \
 {       \
@@ -271,7 +272,7 @@ pokeHostWord(m_registers.sp, (reg));
     Z80_FLAG_F3_UPDATE((dest) & (Z80_FLAG_F3_MASK << 8)); \
 }
 
-#define Z80__ADD__REG8__INDIRECT_REG16_D(dest, reg, d) Z80__ADD__REG8__N((dest),(*(m_memory + (reg) + (d))))
+#define Z80__ADD__REG8__INDIRECT_REG16_D(dest, reg, d) Z80__ADD__REG8__N((dest),(*(m_memory->pointerTo((reg) + (d)))))
 
 //
 // addition with carry instructions
@@ -385,10 +386,10 @@ Z80_FLAG_S_UPDATE((reg) & 0x80);        \
 Z80_FLAG_F3_UPDATE((reg) & Z80_FLAG_F3_MASK); \
 Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
 
-#define Z80__INC__INDIRECT_REG16(reg) Z80__INC__REG8(*(m_memory + (reg)))
+#define Z80__INC__INDIRECT_REG16(reg) Z80__INC__REG8(*(m_memory->pointerTo(reg)))
 #define Z80__INC__REG16(reg) (reg)++;
 // TODO memptr
-#define Z80__INC__INDIRECT_REG16_D(reg, d) Z80__INC__REG8(*(m_memory + (reg) + (d)))
+#define Z80__INC__INDIRECT_REG16_D(reg, d) Z80__INC__REG8(*(m_memory->pointerTo((reg) + (d))))
 
 //
 // decrement instructions
@@ -403,10 +404,10 @@ Z80_FLAG_S_UPDATE((reg) & 0x80); \
 Z80_FLAG_F3_UPDATE((reg) & Z80_FLAG_F3_MASK); \
 Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
 
-#define Z80__DEC__INDIRECT_REG16(reg) Z80__DEC__REG8(*(m_memory + (reg)))
+#define Z80__DEC__INDIRECT_REG16(reg) Z80__DEC__REG8(*(m_memory->pointerTo(reg)))
 #define Z80__DEC__REG16(reg) (reg)--;
 // TODO memptr
-#define Z80__DEC__INDIRECT_REG16_D(reg, d) Z80__DEC__REG8(*(m_memory + (reg) + (d)));
+#define Z80__DEC__INDIRECT_REG16_D(reg, d) Z80__DEC__REG8(*(m_memory->pointerTo((reg) + (d))));
 
 //
 // negation instruction
@@ -525,8 +526,8 @@ Z80__RES__N__INDIRECT_REG16_D(n,(reg16),(d));               \
 }
 
 #define Z80__RLC__INDIRECT_REG16(reg) {     \
-    UnsignedByte & tmpValue = memory()[reg];\
-    Z80__RLC__REG8(tmpValue);               \
+    UnsignedByte * tmpValue = memory()->pointerTo(reg);\
+    Z80__RLC__REG8(*tmpValue);               \
 }
 
 #define Z80__RLC__INDIRECT_REG16_D(reg,d) Z80__RLC__INDIRECT_REG16((reg) + (d))
@@ -556,8 +557,8 @@ Z80__RES__N__INDIRECT_REG16_D(n,(reg16),(d));               \
 }
 #define Z80__RRC__INDIRECT_REG16(reg) \
 {\
-    UnsignedByte & tmpValue = memory()[reg]; \
-    Z80__RRC__REG8(tmpValue);          \
+    UnsignedByte * tmpValue = memory()->pointerTo(reg); \
+    Z80__RRC__REG8(*tmpValue);          \
 }
 #define Z80__RRC__INDIRECT_REG16_D(reg,d) Z80__RRC__INDIRECT_REG16((reg) + (d))
 #define Z80__RRC__INDIRECT_REG16_D__REG8(reg16,d,reg8) Z80__RRC__INDIRECT_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
@@ -593,8 +594,8 @@ Z80__RES__N__INDIRECT_REG16_D(n,(reg16),(d));               \
  */
 #define Z80__RL__INDIRECT_REG16(reg) \
 {      \
-    UnsignedByte & tmpValue = memory()[reg];\
-    Z80__RL__REG8(tmpValue);                \
+    UnsignedByte * tmpValue = memory()->pointerTo(reg);\
+    Z80__RL__REG8(*tmpValue);                \
 }
 
 #define Z80__RL__INDIRECT_REG16_D(reg,d) Z80__RL__INDIRECT_REG16((reg) + (d))
@@ -626,8 +627,8 @@ Z80__RES__N__INDIRECT_REG16_D(n,(reg16),(d));               \
 	Z80_FLAG_Z_UPDATE(0 == (reg));\
 }
 #define Z80__RR__INDIRECT_REG16(reg) {      \
-    UnsignedByte & tmpValue = memory()[reg];\
-    Z80__RR__REG8(tmpValue);                \
+    UnsignedByte * tmpValue = memory()->pointerTo(reg);\
+    Z80__RR__REG8(*tmpValue);                \
 }
 #define Z80__RR__INDIRECT_REG16_D(reg,d) Z80__RR__INDIRECT_REG16((reg) + (d))
 #define Z80__RR__INDIRECT_REG16_D__REG8(reg16,d,reg8) Z80__RR__INDIRECT_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
@@ -645,8 +646,8 @@ Z80__RES__N__INDIRECT_REG16_D(n,(reg16),(d));               \
 	Z80_FLAG_Z_UPDATE(0 == (reg));       \
 }
 #define Z80__SLA__INDIRECT_REG16(reg) {     \
-    UnsignedByte & tmpValue = memory()[reg];\
-    Z80__SLA__REG8(tmpValue);               \
+    UnsignedByte * tmpValue = memory()->pointerTo(reg);\
+    Z80__SLA__REG8(*tmpValue);               \
 }
 #define Z80__SLA__INDIRECT_REG16_D(reg,d) Z80__SLA__INDIRECT_REG16((reg) + (d))
 #define Z80__SLA__INDIRECT_REG16_D__REG8(reg16,d,reg8) Z80__SLA__INDIRECT_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
@@ -667,8 +668,8 @@ Z80__RES__N__INDIRECT_REG16_D(n,(reg16),(d));               \
 
 #define Z80__SRA__INDIRECT_REG16(reg)       \
 {                                           \
-    UnsignedByte & tmpValue = memory()[reg];\
-    Z80__SRA__REG8(tmpValue);               \
+    UnsignedByte * tmpValue = memory()->pointerTo(reg);\
+    Z80__SRA__REG8(*tmpValue);               \
 }
 
 #define Z80__SRA__INDIRECT_REG16_D(reg,d) Z80__SRA__INDIRECT_REG16((reg) + (d))
@@ -689,8 +690,8 @@ Z80__RES__N__INDIRECT_REG16_D(n,(reg16),(d));               \
 	Z80_FLAG_Z_UPDATE(0 == (reg));       \
 }
 #define Z80__SLL__INDIRECT_REG16(reg) {     \
-    UnsignedByte & tmpValue = memory()[reg];\
-    Z80__SLL__REG8(tmpValue);               \
+    UnsignedByte * tmpValue = memory()->pointerTo(reg);\
+    Z80__SLL__REG8(*tmpValue);               \
 }
 #define Z80__SLL__INDIRECT_REG16_D(reg,d) Z80__SLL__INDIRECT_REG16((reg) + (d))
 #define Z80__SLL__INDIRECT_REG16_D__REG8(reg16,d,reg8) Z80__SLL__INDIRECT_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
@@ -710,8 +711,8 @@ Z80__RES__N__INDIRECT_REG16_D(n,(reg16),(d));               \
 	Z80_FLAG_Z_UPDATE(0 == (reg));  \
 }
 #define Z80__SRL__INDIRECT_REG16(reg) { \
-    UnsignedByte & tmpValue = memory()[reg];\
-    Z80__SRL__REG8(tmpValue);               \
+    UnsignedByte * tmpValue = memory()->pointerTo(reg);\
+    Z80__SRL__REG8(*tmpValue);               \
 }
 #define Z80__SRL__INDIRECT_REG16_D(reg,d) Z80__SRL__INDIRECT_REG16((reg) + (d))
 #define Z80__SRL__INDIRECT_REG16_D__REG8(reg16,d,reg8) Z80__SRL__INDIRECT_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
@@ -880,10 +881,9 @@ constexpr const int Z80::Z80::DdCbOrFdCbOpcodeTStates[256] = {
 #include "includes/z80_ddorfd_cb_opcode_tstates.inc"
 };
 
-Z80::Z80::Z80(unsigned char * mem, int memSize)
-: Cpu(mem, memSize),
-  m_memory(mem),
-  m_memorySize(memSize),
+Z80::Z80::Z80(Memory * memory)
+: Cpu(memory),
+  m_memory(memory),
   m_clockSpeed(DefaultClockSpeed),
   m_nmiPending(false),
   m_interruptRequested(false),
@@ -957,14 +957,14 @@ void Z80::Z80::reset()
  */
 void Z80::Z80::pokeHostWord(int addr, UnsignedWord value)
 {
-	if (0 > addr || m_memorySize <= addr) {
+	if (0 > addr || memorySize() <= addr) {
 	    return;
 	}
 
 	value = hostToZ80ByteOrder(value);
 	auto * bytes = reinterpret_cast<UnsignedByte *>(&value);
-	*(m_memory + addr) = bytes[0];
-	*(m_memory + addr + 1) = bytes[1];
+	m_memory->writeByte(addr, bytes[0]);
+	m_memory->writeByte(addr + 1, bytes[1]);
 }
 
 /**
@@ -984,13 +984,13 @@ void Z80::Z80::pokeHostWord(int addr, UnsignedWord value)
  */
 void Z80::Z80::pokeZ80Word(int addr, UnsignedWord value)
 {
-	if (0 > addr || m_memorySize <= addr) {
+	if (0 > addr || memorySize() <= addr) {
 	    return;
 	}
 
     auto * bytes = reinterpret_cast<UnsignedByte *>(&value);
-    *(m_memory + addr) = bytes[0];
-    *(m_memory + addr + 1) = bytes[1];
+    m_memory->writeByte(addr, bytes[0]);
+    m_memory->writeByte(addr + 1, bytes[1]);
 }
 
 void Z80::Z80::execute(const UnsignedByte * instruction, bool doPc, int * tStates, int * size)
@@ -1098,6 +1098,13 @@ int Z80::Z80::handleInterrupt()
 
 int Z80::Z80::fetchExecuteCycle()
 {
+    // a buffer in which to store the machine code instruction and operand data - we need this because in Spectrum
+    // models from the 128k onwards the memory can be paged in, so we can't assume that we can just read the memory
+    // pointer for the PC and keep adding offsets to it to retrieve bytes - when memory banks are paged in, the actual
+    // next byte might not be the next byte in host memory if it crosses 0xc000, depending on which memory bank is
+    // currently paged in
+	static UnsignedByte machineCode[4];
+
 	int tStates = 0;
 	int size = 0;
 
@@ -1115,7 +1122,16 @@ int Z80::Z80::fetchExecuteCycle()
         m_interruptRequested = false;
 	}
 
-	execute(m_memory + m_registers.pc, true, &tStates, &size);
+    auto bytesAvailable = memory()->size() - m_registers.pc;
+
+    if (bytesAvailable < 4) {
+        memory()->readBytes(m_registers.pc, bytesAvailable, machineCode);
+        memory()->readBytes(0, 4 - bytesAvailable, machineCode + bytesAvailable);
+    } else {
+        memory()->readBytes(m_registers.pc, 4, machineCode);
+    }
+
+	execute(machineCode, true, &tStates, &size);
 	return tStates;
 }
 
@@ -6001,23 +6017,23 @@ void Z80::Z80::setRegisterValue(Register8 reg, UnsignedByte value)
 UnsignedWord Z80::Z80::peekUnsignedWord(int addr) const
 {
     // TODO make an assertion instead
-	if (addr < 0 || addr >= (m_memorySize - 1)) {
+	if (addr < 0 || addr >= (memorySize() - 1)) {
 	    return 0;
 	}
 
 	if (HostByteOrder == Z80ByteOrder) {
-        return m_memory[addr + 1] << 8 | m_memory[addr];
+        return (*m_memory)[addr + 1] << 8 | (*m_memory)[addr];
     }
 
-    return (m_memory[addr] << 8) | m_memory[addr + 1];
+    return ((*m_memory)[addr] << 8) | (*m_memory)[addr + 1];
 }
 
 UnsignedWord Z80::Z80::peekUnsignedWordZ80(int addr) const
 {
     // TODO make an assertion instead
-	if (addr < 0 || addr >= (m_memorySize - 1)) {
+	if (addr < 0 || addr >= (memorySize() - 1)) {
 	    return 0;
 	}
 
-    return m_memory[addr + 1] << 8 | m_memory[addr];
+    return (*m_memory)[addr + 1] << 8 | (*m_memory)[addr];
 }

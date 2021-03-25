@@ -8,8 +8,8 @@ using namespace Spectrum;
 
 using BaseZ80 = ::Z80::Z80;
 
-Spectrum::Z80::Z80(Z80::UnsignedByte * memory, int memorySize)
-: BaseZ80(memory, memorySize)
+Spectrum::Z80::Z80(MemoryType * memory)
+: BaseZ80(memory)
 {}
 
 void Spectrum::Z80::execute(const UnsignedByte *instruction, bool doPc, int *tStates, int *size)

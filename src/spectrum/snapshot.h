@@ -5,6 +5,7 @@
 #ifndef SPECTRUM_SNAPSHOT_H
 #define SPECTRUM_SNAPSHOT_H
 
+#include "../memory.h"
 #include "../z80/registers.h"
 #include "../z80/z80.h"
 #include "types.h"
@@ -18,7 +19,7 @@ namespace Spectrum
         struct Memory
         {
             Z80::UnsignedByte * image = nullptr;
-            int size = 0xffff;
+            int size = 0x10000;
         };
 
         /**
@@ -80,7 +81,7 @@ namespace Spectrum
         /**
          * The snapshot will take a copy of the provided memory and will default-initialise a CPU state.
          */
-        explicit Snapshot(Z80::UnsignedByte * memory = nullptr, int memorySize = 0xffff);
+        explicit Snapshot(Spectrum48k::MemoryType * memory = nullptr);
         Snapshot(const Snapshot &);
         Snapshot(Snapshot &&) noexcept;
         Snapshot & operator=(const Snapshot &);
@@ -112,7 +113,7 @@ namespace Spectrum
         }
 
     private:
-        explicit Snapshot(const ::Z80::Registers &, Z80::UnsignedByte * memory = nullptr, int memorySize = 0xffff);
+        explicit Snapshot(const ::Z80::Registers &, Spectrum48k::MemoryType * memory = nullptr);
         void copyRegisters(const ::Z80::Registers &);
         struct Registers m_registers;
         Memory m_memory;

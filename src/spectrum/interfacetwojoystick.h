@@ -21,7 +21,7 @@ namespace Spectrum
 
         [[nodiscard]] int availableJoysticks() const override;
 
-        [[nodiscard]] bool checkReadPort(Z80::UnsignedWord port) const override
+        [[nodiscard]] bool checkReadPort(::Z80::UnsignedWord port) const override
         {
             // IF2 responds to reads on any even port when the keyboard half-row is one of the halves of the top row
             // (because it's mapped to the keys 1-5 and 6-0)
@@ -31,7 +31,7 @@ namespace Spectrum
             return !(port & 0x0001) && (0 == (port & 0x0800) || 0 == (port & 0x1000));
         }
 
-        Z80::UnsignedByte readByte(Z80::UnsignedWord port) override;
+        Z80::UnsignedByte readByte(::Z80::UnsignedWord port) override;
     };
 }
 

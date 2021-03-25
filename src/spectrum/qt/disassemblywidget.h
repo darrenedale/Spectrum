@@ -7,7 +7,7 @@
 
 #include <QScrollArea>
 
-#include "../spectrum48k.h"
+#include "../basespectrum.h"
 #include "../../z80/assembly/disassembler.h"
 
 namespace Spectrum::Qt
@@ -18,9 +18,9 @@ namespace Spectrum::Qt
         Q_OBJECT
 
     public:
-        explicit DisassemblyWidget(Z80::UnsignedByte * = nullptr, QWidget * = nullptr);
+        explicit DisassemblyWidget(BaseSpectrum::MemoryType * = nullptr, QWidget * = nullptr);
 
-        explicit DisassemblyWidget(const Spectrum48k & spectrum, QWidget * parent = nullptr)
+        explicit DisassemblyWidget(const BaseSpectrum & spectrum, QWidget * parent = nullptr)
         : DisassemblyWidget(spectrum.memory(), parent)
         {}
 
@@ -38,14 +38,14 @@ namespace Spectrum::Qt
          *
          * @param fromAddress
          */
-        void updateMnemonics(Z80::UnsignedWord fromAddress);
+        void updateMnemonics(::Z80::UnsignedWord fromAddress);
 
         /**
          * Scroll the view if necessary so that a given address is visible.
          *
          * @param address
          */
-        void scrollToAddress(Z80::UnsignedWord address);
+        void scrollToAddress(::Z80::UnsignedWord address);
 
         /**
          * Scroll the view if necessary so that the current PC is visible.
@@ -62,21 +62,21 @@ namespace Spectrum::Qt
          *
          * @param pc
          */
-        void setPc(Z80::UnsignedWord pc);
+        void setPc(::Z80::UnsignedWord pc);
 
         /**
          * Fetch the current PC in the disassembly.
          *
          * @param pc
          */
-        [[nodiscard]] Z80::UnsignedWord pc() const;
+        [[nodiscard]] ::Z80::UnsignedWord pc() const;
 
         /**
          * Determine whether the current PC is being indicated in the disassembly.
          *
          * @return
          */
-        bool pcIndicatorEnabled() const;
+        [[nodiscard]] bool pcIndicatorEnabled() const;
 
         /**
          * Show or hide the indicator for the current PC.

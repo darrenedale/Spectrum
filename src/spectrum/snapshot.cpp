@@ -12,7 +12,7 @@ using namespace Spectrum;
 using InterruptMode = ::Z80::InterruptMode;
 
 Snapshot::Snapshot(const Spectrum48k & spectrum)
-: Snapshot(spectrum.z80()->registers(), spectrum.memory(), spectrum.memorySize())
+: Snapshot(spectrum.z80()->registers(), spectrum.memory())
 {
     auto * cpu = spectrum.z80();
     iff1 = cpu->iff1();
@@ -24,14 +24,14 @@ Snapshot::Snapshot(const Spectrum48k & spectrum)
     }
 }
 
-Snapshot::Snapshot(Z80::UnsignedByte *memory, int memorySize)
-: Snapshot({}, memory, memorySize)
+Snapshot::Snapshot(Spectrum48k::MemoryType * memory)
+: Snapshot({}, memory)
 {
 }
 
-Snapshot::Snapshot(const ::Z80::Registers & registers, Z80::UnsignedByte * memory, int memorySize)
+Snapshot::Snapshot(const ::Z80::Registers & registers, Spectrum48k::MemoryType * memory)
 : m_registers(),
-  m_memory{nullptr, memorySize},
+  m_memory(),
   iff1(false),
   iff2(false),
   im(InterruptMode::IM0),
@@ -39,12 +39,14 @@ Snapshot::Snapshot(const ::Z80::Registers & registers, Z80::UnsignedByte * memor
 {
     copyRegisters(registers);
 
-    if (memorySize) {
-        m_memory.image = new Z80::UnsignedByte[memorySize];
+    if (memory) {
+        m_memory.image = new Z80::UnsignedByte[memory->size()];
 
-        if (memory) {
-            std::memcpy(m_memory.image, memory, memorySize);
+        for (std::uint32_t address = 0; address < memory->size(); ++address) {
+            *(m_memory.image + address) = memory->readByte(address);
         }
+    } else {
+        m_memory.image = new Z80::UnsignedByte[0x10000];
     }
 }
 
@@ -54,13 +56,16 @@ Snapshot::~Snapshot() noexcept
 }
 
 Snapshot::Snapshot(const Snapshot & other)
-: Snapshot({}, other.m_memory.image, other.m_memory.size)
+: m_registers(other.m_registers),
+  iff1(other.iff1),
+  iff2(other.iff2),
+  im(other.im),
+  border(other.border)
 {
-    m_registers = other.m_registers;
-    iff1 = other.iff1;
-    iff2 = other.iff2;
-    im = other.im;
-    border = other.border;
+    if (other.m_memory.image) {
+        m_memory.image = new Z80::UnsignedByte[other.m_memory.size];
+        std::memcpy(m_memory.image, other.m_memory.image, other.m_memory.size);
+    }
 }
 
 Snapshot::Snapshot(Snapshot && other) noexcept
@@ -112,7 +117,7 @@ void Snapshot::applyTo(Spectrum48k & spectrum) const
 
     // TODO for now we assume that the Spectrum already has its ROM loaded but should we incorporate this into the
     //  snapshot image so that different ROMs are supported
-    std::memcpy(spectrum.memory() + 0x4000, m_memory.image + 0x4000, m_memory.size - 0x4000);
+    spectrum.memory()->writeBytes(0x4000, m_memory.size - 0x4000, m_memory.image + 0x4000);
 }
 
 void Snapshot::readFrom(Spectrum48k & spectrum)
@@ -138,7 +143,7 @@ void Snapshot::readFrom(Spectrum48k & spectrum)
             m_memory.image = new Z80::UnsignedByte[size];
         }
 
-        std::memcpy(m_memory.image, spectrum.memory(), size);
+        spectrum.memory()->readBytes(0, size, m_memory.image);
     }
 
     m_memory.size = size;

@@ -225,10 +225,10 @@ namespace
     };
 }
 
-DisassemblyWidget::DisassemblyWidget(Z80::UnsignedByte * memory, QWidget * parent)
+DisassemblyWidget::DisassemblyWidget(BaseSpectrum::MemoryType * memory, QWidget * parent)
 : QScrollArea(parent)
 {
-    QScrollArea::setWidget(new DisassemblyView(Disassembler(memory, 0xffff), this));
+    QScrollArea::setWidget(new DisassemblyView(Disassembler(memory), this));
 }
 
 DisassemblyWidget::~DisassemblyWidget() = default;

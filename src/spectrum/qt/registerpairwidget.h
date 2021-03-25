@@ -21,8 +21,8 @@ namespace Spectrum::Qt
     {
         Q_OBJECT
 
-        using UnsignedWord = Z80::UnsignedWord;
-        using UnsignedByte = Z80::UnsignedByte;
+        using UnsignedWord = ::Z80::UnsignedWord;
+        using UnsignedByte = ::Z80::UnsignedByte;
 
     public:
         explicit RegisterPairWidget(const QString & registerName = QLatin1String(), UnsignedWord value = 0x0000, QWidget * parent = nullptr);

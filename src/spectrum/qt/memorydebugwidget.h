@@ -9,6 +9,7 @@
 #include <QWidget>
 #include <QToolButton>
 
+#include "../basespectrum.h"
 #include "memoryview.h"
 #include "hexspinbox.h"
 
@@ -20,9 +21,9 @@ namespace Spectrum::Qt
         Q_OBJECT
 
     public:
-        explicit MemoryDebugWidget(Z80::UnsignedByte * = nullptr, QWidget * = nullptr);
+        explicit MemoryDebugWidget(BaseSpectrum::MemoryType * = nullptr, QWidget * = nullptr);
 
-        explicit MemoryDebugWidget(const Spectrum48k & spectrum, QWidget * parent = nullptr)
+        explicit MemoryDebugWidget(const BaseSpectrum & spectrum, QWidget * parent = nullptr)
         : MemoryDebugWidget(spectrum.memory(), parent)
         {}
 
@@ -32,8 +33,8 @@ namespace Spectrum::Qt
         void operator=(MemoryDebugWidget &&) = delete;
         ~MemoryDebugWidget() override;
 
-        [[nodiscard]] std::optional<Z80::UnsignedWord> addressAt(const QPoint &) const;
-        void scrollToAddress(Z80::UnsignedWord addr);
+        [[nodiscard]] std::optional<::Z80::UnsignedWord> addressAt(const QPoint &) const;
+        void scrollToAddress(::Z80::UnsignedWord addr);
 
         void clearHighlights();
         void setHighlight(::Z80::UnsignedWord address, const QColor & foreground, const QColor & background);

@@ -3,9 +3,13 @@
 
 #include <cstdint>
 
+#include "memory.h"
+
 class Cpu
 {
 public:
+    using MemoryType = Memory<std::uint8_t>;
+
     /**
      * Memory is borrowed, not owned. Caller is responsible for deallocating memory when no longer needed, and ensuring
      * that CPU no longer keeps a reference to the memory once it has been discarded.
@@ -13,7 +17,36 @@ public:
      * @param memory
      * @param memorySize
      */
-    Cpu(std::uint8_t * memory, int memorySize);
+    explicit Cpu(MemoryType * memory);
+
+    /**
+     * Note that if you copy construct a CPU object, you create another CPU that is sharing the memory of the original,
+     * so the owner of that memory needs to know about it. In general copying CPUs is best avoided as it's likely to
+     * make your code complicated and error-prone.
+     */
+    Cpu(const Cpu &) = default;
+
+    /**
+     * Note that if you move construct a CPU object, you create a CPU that is sharing the memory of the original and the
+     * original CPU ceases to be a consumer of the memory, both of which the owner of that memory needs to know about.
+     * In general moving CPUs is best avoided as it's likely to make your code complicated and error-prone.
+     */
+    Cpu(Cpu &&) noexcept;
+
+    /**
+     * Note that if you copy a CPU object, you create another CPU that is sharing the memory of the original, so the
+     * owner of that memory needs to know about it. In general copying CPUs is best avoided as it's likely to make
+     * your code complicated and error-prone.
+     */
+    Cpu & operator=(const Cpu &) = default;
+
+    /**
+     * Note that if you move a CPU object, you create a CPU that is sharing the memory of the original and the original
+     * CPU ceases to be a consumer of the memory, both of which the owner of that memory needs to know about. In general
+     * moving CPUs is best avoided as it's likely to make your code complicated and error-prone.
+     */
+    Cpu & operator=(Cpu &&) noexcept;
+
     virtual ~Cpu();
 
     /**
@@ -23,16 +56,16 @@ public:
      * @param memory
      * @param memorySize
      */
-    void setMemory(std::uint8_t * memory, int memorySize);
+    void setMemory(MemoryType * memory);
 
-    inline std::uint8_t * memory()
+    inline MemoryType * memory()
     {
         return m_memory;
     }
 
     [[nodiscard]] inline int memorySize() const
     {
-        return m_memorySize;
+        return m_memory->size();
     }
 
     inline void setClockSpeed(unsigned long long hz)
@@ -56,8 +89,7 @@ public:
     }
 
 protected:
-    std::uint8_t * m_memory;
-    int m_memorySize;
+    MemoryType * m_memory;
     unsigned long long m_clockSpeed;
 };
 

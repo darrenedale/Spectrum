@@ -36,22 +36,22 @@ namespace Z80::Assembly
         AddressingMode mode;
 
         union {
-            Z80::Register16 register16;
-            Z80::Register8 register8;
-            Z80::UnsignedByte unsignedByte;
-            Z80::SignedByte signedByte;
-            Z80::UnsignedWord unsignedWord;
+            ::Z80::Register16 register16;
+            ::Z80::Register8 register8;
+            ::Z80::UnsignedByte unsignedByte;
+            ::Z80::SignedByte signedByte;
+            ::Z80::UnsignedWord unsignedWord;
             IndexedAddress indexedAddress;
-            Z80::UnsignedByte bit;
+            ::Z80::UnsignedByte bit;
         };
     };
 }
 
 namespace std
 {
-    std::string to_string(const Z80::Assembly::Operand &);
-    std::string to_string(const Z80::Register16 &);
-    std::string to_string(const Z80::Register8 &);
+    std::string to_string(const ::Z80::Assembly::Operand &);
+    std::string to_string(const ::Z80::Register16 &);
+    std::string to_string(const ::Z80::Register8 &);
 }
 
 #endif //Z80_ASSEMBLY_OPERAND_H

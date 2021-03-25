@@ -65,6 +65,7 @@ add_executable(
         ../z80/assembly/operand.cpp
 )
 
+# TODO libz is only required for debug builds (crc32 memory checksums when dumping Spectrum state to stdout)
 target_link_libraries(spectrum Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Gamepad z)
 
 set_target_properties(

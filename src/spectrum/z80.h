@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "../z80/types.h"
 #include "../z80/z80.h"
 
 namespace Spectrum
@@ -15,13 +16,15 @@ namespace Spectrum
     : public ::Z80::Z80
     {
     public:
+        using UnsignedByte = ::Z80::UnsignedByte;
+
         class Observer
         {
         public:
             virtual void notify(Z80 * cpu) = 0;
         };
 
-        Z80(UnsignedByte * memory, int memorySize);
+        Z80(MemoryType * memory);
         ~Z80() override = default;
 
         void execute(const UnsignedByte *instruction, bool doPc = true, int *tStates = 0, int *size = 0) override;

@@ -24,12 +24,12 @@ namespace Spectrum
 
         [[nodiscard]] virtual int availableJoysticks() const = 0;
 
-        [[nodiscard]] bool checkWritePort(Z80::UnsignedWord) const override
+        [[nodiscard]] bool checkWritePort(::Z80::UnsignedWord) const override
         {
             return false;
         }
 
-        void writeByte(Z80::UnsignedWord, Z80::UnsignedByte) override
+        void writeByte(::Z80::UnsignedWord, ::Z80::UnsignedByte) override
         {}
 
         virtual bool joystick1IsLeft() const;

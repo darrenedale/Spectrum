@@ -20,8 +20,12 @@ namespace Spectrum::Qt
 {
 	class QImageDisplayDevice;
 
+	/**
+	 * Spectrum emulator main window.
+	 */
 	class MainWindow
-	:	public QMainWindow {
+	: public QMainWindow
+	{
 
     Q_OBJECT
 
@@ -33,8 +37,6 @@ namespace Spectrum::Qt
 
         void loadSnapshot(const QString & fileName, QString format = {});
         void loadSnapshotFromSlot(int slotIndex);
-        void loadSnaSnapshot(const QString & fileName);
-        void loadZ80Snapshot(const QString & fileName);
         void loadSpSnapshot(const QString & fileName);
 
         // NOTE can't be const because the thread must be paused
@@ -46,7 +48,7 @@ namespace Spectrum::Qt
             return m_spectrum;
         }
 
-        inline const Spectrum48k & spectrum() const
+        [[nodiscard]] inline const Spectrum48k & spectrum() const
         {
             return m_spectrum;
         }

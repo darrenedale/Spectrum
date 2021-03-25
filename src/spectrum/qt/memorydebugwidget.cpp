@@ -9,7 +9,7 @@
 
 using namespace Spectrum::Qt;
 
-MemoryDebugWidget::MemoryDebugWidget(Z80::UnsignedByte * memory, QWidget * parent)
+MemoryDebugWidget::MemoryDebugWidget(Spectrum::BaseSpectrum::MemoryType * memory, QWidget * parent)
 : QWidget(parent),
   m_memory(memory),
   m_memoryLocation(),
@@ -43,7 +43,7 @@ std::optional<Z80::UnsignedWord> MemoryDebugWidget::addressAt(const QPoint & pos
     return m_memory.addressAt(m_memory.mapFromParent(pos));
 }
 
-void MemoryDebugWidget::scrollToAddress(Z80::UnsignedWord addr)
+void MemoryDebugWidget::scrollToAddress(::Z80::UnsignedWord addr)
 {
     m_memoryLocation.setValue(addr);
     m_memory.scrollToAddress(addr);

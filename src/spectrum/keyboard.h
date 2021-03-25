@@ -82,12 +82,12 @@ namespace Spectrum
          * @param port
          * @return
          */
-        [[nodiscard]] bool checkReadPort(Z80::UnsignedWord port) const override;
+        [[nodiscard]] bool checkReadPort(::Z80::UnsignedWord port) const override;
 
         /**
          * Keyboards are input-only devices.
          */
-        [[nodiscard]] bool checkWritePort(Z80::UnsignedWord port) const override
+        [[nodiscard]] bool checkWritePort(::Z80::UnsignedWord port) const override
         {
             return false;
         }
@@ -98,17 +98,17 @@ namespace Spectrum
          * @param port
          * @return
          */
-        Z80::UnsignedByte readByte(Z80::UnsignedWord port) override;
+        Z80::UnsignedByte readByte(::Z80::UnsignedWord port) override;
 
         /**
          * Keyboards are input-only devices.
          */
-        void writeByte(Z80::UnsignedWord, Z80::UnsignedByte) override
+        void writeByte(::Z80::UnsignedWord, ::Z80::UnsignedByte) override
         {}
 
     private:
-        [[nodiscard]] Z80::UnsignedByte readHalfRow(Key) const;
-        [[nodiscard]] Z80::UnsignedByte readHalfRowReverse(Key) const;
+        [[nodiscard]] ::Z80::UnsignedByte readHalfRow(Key) const;
+        [[nodiscard]] ::Z80::UnsignedByte readHalfRowReverse(Key) const;
         std::uint64_t m_state;
     };
 }

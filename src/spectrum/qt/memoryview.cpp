@@ -21,7 +21,7 @@ namespace
     : public QWidget
     {
     public:
-        MemoryViewInternal(Z80::UnsignedByte * memory, QWidget * parent)
+        MemoryViewInternal(Spectrum::BaseSpectrum::MemoryType * memory, QWidget * parent)
         : QWidget(parent),
           m_memory(memory)
         {
@@ -86,7 +86,7 @@ namespace
                     return false;
                 }
 
-                auto byteValue = *(m_memory + *address);
+                auto byteValue = m_memory->readByte(*address);
 
                 QToolTip::showText(
                     dynamic_cast<QHelpEvent *>(event)->globalPos(),
@@ -140,7 +140,7 @@ namespace
                         painter.setPen(highlight->second.foreground);
                     }
 
-                    painter.drawText(cellRect, Qt::AlignCenter, QStringLiteral("%1").arg(*(m_memory + addr + byte), 2, 16, FillChar));
+                    painter.drawText(cellRect, Qt::AlignCenter, QStringLiteral("%1").arg(m_memory->readByte(addr + byte), 2, 16, FillChar));
 
                     if (highlighted) {
                         painter.setPen(defaultPen);
@@ -162,7 +162,7 @@ namespace
         };
 
         static constexpr const QChar FillChar = QChar('0');
-        Z80::UnsignedByte * m_memory;
+        Spectrum::BaseSpectrum::MemoryType * m_memory;
         int m_cellHeight;
         int m_addressWidth;
         int m_cellWidth;
@@ -170,25 +170,25 @@ namespace
     };
 }
 
-MemoryView::MemoryView(Z80::UnsignedByte * memory, QWidget * parent)
+MemoryView::MemoryView(Spectrum::BaseSpectrum::MemoryType * memory, QWidget * parent)
 : QScrollArea(parent),
   m_memory(memory)
 {
     QScrollArea::setWidget(new MemoryViewInternal(memory, this));
 }
 
-void MemoryView::scrollToAddress(Z80::UnsignedWord addr)
+void MemoryView::scrollToAddress(::Z80::UnsignedWord addr)
 {
     auto y = (addr / 16) * dynamic_cast<MemoryViewInternal *>(widget())->rowHeight();
     ensureVisible(0, y);
 }
 
-void MemoryView::setHighlight(Z80::UnsignedWord address, const QColor & foreground, const QColor & background)
+void MemoryView::setHighlight(::Z80::UnsignedWord address, const QColor & foreground, const QColor & background)
 {
     dynamic_cast<MemoryViewInternal *>(widget())->setHighlight(address, foreground, background);
 }
 
-void MemoryView::removeHighlight(Z80::UnsignedWord address)
+void MemoryView::removeHighlight(::Z80::UnsignedWord address)
 {
     dynamic_cast<MemoryViewInternal *>(widget())->removeHighlight(address);
 }

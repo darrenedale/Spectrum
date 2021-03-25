@@ -23,7 +23,7 @@ namespace Spectrum::Qt
     Q_OBJECT
 
     public:
-        ProgramCounterBreakpoint(Thread & thread, Z80::UnsignedWord address, QObject * parent = nullptr)
+        ProgramCounterBreakpoint(Thread & thread, ::Z80::UnsignedWord address, QObject * parent = nullptr)
         : Breakpoint(thread, parent),
           m_address(address)
         {}
