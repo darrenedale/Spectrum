@@ -239,7 +239,7 @@ void DebugWindow::closeEvent(QCloseEvent * ev)
 {
     m_thread->spectrum().z80()->removeInstructionObserver(&m_cpuObserver);
     QSettings settings;
-    settings.beginGroup(QStringLiteral("debugwindow"));
+    settings.beginGroup(QStringLiteral("debugWindow"));
     settings.setValue(QStringLiteral("position"), pos());
     settings.setValue(QStringLiteral("size"), size());
     settings.setValue(QStringLiteral("windowState"), saveState());
@@ -251,7 +251,7 @@ void DebugWindow::showEvent(QShowEvent * ev)
 {
     m_thread->spectrum().z80()->addInstructionObserver(&m_cpuObserver);
     QSettings settings;
-    settings.beginGroup(QStringLiteral("debugwindow"));
+    settings.beginGroup(QStringLiteral("debugWindow"));
     setGeometry({settings.value(QStringLiteral("position")).toPoint(), settings.value(QStringLiteral("size")).toSize()});
     restoreState(settings.value(QStringLiteral("windowState")).toByteArray());
     settings.endGroup();
