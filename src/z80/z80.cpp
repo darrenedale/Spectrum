@@ -889,9 +889,9 @@ Z80::Z80::Z80(Memory * memory)
   m_interruptRequested(false),
   m_iff1(false),
   m_iff2(false),
-  m_interruptMode(InterruptMode::IM0)
+  m_interruptMode(InterruptMode::IM0),
+  m_halted(false)
 {
-    m_interruptMode = InterruptMode::IM0;
     m_interruptData = 0x00;
 }
 
@@ -1051,12 +1051,16 @@ void Z80::Z80::handleNmi()
     m_iff1 = false;
     Z80__PUSH__REG16(m_registers.pc);
     m_registers.pc = 0x0066;
+    m_halted = false;
+    // TODO R register?
 }
 
 int Z80::Z80::handleInterrupt()
 {
     int tStates = 0;
     m_iff1 = m_iff2 = false;
+    // TODO R register?
+    m_halted = false;
 
     switch (m_interruptMode) {
         case InterruptMode::IM0:
@@ -1121,6 +1125,12 @@ int Z80::Z80::fetchExecuteCycle()
         tStates += handleInterrupt();
         m_interruptRequested = false;
 	}
+
+	if (m_halted) {
+        // execute NOPs while halted
+        // TODO R register?
+        return PlainOpcodeSizes[Z80__PLAIN__HALT];
+    }
 
     auto bytesAvailable = memory()->size() - m_registers.pc;
 
@@ -1746,7 +1756,8 @@ void Z80::Z80::executePlainInstruction(const UnsignedByte * instruction, bool * 
 			/* HALT doesn't actually halt the computer, it halts the CPU and waits
 			 * for an interrupt. */
 			/* TODO */
-			std::cout << "HALT instruction not yet implemented.\n";
+			std::cout << "HALT instruction executed - will execute NOP instructions until next interrupt.\n";
+            m_halted = true;
 			break;
 
 		case Z80__PLAIN__LD__INDIRECT_HL__A:		// 0x77

@@ -1011,6 +1011,9 @@ namespace Z80
         bool m_interruptRequested;
         UnsignedByte m_interruptData;
 
+        // set when a HALT instruction is executed; cleared when an interrupt occurs
+        bool m_halted;
+        
         unsigned long long m_clockSpeed;    /* clock speed in Hz */
         std::set<IODevice *> m_ioDevices;
     };
