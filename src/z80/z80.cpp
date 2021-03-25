@@ -938,6 +938,7 @@ void Z80::Z80::reset()
 	m_iff1 = false;
 	m_iff2 = false;
     m_interruptRequested = false;
+    m_halted = false;
 	m_registers.reset();
 }
 
