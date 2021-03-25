@@ -1746,6 +1746,7 @@ void Z80::Z80::executePlainInstruction(const UnsignedByte * instruction, bool * 
 			/* HALT doesn't actually halt the computer, it halts the CPU and waits
 			 * for an interrupt. */
 			/* TODO */
+			std::cout << "HALT instruction not yet implemented.\n";
 			break;
 
 		case Z80__PLAIN__LD__INDIRECT_HL__A:		// 0x77
@@ -4971,6 +4972,9 @@ void Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, const UnsignedByte *
         case Z80__DD_OR_FD__PREFIX__DD:         // 0xdd
         case Z80__DD_OR_FD__PREFIX__FD:         // 0xfd
             {
+                // TODO this assumes that instruction is a pointer into the spectrum memory and that the memory is a
+                //  linear array of bytes which it isn't. probably isn't any problem in simply returning as a NOP - the
+                //  PC wil be updated and the CPU will call execute() with the PC pointing to the repeated 0xdd or 0xfd
                 // this is an (expensive) replica of the extension instruction
                 --m_registers.r;
                 executeDdOrFdInstruction(reg, instruction + 1, doPc, tStates, size);
