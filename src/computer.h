@@ -9,7 +9,8 @@
 class Cpu;
 
 template<class byte_t = std::uint8_t>
-class Computer {
+class Computer
+{
 	public:
 		explicit Computer(int memSize = 0, byte_t * mem = nullptr )
 		: m_memory(mem),

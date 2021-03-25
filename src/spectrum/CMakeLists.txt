@@ -53,7 +53,9 @@ add_executable(
         qt/keyboardmonitorwidget.cpp
         qt/imagewidget.cpp
         qt/hexspinbox.cpp
+        ../computer.h
         ../cpu.cpp
+        ../memory.h
         ../z80/z80.cpp
         ../z80/iodevice.cpp
         ../z80/registers.cpp

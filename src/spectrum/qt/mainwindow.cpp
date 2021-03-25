@@ -197,17 +197,17 @@ void MainWindow::createMenuBar()
     }
 
     menu->addSeparator();
-    menu->addAction(&m_saveScreenshot);
-
-    subMenu = menu->addMenu(tr("Display Mode"));
-    subMenu->addAction(&m_colourDisplay);
-    subMenu->addAction(&m_monochromeDisplay);
-    subMenu->addAction(&m_bwDisplay);
-
-    menu->addSeparator();
     menu->addAction(QIcon::fromTheme("application-exit"), tr("Quit"), [this]() {
         close();
     });
+
+    menu = tempMenuBar->addMenu(tr("Display"));
+    menu->addAction(&m_saveScreenshot);
+
+    subMenu = menu->addMenu(tr("Screen type"));
+    subMenu->addAction(&m_colourDisplay);
+    subMenu->addAction(&m_monochromeDisplay);
+    subMenu->addAction(&m_bwDisplay);
 
     menu = tempMenuBar->addMenu(tr("Debugger"));
     menu->addAction(&m_debug);
