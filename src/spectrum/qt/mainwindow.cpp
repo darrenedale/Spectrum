@@ -857,7 +857,6 @@ void MainWindow::loadSpSnapshot(const QString & fileName)
     }
 
     // set state
-    auto * memory = m_spectrum.memory();
     auto & cpu = *(m_spectrum.z80());
     auto & registers = cpu.registers();
 
@@ -898,7 +897,7 @@ void MainWindow::loadSpSnapshot(const QString & fileName)
 
     // NOTE bit 5 of status indicates flash state but we don't use this
 
-    std::memcpy(memory + header.baseAddress, programBuffer, header.length);
+    std::memcpy(m_spectrum.memory()->pointerTo(header.baseAddress), programBuffer, header.length);
 
     delete[] programBuffer;
     statusBar()->showMessage(tr("The snapshot file %1 was successfully loaded.").arg(fileName), DefaultStatusBarMessageTimeout);
