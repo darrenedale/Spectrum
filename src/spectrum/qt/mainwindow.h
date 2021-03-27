@@ -36,9 +36,21 @@ namespace Spectrum::Qt
 
         void saveScreenshot(const QString & fileName);
 
+        /**
+         * Load a snapshot from a give file.
+         *
+         * If the format is provided, the file is expected to be in that format. Otherwise the format will be determined
+         * from the file name extension. The following formats are supported:
+         * "z80" - files in Z80 format (https://worldofspectrum.org/faq/reference/z80format.htm)
+         * "sna" - files in SNA format (https://worldofspectrum.org/faq/reference/formats.htm#File)
+         * "sp"  - files in SP format
+         * "zx"  - files in ZX format
+         *
+         * @param fileName
+         * @param format
+         */
         void loadSnapshot(const QString & fileName, QString format = {});
         void loadSnapshotFromSlot(int slotIndex);
-        void loadSpSnapshot(const QString & fileName);
 
         // NOTE can't be const because the thread must be paused
         void saveSnapshot(const QString & fileName, QString format = {});

@@ -22,6 +22,7 @@ add_executable(
         snapshotwriter.cpp
         z80snapshotreader.cpp
         snasnapshotreader.cpp
+        spsnapshotreader.cpp
         zxsnapshotreader.cpp
         z80snapshotwriter.cpp
         z80snapshotwriter.h
