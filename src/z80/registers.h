@@ -256,7 +256,8 @@ namespace Z80
         // members in the new instance rather than retaining the reference to the members of the original instance
         Registers(const Registers & other);
 
-        void operator=(const Registers & other) = delete;
+        Registers & operator=(const Registers & other);
+        
         void operator=(Registers && other) = delete;
 
         void reset();

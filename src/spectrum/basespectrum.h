@@ -5,6 +5,8 @@
 #ifndef SPECTRUM_BASESPECTRUM_H
 #define SPECTRUM_BASESPECTRUM_H
 
+#include <ostream>
+
 #include "../computer.h"
 #include "z80.h"
 
@@ -319,7 +321,7 @@ namespace Spectrum
         inline void refreshDisplays() const;
 
 #if(!defined(NDEBUG))
-        void dumpState() const;
+        void dumpState(std::ostream & = std::cout) const;
 #endif
 
     protected:

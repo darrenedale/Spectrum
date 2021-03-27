@@ -11,6 +11,7 @@
 #include <QLabel>
 #include <QSlider>
 #include <QSpinBox>
+#include <QDockWidget>
 #include <QFileDialog>
 #include <QEvent>
 #include <QKeyEvent>
@@ -31,6 +32,7 @@
 #include "../zxsnapshotreader.h"
 #include "../z80snapshotwriter.h"
 #include "../snasnapshotwriter.h"
+#include "../pokfilereader.h"
 
 using namespace Spectrum::Qt;
 
@@ -49,6 +51,7 @@ MainWindow::MainWindow(QWidget * parent)
   m_spectrumThread(m_spectrum),
   m_display(),
   m_displayWidget(),
+  m_pokesWidget(),
   m_load(QIcon::fromTheme(QStringLiteral("document-open")), tr("Load snapshot")),
   m_save(QIcon::fromTheme(QStringLiteral("document-save")), tr("save snapshot")),
   m_pauseResume(QIcon::fromTheme(QStringLiteral("media-playback-start")), tr("Start/Pause")),
@@ -57,6 +60,7 @@ MainWindow::MainWindow(QWidget * parent)
   m_colourDisplay(tr("Colour")),
   m_monochromeDisplay(tr("Monochrome")),
   m_bwDisplay(tr("Black and White")),
+  m_loadPokes(tr("Load pokes")),
   m_reset(QIcon::fromTheme(QStringLiteral("start-over")), tr("Reset")),
   m_debug(tr("Debug")),
   m_debugStep(QIcon::fromTheme(QStringLiteral("debug-step-instruction")), tr("Step")),
@@ -72,6 +76,11 @@ MainWindow::MainWindow(QWidget * parent)
     m_displayWidget.installEventFilter(&m_joystick);
     m_displayWidget.installEventFilter(&m_keyboard);
     m_displayWidget.installEventFilter(this);
+
+    auto font = m_pokesWidget.font();
+    font.setPointSizeF(font.pointSizeF() * 0.9);
+    m_pokesWidget.setFont(font);
+
     m_debugWindow.installEventFilter(this);
     m_load.setShortcut(tr("Ctrl+O"));
     m_save.setShortcut(tr("Ctrl+S"));
@@ -113,6 +122,7 @@ MainWindow::MainWindow(QWidget * parent)
 
     createMenuBar();
     createToolBars();
+    createDockWidgets();
     createStatusBar();
 
     m_spectrum.setJoystickInterface(&m_joystick);
@@ -201,13 +211,19 @@ void MainWindow::createMenuBar()
         close();
     });
 
+    menu = tempMenuBar->addMenu(tr("Spectrum"));
+    menu->addAction(&m_pauseResume);
+    menu->addAction(&m_reset);
+    menu->addSeparator();
+    menu->addAction(&m_loadPokes);
+
     menu = tempMenuBar->addMenu(tr("Display"));
     menu->addAction(&m_saveScreenshot);
+    menu->addSeparator();
 
-    subMenu = menu->addMenu(tr("Screen type"));
-    subMenu->addAction(&m_colourDisplay);
-    subMenu->addAction(&m_monochromeDisplay);
-    subMenu->addAction(&m_bwDisplay);
+    menu->addAction(&m_colourDisplay);
+    menu->addAction(&m_monochromeDisplay);
+    menu->addAction(&m_bwDisplay);
 
     menu = tempMenuBar->addMenu(tr("Debugger"));
     menu->addAction(&m_debug);
@@ -219,6 +235,7 @@ void MainWindow::createMenuBar()
 void MainWindow::createToolBars()
 {
 	auto * tempToolBar = addToolBar(tr("Main"));
+	tempToolBar->setObjectName(QStringLiteral("main-toolbar"));
     tempToolBar->addAction(&m_load);
     tempToolBar->addAction(&m_save);
     tempToolBar->addSeparator();
@@ -226,14 +243,23 @@ void MainWindow::createToolBars()
     tempToolBar->addAction(&m_reset);
 
     tempToolBar = addToolBar(tr("Debug"));
+    tempToolBar->setObjectName(QStringLiteral("debug-toolbar"));
     tempToolBar->addAction(&m_debug);
     tempToolBar->addAction(&m_debugStep);
     tempToolBar->addAction(&m_refreshScreen);
 
     tempToolBar = addToolBar(tr("Speed"));
+    tempToolBar->setObjectName(QStringLiteral("speed-toolbar"));
     tempToolBar->addWidget(new QLabel(tr("Speed")));
     tempToolBar->addWidget(&m_emulationSpeedSlider);
     tempToolBar->addWidget(&m_emulationSpeedSpin);
+}
+
+void MainWindow::createDockWidgets()
+{
+    auto * dock = new QDockWidget(tr("Pokes"), this);
+    dock->setWidget(&m_pokesWidget);
+    addDockWidget(::Qt::DockWidgetArea::RightDockWidgetArea, dock);
 }
 
 void MainWindow::createStatusBar()
@@ -257,6 +283,7 @@ void MainWindow::connectSignals()
 	connect(&m_save, &QAction::triggered, this, &MainWindow::saveSnapshotTriggered);
 	connect(&m_pauseResume, &QAction::triggered, this, &MainWindow::pauseResumeTriggered);
 	connect(&m_reset, &QAction::triggered, &m_spectrumThread, &Thread::reset);
+	connect(&m_loadPokes, &QAction::triggered, this, &MainWindow::loadPokesTriggered);
 	connect(&m_debug, &QAction::triggered, this, &MainWindow::debugTriggered);
 	connect(&m_debugStep, &QAction::triggered, this, &MainWindow::stepTriggered);
 	connect(&m_saveScreenshot, &QAction::triggered, this, &MainWindow::saveScreenshotTriggered);
@@ -278,6 +305,11 @@ void MainWindow::connectSignals()
 	    if (bw) {
             m_display.setBlackAndWhite();
 	    }
+	});
+
+	connect(&m_pokesWidget, &PokesWidget::applyPokeRequested, [this](const PokeDefinition & poke) {
+	    // TODO check if poke has any user-provided values
+	    poke.apply(m_spectrum);
 	});
 }
 
@@ -946,6 +978,35 @@ void MainWindow::saveSnapshot(const QString & fileName, QString format)
     }
 }
 
+void MainWindow::loadPokes(const QString & fileName)
+{
+    PokFileReader reader(fileName.toStdString());
+
+    if (!reader.isValid()) {
+        statusBar()->showMessage(tr("Poke file %1 could not be opened.").arg(fileName));
+        return;
+    }
+
+    std::vector<PokeDefinition> pokes;
+
+    while (reader.hasMorePokes()) {
+        auto poke = reader.nextPoke();
+
+        if (!poke) {
+            statusBar()->showMessage(tr("Error reading pokes from %1.").arg(fileName));
+            return;
+        }
+
+        pokes.push_back(std::move(*poke));
+    }
+
+    for (const auto & poke : pokes) {
+        m_pokesWidget.addPoke(poke);
+    }
+
+    statusBar()->showMessage(tr("Read %1 pokes from %2.").arg(pokes.size()).arg(fileName));
+}
+
 bool MainWindow::eventFilter(QObject * target, QEvent * event)
 {
 #pragma clang diagnostic push
@@ -993,12 +1054,14 @@ bool MainWindow::eventFilter(QObject * target, QEvent * event)
 void MainWindow::closeEvent(QCloseEvent * ev)
 {
     QSettings settings;
-    settings.beginGroup("mainwindow");
-    settings.setValue("position", pos());
-    settings.setValue("size", size());
-    settings.setValue("lastSnapshotLoadDir", m_lastSnapshotLoadDir);
-    settings.setValue("lastScreenshotDir", m_lastScreenshotDir);
-    settings.setValue("emulationSpeed", m_emulationSpeedSlider.value());
+    settings.beginGroup(QStringLiteral("mainwindow"));
+    settings.setValue(QStringLiteral("position"), pos());
+    settings.setValue(QStringLiteral("size"), size());
+    settings.setValue(QStringLiteral("lastSnapshotLoadDir"), m_lastSnapshotLoadDir);
+    settings.setValue(QStringLiteral("lastScreenshotDir"), m_lastScreenshotDir);
+    settings.setValue(QStringLiteral("lastPokeLoadDir"), m_lastPokeLoadDir);
+    settings.setValue(QStringLiteral("emulationSpeed"), m_emulationSpeedSlider.value());
+    settings.setValue(QStringLiteral("windowState"), saveState());
     settings.endGroup();
     m_debugWindow.close();
     QWidget::closeEvent(ev);
@@ -1012,6 +1075,7 @@ void MainWindow::showEvent(QShowEvent * ev)
     setGeometry({settings.value(QStringLiteral("position")).toPoint(), settings.value(QStringLiteral("size")).toSize()});
     m_lastSnapshotLoadDir = settings.value(QStringLiteral("lastSnapshotLoadDir")).toString();
     m_lastScreenshotDir = settings.value(QStringLiteral("lastScreenshotDir")).toString();
+    m_lastPokeLoadDir = settings.value(QStringLiteral("lastPokeLoadDir")).toString();
     auto speed = settings.value(QStringLiteral("emulationSpeed"), 1).toInt(&ok);
 
     if (!ok) {
@@ -1019,6 +1083,7 @@ void MainWindow::showEvent(QShowEvent * ev)
     }
 
     m_emulationSpeedSlider.setValue(speed);
+    restoreState(settings.value(QStringLiteral("windowState")).toByteArray());
     settings.endGroup();
 }
 
@@ -1161,9 +1226,38 @@ void MainWindow::saveSnapshotTriggered()
         }
     }
 
-    // we appear to be generating non-functional .z80 snapshots - is the Z80 still running while the snapshot is being
-    // taken?
     saveSnapshot(fileName, format);
+}
+
+void MainWindow::loadPokesTriggered()
+{
+    static QStringList filters;
+    static QString lastFilter;
+
+    ThreadPauser pauser(m_spectrumThread);
+
+    if(filters.isEmpty()) {
+        filters << tr("POK Poke files (*.pok)");
+    }
+
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Load pokes"), m_lastPokeLoadDir, filters.join(";;"), &lastFilter);
+
+    if(fileName.isEmpty()) {
+        return;
+    }
+
+    m_lastPokeLoadDir = QFileInfo(fileName).path();
+    auto format = lastFilter;
+
+    if (!format.isEmpty()) {
+        if (auto matches = QRegularExpression(R"(^.*\(\*\.([a-zA-Z0-9_-]+)\)$)").match(format); matches.hasMatch()) {
+            format = matches.captured(1).toLower();
+        } else {
+            format.clear();
+        }
+    }
+
+    loadPokes(fileName);
 }
 
 void MainWindow::emulationSpeedChanged(int speed)

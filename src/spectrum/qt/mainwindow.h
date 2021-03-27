@@ -13,6 +13,7 @@
 #include "qkempstonjoystick.h"
 #include "debugwindow.h"
 #include "imagewidget.h"
+#include "pokeswidget.h"
 #include "keyboard.h"
 #include "thread.h"
 
@@ -43,6 +44,8 @@ namespace Spectrum::Qt
         void saveSnapshot(const QString & fileName, QString format = {});
         void saveSnapshotToSlot(int slotIndex, QString format = {});
 
+        void loadPokes(const QString & fileName);
+
         inline Spectrum48k & spectrum()
         {
             return m_spectrum;
@@ -72,6 +75,7 @@ namespace Spectrum::Qt
 
         void createMenuBar();
         void createToolBars();
+        void createDockWidgets();
         void createStatusBar();
         void connectSignals();
 
@@ -79,6 +83,7 @@ namespace Spectrum::Qt
         void saveScreenshotTriggered();
         void loadSnapshotTriggered();
         void saveSnapshotTriggered();
+        void loadPokesTriggered();
         void emulationSpeedChanged(int);
         void stepTriggered();
         void debugTriggered();
@@ -92,11 +97,13 @@ namespace Spectrum::Qt
 
         QString m_lastSnapshotLoadDir;
         QString m_lastScreenshotDir;
+        QString m_lastPokeLoadDir;
         Spectrum48k m_spectrum;
         Thread m_spectrumThread;
         Keyboard m_keyboard;
         QImageDisplayDevice m_display;
         ImageWidget m_displayWidget;
+        PokesWidget m_pokesWidget;
         QAction m_load;
         QAction m_save;
         QAction m_pauseResume;
@@ -105,6 +112,12 @@ namespace Spectrum::Qt
         QAction m_colourDisplay;
         QAction m_monochromeDisplay;
         QAction m_bwDisplay;
+
+        QAction m_joystickKempston;
+        QAction m_joystickInterface2;
+
+        QAction m_loadPokes;
+
         QAction m_reset;
         QAction m_debug;
         QAction m_debugStep;

@@ -82,6 +82,29 @@ void Registers::reset()
     r = 0;
 }
 
+Registers & Registers::operator=(const Registers & other)
+{
+    af = other.af;
+    bc = other.bc;
+    de = other.de;
+    hl = other.hl;
+    ix = other.ix;
+    iy = other.iy;
+    pc = other.pc;
+    sp = other.sp;
+
+    afShadow = other.afShadow;
+    bcShadow = other.bcShadow;
+    deShadow = other.deShadow;
+    hlShadow = other.hlShadow;
+
+    memptr = other.memptr;
+
+    i = other.i;
+    r = other.r;
+    return *this;
+}
+
 std::ostream & operator<<(std::ostream & out, const RegisterZ80Endian & reg)
 {
     out << static_cast<UnsignedWord>(reg);

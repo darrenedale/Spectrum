@@ -16,7 +16,7 @@
 #include "disassemblywidget.h"
 #include "memorydebugwidget.h"
 #include "keyboardmonitorwidget.h"
-#include "pokewidget.h"
+#include "custompokewidget.h"
 
 class QLineEdit;
 
@@ -96,7 +96,7 @@ namespace Spectrum::Qt
         QAction m_breakpointAtStackTop;
 
         KeyboardMonitorWidget m_keyboardMonitor;
-        PokeWidget m_poke;
+        CustomPokeWidget m_poke;
 
         InstructionObserver m_cpuObserver;
         Breakpoints m_breakpoints;

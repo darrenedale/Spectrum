@@ -5,11 +5,11 @@
 #include <QHBoxLayout>
 #include <QLabel>
 
-#include "pokewidget.h"
+#include "custompokewidget.h"
 
 using namespace Spectrum::Qt;
 
-PokeWidget::PokeWidget(Z80::UnsignedWord address, Z80::UnsignedByte value, QWidget * parent)
+CustomPokeWidget::CustomPokeWidget(Z80::UnsignedWord address, Z80::UnsignedByte value, QWidget * parent)
 : QWidget(parent),
   m_address(4),
   m_value(2),
@@ -32,14 +32,14 @@ PokeWidget::PokeWidget(Z80::UnsignedWord address, Z80::UnsignedByte value, QWidg
     });
 }
 
-PokeWidget::PokeWidget(Z80::UnsignedWord address, QWidget * parent)
-: PokeWidget(address, 0x00, parent)
+CustomPokeWidget::CustomPokeWidget(Z80::UnsignedWord address, QWidget * parent)
+: CustomPokeWidget(address, 0x00, parent)
 {
 }
 
-PokeWidget::PokeWidget(Z80::UnsignedByte value, QWidget * parent)
-: PokeWidget(0x0000, value, parent)
+CustomPokeWidget::CustomPokeWidget(Z80::UnsignedByte value, QWidget * parent)
+: CustomPokeWidget(0x0000, value, parent)
 {
 }
 
-PokeWidget::~PokeWidget() = default;
+CustomPokeWidget::~CustomPokeWidget() = default;

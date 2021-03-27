@@ -27,8 +27,11 @@ add_executable(
         z80snapshotwriter.h
         snasnapshotwriter.cpp
         snasnapshotwriter.h
+        pokedefinition.cpp
+        pokfilereader.cpp
         qt/application.cpp
         qt/mainwindow.cpp
+        qt/pokeswidget.cpp
         qt/thread.cpp
         qt/breakpoint.cpp
         qt/programcounterbreakpoint.cpp
@@ -39,8 +42,8 @@ add_executable(
         qt/programpointerswidget.cpp
         qt/memoryview.cpp
         qt/memorydebugwidget.cpp
-        qt/pokewidget.cpp
-        qt/pokewidget.h
+        qt/custompokewidget.cpp
+        qt/custompokewidget.h
         qt/qimagedisplaydevice.cpp
         qt/registerpairwidget.cpp
         qt/flagswidget.cpp
@@ -57,6 +60,7 @@ add_executable(
         ../cpu.cpp
         ../memory.h
         ../z80/z80.cpp
+        ../z80/executionhistory.cpp
         ../z80/iodevice.cpp
         ../z80/registers.cpp
         ../z80/registers.h

@@ -5,11 +5,16 @@
 #include <cstdint>
 #include <bit>
 #include <set>
+#include <iostream>
 
 #include "../cpu.h"
 #include "../memory.h"
 #include "registers.h"
 #include "types.h"
+
+#if (!defined(NDEBUG))
+#include "executionhistory.h"
+#endif
 
 #define Z80_FLAG_C_BIT 0
 #define Z80_FLAG_Z_BIT 6
@@ -883,7 +888,7 @@ namespace Z80
          *
          * @return
          */
-        [[nodiscard]] inline UnsignedByte peekUnsigned(int addr) const
+        [[nodiscard]] inline UnsignedByte peekUnsigned(MemoryType::Address addr) const
         {
             if (addr < 0 || addr >= memorySize()) {
                 return 0;
@@ -901,7 +906,7 @@ namespace Z80
          *
          * @return
          */
-        [[nodiscard]] UnsignedWord peekUnsignedWord(int addr) const;
+        [[nodiscard]] UnsignedWord peekUnsignedWord(MemoryType::Address addr) const;
 
         /**
          * Fetch a 16-bit value from the Z80 memory.
@@ -912,9 +917,9 @@ namespace Z80
          *
          * @return
          */
-        [[nodiscard]] UnsignedWord peekUnsignedWordZ80(int addr) const;
+        [[nodiscard]] UnsignedWord peekUnsignedWordZ80(MemoryType::Address addr) const;
 
-        inline SignedByte peekSigned(int addr) const
+        inline SignedByte peekSigned(MemoryType::Address addr) const
         {
             return static_cast<SignedByte>(peekUnsigned(addr));
         }
@@ -925,14 +930,7 @@ namespace Z80
          * @param addr The address to write the 8-bit value. The address is given in host byte order.
          * @param value
          */
-        inline void pokeUnsigned(int addr, UnsignedByte value)
-        {
-            if (addr < 0 || addr > memorySize()) {
-                return;
-            }
-
-            m_memory->writeByte(addr, value);
-        }
+        inline void pokeUnsigned(MemoryType::Address addr, UnsignedByte value);
 
         /**
          * Write a 16-bit value to the Z80 memory.
@@ -940,7 +938,7 @@ namespace Z80
          * @param addr The address to write the first byte of the 16-bit value. The address is given in host byte order.
          * @param value The 16-bit value to write, in host byte order.
          */
-        void pokeHostWord(int addr, UnsignedWord value);
+        void pokeHostWord(MemoryType::Address addr, UnsignedWord value);
 
         /**
          * Write a 16-bit value to the Z80 memory.
@@ -948,7 +946,7 @@ namespace Z80
          * @param addr The address to write the first byte of the 16-bit value. The address is given in host byte order.
          * @param value The 16-bit value to write, in Z80 byte order.
          */
-        void pokeZ80Word(int addr, UnsignedWord value);
+        void pokeZ80Word(MemoryType::Address addr, UnsignedWord value);
 
         void reset();
 
@@ -964,6 +962,11 @@ namespace Z80
 
         // fetches and executes a single instruction, returns the number of t-states
         virtual int fetchExecuteCycle();
+
+#if(!defined(NDEBUG))
+        void dumpState(std::ostream & out = std::cout) const;
+        void dumpExecutionHistory(int entries, std::ostream & out = std::cout) const;
+#endif
 
     protected:
         virtual void handleNmi();
@@ -1011,11 +1014,15 @@ namespace Z80
         bool m_interruptRequested;
         UnsignedByte m_interruptData;
 
-        // set when a HALT instruction is executed; cleared when an interrupt occurs
+        // set when a HALT instruction is executed; cleared when an interrupt occurs or the CPU is reset
         bool m_halted;
         
         unsigned long long m_clockSpeed;    /* clock speed in Hz */
         std::set<IODevice *> m_ioDevices;
+
+#if (!defined(NDEBUG))
+        ExecutionHistory<10000> m_executionHistory;
+#endif
     };
 }
 

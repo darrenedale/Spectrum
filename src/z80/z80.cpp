@@ -7,9 +7,11 @@
  *
  * This emulation is based on interpretation. There is no dynamic compilation and no cross-assembly.
  *
- * \todo
- * - interrupt mode 0 multi-byte instructions
- * - review the memory access code now that we're using the Memory abstraction rather than a raw array of bytes
+ * TODO interrupt mode 0 multi-byte instructions
+ * TODO review the memory access code now that we're using the Memory abstraction rather than a raw array of bytes
+ * TODO in debug mode keep a trace of the last N PCs and instructions, including operand values
+ * TODO there is definitely an issue with stack handling, this is what is causing chuckie egg to fail, and is a likely
+ *  candidate for any snapshot that fails with a reset back to the ROM
  */
 #include <iostream>
 #include <iomanip>
@@ -20,6 +22,10 @@
 #include "invalidopcode.h"
 #include "invalidinterruptmode.h"
 #include "opcodes.h"
+
+#if !(defined(NDEBUG))
+#include "assembly/disassembler.h"
+#endif
 
 #define Z80_FLAG_C_SET (m_registers.f |= Z80_FLAG_C_MASK)
 #define Z80_FLAG_Z_SET (m_registers.f |= Z80_FLAG_Z_MASK)
@@ -744,7 +750,9 @@ Z80__BIT__N__INDIRECT_REG16(n,m_registers.memptr);
 // there is only one nmi return instruction, but it has several opcodes (most of
 // which are unofficial), so a macro is provided for a common implementation.
 //
-#define Z80__RETN Z80__POP__REG16(m_registers.pc); m_iff1 = m_iff2;
+#define Z80__RETN                \
+Z80__POP__REG16(m_registers.pc); \
+m_iff1 = m_iff2;
 
 //
 // interrupt handler return instruction
@@ -752,7 +760,7 @@ Z80__BIT__N__INDIRECT_REG16(n,m_registers.memptr);
 // there is only one interrupt return instruction, but it has several opcodes
 // (most of which are unofficial), so a macro is provided for a common implementation.
 //
-#define Z80__RETI \
+#define Z80__RETI                \
 Z80__POP__REG16(m_registers.pc); \
 m_iff1 = m_iff2;                 \
 /* TODO signal IO device that interrupt has finished */
@@ -814,9 +822,9 @@ m_iff1 = m_iff2;                 \
 }
 
 #define Z80__IN__REG8__INDIRECT_REG16(dest,port) {   \
-    UnsignedWord tmpPort = ((port) & 0xff) | (m_registers.b << 8); \
-    Z80__READ_IO_DEVICES((dest), tmpPort);           \
-    m_registers.memptr = tmpPort + 1;                \
+/*    UnsignedWord tmpPort = ((port) & 0xff) | (m_registers.b << 8);*/ \
+    Z80__READ_IO_DEVICES((dest), (port));           \
+/*    m_registers.memptr = tmpPort + 1; */               \
     Z80_FLAG_H_CLEAR;                                \
     Z80_FLAG_N_CLEAR;                                \
     Z80_FLAG_Z_UPDATE(0 == (dest));                  \
@@ -956,9 +964,17 @@ void Z80::Z80::reset()
  * @param addr
  * @param value
  */
-void Z80::Z80::pokeHostWord(int addr, UnsignedWord value)
+void Z80::Z80::pokeHostWord(MemoryType::Address addr, UnsignedWord value)
 {
-	if (0 > addr || memorySize() <= addr) {
+	if (0 > addr || memorySize() <= addr + 1) {
+	    std::cerr << "Attempt to write outside addressable range (word 0x"
+	        << std::hex << std::setfill('0') << std::setw(4) << value << " to 0x"
+	        << std::setw(8) << addr << ")\n";
+
+#if (!defined(NDEBUG))
+        dumpState(std::cerr);
+        dumpExecutionHistory(10, std::cerr);
+#endif
 	    return;
 	}
 
@@ -983,15 +999,73 @@ void Z80::Z80::pokeHostWord(int addr, UnsignedWord value)
  * @param addr
  * @param value
  */
-void Z80::Z80::pokeZ80Word(int addr, UnsignedWord value)
+void Z80::Z80::pokeZ80Word(MemoryType::Address addr, UnsignedWord value)
 {
-	if (0 > addr || memorySize() <= addr) {
-	    return;
+	if (0 > addr || memorySize() <= addr + 1) {
+        std::cerr << "Attempt to write outside addressable range (Z80 word 0x"
+                  << std::hex << std::setfill('0') << std::setw(4) << value << " to 0x"
+                  << std::setw(8) << addr << ")\n";
+#if (!defined(NDEBUG))
+        dumpState(std::cerr);
+        dumpExecutionHistory(10, std::cerr);
+#endif
+        return;
 	}
 
     auto * bytes = reinterpret_cast<UnsignedByte *>(&value);
     m_memory->writeByte(addr, bytes[0]);
     m_memory->writeByte(addr + 1, bytes[1]);
+}
+
+void Z80::Z80::pokeUnsigned(MemoryType::Address addr, UnsignedByte value)
+{
+    if (addr < 0 || addr > memorySize()) {
+        std::cerr << "Attempt to write outside addressable range (byte 0x"
+                  << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(value) << " to 0x"
+                  << std::setw(8) << addr << ")\n";
+#if (!defined(NDEBUG))
+        dumpState(std::cerr);
+        dumpExecutionHistory(10, std::cerr);
+#endif
+        return;
+    }
+
+    m_memory->writeByte(addr, value);
+}
+
+UnsignedWord Z80::Z80::peekUnsignedWord(MemoryType::Address addr) const
+{
+    // TODO make an assertion instead
+    if (0 > addr || memorySize() <= addr + 1) {
+        std::cerr << "Attempt to read outside addressable range (word from 0x"
+                  << std::hex << std::setfill('0') << std::setw(8) << addr << ")\n";
+#if (!defined(NDEBUG))
+        dumpState(std::cerr);
+        dumpExecutionHistory(10, std::cerr);
+#endif
+        return 0;
+    }
+
+    if (HostByteOrder == Z80ByteOrder) {
+        return (*m_memory)[addr + 1] << 8 | (*m_memory)[addr];
+    }
+
+    return ((*m_memory)[addr] << 8) | (*m_memory)[addr + 1];
+}
+
+UnsignedWord Z80::Z80::peekUnsignedWordZ80(MemoryType::Address addr) const
+{
+    // TODO make an assertion instead
+    if (0 > addr || memorySize() <= addr + 1) {
+        std::cerr << "Attempt to read outside addressable range (Z80 word from 0x"
+                  << std::hex << std::setfill('0') << std::setw(8) << addr << ")\n";
+#if (!defined(NDEBUG))
+        dumpState(std::cerr);
+        dumpExecutionHistory(10, std::cerr);
+#endif
+    }
+
+    return (*m_memory)[addr + 1] << 8 | (*m_memory)[addr];
 }
 
 void Z80::Z80::execute(const UnsignedByte * instruction, bool doPc, int * tStates, int * size)
@@ -1006,6 +1080,16 @@ void Z80::Z80::execute(const UnsignedByte * instruction, bool doPc, int * tState
 
     ++m_registers.r;
 
+#if (!defined(NDEBUG))
+	ExecutedInstruction historyEntry;
+	historyEntry.mnemonic = Assembly::Disassembler::disassembleOne(instruction);
+	std::memcpy(historyEntry.machineCode, instruction, historyEntry.mnemonic.size);
+	historyEntry.registersBefore = registers();
+
+	for (int operandIndex = 0; operandIndex < historyEntry.mnemonic.operands.size(); ++operandIndex) {
+	    historyEntry.operandValues.emplace_back(historyEntry.mnemonic.operands[operandIndex].evaluate(this, 0 == operandIndex));
+	}
+#endif
 	switch (*instruction) {
 		case Z80__PLAIN__PREFIX__CB:
             ++m_registers.r;
@@ -1044,6 +1128,11 @@ void Z80::Z80::execute(const UnsignedByte * instruction, bool doPc, int * tState
 	if (doPc) {
         m_registers.pc += *size;
     }
+
+#if (!defined(NDEBUG))
+	historyEntry.registersAfter = registers();
+    m_executionHistory.add(std::move(historyEntry));
+#endif
 }
 
 void Z80::Z80::handleNmi()
@@ -1079,12 +1168,12 @@ int Z80::Z80::handleInterrupt()
             return 0;
 
         case InterruptMode::IM1:
-        Z80__PUSH__REG16(m_registers.pc);
+            Z80__PUSH__REG16(m_registers.pc);
             m_registers.pc = 0x0038;
             return 13;
 
         case InterruptMode::IM2:
-        Z80__PUSH__REG16(m_registers.pc);
+            Z80__PUSH__REG16(m_registers.pc);
             // interrupt service routine is pointed to by interrupt vector table starting at 0x{regI}00; byte on
             // data bus from interrupting device is offset into table (e.g. if device provides 0x20, the service
             // routine starts at the memory address stored at 0x{regI}20). For example, if I contains 0xfe and the
@@ -1130,7 +1219,7 @@ int Z80::Z80::fetchExecuteCycle()
 	if (m_halted) {
         // execute NOPs while halted
         // TODO R register?
-        return PlainOpcodeSizes[Z80__PLAIN__HALT];
+        return PlainOpcodeSizes[Z80__PLAIN__NOP];
     }
 
     auto bytesAvailable = memory()->size() - m_registers.pc;
@@ -1754,10 +1843,6 @@ void Z80::Z80::executePlainInstruction(const UnsignedByte * instruction, bool * 
 			break;
 
 		case Z80__PLAIN__HALT:						// 0x76
-			/* HALT doesn't actually halt the computer, it halts the CPU and waits
-			 * for an interrupt. */
-			/* TODO */
-			std::cout << "HALT instruction executed - will execute NOP instructions until next interrupt.\n";
             m_halted = true;
 			break;
 
@@ -3646,7 +3731,7 @@ void Z80::Z80::executeEdInstruction(const UnsignedByte * instruction, bool * doP
             Z80__LD__REG8__REG8(m_registers.i, m_registers.a);
             break;
 
-		case Z80__ED__IN__C__INDIRECT_C:        /* 0xed 0x48 */
+		case Z80__ED__IN__C__INDIRECT_C:        // 0xed 0x48
             Z80__IN__REG8__INDIRECT_REG16(m_registers.c, m_registers.bc);
 			break;
 
@@ -3875,9 +3960,12 @@ void Z80::Z80::executeEdInstruction(const UnsignedByte * instruction, bool * doP
 			}
 			break;
 
-		case Z80__ED__IN__INDIRECT_C:
-			/* FLAGS: all preserved */
-			/* TODO */
+		case Z80__ED__IN__INDIRECT_C:           // 0xed 0x70
+            {
+                std::cout << "opcode 0xed 0x70 IN F,(C) - just setting flags\n";
+                UnsignedByte tmpInByte;
+                Z80__IN__REG8__INDIRECT_REG16(tmpInByte, m_registers.bc);
+            }
 			break;
 
 		case Z80__ED__OUT__INDIRECT_C__0:   	/* 0xed 0x71 */
@@ -4755,7 +4843,7 @@ void Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, const UnsignedByte *
 			Z80__EX__INDIRECT_REG16__REG16(m_registers.sp, reg);
 			break;
 
-        case Z80__DD_OR_FD__PUSH__IX_OR_IY: /*  0xe5 */
+        case Z80__DD_OR_FD__PUSH__IX_OR_IY:     //  0xe5
             Z80__PUSH__REG16(reg);
             break;
 
@@ -4983,19 +5071,34 @@ void Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, const UnsignedByte *
 
         case Z80__DD_OR_FD__PREFIX__DD:         // 0xdd
         case Z80__DD_OR_FD__PREFIX__FD:         // 0xfd
-            {
-                // TODO this assumes that instruction is a pointer into the spectrum memory and that the memory is a
-                //  linear array of bytes which it isn't. probably isn't any problem in simply returning as a NOP - the
-                //  PC wil be updated and the CPU will call execute() with the PC pointing to the repeated 0xdd or 0xfd
-                // this is an (expensive) replica of the extension instruction
-                --m_registers.r;
-                executeDdOrFdInstruction(reg, instruction + 1, doPc, tStates, size);
-    
-                if (size) {
-                    *size += 1;
-                }
+#if (!defined(NDEBUG))
+            // this is like a NOP - the second 0xdd or 0xfd supersedes the first and consumes 1 byte and 4 t-states. The
+            // PC is subsequently incremented and the second 0xdd or 0xfd becomes the first byte of the next instruction
+            std::cout << "Encountered redundant double-extended 0x"
+                << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(*instruction) << '\n'
+                << std::dec << std::setfill(' ');
+#endif
+            if (tStates) {
+                *tStates = 4;
             }
-            break;
+
+            if (size) {
+                *size = 1;
+            }
+            return;
+//            {
+//                // TODO this assumes that instruction is a pointer into the spectrum memory and that the memory is a
+//                //  linear array of bytes which it isn't. probably isn't any problem in simply returning as a NOP - the
+//                //  PC wil be updated and the CPU will call execute() with the PC pointing to the repeated 0xdd or 0xfd
+//                // this is an (expensive) replica of the extension instruction
+//                --m_registers.r;
+//                executeDdOrFdInstruction(reg, instruction + 1, doPc, tStates, size);
+//
+//                if (size) {
+//                    *size += 1;
+//                }
+//            }
+//            break;
 	    
 	    default:
             {
@@ -6030,26 +6133,110 @@ void Z80::Z80::setRegisterValue(Register8 reg, UnsignedByte value)
 	}
 }
 
-UnsignedWord Z80::Z80::peekUnsignedWord(int addr) const
+#if (!defined(NDEBUG))
+namespace
 {
-    // TODO make an assertion instead
-	if (addr < 0 || addr >= (memorySize() - 1)) {
-	    return 0;
-	}
+    void dumpRegisters(std::ostream & out, const ::Z80::Registers & registers)
+    {
+        out << std::hex << std::setfill('0')
+            << "   AF     BC     DE     HL     IX     IY    AF'    BC'    DE'    HL'\n"
+            << " $" << std::setw(4) << registers.af << ' '
+            << " $" << std::setw(4) << registers.bc << ' '
+            << " $" << std::setw(4) << registers.de << ' '
+            << " $" << std::setw(4) << registers.hl << ' '
+            << " $" << std::setw(4) << registers.ix << ' '
+            << " $" << std::setw(4) << registers.iy << ' '
+            << " $" << std::setw(4) << registers.afShadow << ' '
+            << " $" << std::setw(4) << registers.bcShadow << ' '
+            << " $" << std::setw(4) << registers.deShadow << ' '
+            << " $" << std::setw(4) << registers.hlShadow << "\n\n"
+            << "   PC     SP      I      R\n"
+            << " $" << std::setw(4) << registers.pc
+            << "  $" << std::setw(4) << registers.sp
+            << "    $" << std::setw(2) << static_cast<std::uint16_t>(registers.i)
+            << "    $" << std::setw(2) << static_cast<std::uint16_t>(registers.r) << "\n"
+            << std::dec << std::setfill(' ');
+    }
+}
 
-	if (HostByteOrder == Z80ByteOrder) {
-        return (*m_memory)[addr + 1] << 8 | (*m_memory)[addr];
+void Z80::Z80::dumpState(std::ostream & out) const
+{
+    out << "Z80 state:\n";
+    dumpRegisters(out, registers());
+    out << std::hex << std::setfill('0')
+        << "\n  IM   IFF1  IFF2\n"
+        << "   " << static_cast<std::uint16_t>(interruptMode())
+        << "     " << (iff1() ? '1' : '0')
+        << "     " << (iff2() ? '1' : '0') << "\n"
+        << std::dec << std::setfill(' ');
+}
+
+void Z80::Z80::dumpExecutionHistory(int entries, std::ostream & out) const
+{
+    auto entry = m_executionHistory.newest();
+    out << "Instruction History\n"
+        << "===================\n";
+
+    for (int instructionIndex = 0; instructionIndex < entries; ++instructionIndex) {
+        out << "\n----------------------------------------------------------------------\n";
+        out << "#" << std::dec << std::setw(0) << instructionIndex << " (@ 0x"
+            << std::hex << std::setfill('0') << std::setw(4) << entry->registersBefore.pc << ")\n"
+            << std::to_string(entry->mnemonic) << "          [" << std::hex << std::setfill('0');
+        
+        for (auto byteIndex = 0; byteIndex < entry->mnemonic.size; ++byteIndex) {
+            if (0 < byteIndex) {
+                out << ", ";
+            }
+            
+            out << "0x" << std::setw(2) << static_cast<std::uint16_t>(entry->machineCode[byteIndex]);
+        }
+        
+        out << "]\n";
+
+        // TODO output operand values when captured
+        out << std::to_string(entry->mnemonic.instruction) << ' ';
+
+        for (auto operandIndex = 0; operandIndex < entry->operandValues.size(); ++operandIndex) {
+            if (0 < operandIndex) {
+                out << ", ";
+            }
+
+            switch (entry->mnemonic.operands[operandIndex].mode) {
+                case Assembly::AddressingMode::Immediate:
+                case Assembly::AddressingMode::Register8:
+                    out << "0x" << std::setw(2) << static_cast<std::uint16_t>(entry->operandValues[operandIndex].unsignedByte);
+                    break;
+
+                case Assembly::AddressingMode::ImmediateExtended:
+                case Assembly::AddressingMode::ModifiedPageZero:
+                case Assembly::AddressingMode::Relative:
+                case Assembly::AddressingMode::Extended:
+                case Assembly::AddressingMode::Indexed:
+                case Assembly::AddressingMode::Register16:
+                case Assembly::AddressingMode::Register8Indirect:
+                case Assembly::AddressingMode::Register16Indirect:
+                    out << "0x" << std::setw(4) << static_cast<std::uint16_t>(entry->operandValues[operandIndex].unsignedWord);
+                    break;
+
+                case Assembly::AddressingMode::Bit:
+                    out << std::setw(1) << static_cast<std::uint16_t>(entry->operandValues[operandIndex].bit);
+                    break;
+            }
+        }
+
+        out << "\nRegisters before:\n";
+        dumpRegisters(out, entry->registersBefore);
+        out << "\nRegisters after:\n";
+        dumpRegisters(out, entry->registersAfter);
+
+        // loop around in the ring buffer from the first entry to the last if necessary
+        if (entry == m_executionHistory.begin()) {
+            entry = m_executionHistory.end() - 1;
+        } else {
+            --entry;
+        }
     }
 
-    return ((*m_memory)[addr] << 8) | (*m_memory)[addr + 1];
+    out << "\n----------------------------------------------------------------------\n";
 }
-
-UnsignedWord Z80::Z80::peekUnsignedWordZ80(int addr) const
-{
-    // TODO make an assertion instead
-	if (addr < 0 || addr >= (memorySize() - 1)) {
-	    return 0;
-	}
-
-    return (*m_memory)[addr + 1] << 8 | (*m_memory)[addr];
-}
+#endif
