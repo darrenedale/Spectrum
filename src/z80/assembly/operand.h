@@ -57,30 +57,6 @@ namespace Z80::Assembly
             IndexedAddress indexedAddress;
             ::Z80::UnsignedByte bit;
         };
-
-        /**
-         * Evaluate an operand based on the state of a provided Z80 CPU.
-         *
-         * If evaluating as a destination, the operand will be evaluated at most to an address; if evaluating as a
-         * source, the operand will be evaluated to an actual value.
-         *
-         * For example, when evaluating (HL) as a destination, the operand will be evaluated as the address stored in
-         * HL. When evaluating (HL) as a source, the operand will be evaluated to the value stored at the address in
-         * HL.
-         *
-         * Evaluation of values at addresses will always be done using 16 bits, unless the address is 0xffff in
-         * which case only 8 bits will be read and the MSB will be 0x00 (since only one byte - the LSB - is available
-         * at 0xffff in the 16-bit address space of the Z80). If the destination is only 8 bits wide, the LSB of the
-         * evaluated value is the actual value placed in the destination.
-         *
-         * In some cases it doesn't matter whether it's a source or destination (e.g. immediate addressing modes) -
-         * these are usually cases where the addressing mode can only be used as a source.
-         *
-         * @param cpu
-         * @param asDestination
-         * @return
-         */
-        ::Z80::Assembly::OperandValue evaluate(::Z80::Z80 * cpu, bool asDestination = true) const;
     };
 }
 

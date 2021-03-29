@@ -906,7 +906,7 @@ namespace Z80
          *
          * @return
          */
-        [[nodiscard]] UnsignedWord peekUnsignedWord(MemoryType::Address addr) const;
+        [[nodiscard]] UnsignedWord peekUnsignedHostWord(MemoryType::Address addr) const;
 
         /**
          * Fetch a 16-bit value from the Z80 memory.
@@ -917,7 +917,7 @@ namespace Z80
          *
          * @return
          */
-        [[nodiscard]] UnsignedWord peekUnsignedWordZ80(MemoryType::Address addr) const;
+        [[nodiscard]] UnsignedWord peekUnsignedZ80Word(MemoryType::Address addr) const;
 
         inline SignedByte peekSigned(MemoryType::Address addr) const
         {
@@ -962,11 +962,6 @@ namespace Z80
 
         // fetches and executes a single instruction, returns the number of t-states
         virtual int fetchExecuteCycle();
-
-#if(!defined(NDEBUG))
-        void dumpState(std::ostream & out = std::cout) const;
-        void dumpExecutionHistory(int entries, std::ostream & out = std::cout) const;
-#endif
 
     protected:
         virtual void handleNmi();
@@ -1013,14 +1008,24 @@ namespace Z80
         bool m_nmiPending;
         bool m_interruptRequested;
         UnsignedByte m_interruptData;
+        bool m_delayInterruptOneInstruction;
 
         // set when a HALT instruction is executed; cleared when an interrupt occurs or the CPU is reset
         bool m_halted;
         
-        unsigned long long m_clockSpeed;    /* clock speed in Hz */
+        unsigned long long m_clockSpeed;    // clock speed in Hz
         std::set<IODevice *> m_ioDevices;
 
 #if (!defined(NDEBUG))
+    public:
+        // write details about the current state of the CPU
+        void dumpState(std::ostream & out = std::cout) const;
+
+        // write details about the N most recently executed instructions
+        void dumpExecutionHistory(int entries, std::ostream & out = std::cout) const;
+
+    private:
+        // a ring buffer with the 10000 most recently executed instructions
         ExecutionHistory<10000> m_executionHistory;
 #endif
     };

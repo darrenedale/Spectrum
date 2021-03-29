@@ -187,78 +187,78 @@ std::string std::to_string(const Z80::Register8 & reg)
     std::cerr << "unrecognised register (Register8 enumerator = " << static_cast<std::uint16_t>(reg) << ")\n";
     return {};
 }
-
-OperandValue Operand::evaluate(::Z80::Z80 * cpu, bool asDestination) const
-{
-    switch (mode) {
-        case AddressingMode::Immediate:
-            return {.unsignedByte = unsignedByte};
-
-        case AddressingMode::ImmediateExtended:
-            // the immediate 16-bit value
-        case AddressingMode::ModifiedPageZero:
-            // the RST address
-            return {.unsignedWord = unsignedWord};
-
-        case AddressingMode::Relative:
-            // the address calculated from the relative offset
-            return {.unsignedWord = static_cast<UnsignedWord>(cpu->pc() + signedByte)};
-
-        case AddressingMode::Extended:
-            if (asDestination) {
-                // the destination address
-                return {.unsignedWord = unsignedWord};
-            } else {
-                // the value at the source address
-                return {.unsignedWord = cpu->peekUnsignedWord(unsignedWord)};
-            }
-
-        case AddressingMode::Indexed:
-            if (asDestination) {
-                // the destination address
-                return {.unsignedWord = static_cast<UnsignedWord>(cpu->registerValue(indexedAddress.register16) +
-                                                                  indexedAddress.offset)};
-            } else {
-                // the value at the source address
-                return {.unsignedWord = cpu->peekUnsignedWord(static_cast<UnsignedWord>(cpu->registerValue(indexedAddress.register16) +
-                                                                  indexedAddress.offset))};
-            }
-
-        case AddressingMode::Register8:
-            // TODO for now we're just returning the register's content in all cases, but strictly speaking we should
-            //  return the register if it's as destination, the register value if it's as source
-            return {.unsignedByte = cpu->registerValue(register8)};
-
-        case AddressingMode::Register16:
-            // TODO for now we're just returning the register's content in all cases, but strictly speaking we should
-            //  return the register if it's as destination, the register value if it's as source
-            return {.unsignedWord = cpu->registerValue(register16)};
-
-        case AddressingMode::Register8Indirect:
-            // the port determined from the register
-            return {.unsignedWord = static_cast<UnsignedWord>((cpu->bRegisterValue() << 8) |
-                                                              cpu->registerValue(register8))};
-
-        case AddressingMode::Register16Indirect:
-        {
-            UnsignedWord addr = cpu->registerValue(register16);
-
-            if (asDestination) {
-                // address stored in 16-bit register
-                return {.unsignedWord = addr};
-            } else {
-                // value at address stored in 16-bit register
-                if (0xffff > addr) {
-                    return {.unsignedWord = cpu->peekUnsignedWord(cpu->registerValue(register16))};
-                } else {
-                    return {.unsignedWord = cpu->peekUnsigned(cpu->registerValue(register16))};
-                }
-            }
-        }
-
-        case AddressingMode::Bit:
-            return {.bit = bit};
-    }
-
-    return {};
-}
+//
+//OperandValue Operand::evaluate(::Z80::Z80 * cpu, bool asDestination) const
+//{
+//    switch (mode) {
+//        case AddressingMode::Immediate:
+//            return {.unsignedByte = unsignedByte};
+//
+//        case AddressingMode::ImmediateExtended:
+//            // the immediate 16-bit value
+//        case AddressingMode::ModifiedPageZero:
+//            // the RST address
+//            return {.unsignedWord = unsignedWord};
+//
+//        case AddressingMode::Relative:
+//            // the address calculated from the relative offset
+//            return {.unsignedWord = static_cast<UnsignedWord>(cpu->pc() + signedByte)};
+//
+//        case AddressingMode::Extended:
+//            if (asDestination) {
+//                // the destination address
+//                return {.unsignedWord = unsignedWord};
+//            } else {
+//                // the value at the source address
+//                return {.unsignedWord = cpu->peekUnsignedWord(unsignedWord)};
+//            }
+//
+//        case AddressingMode::Indexed:
+//            if (asDestination) {
+//                // the destination address
+//                return {.unsignedWord = static_cast<UnsignedWord>(cpu->registerValue(indexedAddress.register16) +
+//                                                                  indexedAddress.offset)};
+//            } else {
+//                // the value at the source address
+//                return {.unsignedWord = cpu->peekUnsignedWord(static_cast<UnsignedWord>(cpu->registerValue(indexedAddress.register16) +
+//                                                                  indexedAddress.offset))};
+//            }
+//
+//        case AddressingMode::Register8:
+//            // TODO for now we're just returning the register's content in all cases, but strictly speaking we should
+//            //  return the register if it's as destination, the register value if it's as source
+//            return {.unsignedByte = cpu->registerValue(register8)};
+//
+//        case AddressingMode::Register16:
+//            // TODO for now we're just returning the register's content in all cases, but strictly speaking we should
+//            //  return the register if it's as destination, the register value if it's as source
+//            return {.unsignedWord = cpu->registerValue(register16)};
+//
+//        case AddressingMode::Register8Indirect:
+//            // the port determined from the register
+//            return {.unsignedWord = static_cast<UnsignedWord>((cpu->bRegisterValue() << 8) |
+//                                                              cpu->registerValue(register8))};
+//
+//        case AddressingMode::Register16Indirect:
+//        {
+//            UnsignedWord addr = cpu->registerValue(register16);
+//
+//            if (asDestination) {
+//                // address stored in 16-bit register
+//                return {.unsignedWord = addr};
+//            } else {
+//                // value at address stored in 16-bit register
+//                if (0xffff > addr) {
+//                    return {.unsignedWord = cpu->peekUnsignedWord(cpu->registerValue(register16))};
+//                } else {
+//                    return {.unsignedWord = cpu->peekUnsigned(cpu->registerValue(register16))};
+//                }
+//            }
+//        }
+//
+//        case AddressingMode::Bit:
+//            return {.bit = bit};
+//    }
+//
+//    return {};
+//}
