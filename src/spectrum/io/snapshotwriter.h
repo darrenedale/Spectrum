@@ -7,9 +7,9 @@
 
 #include <ostream>
 #include <fstream>
-#include "snapshot.h"
+#include "../snapshot.h"
 
-namespace Spectrum
+namespace Spectrum::Io
 {
     class SnapshotWriter
     {

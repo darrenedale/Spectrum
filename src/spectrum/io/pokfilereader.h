@@ -7,9 +7,9 @@
 
 #include <istream>
 #include <optional>
-#include "pokedefinition.h"
+#include "../pokedefinition.h"
 
-namespace Spectrum
+namespace Spectrum::Io
 {
     class PokFileReader
     {

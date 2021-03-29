@@ -5,9 +5,12 @@
 #include <fstream>
 #include <sstream>
 #include "pokfilereader.h"
-#include "pokedefinition.h"
+#include "../pokedefinition.h"
 
-using namespace Spectrum;
+using namespace Spectrum::Io;
+
+using Spectrum::PokeDefinition;
+using Poke = Spectrum::PokeDefinition::Poke;
 
 namespace
 {
@@ -80,15 +83,6 @@ std::optional<Spectrum::PokeDefinition> PokFileReader::nextPoke()
             return {};
         }
 
-#if (!defined(NDEBUG))
-        std::cout << "Read POKE " << pokeValue->address << ", ";
-
-        if (pokeValue->bytes.front()) {
-            std::cout << static_cast<std::uint16_t>(*pokeValue->bytes.front()) << '\n';
-        } else {
-            std::cout << "{user-defined value}\n";
-        }
-#endif
         poke.addPoke(std::move(*pokeValue));
 
         if (LineType::LastPoke == lineType) {
@@ -99,7 +93,7 @@ std::optional<Spectrum::PokeDefinition> PokFileReader::nextPoke()
     return poke;
 }
 
-std::optional<PokeDefinition::Poke> PokFileReader::parsePokeLine(const std::string & line)
+std::optional<Poke> PokFileReader::parsePokeLine(const std::string & line)
 {
     assert(!line.empty() && ('M' == line[0] || 'Z' == line[0]));
     PokeDefinition::Poke poke;

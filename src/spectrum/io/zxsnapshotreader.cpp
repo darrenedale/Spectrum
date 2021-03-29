@@ -7,9 +7,9 @@
 #include <bit>
 
 #include "zxsnapshotreader.h"
-#include "../z80/types.h"
+#include "../../z80/types.h"
 
-using namespace Spectrum;
+using namespace Spectrum::Io;
 
 using UnsignedByte = ::Z80::UnsignedByte;
 using InterruptMode = ::Z80::InterruptMode;
@@ -25,6 +25,27 @@ namespace
         std::uint16_t setting5;     // apparently always 0x0001
     };
 
+    // from http://spectrum-zx.chat.ru/faq/fileform.html
+    //    Offset   Size   Description
+    //    ------------------------------------------------------------------------
+    //    0        49284  bytes  RAM dump 16252..65535
+    //    49284    132    bytes  unused, make 0
+    //    49416    10     word   10,10,4,1,1 (different settings)
+    //    49426    1      byte   InterruptStatus (0=DI/1=EI)
+    //    49427    2      byte   0,3
+    //    49429    1      byte   ColorMode (0=BW/1=Color)
+    //    49430    4      long   0
+    //    49434    16     word   BC,BC',DE,DE',HL,HL',IX,IY
+    //    49450    2      byte   I,R
+    //    49452    2      word   0
+    //    49454    8      byte   0,A',0,A,0,F',0,F
+    //    49462    8      word   0,PC,0,SP
+    //    49470    2      word   SoundMode (0=Simple/1=Pitch/2=RomOnly)
+    //    49472    2      word   HaltMode  (0=NoHalt/1=Halt)
+    //    49474    2      word   IntMode   (-1=IM0/0=IM1/1=IM2)
+    //    49476    10     bytes  unused, make 0
+    //    ------------------------------------------------------------------------
+    //
     // there's a fair amount of padding here. it's likely just an unmodified dump of the internal data structure used in
     // the originating emulator to store the registers, etc. (e.g. PC and SP were represented using 32-bit ints)
     //

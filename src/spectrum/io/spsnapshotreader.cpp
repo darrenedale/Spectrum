@@ -8,10 +8,10 @@
 #include <cstring>
 
 #include "spsnapshotreader.h"
-#include "types.h"
-#include "../z80/types.h"
+#include "../types.h"
+#include "../../z80/types.h"
 
-using namespace Spectrum;
+using namespace Spectrum::Io;
 
 using UnsignedByte = ::Z80::UnsignedByte;
 using UnsignedWord = ::Z80::UnsignedWord;
@@ -19,7 +19,24 @@ using InterruptMode = ::Z80::InterruptMode;
 
 namespace
 {
-    // NOTE every member starts on a 16-bit aligned byte so no need to pack the struct, I think
+    // from http://spectrum-zx.chat.ru/faq/fileform.html
+    //    Offset   Size   Description
+    //    ------------------------------------------------------------------------
+    //    0        2      byte   "SP" (signature)
+    //    2        2      word   Program length in bytes (49152 bytes)
+    //    4        2      word   Program location (16384)
+    //    6        8      word   BC,DE,HL,AF
+    //    14       4      word   IX,IY
+    //    18       8      word   BC',DE',HL',AF'
+    //    26       2      byte   R,I
+    //    28       4      word   SP,PC
+    //    32       2      word   0 (reserved for future use)
+    //    34       1      byte   Border color
+    //    35       1      byte   0 (reserved for future use)
+    //    36       2      word   Status word
+    //    ------------------------------------------------------------------------
+    //
+    // NOTE every (used) member starts on a 16-bit aligned byte so no need to pack the struct, I think
     struct Header
     {
         char signature[2];          // always "SP"
@@ -54,6 +71,17 @@ namespace
         UnsignedWord reserved1;
         UnsignedByte border;
         UnsignedByte reserved2;
+
+        //   Bit     Description
+        //   ------------------------------------------------------------------------
+        //   15-8    Reserved for future use
+        //    7-6    Reserved for internal use (0)
+        //      5    Flash: 0=INK/1=PAPER
+        //      4    Interrupt pending for execution
+        //      3    Reserved for future use
+        //      2    IFF2 (internal use)
+        //      1    Interrupt Mode: 0=IM1/1=IM2
+        //      0    IFF1: 0=DI/1=EI
         UnsignedWord status;
     };
 }
@@ -91,6 +119,7 @@ bool SpSnapshotReader::readInto(Snapshot & snapshot) const
     header.baseAddress = Z80::z80ToHostByteOrder(header.baseAddress);
 
     if (0x0000ffff < static_cast<int>(header.baseAddress) + header.length - 1) {
+#if (!defined(ndebug))
         std::cerr << std::hex << std::setfill('0');
         std::cerr << "Program extends beyond upper bounds of RAM (0x" << std::setw(4) << header.baseAddress << " + "
                   << std::dec << header.length << ") > 0xffff\n";
@@ -101,6 +130,7 @@ bool SpSnapshotReader::readInto(Snapshot & snapshot) const
         std::cerr << "Program extends beyond upper bounds of RAM (0x" << std::setw(4) << header.baseAddress << " + "
                   << std::dec << header.length << ") > 0xffff\n";
         std::cerr << std::setfill(' ');
+#endif
         return false;
     }
 

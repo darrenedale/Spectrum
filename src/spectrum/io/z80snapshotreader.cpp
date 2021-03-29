@@ -8,10 +8,10 @@
 #include <cstring>
 
 #include "z80snapshotreader.h"
-#include "types.h"
-#include "../z80/types.h"
+#include "../types.h"
+#include "../../z80/types.h"
 
-using namespace Spectrum;
+using namespace Spectrum::Io;
 
 using UnsignedByte = ::Z80::UnsignedByte;
 using UnsignedWord = ::Z80::UnsignedWord;

@@ -2,14 +2,17 @@
 // Created by darren on 22/03/2021.
 //
 
-#ifndef SPECTRUM_ZXSNAPSHOTREADER_H
-#define SPECTRUM_ZXSNAPSHOTREADER_H
+#ifndef SPECTRUM_SPSNAPSHOTREADER_H
+#define SPECTRUM_SPSNAPSHOTREADER_H
+
+#include <optional>
 
 #include "snapshotreader.h"
+#include "../../z80/types.h"
 
-namespace Spectrum
+namespace Spectrum::Io
 {
-    class ZXSnapshotReader
+    class SpSnapshotReader
     : public SnapshotReader
     {
     public:
@@ -20,4 +23,4 @@ namespace Spectrum
     };
 }
 
-#endif //SPECTRUM_ZXSNAPSHOTREADER_H
+#endif //SPECTRUM_SPSNAPSHOTREADER_H

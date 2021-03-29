@@ -8,9 +8,9 @@
 #include <istream>
 #include <fstream>
 
-#include "snapshot.h"
+#include "../snapshot.h"
 
-namespace Spectrum
+namespace Spectrum::Io
 {
     class SnapshotReader
     {
@@ -29,9 +29,9 @@ namespace Spectrum
           m_snapshot()
         {}
 
-        SnapshotReader(const SnapshotReader & other) = default;
+        SnapshotReader(const SnapshotReader & other) = delete;
         SnapshotReader(SnapshotReader && other) noexcept;
-        SnapshotReader & operator=(const SnapshotReader & other) = default;
+        SnapshotReader & operator=(const SnapshotReader & other) = delete;
         SnapshotReader & operator=(SnapshotReader && other) noexcept;
 
         virtual ~SnapshotReader();

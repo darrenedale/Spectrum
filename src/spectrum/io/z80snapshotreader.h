@@ -8,9 +8,9 @@
 #include <optional>
 
 #include "snapshotreader.h"
-#include "../z80/types.h"
+#include "../../z80/types.h"
 
-namespace Spectrum
+namespace Spectrum::Io
 {
     class Z80SnapshotReader
     : public SnapshotReader

@@ -6,7 +6,7 @@
 
 #include "snapshotreader.h"
 
-using namespace Spectrum;
+using namespace Spectrum::Io;
 
 
 SnapshotReader::SnapshotReader(SnapshotReader && other) noexcept

@@ -6,10 +6,10 @@
 #include <cassert>
 
 #include "snasnapshotreader.h"
-#include "types.h"
-#include "../z80/types.h"
+#include "../types.h"
+#include "../../z80/types.h"
 
-using namespace Spectrum;
+using namespace Spectrum::Io;
 
 using ::Z80::UnsignedByte;
 using ::Z80::UnsignedWord;

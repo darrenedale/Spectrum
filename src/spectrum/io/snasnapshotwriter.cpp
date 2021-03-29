@@ -4,7 +4,7 @@
 
 #include "snasnapshotwriter.h"
 
-using namespace Spectrum;
+using namespace Spectrum::Io;
 
 bool SnaSnapshotWriter::writeTo(std::ostream & out) const
 {

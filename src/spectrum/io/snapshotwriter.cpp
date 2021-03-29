@@ -4,13 +4,15 @@
 
 #include "snapshotwriter.h"
 
-void Spectrum::SnapshotWriter::writeHostWord(std::ostream & out, ::Z80::UnsignedWord word)
+using namespace Spectrum::Io;
+
+void SnapshotWriter::writeHostWord(std::ostream & out, ::Z80::UnsignedWord word)
 {
     word = Z80::hostToZ80ByteOrder(word);
     out.write(reinterpret_cast<char *>(&word), 2);
 }
 
-void Spectrum::SnapshotWriter::writeZ80Word(std::ostream & out, ::Z80::UnsignedWord word)
+void SnapshotWriter::writeZ80Word(std::ostream & out, ::Z80::UnsignedWord word)
 {
     out.write(reinterpret_cast<char *>(&word), 2);
 }

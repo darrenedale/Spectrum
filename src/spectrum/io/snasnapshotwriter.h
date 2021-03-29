@@ -7,7 +7,7 @@
 
 #include "snapshotwriter.h"
 
-namespace Spectrum
+namespace Spectrum::Io
 {
     /**
      * Write a spectrum snapshot in .sna format.

@@ -7,7 +7,7 @@
 
 #include "snapshotwriter.h"
 
-namespace Spectrum
+namespace Spectrum::Io
 {
     /**
      * TODO support later versioned files with the extended header

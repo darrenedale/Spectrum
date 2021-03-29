@@ -6,7 +6,7 @@
 
 #include "z80snapshotwriter.h"
 
-using namespace Spectrum;
+using namespace Spectrum::Io;
 
 
 bool Z80SnapshotWriter::writeTo(std::ostream & out) const

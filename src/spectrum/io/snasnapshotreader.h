@@ -2,17 +2,14 @@
 // Created by darren on 22/03/2021.
 //
 
-#ifndef SPECTRUM_SPSNAPSHOTREADER_H
-#define SPECTRUM_SPSNAPSHOTREADER_H
-
-#include <optional>
+#ifndef SPECTRUM_SNASNAPSHOTREADER_H
+#define SPECTRUM_SNASNAPSHOTREADER_H
 
 #include "snapshotreader.h"
-#include "../z80/types.h"
 
-namespace Spectrum
+namespace Spectrum::Io
 {
-    class SpSnapshotReader
+    class SnaSnapshotReader
     : public SnapshotReader
     {
     public:
@@ -23,4 +20,4 @@ namespace Spectrum
     };
 }
 
-#endif //SPECTRUM_SPSNAPSHOTREADER_H
+#endif //SPECTRUM_SNASNAPSHOTREADER_H
