@@ -48,7 +48,6 @@ namespace Spectrum
         virtual bool joystick2Button2IsPressed() const;
         virtual bool joystick2Button3IsPressed() const;
 
-    protected:
         void setJoystick1Up(bool up);
         void setJoystick1Down(bool down);
         void setJoystick1Left(bool left);
