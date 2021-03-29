@@ -5,8 +5,8 @@ add_executable(
         application.cpp
         mainwindow.cpp
         colourcombo.cpp
-        ../qt/qimagedisplaydevice.cpp
-        ../qt/imagewidget.cpp
+        ../qtui/qimagedisplaydevice.cpp
+        ../qtui/imagewidget.cpp
         ../../z80/iodevice.cpp
 )
 

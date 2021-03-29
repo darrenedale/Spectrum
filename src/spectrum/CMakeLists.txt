@@ -18,45 +18,45 @@ add_executable(
         displaydevice.h
         snapshot.cpp
         snapshot.h
-        snapshotreader.cpp
-        snapshotwriter.cpp
-        z80snapshotreader.cpp
-        snasnapshotreader.cpp
-        spsnapshotreader.cpp
-        zxsnapshotreader.cpp
-        z80snapshotwriter.cpp
-        z80snapshotwriter.h
-        snasnapshotwriter.cpp
-        snasnapshotwriter.h
         pokedefinition.cpp
-        pokfilereader.cpp
-        qt/application.cpp
-        qt/mainwindow.cpp
-        qt/pokeswidget.cpp
-        qt/thread.cpp
-        qt/breakpoint.cpp
-        qt/programcounterbreakpoint.cpp
-        qt/debugwindow.cpp
-        qt/registerswidget.cpp
-        qt/shadowregisterswidget.cpp
-        qt/interruptwidget.cpp
-        qt/programpointerswidget.cpp
-        qt/memoryview.cpp
-        qt/memorydebugwidget.cpp
-        qt/custompokewidget.cpp
-        qt/custompokewidget.h
-        qt/qimagedisplaydevice.cpp
-        qt/registerpairwidget.cpp
-        qt/flagswidget.cpp
-        qt/keyboard.cpp
-        qt/qinterfacetwojoystick.cpp
-        qt/qinterfacetwojoystick.h
-        qt/qkempstonjoystick.cpp
-        qt/disassemblywidget.cpp
-        qt/threadpauser.h
-        qt/keyboardmonitorwidget.cpp
-        qt/imagewidget.cpp
-        qt/hexspinbox.cpp
+        io/snapshotreader.cpp
+        io/snapshotwriter.cpp
+        io/z80snapshotreader.cpp
+        io/snasnapshotreader.cpp
+        io/spsnapshotreader.cpp
+        io/zxsnapshotreader.cpp
+        io/z80snapshotwriter.cpp
+        io/z80snapshotwriter.h
+        io/snasnapshotwriter.cpp
+        io/snasnapshotwriter.h
+        io/pokfilereader.cpp
+        qtui/application.cpp
+        qtui/mainwindow.cpp
+        qtui/pokeswidget.cpp
+        qtui/pokeswidgetitem.cpp
+        qtui/thread.cpp
+        qtui/breakpoint.cpp
+        qtui/programcounterbreakpoint.cpp
+        qtui/memorybreakpoint.h
+        qtui/bytechangedbreakpoint.cpp
+        qtui/wordchangedbreakpoint.cpp
+        qtui/debugwindow.cpp
+        qtui/registerswidget.cpp
+        qtui/shadowregisterswidget.cpp
+        qtui/interruptwidget.cpp
+        qtui/programpointerswidget.cpp
+        qtui/memoryview.cpp
+        qtui/memorydebugwidget.cpp
+        qtui/custompokewidget.cpp
+        qtui/custompokewidget.h
+        qtui/qimagedisplaydevice.cpp
+        qtui/registerpairwidget.cpp
+        qtui/flagswidget.cpp
+        qtui/disassemblywidget.cpp
+        qtui/threadpauser.h
+        qtui/keyboardmonitorwidget.cpp
+        qtui/imagewidget.cpp
+        qtui/hexspinbox.cpp
         ../computer.h
         ../cpu.cpp
         ../memory.h

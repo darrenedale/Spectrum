@@ -125,7 +125,7 @@ void MainWindow::closeEvent(QCloseEvent * ev)
 
 void MainWindow::updateScreen()
 {
-    Spectrum::Qt::QImageDisplayDevice display;
+    Spectrum::QtUi::QImageDisplayDevice display;
     display.redrawDisplay(m_screenData);
     display.setBorder(m_borderColour->colour(), m_borderColour->isBright());
     m_display->setImage(display.image());

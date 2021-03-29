@@ -1,12 +1,9 @@
-#include "qt/application.h"
-#include "qt/mainwindow.h"
+#include "qtui/application.h"
 
 int main(int argc, char * argv[])
 {
-    using namespace Spectrum::Qt;
+    using namespace Spectrum::QtUi;
 
 	Application app(argc, argv);
-	MainWindow win;
-	win.show();
 	return Application::exec();
 }

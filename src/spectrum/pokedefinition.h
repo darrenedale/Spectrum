@@ -44,6 +44,18 @@ namespace Spectrum
             return m_pokes;
         }
 
+        /**
+         * The poke definitions that will undo the poke.
+         *
+         * This will be empty until the poke has been applied.
+         *
+         * @return
+         */
+        [[nodiscard]] const Pokes & undoPokes() const
+        {
+            return m_undo;
+        }
+
         void setName(std::string name)
         {
             m_name = std::move(name);
@@ -85,12 +97,26 @@ namespace Spectrum
          * @param memory
          * @return
          */
-        PokeDefinition apply(BaseSpectrum::MemoryType & memory) const;
+        void apply(BaseSpectrum::MemoryType & memory) const;
 
-        PokeDefinition apply(BaseSpectrum & spectrum) const
+        void apply(BaseSpectrum & spectrum) const
         {
             assert(spectrum.memory());
             return apply(*(spectrum.memory()));
+        }
+
+        /**
+         * Returns a PokeDefinition to apply to undo the poke.
+         *
+         * @param memory
+         * @return
+         */
+        void undo(BaseSpectrum::MemoryType & memory) const;
+
+        void undo(BaseSpectrum & spectrum) const
+        {
+            assert(spectrum.memory());
+            return undo(*(spectrum.memory()));
         }
 
     private:
@@ -98,6 +124,7 @@ namespace Spectrum
         std::string m_description;
         std::string m_techDetails;
         Pokes m_pokes;
+        mutable Pokes m_undo;
     };
 }
 

@@ -4,12 +4,9 @@
 
 #include "pokedefinition.h"
 
-Spectrum::PokeDefinition Spectrum::PokeDefinition::apply(::Spectrum::BaseSpectrum::MemoryType & memory) const
+void Spectrum::PokeDefinition::apply(::Spectrum::BaseSpectrum::MemoryType & memory) const
 {
-    PokeDefinition undo;
-    undo.m_name = "Undo " + name();
-    undo.m_description = "Undo the pokes applied by " + name();
-    undo.m_techDetails = name() + " applied the following changes:\n" + technicalDetails();
+    m_undo.clear();
 
     for (const auto & poke : pokes()) {
         Poke undoPoke = {.address = poke.address, .bytes = {}};
@@ -21,7 +18,19 @@ Spectrum::PokeDefinition Spectrum::PokeDefinition::apply(::Spectrum::BaseSpectru
             memory.writeByte(address, *byte);
             ++address;
         }
-    }
 
-    return undo;
+        m_undo.push_back(std::move(undoPoke));
+    }
+}
+
+void Spectrum::PokeDefinition::undo(::Spectrum::BaseSpectrum::MemoryType & memory) const
+{
+    for (const auto & poke : undoPokes()) {
+        auto address = poke.address;
+
+        for (const auto & byte : poke.bytes) {
+            memory.writeByte(address, *byte);
+            ++address;
+        }
+    }
 }
