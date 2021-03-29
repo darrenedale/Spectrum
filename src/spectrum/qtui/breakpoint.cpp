@@ -4,7 +4,7 @@
 
 #include "breakpoint.h"
 
-using namespace Spectrum::Qt;
+using namespace Spectrum::QtUi;
 
 void Breakpoint::trigger()
 {
