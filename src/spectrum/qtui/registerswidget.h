@@ -2,8 +2,8 @@
 // Created by darren on 23/03/2021.
 //
 
-#ifndef SPECTRUM_QT_REGISTERSWIDGET_H
-#define SPECTRUM_QT_REGISTERSWIDGET_H
+#ifndef SPECTRUM_QTUI_REGISTERSWIDGET_H
+#define SPECTRUM_QTUI_REGISTERSWIDGET_H
 
 #include <QWidget>
 
@@ -44,4 +44,4 @@ namespace Spectrum::QtUi
     };
 }
 
-#endif //SPECTRUM_QT_REGISTERSWIDGET_H
+#endif //SPECTRUM_QTUI_REGISTERSWIDGET_H

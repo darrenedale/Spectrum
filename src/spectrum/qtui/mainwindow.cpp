@@ -90,6 +90,7 @@ MainWindow::MainWindow(QWidget * parent)
   m_displayRefreshTimer(nullptr),
   m_joystick(nullptr)
 {
+    setWindowTitle(QStringLiteral("Spectrum"));
     // TODO read joystick type from config
     m_joystick = new Spectrum::KempstonJoystick();
     m_spectrum.setExecutionSpeedConstrained(true);
@@ -136,13 +137,11 @@ MainWindow::MainWindow(QWidget * parent)
     joystickInterface->addAction(&m_joystickInterface2);
     joystickInterface->addAction(&m_joystickNone);
 
-    m_emulationSpeedSlider.setMinimum(0);
-    m_emulationSpeedSlider.setMaximum(1000);
+    m_emulationSpeedSlider.setRange(0, 1000);
     m_emulationSpeedSlider.setValue(100);
     m_emulationSpeedSlider.setSingleStep(10);
 
-    m_emulationSpeedSpin.setMinimum(0);
-    m_emulationSpeedSpin.setMaximum(1000);
+    m_emulationSpeedSpin.setRange(0, 1000);
     m_emulationSpeedSpin.setValue(100);
     m_emulationSpeedSpin.setSingleStep(10);
     m_emulationSpeedSpin.setSuffix(QStringLiteral("%"));
@@ -433,7 +432,7 @@ QString MainWindow::guessSnapshotFormat(const QString & fileName)
     return {};
 }
 
-void MainWindow::loadSnapshot(const QString & fileName, QString format)
+bool MainWindow::loadSnapshot(const QString & fileName, QString format)
 {
     ThreadPauser pauser(m_spectrumThread);
 
@@ -466,7 +465,7 @@ void MainWindow::loadSnapshot(const QString & fileName, QString format)
     if (!reader->isOpen()) {
         std::cerr << "Snapshot file '" << fileName.toStdString() << "' could not be opened.\n";
         statusBar()->showMessage(tr("The snapshot file %1 could not be opened.").arg(fileName), DefaultStatusBarMessageTimeout);
-        return;
+        return false;
     }
 
     bool successful;
@@ -474,7 +473,7 @@ void MainWindow::loadSnapshot(const QString & fileName, QString format)
 
     if (!successful) {
         statusBar()->showMessage(tr("The snapshot file %1 is not valid.").arg(fileName), DefaultStatusBarMessageTimeout);
-        return;
+        return false;
     }
 
     snapshot.applyTo(m_spectrum);
@@ -483,6 +482,7 @@ void MainWindow::loadSnapshot(const QString & fileName, QString format)
     m_spectrum.dumpState();
 #endif
 
+    setWindowTitle(QStringLiteral("Spectrum | %1").arg(QFileInfo(fileName).fileName()));
     m_display.redrawDisplay(m_spectrum.displayMemory());
     m_displayWidget.setImage(m_display.image());
 
@@ -492,6 +492,7 @@ void MainWindow::loadSnapshot(const QString & fileName, QString format)
     }
 
     statusBar()->showMessage(tr("The snapshot file %1 was successfully loaded.").arg(fileName), DefaultStatusBarMessageTimeout);
+    return true;
 }
 
 void MainWindow::saveSnapshot(const QString & fileName, QString format)
@@ -1195,7 +1196,7 @@ void MainWindow::saveSnapshotToSlot(int slotIndex, QString format)
     saveSnapshot(slotDir.absoluteFilePath("%1.%2").arg(slotIndex).arg(format), format);
 }
 
-void MainWindow::loadSnapshotFromSlot(int slotIndex)
+bool MainWindow::loadSnapshotFromSlot(int slotIndex)
 {
     assert(1 <= slotIndex && 5 >= slotIndex);
 
@@ -1204,9 +1205,15 @@ void MainWindow::loadSnapshotFromSlot(int slotIndex)
 
     if (!slotDir.exists(fileName)) {
         statusBar()->showMessage(tr("Slot %1 is empty").arg(slotIndex));
-        return;
+        return false;
     }
 
     // TODO work out format from discovered file name
-    loadSnapshot(slotDir.absoluteFilePath(fileName), QStringLiteral("z80"));
+    if (!loadSnapshot(slotDir.absoluteFilePath(fileName), QStringLiteral("z80"))) {
+        statusBar()->showMessage(tr("Snapshot in slot %1 could not be loaded.").arg(slotIndex));
+        return false;
+    }
+
+    setWindowTitle(QStringLiteral("Spectrum | Snapshot slot %1").arg(slotIndex));
+    return true;
 }

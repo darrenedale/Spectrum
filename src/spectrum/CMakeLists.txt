@@ -37,9 +37,11 @@ add_executable(
         qtui/thread.cpp
         qtui/breakpoint.cpp
         qtui/programcounterbreakpoint.cpp
+        qtui/stackpointerbelowbreakpoint.cpp
         qtui/memorybreakpoint.h
-        qtui/bytechangedbreakpoint.cpp
-        qtui/wordchangedbreakpoint.cpp
+        qtui/memorychangedbreakpoint.h
+        qtui/registerbreakpoint.h
+        qtui/registervaluebreakpoint.cpp
         qtui/debugwindow.cpp
         qtui/registerswidget.cpp
         qtui/shadowregisterswidget.cpp

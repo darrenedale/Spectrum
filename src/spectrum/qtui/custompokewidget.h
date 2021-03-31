@@ -46,6 +46,16 @@ namespace Spectrum::QtUi
             m_value.setValue(value);
         }
 
+        void focusAddress()
+        {
+            m_address.setFocus();
+        }
+
+        void focusValue()
+        {
+            m_value.setFocus();
+        }
+
     Q_SIGNALS:
         void pokeClicked(::Z80::UnsignedWord address, ::Z80::UnsignedByte value);
 

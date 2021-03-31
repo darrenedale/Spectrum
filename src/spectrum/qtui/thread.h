@@ -1,5 +1,5 @@
-#ifndef SPECTRUM_QT_THREAD_H
-#define SPECTRUM_QT_THREAD_H
+#ifndef SPECTRUM_QTUI_THREAD_H
+#define SPECTRUM_QTUI_THREAD_H
 
 #include <QThread>
 #include <QMutex>
@@ -70,4 +70,4 @@ namespace Spectrum::QtUi
 	};
 }
 
-#endif // SPECTRUM_QT_THREAD_H
+#endif // SPECTRUM_QTUI_THREAD_H

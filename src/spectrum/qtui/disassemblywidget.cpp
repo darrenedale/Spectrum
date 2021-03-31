@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <QHelpEvent>
 #include <QToolTip>
+#include <QScrollBar>
 #include <QPainter>
 
 #include "disassemblywidget.h"
@@ -45,9 +46,11 @@ namespace
             font.setFixedPitch(true);
             setFont(font);
             auto metrics = fontMetrics();
-            m_addressWidth = 20 + metrics.horizontalAdvance(QStringLiteral("0x0000"));
-            m_cellHeight = metrics.height();
-            setMinimumSize(3 * m_addressWidth + (2 * Margin), (MinimumLines * m_cellHeight) + (2 * Margin));
+            m_addressWidth = metrics.horizontalAdvance(QStringLiteral("0x0000"));
+            m_mnemonicWidth = metrics.horizontalAdvance(QStringLiteral("WWWW 0x0000,0x0000"));
+            m_gutter = 2 * metrics.horizontalAdvance(QStringLiteral("W"));
+            m_lineHeight = metrics.height();
+            setMinimumSize((2 * Margin) + m_addressWidth + m_gutter + m_mnemonicWidth, (2 * Margin) + (MinimumLines * m_lineHeight));
             updateMnemonics();
         }
 
@@ -58,7 +61,7 @@ namespace
          */
         [[nodiscard]] int lineHeight() const
         {
-            return m_cellHeight;
+            return m_lineHeight;
         }
 
         /**
@@ -72,7 +75,7 @@ namespace
          * @param address
          * @return
          */
-        int addressY(UnsignedWord address)
+        std::optional<int> addressYCoordinate(UnsignedWord address)
         {
             int line = 0;
 
@@ -82,14 +85,14 @@ namespace
 
             if (line >= m_mnemonics.size()) {
                 std::cerr << "address 0x" << std::hex << std::setfill('0') << std::setw(4) << address << " not found in disassembly\n" << std::dec << std::setfill(' ');
-                return -1;
+                return {};
             }
 
             if (m_mnemonics[line].address > address) {
                 --line;
             }
 
-            return line * m_cellHeight;
+            return line * m_lineHeight;
         }
 
         /**
@@ -137,7 +140,7 @@ namespace
             }
 
             // work out the new height of the view
-            setFixedHeight((m_mnemonics.size() * m_cellHeight) + (2 * Margin));
+            setFixedHeight((m_mnemonics.size() * m_lineHeight) + (2 * Margin));
         }
 
     protected:
@@ -168,30 +171,37 @@ namespace
             QPainter painter(this);
             auto y = Margin;
             const auto width = this->width();
-            const auto defaultFont = painter.font();
-            QRect lineRect;
+            const auto defaultPen = painter.pen();
+            const auto gutter = 2 * fontMetrics().horizontalAdvance(QLatin1Char('W'));
+            auto textRect = QRect(Margin, y, width, m_lineHeight);
 
             for (const auto & mnemonic : m_mnemonics) {
-                y += m_cellHeight;
+                y += m_lineHeight;
 
                 // only paint the required area
-                if (!event->region().intersects(QRect(0, y - m_cellHeight, width, m_cellHeight))) {
+                if (!event->region().intersects(QRect(0, y - m_lineHeight, width, m_lineHeight))) {
                     continue;
                 }
 
+                textRect.moveTop(y - m_lineHeight);
+
                 if (showPcIndicator && mnemonic.address == pc) {
-                    auto font = painter.font();
-                    font.setBold(true);
-                    painter.setFont(font);
+                    textRect.moveLeft(Margin + m_addressWidth);
+                    textRect.setWidth(m_gutter);
+                    painter.setPen(qRgb(0x80, 0xe0, 0x80));
+                    painter.drawText(textRect, Qt::AlignCenter, QStringLiteral(">"));
                 }
 
-                lineRect = QRect(Margin, y - m_cellHeight, width - (2 * Margin), m_cellHeight);
-                painter.drawText(lineRect, Qt::AlignVCenter | Qt::AlignLeft, QStringLiteral("0x%1").arg(mnemonic.address, 4, 16, FillChar));
-                lineRect.setLeft(Margin + m_addressWidth);
-                painter.drawText(lineRect, Qt::AlignVCenter | Qt::AlignLeft, QString::fromStdString(std::to_string(mnemonic)));
+                textRect.moveLeft(Margin);
+                textRect.setWidth(m_addressWidth);
+                painter.drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, QStringLiteral("0x%1").arg(mnemonic.address, 4, 16, FillChar));
+
+                textRect.moveLeft(Margin + m_addressWidth + gutter);
+                textRect.setWidth(m_mnemonicWidth);
+                painter.drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, QString::fromStdString(std::to_string(mnemonic)));
 
                 if (showPcIndicator && mnemonic.address == pc) {
-                    painter.setFont(defaultFont);
+                    painter.setPen(defaultPen);
                 }
             }
 
@@ -221,7 +231,9 @@ namespace
         Disassembler m_disassembler;
         Mnemonics m_mnemonics;
         int m_addressWidth;
-        int m_cellHeight;
+        int m_gutter;
+        int m_mnemonicWidth;
+        int m_lineHeight;
     };
 }
 
@@ -240,13 +252,17 @@ void DisassemblyWidget::updateMnemonics(UnsignedWord fromAddress)
 
 void DisassemblyWidget::scrollToAddress(UnsignedWord address)
 {
-    auto y = dynamic_cast<DisassemblyView *>(widget())->addressY(address);
+    auto y = dynamic_cast<DisassemblyView *>(widget())->addressYCoordinate(address);
 
-    if (0 > y) {
+    if (!y) {
         return;
     }
 
-    ensureVisible(0, y);
+    auto * scrollBar = verticalScrollBar();
+
+    if (scrollBar->value() > *y || scrollBar->value() + height() < *y) {
+        scrollBar->setValue(*y);
+    }
 }
 
 void DisassemblyWidget::setPc(UnsignedWord pc)

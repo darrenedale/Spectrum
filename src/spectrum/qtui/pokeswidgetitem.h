@@ -2,8 +2,8 @@
 // Created by darren on 29/03/2021.
 //
 
-#ifndef SPECTRUM_QT_POKESWIDGETITEM_H
-#define SPECTRUM_QT_POKESWIDGETITEM_H
+#ifndef SPECTRUM_QTUI_POKESWIDGETITEM_H
+#define SPECTRUM_QTUI_POKESWIDGETITEM_H
 
 #include <QWidget>
 #include <QToolButton>
@@ -54,4 +54,4 @@ namespace Spectrum::QtUi
     };
 }
 
-#endif //SPECTRUM_QT_POKESWIDGETITEM_H
+#endif //SPECTRUM_QTUI_POKESWIDGETITEM_H

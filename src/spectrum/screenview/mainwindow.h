@@ -11,7 +11,7 @@
 #include <QMainWindow>
 #include <QSettings>
 
-#include "../qt/imagewidget.h"
+#include "../qtui/imagewidget.h"
 #include "colourcombo.h"
 
 class QLineEdit;

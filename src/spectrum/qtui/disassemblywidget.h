@@ -2,8 +2,8 @@
 // Created by darren on 18/03/2021.
 //
 
-#ifndef SPECTRUM_QT_DISASSEMBLYWIDGET_H
-#define SPECTRUM_QT_DISASSEMBLYWIDGET_H
+#ifndef SPECTRUM_QTUI_DISASSEMBLYWIDGET_H
+#define SPECTRUM_QTUI_DISASSEMBLYWIDGET_H
 
 #include <QScrollArea>
 
@@ -95,4 +95,4 @@ namespace Spectrum::QtUi
     };
 }
 
-#endif // SPECTRUM_QT_DISASSEMBLYWIDGET_H
+#endif // SPECTRUM_QTUI_DISASSEMBLYWIDGET_H
