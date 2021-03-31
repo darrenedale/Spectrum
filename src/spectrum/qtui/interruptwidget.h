@@ -2,11 +2,12 @@
 // Created by darren on 23/03/2021.
 //
 
-#ifndef SPECTRUM_QT_INTERRUPTWIDGET_H
-#define SPECTRUM_QT_INTERRUPTWIDGET_H
+#ifndef SPECTRUM_QTUI_INTERRUPTWIDGET_H
+#define SPECTRUM_QTUI_INTERRUPTWIDGET_H
 
 #include <QWidget>
 #include <QSpinBox>
+#include <QToolButton>
 
 #include "hexspinbox.h"
 #include "../../z80/types.h"
@@ -34,16 +35,25 @@ namespace Spectrum::QtUi
         void setRegister(::Z80::Register8, ::Z80::UnsignedByte);
         ::Z80::UnsignedByte registerValue(::Z80::Register8);
 
+        void setIff1(bool enabled);
+        bool iff1() const;
+
+        void setIff2(bool enabled);
+        bool iff2() const;
+
     Q_SIGNALS:
         void registerChanged(::Z80::Register8, ::Z80::UnsignedByte);
         void interruptModeChanged(::Z80::InterruptMode);
+        void iff1Changed(bool);
+        void iff2Changed(bool);
 
     private:
         QSpinBox m_im;
         HexSpinBox m_i;
         HexSpinBox m_r;
-
+        QToolButton m_iff1;
+        QToolButton m_iff2;
     };
 }
 
-#endif //SPECTRUM_QT_INTERRUPTWIDGET_H
+#endif //SPECTRUM_QTUI_INTERRUPTWIDGET_H

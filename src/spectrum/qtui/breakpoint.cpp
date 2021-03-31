@@ -6,8 +6,15 @@
 
 using namespace Spectrum::QtUi;
 
-void Breakpoint::trigger()
+void Breakpoint::notifyObservers()
 {
-    m_thread.pause();
-    Q_EMIT triggered();
+    for (auto * observer : m_observers) {
+        assert(observer);
+        observer->notify(this);
+    }
+}
+
+void Breakpoint::addObserver(Breakpoint::Observer * observer)
+{
+    m_observers.push_back(observer);
 }

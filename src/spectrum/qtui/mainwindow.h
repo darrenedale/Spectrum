@@ -48,8 +48,8 @@ namespace Spectrum::QtUi
          * @param fileName
          * @param format
          */
-        void loadSnapshot(const QString & fileName, QString format = {});
-        void loadSnapshotFromSlot(int slotIndex);
+        bool loadSnapshot(const QString & fileName, QString format = {});
+        bool loadSnapshotFromSlot(int slotIndex);
 
         // NOTE can't be const because the thread must be paused
         void saveSnapshot(const QString & fileName, QString format = {});

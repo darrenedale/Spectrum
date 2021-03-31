@@ -2,6 +2,8 @@
 #define QSPECTRUMDEBUGWINDOW_H
 
 #include <cstdint>
+#include <iostream>
+#include <iomanip>
 
 #include <QMainWindow>
 #include <QAction>
@@ -17,13 +19,14 @@
 #include "memorydebugwidget.h"
 #include "keyboardmonitorwidget.h"
 #include "custompokewidget.h"
+#include "breakpoint.h"
+#include "memorychangedbreakpoint.h"
 
 class QLineEdit;
 
 namespace Spectrum::QtUi
 {
 	class Thread;
-	class Breakpoint;
 
 	class DebugWindow
 	:	public QMainWindow
@@ -45,6 +48,63 @@ namespace Spectrum::QtUi
 
         void updateStateDisplay();
 
+        /**
+         * Set a breakpoint for when the program counter hits a given address.
+         *
+         * @param address
+         */
+        void breakAtProgramCounter(::Z80::UnsignedWord address);
+
+        /**
+         * Set a breakpoint
+         * @param address
+         */
+        void breakIfStackPointerBelow(::Z80::UnsignedWord address);
+
+        template<class ValueType>
+        void breakOnMemoryChange(::Z80::UnsignedWord address)
+        {
+            auto * breakpoint = new MemoryChangedBreakpoint<ValueType>(address);
+
+            if (!addBreakpoint(breakpoint)) {
+                std::cerr << "breakpoint monitoring 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << " for " << (sizeof(ValueType) * 8) << "-bit changes already set\n";
+                delete breakpoint;
+                return;
+            }
+
+            breakpoint->addObserver(&m_memoryBreakpointObserver);
+            std::cout << "setting breakpoint monitoring 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << " for " << (sizeof(ValueType) * 8) << "-bit changes\n";
+            setStatus(tr("Breakpoint set monitoring 0x%1 for %2-bit changes.").arg(address, 4, 16, QLatin1Char('0')).arg(sizeof(ValueType) * 8));
+        }
+
+        /**
+         * Check whether a breakpoint has been added to the debug window.
+         *
+         * The check is performed using the == operator for the breakpoint.
+         *
+         * @return
+         */
+        [[nodiscard]] bool hasBreakpoint(const Breakpoint &) const;
+
+        /**
+         * Add a breakpoint to the debug window.
+         *
+         * The breakpoint won't be added if there is already an identical breakpoint in the debug window. Identical
+         * breakpoints are determined by the == operator for the breakpoint class. Usually this means the two
+         * breakpoints are of identical in type and have the same properties (e.g. if two ProgramCounterBreakpoint
+         * objects are monitoring for the same address, they are considered identical).
+         *
+         * If successful, the debug window takes over ownership of the breakpoint. Successful means the breakpoint was
+         * added because it was not found to be a duplicate of an existing breakpoint. If it is not added, the caller is
+         * responsible for its disposal.
+         *
+         * You are encouraged to use the built-in methods to add specific breakpoints where possible (e.g.
+         * breakAtProgramCounter()).
+         *
+         * @return true if the breakpoint was added, false if not.
+         */
+        bool addBreakpoint(Breakpoint *);
+
 	protected:
 	    void showEvent(QShowEvent *) override;
 	    void closeEvent(QCloseEvent *) override;
@@ -63,6 +123,44 @@ namespace Spectrum::QtUi
 	        const DebugWindow & window;
         };
 
+	    // internal observers for breakpoints
+	    class BreakpointObserver
+        : public Breakpoint::Observer
+        {
+        public:
+            explicit BreakpointObserver(DebugWindow & owner)
+            : window(owner) {}
+            void notify(Breakpoint *) override;
+            DebugWindow & window;
+        };
+
+	    class MemoryBreakpointObserver
+        : public BreakpointObserver
+        {
+        public:
+            using BreakpointObserver::BreakpointObserver;
+            void notify(Breakpoint *) override;
+        };
+
+	    class ProgramCounterBreakpointObserver
+        : public BreakpointObserver
+        {
+        public:
+            using BreakpointObserver::BreakpointObserver;
+            void notify(Breakpoint *) override;
+        };
+
+	    class StackPointerBelowBreakpointObserver
+        : public BreakpointObserver
+        {
+        public:
+            using BreakpointObserver::BreakpointObserver;
+            void notify(Breakpoint *) override;
+        };
+
+	    friend class BreakpointObserver;
+	    friend class MemoryBreakpointObserver;
+
 	    using Breakpoints = std::vector<Breakpoint *>;
         void createToolbars();
         void createDockWidgets();
@@ -74,7 +172,14 @@ namespace Spectrum::QtUi
         void threadPaused();
         void threadResumed();
         void threadStepped();
+
+        // the user has triggered the action to set a breakpoint
         void setProgramCounterBreakpointTriggered(::Z80::UnsignedWord address);
+
+        // the breakpoint has been triggered
+        void programCounterBreakpointTriggered(::Z80::UnsignedWord address);
+        void stackPointerBelowBreakpointTriggered(::Z80::UnsignedWord address);
+        void memoryChangeBreakpointTriggered(::Z80::UnsignedWord address);
 
         Thread * m_thread;
 
@@ -100,13 +205,9 @@ namespace Spectrum::QtUi
 
         InstructionObserver m_cpuObserver;
         Breakpoints m_breakpoints;
-
-        /**
-         * Set a breakpoint when the program counter hits a given address.
-         *
-         * @param addr
-         */
-        void breakAtProgramCounter(::Z80::UnsignedWord addr);
+        ProgramCounterBreakpointObserver m_pcObserver;
+        MemoryBreakpointObserver m_memoryBreakpointObserver;
+        StackPointerBelowBreakpointObserver m_spBelowObserver;
     };
 }
 

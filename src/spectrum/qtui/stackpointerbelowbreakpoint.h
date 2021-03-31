@@ -2,8 +2,8 @@
 // Created by darren on 12/03/2021.
 //
 
-#ifndef SPECTRUM_QTUI_PROGRAMCOUNTERBREAKPOINT_H
-#define SPECTRUM_QTUI_PROGRAMCOUNTERBREAKPOINT_H
+#ifndef SPECTRUM_QTUI_STACKPOINTERBELOWBREAKPOINT_H
+#define SPECTRUM_QTUI_STACKPOINTERBELOWBREAKPOINT_H
 
 #include <QObject>
 
@@ -15,16 +15,16 @@
 namespace Spectrum::QtUi
 {
     /**
-     * Breakpoint that triggers when the PC of the Z80 reaches a particular address.
+     * Breakpoint that triggers when the SP of the Z80 is below a particular address.
      */
-    class ProgramCounterBreakpoint
+    class StackPointerBelowBreakpoint
     : public Breakpoint
     {
     private:
         using UnsignedWord = ::Z80::UnsignedWord;
 
     public:
-        explicit ProgramCounterBreakpoint(UnsignedWord address)
+        explicit StackPointerBelowBreakpoint(UnsignedWord address)
         : Breakpoint(),
           m_address(address)
         {}
@@ -45,4 +45,4 @@ namespace Spectrum::QtUi
     };
 }
 
-#endif //SPECTRUM_QTUI_PROGRAMCOUNTERBREAKPOINT_H
+#endif //SPECTRUM_QTUI_STACKPOINTERBELOWBREAKPOINT_H

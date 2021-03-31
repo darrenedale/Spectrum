@@ -1126,29 +1126,31 @@ void Z80::Z80::execute(const UnsignedByte * instruction, bool doPc, int * tState
 	historyEntry.registersAfter = registers();
     m_executionHistory.add(std::move(historyEntry));
 
-    if (historyEntry.registersBefore.sp != historyEntry.registersAfter.sp) {
-        std::cout << std::hex << std::setfill('0');
-        std::cout << "\nStack changed by instruction at 0x" << std::setw(4) << historyEntry.registersBefore.pc << "\n";
-        auto mnemonic = Assembly::Disassembler::disassembleOne(instruction);
-        std::cout << "  Instruction: " << std::to_string(mnemonic) << "\n";
-        std::cout << "  Machine code:";
-
-        for (int idx = 0; idx < mnemonic.size; ++idx) {
-            std::cout << " 0x" << std::setw(2) << static_cast<std::uint16_t>(instruction[idx]);
-        }
-
-        std::cout << "\n  SP before: 0x" << std::setw(4) << historyEntry.registersBefore.sp << '\n';
-        std::cout << "\n  SP after : 0x" << std::setw(4) << historyEntry.registersAfter.sp << '\n';
-
-        if (0xfffe < historyEntry.registersAfter.sp) {
-            std::cout << "  Stack is now empty\n";
-        } else {
-            std::cout << "\n  Top of stack: 0x" << std::setw(4) << peekUnsignedHostWord(historyEntry.registersAfter.sp);
-            std::cout << "   [0x" << std::setw(2) << static_cast<std::uint16_t>(peekUnsigned(historyEntry.registersAfter.sp));
-            std::cout << " 0x" << std::setw(2) << static_cast<std::uint16_t>(peekUnsigned(historyEntry.registersAfter.sp + 1)) << "]\n";
-        }
-        std::cout << '\n';
-    }
+    // expensive debug code to monitor changes to the stack pointer. only enable when specifically building to examine
+    // stack changes
+//    if (historyEntry.registersBefore.sp != historyEntry.registersAfter.sp) {
+//        std::cout << std::hex << std::setfill('0');
+//        std::cout << "\nStack changed by instruction at 0x" << std::setw(4) << historyEntry.registersBefore.pc << "\n";
+//        auto mnemonic = Assembly::Disassembler::disassembleOne(instruction);
+//        std::cout << "  Instruction: " << std::to_string(mnemonic) << "\n";
+//        std::cout << "  Machine code:";
+//
+//        for (int idx = 0; idx < mnemonic.size; ++idx) {
+//            std::cout << " 0x" << std::setw(2) << static_cast<std::uint16_t>(instruction[idx]);
+//        }
+//
+//        std::cout << "\n  SP before: 0x" << std::setw(4) << historyEntry.registersBefore.sp << '\n';
+//        std::cout << "\n  SP after : 0x" << std::setw(4) << historyEntry.registersAfter.sp << '\n';
+//
+//        if (0xfffe < historyEntry.registersAfter.sp) {
+//            std::cout << "  Stack is now empty\n";
+//        } else {
+//            std::cout << "\n  Top of stack: 0x" << std::setw(4) << peekUnsignedHostWord(historyEntry.registersAfter.sp);
+//            std::cout << "   [0x" << std::setw(2) << static_cast<std::uint16_t>(peekUnsigned(historyEntry.registersAfter.sp));
+//            std::cout << " 0x" << std::setw(2) << static_cast<std::uint16_t>(peekUnsigned(historyEntry.registersAfter.sp + 1)) << "]\n";
+//        }
+//        std::cout << '\n';
+//    }
 #endif
 }
 
@@ -4674,8 +4676,7 @@ void Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, const UnsignedByte *
 			break;
 
 		case Z80__DD_OR_FD__LD__IXH_OR_IYH__IXH_OR_IYH: /*  0x64 */
-			/* TODO if there are no implications for flags, can skip this */
-			Z80__LD__REG8__REG8(*regHigh, *regHigh);
+		    // NOOP - loading the register with itself, no flag changes
 			break;
 
 		case Z80__DD_OR_FD__LD__IXH_OR_IYH__IXL_OR_IYL: /*  0x65 */
@@ -4711,8 +4712,7 @@ void Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, const UnsignedByte *
 			break;
 
 		case Z80__DD_OR_FD__LD__IXL_OR_IYL__IXL_OR_IYL: /*  0x6d */
-			/* TODO if there are no implications for flags, can skip this */
-			Z80__LD__REG8__REG8(*regLow, *regLow);
+            // NOOP - loading the register with itself, no flag changes
 			break;
 
 		case Z80__DD_OR_FD__LD__L__INDIRECT_IX_d_OR_IY_d: /*  0x6e */
@@ -5110,20 +5110,7 @@ void Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, const UnsignedByte *
                 *size = 1;
             }
             return;
-//            {
-//                // TODO this assumes that instruction is a pointer into the spectrum memory and that the memory is a
-//                //  linear array of bytes which it isn't. probably isn't any problem in simply returning as a NOP - the
-//                //  PC wil be updated and the CPU will call execute() with the PC pointing to the repeated 0xdd or 0xfd
-//                // this is an (expensive) replica of the extension instruction
-//                --m_registers.r;
-//                executeDdOrFdInstruction(reg, instruction + 1, doPc, tStates, size);
-//
-//                if (size) {
-//                    *size += 1;
-//                }
-//            }
-//            break;
-	    
+
 	    default:
             {
                 UnsignedByte prefix = (&reg == &m_registers.ix ? 0xdd : 0xfd); 

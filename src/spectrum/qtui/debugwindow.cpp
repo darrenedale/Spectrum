@@ -16,8 +16,8 @@
 #include "thread.h"
 #include "registerpairwidget.h"
 #include "programcounterbreakpoint.h"
-#include "wordchangedbreakpoint.h"
-#include "bytechangedbreakpoint.h"
+#include "stackpointerbelowbreakpoint.h"
+#include "memorychangedbreakpoint.h"
 
 using namespace Spectrum::QtUi;
 
@@ -51,7 +51,10 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
   m_keyboardMonitor(&m_thread->spectrum()),
   m_poke(),
   m_cpuObserver((*this)),
-  m_breakpoints()
+  m_breakpoints(),
+  m_memoryBreakpointObserver(*this),
+  m_pcObserver(*this),
+  m_spBelowObserver(*this)
 {
     m_disassembly.enablePcIndicator(true);
 
@@ -72,22 +75,27 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
 
 	connectWidgets();
 
-    QSettings settings;
-    settings.beginGroup(QStringLiteral("debugWindow"));
-    setGeometry({settings.value(QStringLiteral("position")).toPoint(), settings.value(QStringLiteral("size")).toSize()});
-    restoreState(settings.value(QStringLiteral("windowState")).toByteArray());
-    settings.endGroup();
-
 	if (m_thread->isPaused()) {
 	    threadPaused();
 	} else {
 	    threadResumed();
 	}
+
+#if (!defined(NDEBUG))
+	// break if stack pointer points into ROM
+    breakIfStackPointerBelow(0x4000);
+#endif
 }
 
 DebugWindow::~DebugWindow()
 {
     m_thread->spectrum().z80()->removeInstructionObserver(&m_cpuObserver);
+
+    for (auto * breakpoint : m_breakpoints) {
+        delete breakpoint;
+    }
+
+    m_breakpoints.clear();
 }
 
 void DebugWindow::createToolbars()
@@ -260,6 +268,13 @@ void DebugWindow::closeEvent(QCloseEvent * ev)
 void DebugWindow::showEvent(QShowEvent * event)
 {
     m_thread->spectrum().z80()->addInstructionObserver(&m_cpuObserver);
+
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("debugWindow"));
+    setGeometry({settings.value(QStringLiteral("position")).toPoint(), settings.value(QStringLiteral("size")).toSize()});
+    restoreState(settings.value(QStringLiteral("windowState")).toByteArray());
+    settings.endGroup();
+
     QMainWindow::showEvent(event);
 }
 
@@ -273,7 +288,9 @@ void DebugWindow::updateStateDisplay()
 	m_shadowRegisters.setRegisters(registers);
 	m_pointers.setRegisters(registers);
 	m_interrupts.setRegisters(registers);
-	m_interrupts.setInterruptMode((cpu->interruptMode()));
+	m_interrupts.setInterruptMode(cpu->interruptMode());
+	m_interrupts.setIff1(cpu->iff1());
+	m_interrupts.setIff2(cpu->iff2());
 	m_memoryWidget.clearHighlights();
 	m_memoryWidget.setHighlight(m_pointers.registerValue(::Z80::Register16::PC), qRgb(0x80, 0xe0, 0x80), qRgba(0, 0, 0, 0.0));
 	m_memoryWidget.setHighlight(m_pointers.registerValue(::Z80::Register16::SP), qRgb(0x80, 0x80, 0xe0), qRgba(0, 0, 0, 0.0));
@@ -349,33 +366,52 @@ void DebugWindow::setProgramCounterBreakpointTriggered(UnsignedWord addr)
     breakAtProgramCounter(addr);
 }
 
-void DebugWindow::breakAtProgramCounter(UnsignedWord addr)
+void DebugWindow::breakAtProgramCounter(UnsignedWord address)
 {
-    auto existingBreakpoint = std::find_if(m_breakpoints.cbegin(), m_breakpoints.cend(), [addr](const auto * breakpoint) -> bool {
-        auto * pcBreakpoint = dynamic_cast<const ProgramCounterBreakpoint *>(breakpoint);
-        return pcBreakpoint && pcBreakpoint->address() == addr;
-    });
+    auto * breakpoint = new ProgramCounterBreakpoint(address);
 
-    if (existingBreakpoint != m_breakpoints.cend()) {
-        std::cerr << "breakpoint already set: 0x" << std::hex << std::setfill('0') << std::setw(4) << addr << std::dec << std::setfill(' ') << "\n";
+    if (!addBreakpoint(breakpoint)) {
+        std::cerr << "breakpoint already set: 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << "\n";
+        delete breakpoint;
         return;
     }
 
-    std::cout << "setting breakpoint at 0x" << std::hex << std::setfill('0') << std::setw(4) << addr << std::dec << std::setfill(' ') << "\n";
-    setStatus(tr("Breakpoint set at PC = 0x%1.").arg(addr, 4, 16, QLatin1Char('0')));
+    breakpoint->addObserver(&m_pcObserver);
+    std::cout << "setting breakpoint at 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << "\n";
+    setStatus(tr("Breakpoint set at PC = 0x%1.").arg(address, 4, 16, QLatin1Char('0')));
+}
 
-    auto * breakpoint = new ProgramCounterBreakpoint(*m_thread, addr);
-    connect(breakpoint, &Breakpoint::triggered, [this, addr]() {
-        std::cout << "PC breakpoint hit, navigating to memory location\n";
-        setStatus(tr("Breakpoint hit: PC = 0x%1.").arg(addr, 4, 16, QLatin1Char('0')));
-        show();
-        activateWindow();
-        raise();
-        m_memoryWidget.scrollToAddress(addr);
-        m_disassembly.scrollToAddress(addr);
-    });
+void DebugWindow::breakIfStackPointerBelow(UnsignedWord address)
+{
+    auto * breakpoint = new StackPointerBelowBreakpoint(address);
+
+    if (!addBreakpoint(breakpoint)) {
+        std::cerr << "stack pointer breakpoint already set at 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << "\n";
+        delete breakpoint;
+        return;
+    }
+
+    breakpoint->addObserver(&m_spBelowObserver);
+    setStatus(tr("Breakpoint set at SP < 0x%1.").arg(address, 4, 16, QLatin1Char('0')));
+}
+
+bool DebugWindow::addBreakpoint(Breakpoint * breakpoint)
+{
+    if (hasBreakpoint(*breakpoint)) {
+        return false;
+    }
 
     m_breakpoints.push_back(breakpoint);
+    return true;
+}
+
+bool DebugWindow::hasBreakpoint(const Breakpoint & breakpoint) const
+{
+    auto existingBreakpoint = std::find_if(m_breakpoints.cbegin(), m_breakpoints.cend(), [&breakpoint](const auto * existingBreakpoint) -> bool {
+        return (*existingBreakpoint) == breakpoint;
+    });
+
+    return existingBreakpoint != m_breakpoints.cend();
 }
 
 void DebugWindow::setStatus(const QString & status)
@@ -405,57 +441,26 @@ void DebugWindow::memoryContextMenuRequested(const QPoint & pos)
     menu.addAction(tr("Poke..."), [this, address = *address, value = m_thread->spectrum().memory()->readByte(*address)]() {
         m_poke.setValue(value);
         m_poke.setAddress(address);
+        m_poke.focusValue();
     });
 
-    menu.addAction(tr("Break on change (word)"), [this, address = *address]() {
-        auto existingBreakpoint = std::find_if(m_breakpoints.cbegin(), m_breakpoints.cend(), [address](const auto * breakpoint) -> bool {
-            auto * existingBreakpoint = dynamic_cast<const WordChangedBreakpoint *>(breakpoint);
-            return existingBreakpoint && existingBreakpoint->address() == address;
-        });
-
-        if (existingBreakpoint != m_breakpoints.cend()) {
-            std::cerr << "address already being monitored: 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << "\n";
-            return;
-        }
-
-        setStatus(tr("Memory monitor breakpoint set at 0x%1.").arg(address, 4, 16, QLatin1Char('0')));
-
-        auto * breakpoint = new WordChangedBreakpoint(*m_thread, address);
-        connect(breakpoint, &Breakpoint::triggered, [this, address]() {
-            std::cout << "Memory monitor breakpoint hit, navigating to memory location\n";
-            setStatus(tr("Monitored memory location modified: 0x%1.").arg(address, 4, 16, QLatin1Char('0')));
-            show();
-            activateWindow();
-            raise();
-            m_memoryWidget.scrollToAddress(address);
-        });
-        m_breakpoints.push_back(breakpoint);
+    auto * action = menu.addAction(tr("Break on PC"), [this, address = *address]() {
+        breakAtProgramCounter(address);
     });
 
-    menu.addAction(tr("Break on change (byte)"), [this, address = *address]() {
-        auto existingBreakpoint = std::find_if(m_breakpoints.cbegin(), m_breakpoints.cend(), [address](const auto * breakpoint) -> bool {
-            auto * existingBreakpoint = dynamic_cast<const ByteChangedBreakpoint *>(breakpoint);
-            return existingBreakpoint && existingBreakpoint->address() == address;
-        });
+    action->setToolTip(tr("Break when the PC reaches 0x%1.").arg(*address, 4, 16, QLatin1Char('0')));
 
-        if (existingBreakpoint != m_breakpoints.cend()) {
-            std::cerr << "address already being monitored: 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << "\n";
-            return;
-        }
-
-        setStatus(tr("Memory monitor breakpoint set at 0x%1.").arg(address, 4, 16, QLatin1Char('0')));
-
-        auto * breakpoint = new ByteChangedBreakpoint(*m_thread, address);
-        connect(breakpoint, &Breakpoint::triggered, [this, address]() {
-            std::cout << "Memory monitor breakpoint hit, navigating to memory location\n";
-            setStatus(tr("Monitored memory location modified: 0x%1.").arg(address, 4, 16, QLatin1Char('0')));
-            show();
-            activateWindow();
-            raise();
-            m_memoryWidget.scrollToAddress(address);
-        });
-        m_breakpoints.push_back(breakpoint);
+    action = menu.addAction(tr("Break on change (word)"), [this, address = *address]() {
+        breakOnMemoryChange<UnsignedWord>(address);
     });
+
+    action->setToolTip(tr("Break when the 16-bit value at 0x%1 changes.").arg(*address, 4, 16, QLatin1Char('0')));
+
+    action = menu.addAction(tr("Break on change (byte)"), [this, address = *address]() {
+        breakOnMemoryChange<UnsignedByte>(address);
+    });
+
+    action->setToolTip(tr("Break when the 16-bit value at 0x%1 changes.").arg(*address, 4, 16, QLatin1Char('0')));
 
     menu.exec(m_memoryWidget.mapToGlobal(pos));
 }
@@ -480,6 +485,39 @@ void DebugWindow::locateStackPointerInDisassembly()
     m_disassembly.scrollToAddress(m_pointers.registerValue(Register16::SP));
 }
 
+void DebugWindow::programCounterBreakpointTriggered(UnsignedWord address)
+{
+    std::cout << "PC breakpoint hit, navigating to memory location\n";
+    setStatus(tr("Breakpoint hit: PC = 0x%1.").arg(address, 4, 16, QLatin1Char('0')));
+    show();
+    activateWindow();
+    raise();
+    m_memoryWidget.scrollToAddress(address);
+    m_disassembly.scrollToAddress(address);
+
+}
+
+void DebugWindow::memoryChangeBreakpointTriggered(UnsignedWord address)
+{
+    std::cout << "Memory monitor breakpoint hit, navigating to memory location\n";
+    setStatus(tr("Monitored memory location modified: 0x%1.").arg(address, 4, 16, QLatin1Char('0')));
+    show();
+    activateWindow();
+    raise();
+    m_memoryWidget.scrollToAddress(address);
+}
+
+void DebugWindow::stackPointerBelowBreakpointTriggered(::Z80::UnsignedWord address)
+{
+    std::cout << "Stack pointer breakpoint hit, navigating to memory location\n";
+    setStatus(tr("Stack pointer is below 0x%1.").arg(address, 4, 16, QLatin1Char('0')));
+    show();
+    activateWindow();
+    raise();
+    m_memoryWidget.scrollToAddress(address);
+    m_disassembly.scrollToPc();
+}
+
 void DebugWindow::InstructionObserver::notify(::Spectrum::Z80 * cpu)
 {
     const auto & spectrum = window.m_thread->spectrum();
@@ -487,4 +525,27 @@ void DebugWindow::InstructionObserver::notify(::Spectrum::Z80 * cpu)
     for (auto * breakpoint : window.m_breakpoints) {
         breakpoint->check(spectrum);
     }
+}
+
+void DebugWindow::BreakpointObserver::notify(Breakpoint *)
+{
+    window.m_thread->pause();
+}
+
+void DebugWindow::MemoryBreakpointObserver::notify(Breakpoint * breakpoint)
+{
+    BreakpointObserver::notify(breakpoint);
+    window.memoryChangeBreakpointTriggered(dynamic_cast<MemoryBreakpoint *>(breakpoint)->address());
+}
+
+void DebugWindow::ProgramCounterBreakpointObserver::notify(Breakpoint * breakpoint)
+{
+    BreakpointObserver::notify(breakpoint);
+    window.programCounterBreakpointTriggered(dynamic_cast<ProgramCounterBreakpoint *>(breakpoint)->address());
+}
+
+void DebugWindow::StackPointerBelowBreakpointObserver::notify(Breakpoint * breakpoint)
+{
+    BreakpointObserver::notify(breakpoint);
+    window.stackPointerBelowBreakpointTriggered(dynamic_cast<StackPointerBelowBreakpoint *>(breakpoint)->address());
 }

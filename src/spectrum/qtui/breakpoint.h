@@ -2,8 +2,8 @@
 // Created by darren on 12/03/2021.
 //
 
-#ifndef SPECTRUM_QT_BREAKPOINT_H
-#define SPECTRUM_QT_BREAKPOINT_H
+#ifndef SPECTRUM_QTUI_BREAKPOINT_H
+#define SPECTRUM_QTUI_BREAKPOINT_H
 
 #include <QObject>
 
@@ -14,32 +14,31 @@
 namespace Spectrum::QtUi
 {
     class Breakpoint
-    : public QObject
     {
-        Q_OBJECT
-
     public:
-        explicit Breakpoint(Thread & thread, QObject * parent = nullptr)
-        : QObject(parent),
-          m_thread(thread)
-        {}
-
-        [[nodiscard]] Thread & thread()
+        class Observer
         {
-            return m_thread;
-        }
+        public:
+            virtual void notify(Breakpoint *) = 0;
+        };
 
+        Breakpoint() = default;
+        virtual ~Breakpoint() = default;
+
+        virtual std::string typeName() const = 0;
+        virtual std::string conditionDescription() const = 0;
+
+        virtual bool operator==(const Breakpoint &) const = 0;
         virtual bool check(const BaseSpectrum &) = 0;
-
-    Q_SIGNALS:
-        void triggered();
+        void addObserver(Observer *);
 
     protected:
-        virtual void trigger();
+        void notifyObservers();
 
     private:
-        Thread & m_thread;
+        using Observers = std::vector<Observer *>;
+        Observers m_observers;
     };
 }
 
-#endif //SPECTRUM_QT_BREAKPOINT_H
+#endif //SPECTRUM_QTUI_BREAKPOINT_H

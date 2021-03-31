@@ -10,7 +10,7 @@
 #include <QStandardPaths>
 
 #include "mainwindow.h"
-#include "../qt/qimagedisplaydevice.h"
+#include "../qtui/qimagedisplaydevice.h"
 
 using namespace ScreenView;
 
