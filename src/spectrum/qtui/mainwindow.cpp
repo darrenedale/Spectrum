@@ -89,7 +89,7 @@ MainWindow::MainWindow(QWidget * parent)
   m_debugWindow(&m_spectrumThread),
   m_displayRefreshTimer(nullptr),
   m_joystick(nullptr)
-{
+{    
     // TODO read joystick type from config
     m_joystick = new Spectrum::KempstonJoystick();
     m_spectrum.setExecutionSpeedConstrained(true);
