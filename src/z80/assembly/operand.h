@@ -63,8 +63,6 @@ namespace Z80::Assembly
 namespace std
 {
     std::string to_string(const ::Z80::Assembly::Operand &);
-    std::string to_string(const ::Z80::Register16 &);
-    std::string to_string(const ::Z80::Register8 &);
 }
 
 #endif //Z80_ASSEMBLY_OPERAND_H

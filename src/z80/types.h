@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <bit>
+#include <string>
 
 namespace Z80
 {
@@ -40,6 +41,13 @@ namespace Z80
 
     constexpr const std::endian HostByteOrder = std::endian::native;
     constexpr const std::endian Z80ByteOrder = std::endian::little;
+}
+
+
+namespace std
+{
+    std::string to_string(const ::Z80::Register16 &);
+    std::string to_string(const ::Z80::Register8 &);
 }
 
 #endif //Z80_TYPES_H

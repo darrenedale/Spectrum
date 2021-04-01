@@ -5,6 +5,7 @@
 #include <sstream>
 #include <iomanip>
 #include "registervaluebreakpoint.h"
+#include "../../z80/types.h"
 
 using namespace Spectrum::QtUi;
 
