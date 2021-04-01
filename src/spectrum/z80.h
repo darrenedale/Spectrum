@@ -17,6 +17,7 @@ namespace Spectrum
     {
     public:
         using UnsignedByte = ::Z80::UnsignedByte;
+        using InstructionCost = ::Z80::InstructionCost;
 
         class Observer
         {
@@ -24,10 +25,10 @@ namespace Spectrum
             virtual void notify(Z80 * cpu) = 0;
         };
 
-        Z80(MemoryType * memory);
+        explicit Z80(MemoryType * memory);
         ~Z80() override = default;
 
-        void execute(const UnsignedByte *instruction, bool doPc = true, int *tStates = 0, int *size = 0) override;
+        InstructionCost execute(const UnsignedByte *instruction, bool doPc) override;
 
         inline void addInstructionObserver(Observer * observer)
         {
@@ -60,13 +61,13 @@ namespace Spectrum
         }
 
     protected:
-        virtual int handleInterrupt() override;
-        virtual void handleNmi() override;
+        int handleInterrupt() override;
+        void handleNmi() override;
 
     private:
         using Observers = std::vector<Observer *>;
 
-        void addObserver(Observers & observers, Observer * observer)
+        static void addObserver(Observers & observers, Observer * observer)
         {
             if (observers.cend() != std::find(observers.cbegin(), observers.cend(), observer)) {
                 // already observing
@@ -76,7 +77,7 @@ namespace Spectrum
             observers.push_back(observer);
         }
 
-        void removeObserver(Observers & observers, Observer * observer)
+        static void removeObserver(Observers & observers, Observer * observer)
         {
             auto observerIterator = std::find(observers.cbegin(), observers.cend(), observer);
 

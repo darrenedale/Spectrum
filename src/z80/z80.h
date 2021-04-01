@@ -950,17 +950,69 @@ namespace Z80
 
         void reset();
 
+        /**
+         * Connect an IO device to the Z80.
+         *
+         * When an IN or OUT instruction is encountered, the device will be asked if it is interested in responding on
+         * the port specified in the instruction, and if it is it will be provided with the byte written (for OUT
+         * instructions, or asked to provide a byte (for IN instructions).
+         *
+         * The device is not owned by the Z80 and the caller is responsible for its disposal and for ensuring the Z80
+         * does not retain references to devices that have been destroyed.
+         *
+         * @param device
+         * @return
+         */
         bool connectIODevice(IODevice * device);
 
+        /**
+         * Disconnect a previously connected IO device from the Z80.
+         *
+         * @param device
+         * @return
+         */
         void disconnectIODevice(IODevice * device);
 
+        /**
+         * Trigger a non-maskable interrupt (NMI).
+         */
         void nmi();
 
+        /**
+         * Trigger a maskable interrupt.
+         *
+         * If interrupts are currently being handled (IFF1 == true) then the interrupt will be triggered after the next
+         * instruction has finished executing.
+         *
+         * @param data
+         */
         void interrupt(UnsignedByte data = 0x00);
 
-        virtual void execute(const UnsignedByte * instruction, bool doPc = true, int * tStates = 0, int * size = 0);
+        /**
+         * Execute a single instruction.
+         *
+         * The bytes for the instruction machine code must be sufficient to fully represent a single instruction. The
+         * most bytes any single instruction requires is 4. For REPL/interpreter-style scenarios, you can set doPc to
+         * false to suppress emulation of the program counter. For example, if you are executing instructions assembled
+         * from input provided by the user and not stored somewhere in the Z80's memory, changing the PC probably has
+         * little meaning.
+         *
+         * @param instruction The opcode bytes for the instruction.
+         * @param doPc Whether or not the PC should be altered by executing the instruction.
+         *
+         * @return
+         */
+        virtual InstructionCost execute(const UnsignedByte * instruction, bool doPc);
 
-        // fetches and executes a single instruction, returns the number of t-states
+        /**
+         * Run the fetch-execute cycle on the Z80.
+         *
+         * The Z80 fetches a single instruction from memory at the address stored in the program counter, executes the
+         * instruction, and checks for and handles any pending interrupt.
+         *
+         * @return The number of t-states consumed by the cycle. This includes the t-states consumed by the interrupt if
+         * one was pending and handled.
+         */
         virtual int fetchExecuteCycle();
 
     protected:
@@ -968,33 +1020,24 @@ namespace Z80
 
         virtual int handleInterrupt();
 
-        // doPc is altered to be false if the instruction is a jump that is taken; tStates is filled with clock cycles
-        // consumed; size is filled with byte size of instruction and operands; doPc is set to false if the instruction
-        // has modified the PC. returns true if execution of instruction was successful, false otherwise
-        void executePlainInstruction(const UnsignedByte * instruction, bool * doPc = nullptr, int * tStates = nullptr,
-                                     int * size = nullptr);
-
-        void executeCbInstruction(const UnsignedByte * instruction, int * tStates = nullptr, int * size = nullptr);
-
-        void executeEdInstruction(const UnsignedByte * instruction, bool * doPc = nullptr, int * tStates = nullptr,
-                                  int * size = nullptr);
-
-        void executeDdOrFdInstruction(UnsignedWord & reg, const UnsignedByte * instruction, bool * doPc = nullptr,
-                                      int * tStates = nullptr, int * size = nullptr);
-
-        void executeDdcbOrFdcbInstruction(UnsignedWord & reg, const UnsignedByte * instruction, int * tStates = nullptr,
-                                          int * size = nullptr);
+        // doPc is altered to be false if the PC has been altered during instruction execution and should therefore not
+        // be incremented by the caller
+        InstructionCost executePlainInstruction(const UnsignedByte * instruction, bool * doPc);
+        InstructionCost executeCbInstruction(const UnsignedByte * instruction);
+        InstructionCost executeEdInstruction(const UnsignedByte * instruction, bool * doPc);
+        InstructionCost executeDdOrFdInstruction(UnsignedWord & reg, const UnsignedByte * instruction, bool * doPc);
+        InstructionCost executeDdcbOrFdcbInstruction(UnsignedWord & reg, const UnsignedByte * instruction);
 
     private:
         static const int PlainOpcodeTStates[256];
-        static const int CbOpcodeTStates[256];
+        static const std::uint8_t CbOpcodeTStates[256];
         static const int DdOrFdOpcodeTStates[256];
-        static const int EdOpcodeTStates[256];
-        static const int DdCbOrFdCbOpcodeTStates[256];
+        static const std::uint8_t EdOpcodeTStates[256];
+        static const std::uint8_t DdCbOrFdCbOpcodeTStates[256];
 
-        static const int PlainOpcodeSizes[256];
-        static const int DdOrFdOpcodeSizes[256];
-        static const int EdOpcodeSizes[256];
+        static const std::uint8_t PlainOpcodeSizes[256];
+        static const std::uint8_t DdOrFdOpcodeSizes[256];
+        static const std::uint8_t EdOpcodeSizes[256];
 
         Registers m_registers;
 

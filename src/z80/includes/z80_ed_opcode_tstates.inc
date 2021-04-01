@@ -1,6 +1,5 @@
-// t-state costs of opcodes prefixed with 0xed. 32-bit unsigned values. conditional jumps contain the cost if jump is
-// taken in 0xNNNN0000 and cost if jump is not taken in 0x0000NNNN. there are macros defined in z80.cpp to extract the
-// values
+// t-state costs of opcodes prefixed with 0xed. 8-bit unsigned values. timings of conditional jumps are handled directly
+// in the core code since the cost of a jump is always the same. the costs here are if the jump is NOT taken
 
 4,        // Z80__ED__NOP__0XED__0X00
 4,        // Z80__ED__NOP__0XED__0X01
@@ -200,19 +199,19 @@
 4,        // Z80__ED__NOP__0XED__0XAE
 4,        // Z80__ED__NOP__0XED__0XAF
 
-0 | (21 << 16),        // Z80__ED__LDIR
-0 | (21 << 16),        // Z80__ED__CPIR
-0 | (21 << 16),        // Z80__ED__INIR
-0 | (21 << 16),        // Z80__ED__OTIR
+0,        // Z80__ED__LDIR
+0,        // Z80__ED__CPIR
+0,        // Z80__ED__INIR
+0,        // Z80__ED__OTIR
 4,        // Z80__ED__NOP__0XED__0XB4
 4,        // Z80__ED__NOP__0XED__0XB5
 4,        // Z80__ED__NOP__0XED__0XB6
 4,        // Z80__ED__NOP__0XED__0XB7
 
-0 | (21 << 16),        // Z80__ED__LDDR
-0 | (21 << 16),        // Z80__ED__CPDR
-0 | (21 << 16),        // Z80__ED__INDR
-0 | (21 << 16),        // Z80__ED__OTDR
+0,        // Z80__ED__LDDR
+0,        // Z80__ED__CPDR
+0,        // Z80__ED__INDR
+0,        // Z80__ED__OTDR
 4,        // Z80__ED__NOP__0XED__0XBC
 4,        // Z80__ED__NOP__0XED__0XBD
 4,        // Z80__ED__NOP__0XED__0XBE

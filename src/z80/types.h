@@ -16,6 +16,26 @@ namespace Z80
     using SignedByte = std::int8_t;
     using SignedWord = std::int16_t;
 
+    inline constexpr UnsignedByte operator "" _z80ub(unsigned long long value) noexcept
+    {
+        return static_cast<UnsignedByte>(value);
+    }
+
+    inline constexpr SignedByte operator "" _z80sb(unsigned long long value) noexcept
+    {
+        return static_cast<SignedByte>(value);
+    }
+
+    inline constexpr UnsignedWord operator "" _z80uw(unsigned long long value) noexcept
+    {
+        return static_cast<UnsignedWord>(value);
+    }
+
+    inline constexpr SignedWord operator "" _z80sw(unsigned long long value) noexcept
+    {
+        return static_cast<SignedWord>(value);
+    }
+
     enum class Register16 : std::uint8_t
     {
         AF, BC, DE, HL,
@@ -37,6 +57,12 @@ namespace Z80
         IM0 = 0,
         IM1,
         IM2,
+    };
+
+    struct InstructionCost
+    {
+        std::uint8_t tStates;   // number of t-states the instruction took to executed
+        std::uint8_t size;      // size in bytes of the instruction
     };
 
     constexpr const std::endian HostByteOrder = std::endian::native;

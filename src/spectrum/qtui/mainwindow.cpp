@@ -488,7 +488,7 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
 
     if ("sna" == format) {
         // RETN instruction is required to resume execution of the .SNA
-        m_spectrum.z80()->execute(reinterpret_cast<const Z80::UnsignedByte *>("\xed\x45"));
+        m_spectrum.z80()->execute(reinterpret_cast<const Z80::UnsignedByte *>("\xed\x45"), true);
     }
 
     statusBar()->showMessage(tr("The snapshot file %1 was successfully loaded.").arg(fileName), DefaultStatusBarMessageTimeout);

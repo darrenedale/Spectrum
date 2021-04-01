@@ -12,10 +12,11 @@ Spectrum::Z80::Z80(MemoryType * memory)
 : BaseZ80(memory)
 {}
 
-void Spectrum::Z80::execute(const UnsignedByte *instruction, bool doPc, int *tStates, int *size)
+::Z80::InstructionCost Spectrum::Z80::execute(const UnsignedByte *instruction, bool doPc)
 {
-    BaseZ80::execute(instruction, doPc, tStates, size);
+    auto cost = BaseZ80::execute(instruction, doPc);
     notifyObservers(m_instructionObservers);
+    return cost;
 }
 
 int Spectrum::Z80::handleInterrupt()

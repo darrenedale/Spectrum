@@ -1,6 +1,4 @@
-// t-state costs of opcodes prefixed with 0xcb. 32-bit unsigned values. conditional jumps contain the cost if jump is
-// taken in 0xNNNN0000 and cost if jump is not taken in 0x0000NNNN. there are macros defined in z80.cpp to extract the
-// values
+// t-state costs of opcodes prefixed with 0xcb
 
 8,        // Z80__CB__RLC__B
 8,        // Z80__CB__RLC__C
