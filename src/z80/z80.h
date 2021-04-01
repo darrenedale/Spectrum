@@ -11,6 +11,7 @@
 #include "../memory.h"
 #include "registers.h"
 #include "types.h"
+#include "endian.h"
 
 #if (!defined(NDEBUG))
 #include "executionhistory.h"
@@ -44,38 +45,58 @@ namespace Z80
     public:
         using Memory = ::Memory<UnsignedByte>;
 
-        static constexpr const std::endian Z80ByteOrder = std::endian::little;
-        static constexpr const std::endian HostByteOrder = std::endian::native;
-
         Z80(Memory * memory);
         ~Z80() override;
 
-        static inline UnsignedWord swapByteOrder(UnsignedWord value)
-        {
-            return (((value & 0xff00) >> 8) & 0x00ff) | (((value & 0x00ff) << 8) & 0xff00);
-        }
-
-        static inline UnsignedWord z80ToHostByteOrder(UnsignedWord value)
-        {
-            if constexpr (Z80ByteOrder == HostByteOrder) {
-                return value;
-            }
-
-            return swapByteOrder(value);
-        }
-
-        static inline UnsignedWord hostToZ80ByteOrder(UnsignedWord value)
-        {
-            if constexpr (Z80ByteOrder == HostByteOrder) {
-                return value;
-            }
-
-            return swapByteOrder(value);
-        }
+//        static inline UnsignedWord swapByteOrder(UnsignedWord value)
+//        {
+//            return (((value & 0xff00) >> 8) & 0x00ff) | (((value & 0x00ff) << 8) & 0xff00);
+//        }
+//
+//        static inline UnsignedWord z80ToHostByteOrder(UnsignedWord value)
+//        {
+//            if constexpr (Z80ByteOrder == HostByteOrder) {
+//                return value;
+//            }
+//
+//            return swapByteOrder(value);
+//        }
+//
+//        static inline UnsignedWord hostToZ80ByteOrder(UnsignedWord value)
+//        {
+//            if constexpr (Z80ByteOrder == HostByteOrder) {
+//                return value;
+//            }
+//
+//            return swapByteOrder(value);
+//        }
 
         [[nodiscard]] bool isValid() const
         {
             return m_memory;
+        }
+
+        /**
+         * Fetch the number of t-states since the Z80 was reset.
+         *
+         * The t-states are stored using a 32-bit unsigned value. This value will wrap when the number of t-states
+         * overflows this storage capacity. For a 3.5MHz Z80 this is approximately 20 minutes 27 seconds.
+         *
+         * @return
+         */
+        inline std::uint32_t tStates() const
+        {
+            return m_tStates;
+        }
+
+        /**
+         * For use when loading snapshots, etc. Generally speaking this should not be called.
+         *
+         * @param tStates
+         */
+        inline void setTStates(std::uint32_t tStates)
+        {
+            m_tStates = tStates;
         }
 
         // Register getters
@@ -1045,6 +1066,7 @@ namespace Z80
         Memory * m_memory;
 
         // interrupt handling
+        std::uint32_t m_tStates;
         bool m_iff1;
         bool m_iff2;
         InterruptMode m_interruptMode;

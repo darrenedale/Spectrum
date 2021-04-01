@@ -9,7 +9,8 @@
 #include <QString>
 #include <QLabel>
 
-#include "../../z80/z80.h"
+#include "../../z80/types.h"
+#include "../../z80/endian.h"
 #include "hexspinbox.h"
 
 class QEvent;
@@ -68,7 +69,7 @@ namespace Spectrum::QtUi
          */
         void setValueZ80(UnsignedWord value)
         {
-            setValue(Z80::Z80::z80ToHostByteOrder(value));
+            setValue(::Z80::z80ToHostByteOrder(value));
         }
 
         void setLowByte(UnsignedByte value)
@@ -103,7 +104,7 @@ namespace Spectrum::QtUi
          */
         [[nodiscard]] UnsignedWord valueZ80() const
         {
-            return Z80::Z80::hostToZ80ByteOrder(value());
+            return ::Z80::hostToZ80ByteOrder(value());
         }
 
         [[nodiscard]] UnsignedByte lowByte() const
@@ -122,14 +123,14 @@ namespace Spectrum::QtUi
          *
          * @param value
          */
-        void valueChanged(UnsignedWord value);
+        void valueChanged(::Z80::UnsignedWord value);
 
         /**
          * Value is always in Z80 byte order.
          *
          * @param value
          */
-        void valueChangedZ80(UnsignedWord value);
+        void valueChangedZ80(::Z80::UnsignedWord value);
 
     private:
         using SpinBox = HexSpinBox;

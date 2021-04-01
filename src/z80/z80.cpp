@@ -894,6 +894,7 @@ Z80::Z80::Z80(Memory * memory)
   m_clockSpeed(DefaultClockSpeed),
   m_nmiPending(false),
   m_interruptRequested(false),
+  m_tStates(0),
   m_iff1(false),
   m_iff2(false),
   m_interruptMode(InterruptMode::IM0),
@@ -940,6 +941,7 @@ void Z80::Z80::nmi()
 
 void Z80::Z80::reset()
 {
+    m_tStates = 0;
 	m_nmiPending = false;
     m_interruptMode = InterruptMode::IM0;
     m_interruptData = 0x00;
@@ -1250,6 +1252,7 @@ int Z80::Z80::fetchExecuteCycle()
         }
     }
 
+    m_tStates += tStates;
 	return tStates;
 }
 
@@ -1617,7 +1620,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Z80__PLAIN__LD__A__INDIRECT_NN:		// 0x3a
-			Z80__LD__REG8__INDIRECT_NN(m_registers.a, Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG8__INDIRECT_NN(m_registers.a, z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
 			break;
 
 		case Z80__PLAIN__DEC__SP:					// 0x3b
@@ -3757,7 +3760,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Z80__ED__LD__BC__INDIRECT_NN:       // 0xed 0x4b
-			Z80__LD__REG16__INDIRECT_NN(m_registers.bc, Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG16__INDIRECT_NN(m_registers.bc, z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
 			break;
 
 		case Z80__ED__NEG__0XED__0X4C:		// 0xed 0x4c
@@ -3792,7 +3795,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Z80__ED__LD__INDIRECT_NN__DE:	// 0xed 0x53
-			Z80__LD__INDIRECT_NN__REG16(Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_registers.de);
+			Z80__LD__INDIRECT_NN__REG16(z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_registers.de);
 			break;
 
 		case Z80__ED__NEG__0XED__0X54:		// 0xed 0x54
@@ -3830,7 +3833,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Z80__ED__LD__DE__INDIRECT_NN:
-			Z80__LD__REG16__INDIRECT_NN(m_registers.de, Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG16__INDIRECT_NN(m_registers.de, z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
 			break;
 
 		case Z80__ED__NEG__0XED__0X5C:		// 0xed 0x5c
@@ -3927,7 +3930,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Z80__ED__LD__HL__INDIRECT_NN:
-			Z80__LD__REG16__INDIRECT_NN(m_registers.hl, Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG16__INDIRECT_NN(m_registers.hl, z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
 			break;
 
 		case Z80__ED__NEG__0XED__0X6C:	// 0xed 0x6c
@@ -3990,7 +3993,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Z80__ED__LD__INDIRECT_NN__SP:
-			Z80__LD__INDIRECT_NN__REG16(Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_registers.sp);
+			Z80__LD__INDIRECT_NN__REG16(z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_registers.sp);
 			break;
 
 		case Z80__ED__NEG__0XED__0X74:	/* oxed 0x74 */
@@ -4024,7 +4027,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Z80__ED__LD__SP__INDIRECT_NN:   	// 0xed 0x7b
-			Z80__LD__REG16__INDIRECT_NN(m_registers.sp, Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG16__INDIRECT_NN(m_registers.sp, z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
 			break;
 
 		case Z80__ED__NEG__0XED__0X7C:	    	// 0xed 0x7c
@@ -4532,11 +4535,11 @@ Z80::InstructionCost Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, cons
 			break;
 
 		case Z80__DD_OR_FD__LD__IX_OR_IY__NN: /*  0x21 */
-			Z80__LD__REG16__NN(reg, Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG16__NN(reg, z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
 			break;
 
 		case Z80__DD_OR_FD__LD__INDIRECT_NN__IX_OR_IY: /*  0x22 */
-			Z80__LD__INDIRECT_NN__REG16(Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), reg);
+			Z80__LD__INDIRECT_NN__REG16(z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), reg);
 			break;
 
 		case Z80__DD_OR_FD__INC__IX_OR_IY: /*  0x23 */
@@ -4560,7 +4563,7 @@ Z80::InstructionCost Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, cons
 			break;
 
 		case Z80__DD_OR_FD__LD__IX_OR_IY__INDIRECT_NN: /*  0x2a */
-			Z80__LD__REG16__INDIRECT_NN(reg, Z80::Z80::z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG16__INDIRECT_NN(reg, z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
 			break;
 
 		case Z80__DD_OR_FD__DEC__IX_OR_IY: /*  0x2b */

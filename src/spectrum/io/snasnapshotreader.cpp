@@ -14,6 +14,8 @@ using namespace Spectrum::Io;
 using ::Z80::UnsignedByte;
 using ::Z80::UnsignedWord;
 using ::Z80::InterruptMode;
+using ::Z80::z80ToHostByteOrder;
+using ::Z80::hostToZ80ByteOrder;
 
 namespace
 {
@@ -67,20 +69,20 @@ bool SnaSnapshotReader::readInto(Snapshot & snapshot) const
     }
 
     auto & registers = snapshot.registers();
-    registers.af = Z80::z80ToHostByteOrder(header.af);
-    registers.bc = Z80::z80ToHostByteOrder(header.bc);
-    registers.de = Z80::z80ToHostByteOrder(header.de);
-    registers.hl = Z80::z80ToHostByteOrder(header.hl);
-    registers.ix = Z80::z80ToHostByteOrder(header.ix);
-    registers.iy = Z80::z80ToHostByteOrder(header.iy);
+    registers.af = z80ToHostByteOrder(header.af);
+    registers.bc = z80ToHostByteOrder(header.bc);
+    registers.de = z80ToHostByteOrder(header.de);
+    registers.hl = z80ToHostByteOrder(header.hl);
+    registers.ix = z80ToHostByteOrder(header.ix);
+    registers.iy = z80ToHostByteOrder(header.iy);
 
-    registers.sp = Z80::z80ToHostByteOrder(header.sp);
+    registers.sp = z80ToHostByteOrder(header.sp);
     registers.pc = 0x0000;      // .sna snapshots have pc set by calling RETN (i.e. PC in on the stack)
 
-    registers.afShadow = Z80::z80ToHostByteOrder(header.afShadow);
-    registers.bcShadow = Z80::z80ToHostByteOrder(header.bcShadow);
-    registers.deShadow = Z80::z80ToHostByteOrder(header.deShadow);
-    registers.hlShadow = Z80::z80ToHostByteOrder(header.hlShadow);
+    registers.afShadow = z80ToHostByteOrder(header.afShadow);
+    registers.bcShadow = z80ToHostByteOrder(header.bcShadow);
+    registers.deShadow = z80ToHostByteOrder(header.deShadow);
+    registers.hlShadow = z80ToHostByteOrder(header.hlShadow);
 
     registers.i = header.i;
     registers.r = header.r;

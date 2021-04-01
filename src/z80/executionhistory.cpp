@@ -11,7 +11,7 @@ using ::Z80::Assembly::OperandValue;
 
 void Z80::ExecutedInstruction::readMemoryFragments(::Z80::Z80::Memory * memory)
 {
-    UnsignedWord address = ::Z80::Z80::z80ToHostByteOrder(*reinterpret_cast<UnsignedWord *>(machineCode + 1));
+    UnsignedWord address = ::Z80::z80ToHostByteOrder(*reinterpret_cast<UnsignedWord *>(machineCode + 1));
 
     if (address < 0xffff) {
         memory->readBytes(address, 2, memoryFragments.indirectPcPlus1);
@@ -20,7 +20,7 @@ void Z80::ExecutedInstruction::readMemoryFragments(::Z80::Z80::Memory * memory)
         *(memoryFragments.indirectPcPlus1 + 1) = 0x00;
     }
 
-    address = ::Z80::Z80::z80ToHostByteOrder(*reinterpret_cast<UnsignedWord *>(machineCode + 2));
+    address = ::Z80::z80ToHostByteOrder(*reinterpret_cast<UnsignedWord *>(machineCode + 2));
 
     if (address < 0xffff) {
         memory->readBytes(address, 2, memoryFragments.indirectPcPlus2);

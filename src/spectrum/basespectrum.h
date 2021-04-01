@@ -111,7 +111,7 @@ namespace Spectrum
          */
         [[nodiscard]] inline int interruptCounter() const
         {
-            return m_interruptCycleCounter;
+            return m_interruptTStateCounter;
         }
 
         /**
@@ -338,7 +338,7 @@ namespace Spectrum
 
     private:
         double m_executionSpeed;
-        int m_interruptCycleCounter;
+        int m_interruptTStateCounter;
         bool m_constrainExecutionSpeed;
         DisplayDevices m_displayDevices;
         Keyboard * m_keyboard;

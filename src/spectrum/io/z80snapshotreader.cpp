@@ -13,9 +13,10 @@
 
 using namespace Spectrum::Io;
 
-using UnsignedByte = ::Z80::UnsignedByte;
-using UnsignedWord = ::Z80::UnsignedWord;
-using InterruptMode = ::Z80::InterruptMode;
+using ::Z80::UnsignedByte;
+using ::Z80::UnsignedWord;
+using ::Z80::InterruptMode;
+using ::Z80::z80ToHostByteOrder;
 
 namespace
 {
@@ -180,7 +181,7 @@ namespace
     {
         static UnsignedWord word;
         in.read(reinterpret_cast<std::istream::char_type *>(&word), 2);
-        return ::Z80::Z80::z80ToHostByteOrder(word);
+        return z80ToHostByteOrder(word);
     }
 }
 
@@ -200,7 +201,7 @@ bool Z80SnapshotReader::readInto(Snapshot & snapshot) const
 
     if (0x0000 == header.extendedHeaderIndicator) {
         in.read(reinterpret_cast<std::istream::char_type *>(&header) + sizeof(HeaderV1), sizeof(HeaderV2) - sizeof(HeaderV1));
-        format = static_cast<Format>(Z80::z80ToHostByteOrder(header.extendedHeaderLength));
+        format = static_cast<Format>(z80ToHostByteOrder(header.extendedHeaderLength));
 
         switch (format) {
             case Format::Version2:
@@ -236,17 +237,17 @@ bool Z80SnapshotReader::readInto(Snapshot & snapshot) const
     auto & registers = snapshot.registers();
 
     registers.af = static_cast<UnsignedWord>(header.a) << 8 | header.f;
-    registers.bc = Z80::z80ToHostByteOrder(header.bc);
-    registers.de = Z80::z80ToHostByteOrder(header.de);
-    registers.hl = Z80::z80ToHostByteOrder(header.hl);
-    registers.ix = Z80::z80ToHostByteOrder(header.ix);
-    registers.iy = Z80::z80ToHostByteOrder(header.iy);
-    registers.sp = Z80::z80ToHostByteOrder(header.sp);
+    registers.bc = z80ToHostByteOrder(header.bc);
+    registers.de = z80ToHostByteOrder(header.de);
+    registers.hl = z80ToHostByteOrder(header.hl);
+    registers.ix = z80ToHostByteOrder(header.ix);
+    registers.iy = z80ToHostByteOrder(header.iy);
+    registers.sp = z80ToHostByteOrder(header.sp);
 
     registers.afShadow = static_cast<UnsignedWord>(header.aShadow) << 8 | header.fShadow;
-    registers.bcShadow = Z80::z80ToHostByteOrder(header.bcShadow);
-    registers.deShadow = Z80::z80ToHostByteOrder(header.deShadow);
-    registers.hlShadow = Z80::z80ToHostByteOrder(header.hlShadow);
+    registers.bcShadow = z80ToHostByteOrder(header.bcShadow);
+    registers.deShadow = z80ToHostByteOrder(header.deShadow);
+    registers.hlShadow = z80ToHostByteOrder(header.hlShadow);
 
     registers.i = header.i;
     registers.r = ((header.fileFlags1 & 0x01) << 7) | (header.r & 0x7f);
@@ -257,7 +258,7 @@ bool Z80SnapshotReader::readInto(Snapshot & snapshot) const
     snapshot.im = static_cast<InterruptMode>(header.fileFlags2 & 0x03);
 
     if (format == Format::Version1) {
-        registers.pc = Z80::z80ToHostByteOrder(header.pc);
+        registers.pc = z80ToHostByteOrder(header.pc);
 
         if (header.fileFlags1 & CompressedMemoryFlag) {
             // read the remaining content of the stream as the compressed memory image
@@ -283,7 +284,7 @@ bool Z80SnapshotReader::readInto(Snapshot & snapshot) const
             in.read(reinterpret_cast<std::istream::char_type *>(snapshot.memory().image + MemoryImageOffset), (0x10000 - MemoryImageOffset));
         }
     } else {
-        registers.pc = Z80::z80ToHostByteOrder(header.pcV2);
+        registers.pc = z80ToHostByteOrder(header.pcV2);
 
         while (!in.eof() && !in.fail()) {
             auto size = readHostWord(in);
@@ -322,7 +323,7 @@ bool Z80SnapshotReader::readInto(Snapshot & snapshot) const
     return true;
 }
 
-void Z80SnapshotReader::decompress(Z80::UnsignedByte * dest, Z80::UnsignedByte * source, std::size_t size)
+void Z80SnapshotReader::decompress(UnsignedByte * dest, UnsignedByte * source, std::size_t size)
 {
     static const std::uint16_t rleMarker = 0xeded;
     auto * end = source + size;
@@ -340,7 +341,7 @@ void Z80SnapshotReader::decompress(Z80::UnsignedByte * dest, Z80::UnsignedByte *
 
 }
 
-std::optional<std::size_t> Z80SnapshotReader::compressedSize(Z80::UnsignedByte * memory, std::size_t max)
+std::optional<std::size_t> Z80SnapshotReader::compressedSize(UnsignedByte * memory, std::size_t max)
 {
     static auto endMarker = *reinterpret_cast<const std::uint32_t *>("\x00\xed\xed\x00");
     auto * end = memory;

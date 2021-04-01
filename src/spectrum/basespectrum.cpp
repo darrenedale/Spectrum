@@ -34,7 +34,7 @@ namespace Spectrum
     BaseSpectrum::BaseSpectrum(MemoryType * memory)
     : Computer(memory),
       m_executionSpeed(1.0),
-      m_interruptCycleCounter(0),
+      m_interruptTStateCounter(0),
       m_displayDevices(),
       m_constrainExecutionSpeed(true),
       m_keyboard(nullptr),
@@ -50,7 +50,7 @@ namespace Spectrum
     BaseSpectrum::BaseSpectrum(MemoryType::Size memorySize)
     : Computer(memorySize),
       m_executionSpeed(1.0),
-      m_interruptCycleCounter(0),
+      m_interruptTStateCounter(0),
       m_displayDevices(),
       m_constrainExecutionSpeed(true),
       m_keyboard(nullptr),
@@ -89,7 +89,7 @@ namespace Spectrum
             return;
         }
 
-        m_interruptCycleCounter = 0;
+        m_interruptTStateCounter = 0;
         z80->reset();
     }
 
@@ -126,17 +126,17 @@ namespace Spectrum
         assert(z80());
 
         static steady_clock::time_point lastInterrupt = steady_clock::now();
-        // TODO spectrum refresh is not exactly 50FPS it's 50.08 (69888 t-states)
+        // TODO standard spectrum refresh is not exactly 50FPS it's 50.08 (69888 t-states)
         int interruptThreshold = static_cast<int>(z80()->clockSpeed() / 50);
 
         while (0 < instructionCount) {
-            m_interruptCycleCounter += z80()->fetchExecuteCycle();
+            m_interruptTStateCounter += z80()->fetchExecuteCycle();
 
-            // check interrupt counter against threshold and raise NMI in CPU if required
-            if (m_interruptCycleCounter > interruptThreshold) {
+            // check interrupt counter against threshold and raise INT in CPU if required
+            if (m_interruptTStateCounter > interruptThreshold) {
                 z80()->interrupt();
                 refreshDisplays();
-                m_interruptCycleCounter %= interruptThreshold;
+                m_interruptTStateCounter %= interruptThreshold;
 
                 if (m_constrainExecutionSpeed) {
                     // pause based on requested execution speed

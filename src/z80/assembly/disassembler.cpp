@@ -2064,7 +2064,7 @@ Mnemonic Disassembler::disassembleOnePlain(const ::Z80::UnsignedByte * machineCo
             return {
                     Instruction::RST,
                     {
-                            {.mode = AddressingMode::ImmediateExtended, .unsignedWord = Z80::Z80::hostToZ80ByteOrder(0x0008),},
+                            {.mode = AddressingMode::ImmediateExtended, .unsignedWord = hostToZ80ByteOrder(0x0008),},
                     },
                     1,
             };
@@ -2135,7 +2135,7 @@ Mnemonic Disassembler::disassembleOnePlain(const ::Z80::UnsignedByte * machineCo
             return {
                     Instruction::RST,
                     {
-                            {.mode = AddressingMode::ImmediateExtended, .unsignedWord = Z80::Z80::hostToZ80ByteOrder(0x0010),},
+                            {.mode = AddressingMode::ImmediateExtended, .unsignedWord = hostToZ80ByteOrder(0x0010),},
                     },
                     1,
             };
@@ -2200,7 +2200,7 @@ Mnemonic Disassembler::disassembleOnePlain(const ::Z80::UnsignedByte * machineCo
             return {
                     Instruction::RST,
                     {
-                            {.mode = AddressingMode::ImmediateExtended, .unsignedWord = Z80::Z80::hostToZ80ByteOrder(0x0018),},
+                            {.mode = AddressingMode::ImmediateExtended, .unsignedWord = hostToZ80ByteOrder(0x0018),},
                     },
                     1,
             };
@@ -2271,7 +2271,7 @@ Mnemonic Disassembler::disassembleOnePlain(const ::Z80::UnsignedByte * machineCo
             return {
                     Instruction::RST,
                     {
-                            {.mode = AddressingMode::ImmediateExtended, .unsignedWord = Z80::Z80::hostToZ80ByteOrder(0x0020),},
+                            {.mode = AddressingMode::ImmediateExtended, .unsignedWord = hostToZ80ByteOrder(0x0020),},
                     },
                     1,
             };
@@ -2337,7 +2337,7 @@ Mnemonic Disassembler::disassembleOnePlain(const ::Z80::UnsignedByte * machineCo
             return {
                     Instruction::RST,
                     {
-                            {.mode = AddressingMode::ImmediateExtended, .unsignedWord = Z80::Z80::hostToZ80ByteOrder(0x0028),},
+                            {.mode = AddressingMode::ImmediateExtended, .unsignedWord = hostToZ80ByteOrder(0x0028),},
                     },
                     1,
             };
@@ -2405,7 +2405,7 @@ Mnemonic Disassembler::disassembleOnePlain(const ::Z80::UnsignedByte * machineCo
             return {
                     Instruction::RST,
                     {
-                            {.mode = AddressingMode::ImmediateExtended, .unsignedWord = Z80::Z80::hostToZ80ByteOrder(0x0030),},
+                            {.mode = AddressingMode::ImmediateExtended, .unsignedWord = hostToZ80ByteOrder(0x0030),},
                     },
                     1,
             };
@@ -2469,7 +2469,7 @@ Mnemonic Disassembler::disassembleOnePlain(const ::Z80::UnsignedByte * machineCo
             return {
                 Instruction::RST,
                 {
-                        {.mode = AddressingMode::ImmediateExtended, .unsignedWord = Z80::Z80::hostToZ80ByteOrder(0x0038),},
+                        {.mode = AddressingMode::ImmediateExtended, .unsignedWord = hostToZ80ByteOrder(0x0038),},
                 },
                 1,
             };

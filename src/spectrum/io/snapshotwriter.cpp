@@ -5,10 +5,11 @@
 #include "snapshotwriter.h"
 
 using namespace Spectrum::Io;
+using ::Z80::hostToZ80ByteOrder;
 
 void SnapshotWriter::writeHostWord(std::ostream & out, ::Z80::UnsignedWord word)
 {
-    word = Z80::hostToZ80ByteOrder(word);
+    word = hostToZ80ByteOrder(word);
     out.write(reinterpret_cast<char *>(&word), 2);
 }
 

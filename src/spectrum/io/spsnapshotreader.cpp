@@ -13,9 +13,10 @@
 
 using namespace Spectrum::Io;
 
-using UnsignedByte = ::Z80::UnsignedByte;
-using UnsignedWord = ::Z80::UnsignedWord;
-using InterruptMode = ::Z80::InterruptMode;
+using ::Z80::UnsignedByte;
+using ::Z80::UnsignedWord;
+using ::Z80::InterruptMode;
+using ::Z80::z80ToHostByteOrder;
 
 namespace
 {
@@ -115,8 +116,8 @@ bool SpSnapshotReader::readInto(Snapshot & snapshot) const
     }
 
     // NOTE from here on, the length and baseAddress members of the header are in host byte order
-    header.length = Z80::z80ToHostByteOrder(header.length);
-    header.baseAddress = Z80::z80ToHostByteOrder(header.baseAddress);
+    header.length = z80ToHostByteOrder(header.length);
+    header.baseAddress = z80ToHostByteOrder(header.baseAddress);
 
     if (0x0000ffff < static_cast<int>(header.baseAddress) + header.length - 1) {
 #if (!defined(ndebug))
@@ -139,28 +140,28 @@ bool SpSnapshotReader::readInto(Snapshot & snapshot) const
     // set state
     auto & registers = snapshot.registers();
 
-    registers.bc = Z80::z80ToHostByteOrder(header.registers.bc);
-    registers.de = Z80::z80ToHostByteOrder(header.registers.de);
-    registers.hl = Z80::z80ToHostByteOrder(header.registers.hl);
-    registers.af = Z80::z80ToHostByteOrder(header.registers.af);
-    registers.ix = Z80::z80ToHostByteOrder(header.registers.ix);
-    registers.iy = Z80::z80ToHostByteOrder(header.registers.iy);
+    registers.bc = z80ToHostByteOrder(header.registers.bc);
+    registers.de = z80ToHostByteOrder(header.registers.de);
+    registers.hl = z80ToHostByteOrder(header.registers.hl);
+    registers.af = z80ToHostByteOrder(header.registers.af);
+    registers.ix = z80ToHostByteOrder(header.registers.ix);
+    registers.iy = z80ToHostByteOrder(header.registers.iy);
 
-    registers.bcShadow = Z80::z80ToHostByteOrder(header.shadowRegisters.bc);
-    registers.deShadow = Z80::z80ToHostByteOrder(header.shadowRegisters.de);
-    registers.hlShadow = Z80::z80ToHostByteOrder(header.shadowRegisters.hl);
-    registers.afShadow = Z80::z80ToHostByteOrder(header.shadowRegisters.af);
+    registers.bcShadow = z80ToHostByteOrder(header.shadowRegisters.bc);
+    registers.deShadow = z80ToHostByteOrder(header.shadowRegisters.de);
+    registers.hlShadow = z80ToHostByteOrder(header.shadowRegisters.hl);
+    registers.afShadow = z80ToHostByteOrder(header.shadowRegisters.af);
 
     registers.r = header.interruptRegisters.r;
     registers.i = header.interruptRegisters.i;
 
-    registers.sp = Z80::z80ToHostByteOrder(header.sp);
-    registers.pc = Z80::z80ToHostByteOrder(header.pc);
+    registers.sp = z80ToHostByteOrder(header.sp);
+    registers.pc = z80ToHostByteOrder(header.pc);
 
     snapshot.border = static_cast<Colour>(header.border);
 
     // NOTE from here on, the status member of the header is in host byte order
-    header.status = Z80::z80ToHostByteOrder(header.status);
+    header.status = z80ToHostByteOrder(header.status);
     // bit 0 = IFF1
     snapshot.iff1 = header.status & 0x0001;
     // bit 2 = IFF2

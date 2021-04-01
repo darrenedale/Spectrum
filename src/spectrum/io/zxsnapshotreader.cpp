@@ -13,6 +13,7 @@ using namespace Spectrum::Io;
 
 using UnsignedByte = ::Z80::UnsignedByte;
 using InterruptMode = ::Z80::InterruptMode;
+using ::Z80::swapByteOrder;
 
 namespace
 {
@@ -131,17 +132,17 @@ bool ZXSnapshotReader::readInto(Snapshot & snapshot) const
         registers.pc = content.pc;
         registers.sp = content.sp;
     } else {
-        registers.bc = Z80::swapByteOrder(content.bc);
-        registers.de = Z80::swapByteOrder(content.de);
-        registers.hl = Z80::swapByteOrder(content.hl);
-        registers.ix = Z80::swapByteOrder(content.ix);
-        registers.iy = Z80::swapByteOrder(content.iy);
-        registers.bcShadow = Z80::swapByteOrder(content.bcShadow);
-        registers.deShadow = Z80::swapByteOrder(content.deShadow);
-        registers.hlShadow = Z80::swapByteOrder(content.hlShadow);
+        registers.bc = swapByteOrder(content.bc);
+        registers.de = swapByteOrder(content.de);
+        registers.hl = swapByteOrder(content.hl);
+        registers.ix = swapByteOrder(content.ix);
+        registers.iy = swapByteOrder(content.iy);
+        registers.bcShadow = swapByteOrder(content.bcShadow);
+        registers.deShadow = swapByteOrder(content.deShadow);
+        registers.hlShadow = swapByteOrder(content.hlShadow);
 
-        registers.pc = Z80::swapByteOrder(content.pc);
-        registers.sp = Z80::swapByteOrder(content.sp);
+        registers.pc = swapByteOrder(content.pc);
+        registers.sp = swapByteOrder(content.sp);
     }
     
     switch (content.interruptMode) {

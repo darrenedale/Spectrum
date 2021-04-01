@@ -47,8 +47,6 @@ namespace
 {
     constexpr const int DisplayRefreshRate = 100;   // how many times a second to redraw the screen
     constexpr const int DefaultStatusBarMessageTimeout = 5000;
-    auto z80ToHostByteOrder = ::Z80::Z80::z80ToHostByteOrder;
-    auto hostToZ80ByteOrder = ::Z80::Z80::hostToZ80ByteOrder;
 
     enum class JoystickMapping : std::uint8_t
     {
