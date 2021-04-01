@@ -460,6 +460,7 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
     if (!reader) {
         std::cerr << "unrecognised format '" << format.toStdString() << "' from filename '" << fileName.toStdString() << "'\n";
         statusBar()->showMessage(tr("The snapshot format for %1 could not be determined.").arg(fileName), DefaultStatusBarMessageTimeout);
+        return false;
     }
 
     if (!reader->isOpen()) {
