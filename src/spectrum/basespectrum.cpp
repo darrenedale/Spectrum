@@ -8,6 +8,7 @@
 
 #include "displaydevice.h"
 #include "joystickinterface.h"
+#include "mouseinterface.h"
 #include "keyboard.h"
 #include "z80.h"
 
@@ -203,6 +204,21 @@ namespace Spectrum
 
         if (cpu && m_joystick) {
             cpu->connectIODevice(m_joystick);
+        }
+    }
+
+    void BaseSpectrum::setMouseInterface(MouseInterface * mouse)
+    {
+        auto * cpu = z80();
+
+        if (cpu && m_mouse) {
+            cpu->disconnectIODevice(m_mouse);
+        }
+
+        m_mouse = mouse;
+
+        if (cpu && m_mouse) {
+            cpu->connectIODevice(m_mouse);
         }
     }
 
