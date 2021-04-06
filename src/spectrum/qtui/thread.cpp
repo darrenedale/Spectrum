@@ -15,16 +15,15 @@ namespace
 using namespace Spectrum::QtUi;
 
 Thread::Thread(BaseSpectrum & spectrum, QObject * parent )
-:	QThread(parent),
+: QThread(parent),
     m_threadLock(),
     m_waitCondition(),
-	m_spectrum(spectrum),
+	m_spectrum(&spectrum),
 	m_pause(false),
 	m_quit(false),
 	m_step(false),
 	m_debugMode(false)
-{
-}
+{}
 
 Thread::~Thread()
 {
@@ -36,6 +35,7 @@ Thread::~Thread()
     m_waitCondition.wakeAll();
     m_threadLock.unlock();
     wait();
+    m_spectrum = nullptr;
 }
 
 void Thread::run()
@@ -50,12 +50,12 @@ void Thread::run()
         }
 
         if (m_reset) {
-            m_spectrum.reset();
+            m_spectrum->reset();
             m_reset = false;
             continue;
         }
 
-        m_spectrum.run(((m_pause && m_step) || m_debugMode ? 1 : DefaultInstructionCount));
+        m_spectrum->run(((m_pause && m_step) || m_debugMode ? 1 : DefaultInstructionCount));
 
         if (m_step) {
             Q_EMIT stepped();
@@ -122,4 +122,15 @@ void Thread::setDebugMode(bool debug)
     } else {
         Q_EMIT debuggingFinished();
     }
+}
+
+bool Thread::setSpectrum(Spectrum::BaseSpectrum & spectrum)
+{
+    if (isRunning()) {
+        return false;
+    }
+
+    m_spectrum = &spectrum;
+    Q_EMIT spectrumChanged(m_spectrum);
+    return true;
 }

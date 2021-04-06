@@ -35,17 +35,17 @@ public:
     /**
      * Initialise a new Computer with pre-existing memory.
      *
-     * The computer will only borrow the provided memory, it is up to the caller to ensure that the memory is destroyed
-     * at the appropriate time, and that the computer does not retain a pointer to the memory after it has been
-     * destroyed.
+     * Unless takeOwnership is true, the computer will only borrow the provided memory, it is up to the caller to ensure
+     * that the memory is destroyed at the appropriate time, and that the computer does not retain a pointer to the
+     * memory after it has been destroyed.
      *
      * The memory provided must not be null and must not be 0 bytes in size.
      *
      * @param memory
      */
-    explicit Computer(MemoryType * memory)
+    explicit Computer(MemoryType * memory, bool takeOwnership = false)
     : m_memory(memory),
-      m_memoryOwned(false)
+      m_memoryOwned(takeOwnership)
     {
         assert(memory && 0 < memory->size());
     }

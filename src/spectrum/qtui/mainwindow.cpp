@@ -24,6 +24,8 @@
 #include <QStringBuilder>
 #include <memory>
 
+#include "../spectrum16k.h"
+#include "../spectrum48k.h"
 #include "../spectrum128k.h"
 #include "mainwindow.h"
 #include "threadpauser.h"
@@ -60,11 +62,19 @@ namespace
         Button2,
         Button3,
     };
+
+    const std::string Default16kRom = "spectrum48.rom";
+    const std::string Default48kRom = "spectrum48.rom";
+    const std::string Default128kRom0 = "spectrum128-0.rom";
+    const std::string Default128kRom1 = "spectrum128-1.rom";
+
+    // ms to wait for the thread to stop before forcibly terminating it
+    constexpr const int ThreadStopWaitThreshold = 3000;
 }
 
 MainWindow::MainWindow(QWidget * parent)
 : QMainWindow(parent),
-  m_spectrum(new Spectrum128k("spectrum128.rom", "spectrum48.rom")),
+  m_spectrum(new Spectrum128k(Default128kRom0, Default128kRom1)),
   m_spectrumThread(*m_spectrum),
   m_display(),
   m_displayWidget(),
@@ -72,8 +82,10 @@ MainWindow::MainWindow(QWidget * parent)
   m_load(QIcon::fromTheme(QStringLiteral("document-open")), tr("Load snapshot")),
   m_save(QIcon::fromTheme(QStringLiteral("document-save")), tr("save snapshot")),
   m_pauseResume(QIcon::fromTheme(QStringLiteral("media-playback-start")), tr("Start/Pause")),
+  m_model16(tr("Spectrum 16k")),
+  m_model48(tr("Spectrum 48k")),
+  m_model128(tr("Spectrum 128k")),
   m_saveScreenshot(QIcon::fromTheme(QStringLiteral("image")), tr("Screenshot")),
-  m_refreshScreen(QIcon::fromTheme("view-refresh"), tr("Refresh screen")),
   m_colourDisplay(tr("Colour")),
   m_monochromeDisplay(tr("Monochrome")),
   m_bwDisplay(tr("Black and White")),
@@ -83,6 +95,7 @@ MainWindow::MainWindow(QWidget * parent)
   m_reset(QIcon::fromTheme(QStringLiteral("start-over")), tr("Reset")),
   m_debug(tr("Debug")),
   m_debugStep(QIcon::fromTheme(QStringLiteral("debug-step-instruction")), tr("Step")),
+  m_refreshScreen(QIcon::fromTheme("view-refresh"), tr("Refresh screen")),
   m_emulationSpeedSlider(Qt::Horizontal),
   m_emulationSpeedSpin(nullptr),
   m_debugWindow(&m_spectrumThread),
@@ -92,7 +105,7 @@ MainWindow::MainWindow(QWidget * parent)
     setWindowTitle(QStringLiteral("Spectrum"));
     // TODO read joystick type from config
     m_joystick = new Spectrum::KempstonJoystick();
-    m_spectrum.setExecutionSpeedConstrained(true);
+    m_spectrum->setExecutionSpeedConstrained(true);
     m_displayWidget.keepAspectRatio();
     m_displayWidget.setFocusPolicy(Qt::FocusPolicy::ClickFocus);
     m_displayWidget.setFocus();
@@ -111,11 +124,19 @@ MainWindow::MainWindow(QWidget * parent)
     m_load.setShortcut(tr("Ctrl+O"));
     m_save.setShortcut(tr("Ctrl+S"));
     m_pauseResume.setShortcuts({Qt::Key::Key_Pause, Qt::Key::Key_Escape, tr("Ctrl+P"),});
-    m_debug.setShortcuts({tr("Ctrl+D"), Qt::Key::Key_F12,});
-    m_debug.setCheckable(true);
-    m_debugStep.setShortcut(Qt::Key::Key_Space);
-    m_saveScreenshot.setShortcut(Qt::Key::Key_Print);
-    m_refreshScreen.setShortcut(Qt::Key::Key_F5);
+
+    m_model16.setCheckable(true);
+    m_model16.setChecked(false);
+    m_model48.setCheckable(true);
+    m_model48.setChecked(false);
+    m_model128.setCheckable(true);
+    m_model128.setChecked(true);
+
+    auto * model = new QActionGroup(this);
+    model->addAction(&m_model16);
+    model->addAction(&m_model48);
+    model->addAction(&m_model128);
+
     m_colourDisplay.setCheckable(true);
     m_monochromeDisplay.setCheckable(true);
     m_bwDisplay.setCheckable(true);
@@ -135,6 +156,12 @@ MainWindow::MainWindow(QWidget * parent)
     joystickInterface->addAction(&m_joystickKempston);
     joystickInterface->addAction(&m_joystickInterface2);
     joystickInterface->addAction(&m_joystickNone);
+
+    m_debug.setShortcuts({tr("Ctrl+D"), Qt::Key::Key_F12,});
+    m_debug.setCheckable(true);
+    m_debugStep.setShortcut(Qt::Key::Key_Space);
+    m_saveScreenshot.setShortcut(Qt::Key::Key_Print);
+    m_refreshScreen.setShortcut(Qt::Key::Key_F5);
 
     m_emulationSpeedSlider.setRange(0, 1000);
     m_emulationSpeedSlider.setValue(100);
@@ -159,7 +186,7 @@ MainWindow::MainWindow(QWidget * parent)
     createDockWidgets();
     createStatusBar();
 
-    m_spectrum->setJoystickInterface(&m_joystick);
+    m_spectrum->setJoystickInterface(m_joystick);
     m_spectrum->setKeyboard(&m_keyboard);
 	m_spectrum->addDisplayDevice(&m_display);
 
@@ -182,25 +209,34 @@ MainWindow::~MainWindow()
     m_spectrum->removeDisplayDevice(&m_display);
     delete m_joystick;
     m_joystick = nullptr;
-	m_spectrumThread.stop();
+    stopThread();
+}
 
-	if (!m_spectrumThread.wait(250)) {
-        std::cout << "Waiting for Spectrum thread to finish ";
-        const int waitThreshold = 3000;
-        int waited = 0;
+void MainWindow::stopThread()
+{
+    m_spectrumThread.stop();
 
-        while (waited < waitThreshold && !m_spectrumThread.wait(100)) {
+#if (!defined(NDEBUG))
+    std::cout << "Stopping SpectrumThread @ " << static_cast<void *>(&m_spectrumThread) << ' ';
+
+    if (!m_spectrumThread.wait(250)) {
+        int waitFor = ThreadStopWaitThreshold;
+
+        while (0 < waitFor && !m_spectrumThread.wait(100)) {
             std::cout << '.';
-            waited += 100;
+            waitFor -= 100;
         }
+    }
 
-        std::cout << '\n';
+    std::cout << '\n';
+#else
+    m_spectrumThread.wait(ThreadStopWaitThreshold);
+#endif
 
-        if (!m_spectrumThread.isFinished()) {
-            std::cerr << "forcibly terminating SpectrumThread @" << std::hex
-                      << static_cast<void *>(&m_spectrumThread) << "\n";
-            m_spectrumThread.terminate();
-        }
+    if (!m_spectrumThread.isFinished()) {
+        std::cerr << "forcibly terminating SpectrumThread @" << std::hex
+              << static_cast<void *>(&m_spectrumThread) << "\n";
+        m_spectrumThread.terminate();
     }
 }
 
@@ -252,6 +288,10 @@ void MainWindow::createMenuBar()
     menu->addAction(&m_pauseResume);
     menu->addAction(&m_reset);
     menu->addSeparator();
+    subMenu = menu->addMenu(tr("Model"));
+    subMenu->addAction(&m_model16);
+    subMenu->addAction(&m_model48);
+    subMenu->addAction(&m_model128);
     subMenu = menu->addMenu(tr("Joysticks"));
     subMenu->addAction(&m_joystickKempston);
     subMenu->addAction(&m_joystickInterface2);
@@ -328,6 +368,11 @@ void MainWindow::connectSignals()
 
 	connect(&m_pauseResume, &QAction::triggered, this, &MainWindow::pauseResumeTriggered);
 	connect(&m_reset, &QAction::triggered, &m_spectrumThread, &Thread::reset);
+
+	connect(&m_model16, &QAction::triggered, this, &MainWindow::model16Triggered);
+	connect(&m_model48, &QAction::triggered, this, &MainWindow::model48Triggered);
+	connect(&m_model128, &QAction::triggered, this, &MainWindow::model128Triggered);
+
 	connect(&m_joystickKempston, &QAction::triggered, this, &MainWindow::useKempstonJoystickTriggered);
 	connect(&m_joystickInterface2, &QAction::triggered, this, &MainWindow::useInterfaceTwoJoystickTriggered);
 	connect(&m_joystickNone, &QAction::triggered, this, &MainWindow::noJoystickTriggered);
@@ -357,12 +402,12 @@ void MainWindow::connectSignals()
 
 	connect(&m_pokesWidget, &PokesWidget::applyPokeRequested, [this](const PokeDefinition & poke) {
 	    // TODO check if poke has any user-provided values
-	    poke.apply(m_spectrum);
+	    poke.apply(*m_spectrum);
 	    statusBar()->showMessage(tr("%1 poke activated.").arg(QString::fromStdString(poke.name())));
 	});
 
 	connect(&m_pokesWidget, &PokesWidget::undoPokeRequested, [this](const PokeDefinition & poke) {
-	    poke.undo(m_spectrum);
+	    poke.undo(*m_spectrum);
         statusBar()->showMessage(tr("%1 poke deactivated.").arg(QString::fromStdString(poke.name())));
 	});
 }
@@ -767,7 +812,7 @@ bool MainWindow::eventFilter(QObject * target, QEvent * event)
 
                 // while user holds tab on display widget, temporarily run as fast as possible
                 if (Qt::Key::Key_Tab == qtKey) {
-                    m_spectrum.setExecutionSpeedConstrained(false);
+                    m_spectrum->setExecutionSpeedConstrained(false);
                     updateStatusBarSpeedWidget();
                     return true;
                 } else if (auto joystickMapping = mapToSpectrumJoystick(qtKey); m_joystick && JoystickMapping::None !=
@@ -814,7 +859,7 @@ bool MainWindow::eventFilter(QObject * target, QEvent * event)
                 auto qtKey = static_cast<Qt::Key>(dynamic_cast<QKeyEvent *>(event)->key());
 
                 if (Qt::Key::Key_Tab == qtKey) {
-                    m_spectrum.setExecutionSpeedConstrained(0 < m_emulationSpeedSlider.value());
+                    m_spectrum->setExecutionSpeedConstrained(0 < m_emulationSpeedSlider.value());
                     updateStatusBarSpeedWidget();
                     return true;
                 } else if (auto joystickMapping = mapToSpectrumJoystick(qtKey); m_joystick && JoystickMapping::None !=
@@ -1075,25 +1120,80 @@ void MainWindow::saveSnapshotTriggered()
     saveSnapshot(fileName, format);
 }
 
+void MainWindow::model16Triggered()
+{
+    detachSpectrumDevices();
+    bool paused = m_spectrumThread.isPaused();
+    m_displayRefreshTimer.stop();
+    stopThread();
+    m_spectrum = std::make_unique<Spectrum16k>(Default16kRom);
+    attachSpectrumDevices();
+    m_spectrumThread.setSpectrum(*m_spectrum);
+    m_spectrumThread.start();
+    m_displayRefreshTimer.start();
+
+    if (paused) {
+        m_spectrumThread.pause();
+    } else {
+        m_displayRefreshTimer.start();
+    }
+}
+
+void MainWindow::model48Triggered()
+{
+    detachSpectrumDevices();
+    bool paused = m_spectrumThread.isPaused();
+    m_displayRefreshTimer.stop();
+    stopThread();
+    m_spectrum = std::make_unique<Spectrum48k>(Default48kRom);
+    attachSpectrumDevices();
+    m_spectrumThread.setSpectrum(*m_spectrum);
+    m_spectrumThread.start();
+
+    if (paused) {
+        m_spectrumThread.pause();
+    } else {
+        m_displayRefreshTimer.start();
+    }
+}
+
+void MainWindow::model128Triggered()
+{
+    detachSpectrumDevices();
+    bool paused = m_spectrumThread.isPaused();
+    m_displayRefreshTimer.stop();
+    stopThread();
+    m_spectrum = std::make_unique<Spectrum128k>(Default128kRom0, Default128kRom1);
+    attachSpectrumDevices();
+    m_spectrumThread.setSpectrum(*m_spectrum);
+    m_spectrumThread.start();
+
+    if (paused) {
+        m_spectrumThread.pause();
+    } else {
+        m_displayRefreshTimer.start();
+    }
+}
+
 void MainWindow::useKempstonJoystickTriggered()
 {
-    m_spectrum.setJoystickInterface(nullptr);
+    m_spectrum->setJoystickInterface(nullptr);
     delete m_joystick;
     m_joystick = new KempstonJoystick();
-    m_spectrum.setJoystickInterface(m_joystick);
+    m_spectrum->setJoystickInterface(m_joystick);
 }
 
 void MainWindow::useInterfaceTwoJoystickTriggered()
 {
-    m_spectrum.setJoystickInterface(nullptr);
+    m_spectrum->setJoystickInterface(nullptr);
     delete m_joystick;
     m_joystick = new InterfaceTwoJoystick();
-    m_spectrum.setJoystickInterface(m_joystick);
+    m_spectrum->setJoystickInterface(m_joystick);
 }
 
 void MainWindow::noJoystickTriggered()
 {
-    m_spectrum.setJoystickInterface(nullptr);
+    m_spectrum->setJoystickInterface(nullptr);
     delete m_joystick;
     m_joystick = nullptr;
 }
@@ -1216,4 +1316,18 @@ bool MainWindow::loadSnapshotFromSlot(int slotIndex)
 
     setWindowTitle(QStringLiteral("Spectrum | Snapshot slot %1").arg(slotIndex));
     return true;
+}
+
+void MainWindow::attachSpectrumDevices()
+{
+    m_spectrum->setJoystickInterface(m_joystick);
+    m_spectrum->setKeyboard(&m_keyboard);
+    m_spectrum->addDisplayDevice(&m_display);
+}
+
+void MainWindow::detachSpectrumDevices()
+{
+    m_spectrum->setJoystickInterface(nullptr);
+    m_spectrum->setKeyboard(nullptr);
+    m_spectrum->removeDisplayDevice(&m_display);
 }

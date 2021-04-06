@@ -104,7 +104,12 @@ namespace Spectrum::QtUi
 
         void updateStatusBarSpeedWidget();
 
+
     private:
+	    void attachSpectrumDevices();
+	    void detachSpectrumDevices();
+        void stopThread();
+
         void createMenuBar();
         void createToolBars();
         void createDockWidgets();
@@ -115,6 +120,9 @@ namespace Spectrum::QtUi
         void saveScreenshotTriggered();
         void loadSnapshotTriggered();
         void saveSnapshotTriggered();
+        void model16Triggered();
+        void model48Triggered();
+        void model128Triggered();
         void useKempstonJoystickTriggered();
         void useInterfaceTwoJoystickTriggered();
         void noJoystickTriggered();
@@ -141,8 +149,13 @@ namespace Spectrum::QtUi
         PokesWidget m_pokesWidget;
         QAction m_load;
         QAction m_save;
+
         QAction m_pauseResume;
-        QAction m_refreshScreen;
+        QAction m_reset;
+        QAction m_model16;
+        QAction m_model48;
+        QAction m_model128;
+
         QAction m_saveScreenshot;
         QAction m_colourDisplay;
         QAction m_monochromeDisplay;
@@ -152,9 +165,10 @@ namespace Spectrum::QtUi
         QAction m_joystickKempston;
         QAction m_joystickInterface2;
 
-        QAction m_reset;
         QAction m_debug;
         QAction m_debugStep;
+        QAction m_refreshScreen;
+
         QSlider m_emulationSpeedSlider;
         QSpinBox m_emulationSpeedSpin;
         DebugWindow m_debugWindow;
@@ -166,7 +180,7 @@ namespace Spectrum::QtUi
 
         QTimer m_displayRefreshTimer;
         JoystickInterface * m_joystick;
-	};
+    };
 }
 
 #endif // SPECTRUM_EMULATOR_MAINWINDOW_H

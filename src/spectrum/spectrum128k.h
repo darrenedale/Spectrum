@@ -6,47 +6,25 @@
 #define SPECTRUM_SPECTRUM128K_H
 
 #include "basespectrum.h"
+#include "spectrum128kmemory.h"
+#include "spectrum128kpagingdevice.h"
 
 namespace Spectrum
 {
-    /**
-     * TODO how are we going to cope with synchronising changes to banks 2 and 5 when they are also paged in? Implement
-     *  as custom Z80 subclass that has basic MMU to map reads/writes?
-     *
-     * TODO IOdevice to handle rom and ram paging
-     */
     class Spectrum128k
     : public BaseSpectrum
     {
     public:
-        enum class Rom : std::uint8_t
-        {
-            Rom0,       // ROM for Spectrum 128k
-            Rom1,       // ROM for Spectrum 48k
-        };
-
         enum class ScreenBuffer : std::uint8_t
         {
             Normal,       // display the normal screen buffer
             Shadow,       // display the shadow screen buffer
         };
 
-        enum class MemoryBank : std::uint8_t
-        {
-            Bank0 = 0,
-            Bank1,
-            Bank2,
-            Bank3,
-            Bank4,
-            Bank5,
-            Bank6,
-            Bank7,
-        };
-
         static constexpr const int DisplayMemorySize = 6912;
 
         Spectrum128k();
-        explicit Spectrum128k(const std::string & romFile128, const std::string & romFile48);
+        explicit Spectrum128k(const std::string & romFile0, const std::string & romFile1);
         ~Spectrum128k() override;
 
         [[nodiscard]] ::Z80::UnsignedByte * displayMemory() const override;
@@ -56,50 +34,30 @@ namespace Spectrum
             return DisplayMemorySize;
         }
 
+        [[nodiscard]] inline ScreenBuffer screenBuffer() const
+        {
+            return m_screenBuffer;
+        }
+
+        inline void setScreenBuffer(ScreenBuffer buffer)
+        {
+            m_screenBuffer = buffer;
+        }
+
+        void reset() override;
+
     protected:
-        [[nodiscard]] inline Rom currentRom() const
+        void reloadRoms() override;
+
+        [[nodiscard]] inline Spectrum128KMemory * memory128() const
         {
-            return m_currentRomNumber;
+            return dynamic_cast<Spectrum128KMemory *>(memory());
         }
-
-        void setRom(Rom rom);
-
-        [[nodiscard]] inline MemoryBank pagedMemoryBank() const
-        {
-            return m_pagedMemoryBank;
-        }
-
-        /**
-         * The currently paged-in memory.
-         *
-         * @return
-         */
-        [[nodiscard]] ::Z80::UnsignedByte * pagedMemory() const;
-
-        /**
-         * The cache location of the currently paged-in memory when it's not actually paged in.
-         *
-         * In other words, where do we store the current memory page when it's paged out.
-         *
-         * @return
-         */
-        [[nodiscard]] ::Z80::UnsignedByte * pagedMemoryCache() const;
-
-        void pageMemoryBank(MemoryBank bank);
 
     private:
-        using RomImage = ::Z80::UnsignedByte[0x4000];
-
-        struct RomImages
-        {
-            RomImage rom[2];
-        };
-        
-        Rom m_currentRomNumber;
-        RomImages m_romImages;
-
-        MemoryBank m_pagedMemoryBank;
+        Spectrum128KPagingDevice m_pager;
         ScreenBuffer m_screenBuffer;
+        std::string m_romFiles[2];
     };
 }
 

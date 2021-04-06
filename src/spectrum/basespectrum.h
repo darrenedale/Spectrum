@@ -17,72 +17,13 @@ namespace Spectrum
     class JoystickInterface;
 
     /**
-     * Base class for models of Spectrum.
+     * Abstract base class for models of Spectrum.
      */
     class BaseSpectrum
     : public Computer<::Z80::UnsignedByte>
     {
     public:
         using DisplayDevices = std::vector<DisplayDevice *>;
-
-        /**
-         * Initialise a new Spectrum borrowing the given memory.
-         *
-         * The provided memory is borrowed and will not be deleted when te Spectrum is destroyed - it is up to the caller to
-         * ensure that it is destroyed at the appropriate time.
-         *
-         * No ROM is loaded into the 0x0000 - 0x3fff address space. Effectively, the Spectrum will have no code to run
-         * unless you specifically provide it with some.
-         *
-         * @param memory
-         */
-        explicit BaseSpectrum(MemoryType * memory = nullptr);
-
-        /**
-         * Initialise a new Spectrum with a given memory size.
-         *
-         * The spectrum will allocate its own Memory object and will delete it when the Spectrum is destroyed. The memory
-         * size should only be either 32k (Spectrum16K) or 64k (Spectrum48k). The memory created will be a single linear map
-         * of the Z80 address space starting at 0x0000.
-         *
-         * No ROM is loaded into the 0x0000 - 0x3fff address space. Effectively, the Spectrum will have no code to run
-         * unless you specifically provide it with some.
-         *
-         * @param romFile
-         * @param memory
-         */
-        explicit BaseSpectrum(MemoryType::Size memorySize);
-
-        /**
-         * Initialise a new Spectrum, loading the ROM from the given file and borrowing the given memory.
-         *
-         * The ROM file is expected to be 16kb in size, and will be loaded at 0x0000 in the Z80 address space. Note that
-         * later models of Spectrum support multiple ROMs that are paged in and out, so constructors for those models should
-         * probably use one of the non-ROM-loading base constructors.
-         *
-         * The provided memory is borrowed and will not be deleted when te Spectrum is destroyed - it is up to the caller to
-         * ensure that it is destroyed at the appropriate time.
-         *
-         * @param romFile
-         * @param memory
-         */
-        explicit BaseSpectrum(const std::string & romFile, MemoryType * memory = nullptr);
-
-        /**
-         * Initialise a new Spectrum, loading the ROM from the given file and allocating its own memory.
-         *
-         * The ROM file is expected to be 16kb in size, and will be loaded at 0x0000 in the Z80 address space. Note that
-         * later models of Spectrum support multiple ROMs that are paged in and out, so constructors for those models should
-         * probably use one of the non-ROM-loading base constructors.
-         *
-         * The spectrum will allocate its own Memory object and will delete it when the Spectrum is destroyed. The memory
-         * size should only be either 32k (Spectrum16K) or 64k (Spectrum48k). The memory created will be a single linear map
-         * of the Z80 address space starting at 0x0000.
-         *
-         * @param romFile
-         * @param memorySize The number of bytes of available memory.
-         */
-        explicit BaseSpectrum(const std::string & romFile, MemoryType::Size memorySize);
 
         /**
          * Destroy the Spectrum.
@@ -326,15 +267,37 @@ namespace Spectrum
 
     protected:
         /**
-         * Load a file into the ROM address space 0x0000 - 0x3fff.
+         * Initialise a new Spectrum borrowing the given memory.
          *
-         * The file is loaded verbatim without verification. If the load fails, the Spectrum will be in an undefined
-         * state.
+         * The provided memory is borrowed and will not be deleted when te Spectrum is destroyed - it is up to the caller to
+         * ensure that it is destroyed at the appropriate time.
          *
-         * @param fileName
-         * @return
+         * No ROM is loaded into the 0x0000 - 0x3fff address space. Effectively, the Spectrum will have no code to run
+         * unless you specifically provide it with some.
+         *
+         * @param memory
          */
-        bool loadRom(const std::string & fileName);
+        explicit BaseSpectrum(MemoryType * memory = nullptr);
+
+        /**
+         * Initialise a new Spectrum with a given memory size.
+         *
+         * The spectrum will allocate its own Memory object and will delete it when the Spectrum is destroyed. The memory
+         * size should only be either 32k (Spectrum16K) or 64k (Spectrum48k). The memory created will be a single linear map
+         * of the Z80 address space starting at 0x0000.
+         *
+         * No ROM is loaded into the 0x0000 - 0x3fff address space. Effectively, the Spectrum will have no code to run
+         * unless you specifically provide it with some.
+         *
+         * @param romFile
+         * @param memory
+         */
+        explicit BaseSpectrum(MemoryType::Size memorySize);
+
+        /**
+         * Ask the spectrum to reload its ROM files.
+         */
+        virtual void reloadRoms() = 0;
 
     private:
         double m_executionSpeed;

@@ -11,6 +11,10 @@
 
 namespace Spectrum
 {
+    /**
+     * TODO model the 16k memory accurately - I think it can still address the full 64k but the top 32k ignores writes
+     *  and reads garbage (0xffs?)
+     */
     class Spectrum16k
     : public BaseSpectrum
     {
@@ -35,6 +39,13 @@ namespace Spectrum
         {
             return DisplayMemorySize;
         }
+
+    protected:
+        bool loadRom(const std::string & romFile);
+        void reloadRoms() override;
+
+    private:
+        std::string m_romFile;
     };
 }
 

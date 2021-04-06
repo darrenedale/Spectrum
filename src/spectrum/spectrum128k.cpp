@@ -1,126 +1,67 @@
 #include <fstream>
-
-#include <iostream>
-#include <iomanip>
-#include <cstring>
+#include <cassert>
 #include "spectrum128k.h"
+#include "spectrum128kmemory.h"
+#include "basespectrum.h"
 
 using namespace Spectrum;
 
 using ::Z80::UnsignedByte;
+using RomNumber = Spectrum128KMemory::RomNumber;
+using BankNumber = Spectrum128KMemory::BankNumber;
 
-namespace
+Spectrum128k::Spectrum128k(const std::string & romFile0, const std::string & romFile1)
+: BaseSpectrum(new Spectrum128KMemory()),
+  m_pager(*this),
+  m_screenBuffer(ScreenBuffer::Normal),
+  m_romFiles{romFile0, romFile1}
 {
-    constexpr const int RomSize = 0x4000;
-    constexpr const int MemoryBankSize = 0x4000;
-
-    constexpr const int MemoryBankOffset[8] = {
-        0x10000,
-        0x14000,
-        0x8000,     // NOTE bank 2 is always at 0x8000, and can also be paged into 0xc000 so we use the memory at 0x8000 as the canonical data
-        0x18000,
-        0x1c000,
-        0x4000,     // NOTE bank 2 is always at 0x4000, and can also be paged into 0xc000 so we use the memory at 0x8000 as the canonical data
-        0x20000,
-        0x24000,
-    };
-
-    constexpr const int NormalDisplayMemoryOffset = 0x4000;
-    constexpr const int ShadowDisplayMemoryOffset = MemoryBankOffset[7];
-}
-
-Spectrum128k::Spectrum128k(const std::string & romFile128, const std::string & romFile48)
-: Spectrum128k()
-{
-    {
-        std::ifstream in(romFile128);
-
-        if (!in) {
-            std::cerr << "failed to open 128k ROM image file\n";
-            // TODO throw
-        }
-
-        in.read(reinterpret_cast<std::ifstream::char_type *>(m_romImages.rom[0]), RomSize);
-
-        if (in.fail() && !in.eof()) {
-            std::cerr << "failed to read 128k ROM image\n";
-            // TODO throw
-        }
-    }
-
-    {
-        std::ifstream in(romFile48);
-
-        if (!in) {
-            std::cerr << "failed to open 48k ROM image file\n";
-            // TODO throw
-        }
-
-        in.read(reinterpret_cast<std::ifstream::char_type *>(m_romImages.rom[1]), RomSize);
-
-        if (in.fail() && !in.eof()) {
-            std::cerr << "failed to read 48k ROM image\n";
-            // TODO throw
-        }
-    }
-
-    std::memcpy(memory(), m_romImages.rom[0], RomSize);
+    auto * mem = memory128();
+    mem->loadRom(romFile0, RomNumber::Rom0);
+    mem->loadRom(romFile1, RomNumber::Rom1);
+    auto * cpu = z80();
+    assert(cpu);
+    cpu->connectIODevice(&m_pager);
 }
 
 Spectrum128k::Spectrum128k()
-: BaseSpectrum(0x28000, nullptr),
-  m_romImages(),
-  m_currentRomNumber(Rom::Rom0),
-  m_pagedMemoryBank(MemoryBank::Bank0)
+: Spectrum128k(std::string{}, std::string{})
 {}
 
 UnsignedByte * Spectrum128k::displayMemory() const
 {
+    assert(memory128());
+
     if (ScreenBuffer::Shadow == m_screenBuffer) {
-        if (MemoryBank::Bank7 == pagedMemoryBank()) {
-            // while paged-in the memory may be different from the cache so we must read the shadow display buffer from
-            // the paged-in location rather than the cached location while it's paged in otherwise the screen won't be up-
-            // to-date
-            return memory() + MemoryBankOffset[7];
-        }
-
-        return memory() + ShadowDisplayMemoryOffset;
+        return memory128()->bankPointer(BankNumber::Bank7);
     }
 
-    return memory() + NormalDisplayMemoryOffset;
+    return memory128()->bankPointer(BankNumber::Bank5);
 }
 
-void Spectrum128k::pageMemoryBank(Spectrum128k::MemoryBank bank)
+Spectrum128k::~Spectrum128k()
 {
-    if (bank == pagedMemoryBank()) {
-        return;
+    auto * cpu = z80();
+
+    if (cpu) {
+        cpu->disconnectIODevice(&m_pager);
     }
-
-    // page out
-    std::memcpy(pagedMemoryCache(), pagedMemory(), MemoryBankSize);
-    m_pagedMemoryBank = bank;
-
-    // page in
-    std::memcpy(pagedMemory(), pagedMemoryCache(), MemoryBankSize);
 }
 
-::Z80::UnsignedByte *Spectrum128k::pagedMemory() const
+void Spectrum128k::reset()
 {
-    return memory() + 0xc000;
+    assert(memory128());
+    BaseSpectrum::reset();
+    m_screenBuffer = ScreenBuffer::Normal;
+    m_pager.reset();
+    memory128()->pageRom(RomNumber::Rom0);
+    memory128()->pageBank(BankNumber::Bank0);
 }
 
-::Z80::UnsignedByte *Spectrum128k::pagedMemoryCache() const
+void Spectrum128k::reloadRoms()
 {
-    return memory() + MemoryBankOffset[static_cast<int>(pagedMemoryBank())];
+    auto * mem = memory128();
+    assert(mem);
+    mem->loadRom(m_romFiles[0], RomNumber::Rom0);
+    mem->loadRom(m_romFiles[1], RomNumber::Rom1);
 }
-
-void Spectrum128k::setRom(Spectrum128k::Rom rom)
-{
-    if (rom == m_currentRomNumber) {
-        return;
-    }
-
-    std::memcpy(memory(), m_romImages.rom[static_cast<int>(rom)], RomSize);
-}
-
-Spectrum128k::~Spectrum128k() = default;

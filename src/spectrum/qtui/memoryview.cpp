@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <QPainter>
 #include <QPaintEvent>
+#include <QScrollBar>
 #include <QToolTip>
 
 #include "memoryview.h"
@@ -39,6 +40,12 @@ namespace
         [[nodiscard]] int rowHeight() const
         {
             return m_cellHeight;
+        }
+
+        void setMemory(Spectrum::BaseSpectrum::MemoryType * memory)
+        {
+            m_memory = memory;
+            update();
         }
 
         std::optional<Z80::UnsignedWord> addressAt(const QPoint & pos) const
@@ -202,6 +209,15 @@ std::optional<Z80::UnsignedWord> MemoryView::addressAt(const QPoint & pos) const
 {
     auto * view = dynamic_cast<MemoryViewInternal *>(widget());
     return view->addressAt(view->mapFromParent(pos));
+}
+
+void MemoryView::setMemory(BaseSpectrum::MemoryType * memory)
+{
+    m_memory = memory;
+    auto * view = dynamic_cast<MemoryViewInternal *>(widget());
+    view->setMemory(memory);
+    verticalScrollBar()->setValue(0);
+    update();
 }
 
 MemoryView::~MemoryView() = default;

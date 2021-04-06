@@ -23,12 +23,14 @@ namespace Spectrum::QtUi
 
         inline const BaseSpectrum & spectrum() const
         {
-            return m_spectrum;
+            assert(m_spectrum);
+            return *m_spectrum;
         }
 
         inline BaseSpectrum & spectrum()
         {
-            return m_spectrum;
+            assert(m_spectrum);
+            return *m_spectrum;
         }
 
         inline bool isPaused() const
@@ -40,6 +42,8 @@ namespace Spectrum::QtUi
         {
             return m_debugMode;
         }
+
+        bool setSpectrum(BaseSpectrum & spectrum);
 
         void setDebugMode(bool debug = true);
         void pause();
@@ -54,6 +58,7 @@ namespace Spectrum::QtUi
         void stepped();
         void debuggingStarted();
         void debuggingFinished();
+        void spectrumChanged(Spectrum::BaseSpectrum *);
 
     protected:
         void run() override;
@@ -61,7 +66,7 @@ namespace Spectrum::QtUi
     private:
         QMutex m_threadLock;
         QWaitCondition m_waitCondition;
-        BaseSpectrum & m_spectrum;
+        BaseSpectrum * m_spectrum;
         bool m_pause;
         bool m_quit;
         bool m_reset;

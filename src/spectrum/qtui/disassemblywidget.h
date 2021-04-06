@@ -30,6 +30,8 @@ namespace Spectrum::QtUi
         void operator=(DisassemblyWidget &&) = delete;
         ~DisassemblyWidget() override;
 
+        void setMemory(BaseSpectrum::MemoryType *);
+
         /**
          * Update the disassembly from a given address.
          *

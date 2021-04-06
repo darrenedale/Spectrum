@@ -31,6 +31,13 @@ namespace Spectrum
 			{
 				return DisplayMemorySize;
 			}
+
+    protected:
+        bool loadRom(const std::string & romFile);
+        void reloadRoms() override;
+
+    private:
+        std::string m_romFile;
     };
 }
 

@@ -227,7 +227,7 @@ namespace
         bool showPcIndicator = true;
         UnsignedWord pc = 0x0000;
 
-        // NOTE these should be considered implmenetation details even by DisassemblyWidget
+        // NOTE these should be considered implementation details even by DisassemblyWidget
         Disassembler m_disassembler;
         Mnemonics m_mnemonics;
         int m_addressWidth;
@@ -290,4 +290,9 @@ void DisassemblyWidget::enablePcIndicator(bool enabled)
         view->showPcIndicator = enabled;
         view->update();
     }
+}
+
+void DisassemblyWidget::setMemory(BaseSpectrum::MemoryType * memory)
+{
+    QScrollArea::setWidget(new DisassemblyView(Disassembler(memory), this));
 }

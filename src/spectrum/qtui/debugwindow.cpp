@@ -72,6 +72,7 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
 
 	connect(m_thread, &Thread::paused, this, &DebugWindow::threadPaused, Qt::UniqueConnection);
 	connect(m_thread, &Thread::resumed, this, &DebugWindow::threadResumed, Qt::UniqueConnection);
+	connect(m_thread, &Thread::spectrumChanged, this, &DebugWindow::threadSpectrumChanged, Qt::UniqueConnection);
 
 	connectWidgets();
 
@@ -354,6 +355,14 @@ void DebugWindow::threadResumed()
 void DebugWindow::threadStepped()
 {
     updateStateDisplay();
+}
+
+void DebugWindow::threadSpectrumChanged()
+{
+    auto & spectrum = m_thread->spectrum();
+    m_memoryWidget.setMemory(m_thread->spectrum().memory());
+    m_disassembly.setMemory(m_thread->spectrum().memory());
+    m_keyboardMonitor.setSpectrum(&spectrum);
 }
 
 void DebugWindow::setProgramCounterBreakpointTriggered(UnsignedWord addr)

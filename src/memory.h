@@ -51,14 +51,10 @@ public:
         m_size = 0;
     }
 
+    // TODO differentiate between addressable size and available size
     inline std::uint64_t size() const
     {
         return m_size;
-    }
-
-    inline bool isValid() const
-    {
-        return m_storage && 0 < size();
     }
 
     virtual void clear()
@@ -72,7 +68,7 @@ public:
      * @param address
      * @return
      */
-    inline Byte readByte(Address address) const
+    virtual inline Byte readByte(Address address) const
     {
         assert(address < size());
         return *mapAddress(address);
@@ -95,7 +91,7 @@ public:
      *
      * @return The buffer.
      */
-    inline Byte * readBytes(Address address, Size count, Byte * buffer)
+    virtual inline Byte * readBytes(Address address, Size count, Byte * buffer) const
     {
         assert(address + count <= size());
 
@@ -112,7 +108,7 @@ public:
      * @param address
      * @return
      */
-    inline void writeByte(Address address, Byte byte) const
+    virtual inline void writeByte(Address address, Byte byte)
     {
         assert(address < size());
         *mapAddress(address) = byte;
@@ -132,7 +128,7 @@ public:
      * @param count The number of bytes.
      * @param bytes The bytes to write to the memory.
      */
-    inline void writeBytes(Address address, Size count, Byte * bytes)
+    virtual inline void writeBytes(Address address, Size count, Byte * bytes)
     {
         assert(address + count <= size());
 
@@ -153,8 +149,10 @@ public:
     template<class word_t>
     inline word_t readWord(Address address) const
     {
+        static Byte buffer[sizeof(word_t)];
         assert(address <= size() - sizeof(word_t));
-        return *reinterpret_cast<word_t *>(mapAddress(address));
+        readBytes(address, sizeof(word_t), buffer);
+        return *reinterpret_cast<word_t *>(buffer);
     }
 
     /**
@@ -172,7 +170,7 @@ public:
     inline void writeWord(Address address, word_t word) const
     {
         assert(address <= size() - sizeof(word_t));
-        *reinterpret_cast<word_t *>(mapAddress(address)) = word;
+        writeBytes(address, reinterpret_cast<Byte *>(&word), sizeof(word));
     }
 
     //

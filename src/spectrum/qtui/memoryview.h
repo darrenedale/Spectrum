@@ -31,6 +31,8 @@ namespace Spectrum::QtUi
         void operator=(MemoryView &&) = delete;
         ~MemoryView() override;
 
+        void setMemory(BaseSpectrum::MemoryType *);
+
         void setHighlight(::Z80::UnsignedWord address, const QColor & foreground, const QColor & background);
         void removeHighlight(::Z80::UnsignedWord address);
         void clearHighlights();

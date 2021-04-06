@@ -81,7 +81,7 @@ namespace Spectrum
         /**
          * The snapshot will take a copy of the provided memory and will default-initialise a CPU state.
          */
-        explicit Snapshot(Spectrum48k::MemoryType * memory = nullptr);
+        explicit Snapshot(BaseSpectrum::MemoryType * memory = nullptr);
         Snapshot(const Snapshot &);
         Snapshot(Snapshot &&) noexcept;
         Snapshot & operator=(const Snapshot &);
@@ -113,7 +113,7 @@ namespace Spectrum
         }
 
     private:
-        explicit Snapshot(const ::Z80::Registers &, Spectrum48k::MemoryType * memory = nullptr);
+        explicit Snapshot(const ::Z80::Registers &, BaseSpectrum::MemoryType * memory = nullptr);
         void copyRegisters(const ::Z80::Registers &);
         struct Registers m_registers;
         Memory m_memory;

@@ -172,6 +172,7 @@ namespace Spectrum::QtUi
         void threadPaused();
         void threadResumed();
         void threadStepped();
+        void threadSpectrumChanged();
 
         // the user has triggered the action to set a breakpoint
         void setProgramCounterBreakpointTriggered(::Z80::UnsignedWord address);

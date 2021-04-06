@@ -19,20 +19,8 @@ namespace
 
 namespace Spectrum
 {
-    BaseSpectrum::BaseSpectrum(const std::string & romFile, MemoryType * memory)
-    : BaseSpectrum(memory)
-    {
-        (void) loadRom(romFile);
-    }
-
-    BaseSpectrum::BaseSpectrum(const std::string & romFile, MemoryType::Size memorySize)
-    : BaseSpectrum(memorySize)
-    {
-        (void) loadRom(romFile);
-    }
-
     BaseSpectrum::BaseSpectrum(MemoryType * memory)
-    : Computer(memory),
+    : Computer(memory, true),
       m_executionSpeed(1.0),
       m_interruptTStateCounter(0),
       m_displayDevices(),
@@ -65,7 +53,7 @@ namespace Spectrum
 
     BaseSpectrum::~BaseSpectrum()
     {
-        // base class takes care of memory
+        // NOTE our constructors always ensure base class owns Memory object and therefore destroys it
         auto * cpu = z80();
         removeCpu(cpu);
         delete cpu;
@@ -74,23 +62,12 @@ namespace Spectrum
     void BaseSpectrum::reset()
     {
         memory()->clear();
-
-        if (!loadRom(m_romFile)) {
-            return;
-        }
-
+        reloadRoms();
         refreshDisplays();
-
-        // fetch the CPU to work with
-        auto * z80 = this->z80();
-
-        if (!z80) {
-            std::cerr << "cpu is not a Z80.\n";
-            return;
-        }
-
+        auto * cpu = this->z80();
+        assert(cpu);
         m_interruptTStateCounter = 0;
-        z80->reset();
+        cpu->reset();
     }
 
 #if(!defined(NDEBUG))
@@ -153,27 +130,6 @@ namespace Spectrum
 
             instructionCount--;
         }
-    }
-
-    bool BaseSpectrum::loadRom(const std::string & fileName)
-    {
-        static constexpr const std::size_t RomFileSize = 0x4000;
-        std::ifstream inFile(fileName);
-
-        if (!inFile) {
-            std::cerr << "spectrum ROM file \"" << fileName << "\" could not be opened.\n";
-            return false;
-        }
-
-        inFile.read(reinterpret_cast<std::ifstream::char_type *>(memory()->pointerTo(0)), RomFileSize);
-
-        if (inFile.fail()) {
-            std::cerr << "failed to load spectrum ROM file \"" << fileName << "\".\n";
-            return false;
-        }
-
-        m_romFile = fileName;
-        return true;
     }
 
     void BaseSpectrum::setKeyboard(Keyboard * keyboard)

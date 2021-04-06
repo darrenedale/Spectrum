@@ -33,6 +33,11 @@ namespace Spectrum::QtUi
         void operator=(MemoryDebugWidget &&) = delete;
         ~MemoryDebugWidget() override;
 
+        void setMemory(BaseSpectrum::MemoryType * memory)
+        {
+            m_memory.setMemory(memory);
+        }
+
         [[nodiscard]] std::optional<::Z80::UnsignedWord> addressAt(const QPoint &) const;
         void scrollToAddress(::Z80::UnsignedWord addr);
 
