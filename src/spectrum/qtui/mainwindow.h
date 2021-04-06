@@ -1,13 +1,13 @@
 #ifndef SPECTRUM_EMULATOR_MAINWINDOW_H
 #define SPECTRUM_EMULATOR_MAINWINDOW_H
 
+#include <memory>
 #include <QMainWindow>
 #include <QAction>
 #include <QSlider>
 #include <QSpinBox>
 #include <QTimer>
 
-#include "../spectrum48k.h"
 #include "qimagedisplaydevice.h"
 #include "debugwindow.h"
 #include "imagewidget.h"
@@ -15,6 +15,11 @@
 #include "../joystickinterface.h"
 #include "../keyboard.h"
 #include "thread.h"
+
+namespace Spectrum
+{
+    class BaseSpectrum;
+}
 
 namespace Spectrum::QtUi
 {
@@ -55,14 +60,14 @@ namespace Spectrum::QtUi
         void saveSnapshot(const QString & fileName, QString format = {});
         void saveSnapshotToSlot(int slotIndex, QString format = {});
 
-        inline Spectrum48k & spectrum()
+        inline BaseSpectrum & spectrum()
         {
-            return m_spectrum;
+            return *m_spectrum;
         }
 
-        [[nodiscard]] inline const Spectrum48k & spectrum() const
+        [[nodiscard]] inline const BaseSpectrum & spectrum() const
         {
-            return m_spectrum;
+            return *m_spectrum;
         }
 
         inline Thread & spectrumThread()
@@ -127,8 +132,8 @@ namespace Spectrum::QtUi
 
         QString m_lastSnapshotLoadDir;
         QString m_lastScreenshotDir;
+        std::unique_ptr<BaseSpectrum> m_spectrum;
         QString m_lastPokeLoadDir;
-        Spectrum48k m_spectrum;
         Thread m_spectrumThread;
         Keyboard m_keyboard;
         QImageDisplayDevice m_display;

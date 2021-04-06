@@ -70,6 +70,7 @@ add_executable(
         ../z80/assembly/disassembler.cpp
         ../z80/assembly/mnemonic.cpp
         ../z80/assembly/operand.cpp
+        spectrum128k.cpp spectrum128k.h
         ../z80/types.cpp)
 
 # TODO libz is only required for debug builds (crc32 memory checksums when dumping Spectrum state to stdout)
