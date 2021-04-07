@@ -7,6 +7,7 @@
 #include "spectrum128kmemory.h"
 
 using namespace Spectrum;
+using ::Z80::UnsignedWord;
 
 namespace
 {
@@ -84,4 +85,16 @@ void Spectrum128KMemory::clear()
     for (auto & bank : m_ramBanks) {
         std::memset(bank, 0, BankSize);
     }
+}
+
+void Spectrum128KMemory::readFromBank(BankNumber bank, Byte * buffer, UnsignedWord size, UnsignedWord offset)
+{
+    assert(offset + size < BankSize);
+    std::memcpy(buffer, m_ramBanks[static_cast<int>(bank)] + offset, size);
+}
+
+void Spectrum128KMemory::writeToBank(BankNumber bank, Byte * data, UnsignedWord size, UnsignedWord offset)
+{
+    assert(offset + size < BankSize);
+    std::memcpy(m_ramBanks[static_cast<int>(bank)] + offset, data, size);
 }
