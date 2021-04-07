@@ -101,7 +101,7 @@ namespace
         UnsignedWord keys[5];
     };
 
-    #pragma pack(1) // the compiler must not pad this struct otherwise header won't be read from the stream correctly
+    #pragma pack(push, 1) // the compiler must not pad this struct otherwise header won't be read from the stream correctly
     struct HeaderV1
     {
         UnsignedByte a;
@@ -129,8 +129,9 @@ namespace
         UnsignedByte iff2;
         UnsignedByte fileFlags2;
     };
+    #pragma pack(pop)
 
-    #pragma pack(1) // the compiler must not pad this struct otherwise header won't be read from the stream correctly
+    #pragma pack(push, 1) // the compiler must not pad this struct otherwise header won't be read from the stream correctly
     struct HeaderV2 : public HeaderV1
     {
         UnsignedWord extendedHeaderLength;
@@ -151,8 +152,9 @@ namespace
         UnsignedByte lastOut0xfffd;
         SoundChipRegisters soundChipRegisters;
     };
+    #pragma pack(pop)
 
-    #pragma pack(1) // the compiler must not pad this struct otherwise header won't be read from the stream correctly
+    #pragma pack(push, 1) // the compiler must not pad this struct otherwise header won't be read from the stream correctly
     struct HeaderV3 : public HeaderV2
     {
         UnsignedWord lowTStateCounter;
@@ -167,12 +169,14 @@ namespace
         UnsignedByte discipleInhibitButtonState;
         UnsignedByte discipleInhibitFlag;
     };
+    #pragma pack(pop)
 
-    #pragma pack(1) // the compiler must not pad this struct otherwise header won't be read from the stream correctly
+    #pragma pack(push, 1) // the compiler must not pad this struct otherwise header won't be read from the stream correctly
     struct HeaderV3_1 : public HeaderV3
     {
         UnsignedByte lastOut0x1ffd;
     };
+    #pragma pack(pop)
 
     constexpr const std::uint8_t CompressedMemoryFlag = 0b00100000;
     constexpr const std::uint16_t MemoryImageOffset = 16384;
