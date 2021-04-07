@@ -185,7 +185,7 @@ namespace Spectrum::QtUi
         QLabel m_statusBarMHz;
 
         QTimer m_displayRefreshTimer;
-        JoystickInterface * m_joystick;
+        std::unique_ptr<JoystickInterface> m_joystick;
         std::unique_ptr<MouseInterface> m_mouse;
 	};
 }

@@ -102,14 +102,12 @@ MainWindow::MainWindow(QWidget * parent)
   m_emulationSpeedSpin(nullptr),
   m_debugWindow(&m_spectrumThread),
   m_displayRefreshTimer(nullptr),
-  m_joystick(nullptr),
+  m_joystick(std::make_unique<Spectrum::KempstonJoystick>()),
   m_mouse(nullptr)
 {
     setWindowTitle(QStringLiteral("Spectrum"));
     setMouseTracking(true);
 
-    // TODO read joystick type from config
-    m_joystick = new Spectrum::KempstonJoystick();
     m_spectrum->setExecutionSpeedConstrained(true);
     m_displayWidget.keepAspectRatio();
     m_displayWidget.setFocusPolicy(Qt::FocusPolicy::ClickFocus);
@@ -194,7 +192,7 @@ MainWindow::MainWindow(QWidget * parent)
     createDockWidgets();
     createStatusBar();
 
-    m_spectrum->setJoystickInterface(m_joystick);
+    m_spectrum->setJoystickInterface(m_joystick.get());
     m_spectrum->setKeyboard(&m_keyboard);
 	m_spectrum->addDisplayDevice(&m_display);
 
@@ -215,8 +213,6 @@ MainWindow::~MainWindow()
     m_spectrum->setJoystickInterface(nullptr);
     m_spectrum->setKeyboard(nullptr);
     m_spectrum->removeDisplayDevice(&m_display);
-    delete m_joystick;
-    m_joystick = nullptr;
     stopThread();
 }
 
@@ -1252,33 +1248,30 @@ void MainWindow::model128Triggered()
 void MainWindow::useKempstonJoystickTriggered()
 {
     m_spectrum->setJoystickInterface(nullptr);
-    delete m_joystick;
-    m_joystick = new KempstonJoystick();
-    m_spectrum->setJoystickInterface(m_joystick);
+    m_joystick = std::make_unique<KempstonJoystick>();
+    m_spectrum->setJoystickInterface(m_joystick.get());
 }
 
 void MainWindow::useInterfaceTwoJoystickTriggered()
 {
     m_spectrum->setJoystickInterface(nullptr);
-    delete m_joystick;
-    m_joystick = new InterfaceTwoJoystick();
-    m_spectrum->setJoystickInterface(m_joystick);
+    m_joystick = std::make_unique<InterfaceTwoJoystick>();
+    m_spectrum->setJoystickInterface(m_joystick.get());
 }
 
 void MainWindow::noJoystickTriggered()
 {
     m_spectrum->setJoystickInterface(nullptr);
-    delete m_joystick;
-    m_joystick = nullptr;
+    m_joystick.reset();
 }
 
 void MainWindow::kempstonMouseToggled(bool on)
 {
-    m_spectrum.setMouseInterface(nullptr);
+    m_spectrum->setMouseInterface(nullptr);
 
     if (on) {
         m_mouse = std::make_unique<KempstonMouse>();
-        m_spectrum.setMouseInterface(m_mouse.get());
+        m_spectrum->setMouseInterface(m_mouse.get());
     } else {
         m_mouse.reset();
     }
@@ -1406,7 +1399,7 @@ bool MainWindow::loadSnapshotFromSlot(int slotIndex)
 
 void MainWindow::attachSpectrumDevices()
 {
-    m_spectrum->setJoystickInterface(m_joystick);
+    m_spectrum->setJoystickInterface(m_joystick.get());
     m_spectrum->setKeyboard(&m_keyboard);
     m_spectrum->addDisplayDevice(&m_display);
 }
