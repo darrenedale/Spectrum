@@ -599,9 +599,6 @@ namespace
             case Qt::Key::Key_Semicolon:
                 return {Keyboard::Key::SymbolShift, Keyboard::Key::O};
 
-            case Qt::Key::Key_QuoteDbl:
-                return {Keyboard::Key::SymbolShift, Keyboard::Key::P};
-
             case Qt::Key::Key_Apostrophe:
                 return {Keyboard::Key::SymbolShift, Keyboard::Key::Num7};
 
@@ -664,34 +661,47 @@ namespace
             case Qt::Key::Key_Space:
                 return {Keyboard::Key::Space};
 
+            // TODO the shifted number keys assume a UK or US layout keyboard
             case Qt::Key::Key_1:
+            case Qt::Key::Key_Exclam:
                 return {Keyboard::Key::Num1};
 
             case Qt::Key::Key_2:
+            case Qt::Key::Key_At:
+            case Qt::Key::Key_QuoteDbl:
                 return {Keyboard::Key::Num2};
 
             case Qt::Key::Key_3:
+            case Qt::Key::Key_sterling:
+            case Qt::Key::Key_NumberSign:
                 return {Keyboard::Key::Num3};
 
             case Qt::Key::Key_4:
+            case Qt::Key::Key_Dollar:
                 return {Keyboard::Key::Num4};
 
             case Qt::Key::Key_5:
+            case Qt::Key::Key_Percent:
                 return {Keyboard::Key::Num5};
 
             case Qt::Key::Key_6:
+            case Qt::Key::Key_AsciiCircum:
                 return {Keyboard::Key::Num6};
 
             case Qt::Key::Key_7:
+            case Qt::Key::Key_Ampersand:
                 return {Keyboard::Key::Num7};
 
             case Qt::Key::Key_8:
+            case Qt::Key::Key_Asterisk:
                 return {Keyboard::Key::Num8};
 
             case Qt::Key::Key_9:
+            case Qt::Key::Key_ParenLeft:
                 return {Keyboard::Key::Num9};
 
             case Qt::Key::Key_0:
+            case Qt::Key::Key_ParenRight:
                 return {Keyboard::Key::Num0};
 
             case Qt::Key::Key_Q:
