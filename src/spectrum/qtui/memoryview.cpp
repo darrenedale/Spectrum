@@ -94,15 +94,34 @@ namespace
                 }
 
                 auto byteValue = m_memory->readByte(*address);
+                auto wordValue = ::Z80::z80ToHostByteOrder(m_memory->readWord<::Z80::UnsignedWord>(*address));
 
+                // {addr}   (0x%1)
+                // 8-bit    (%2)
+                // Hex      (%3: 0x%4)
+                // Dec      (%5: %6)
+                // Bin      (%7: %8)
+                // Oct      (%9: 0%10)
+                // 16-bit   (%11)
+                // Hex      (%3: %12)
+                // Dec      (%5: %13)
+                // Oct      (%9: %14)
                 QToolTip::showText(
                     dynamic_cast<QHelpEvent *>(event)->globalPos(),
-                    tr("<p><strong>0x%1</strong></p><p>Hex: 0x%2<br>Dec: %3<br>Bin: %4<br>Oct: 0%5</p>")
-                    .arg(*address, 4, 16, QChar('0'))
-                    .arg(byteValue, 2, 16, QChar('0'))
-                    .arg(byteValue)
-                    .arg(byteValue, 8, 2, QChar('0'))
-                    .arg(byteValue, 0, 8)
+                    QStringLiteral("<p><strong>0x%1</strong></p><p><strong>%2</strong><br>%3: 0x%4<br>%5: %6<br>%7: %8<br>%9: 0%10</p><p><strong>%11</strong><br>%3: 0x%12<br>%5: %13<br>%9: 0%14</p>")
+                    .arg(*address, 4, 16, QChar('0'))       // %1
+                    .arg(tr("8-bit"), tr("Hex"))         // %2, %3
+                    .arg(byteValue, 2, 16, QChar('0'))      // %4
+                    .arg(tr("Dec"))                         // %5
+                    .arg(byteValue)                            // %6
+                    .arg(tr("Bin"))                         // %7
+                    .arg(byteValue, 8, 2, QChar('0'))       // %8
+                    .arg(tr("Oct"))                         // %9
+                    .arg(byteValue, 0, 8)                      // %10
+                    .arg(tr("16-bit"))                      // %11
+                    .arg(wordValue, 4, 16, QChar('0'))      // %12
+                    .arg(wordValue)                            // %13
+                    .arg(wordValue, 0, 8)                      // %14
                 );
 
                 return true;

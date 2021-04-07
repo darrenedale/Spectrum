@@ -26,6 +26,12 @@ using ::Z80::UnsignedWord;
 using ::Z80::UnsignedByte;
 using ::Z80::Register16;
 
+namespace
+{
+    // when a status message is not permanent, how long should it be displayed for (in ms)?
+    constexpr const int DefaultTransientMessageTimeout = 5000;
+}
+
 DebugWindow::DebugWindow(QWidget * parent )
 : DebugWindow(nullptr, parent)
 {
@@ -54,7 +60,8 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
   m_breakpoints(),
   m_memoryBreakpointObserver(*this),
   m_pcObserver(*this),
-  m_spBelowObserver(*this)
+  m_spBelowObserver(*this),
+  m_statusClearTimer()
 {
     m_disassembly.enablePcIndicator(true);
 
@@ -65,6 +72,8 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
     m_pointers.addStackPointerAction(&m_navigateToSp);
     m_pointers.addStackPointerAction(&m_breakpointAtStackTop);
 
+    m_statusClearTimer.setSingleShot(true);
+
     setWindowTitle(tr("Spectrum Debugger"));
     createToolbars();
     createDockWidgets();
@@ -73,6 +82,8 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
 	connect(m_thread, &Thread::paused, this, &DebugWindow::threadPaused, Qt::UniqueConnection);
 	connect(m_thread, &Thread::resumed, this, &DebugWindow::threadResumed, Qt::UniqueConnection);
 	connect(m_thread, &Thread::spectrumChanged, this, &DebugWindow::threadSpectrumChanged, Qt::UniqueConnection);
+
+	connect(&m_statusClearTimer, &QTimer::timeout, this, &DebugWindow::clearStatusMessage);
 
 	connectWidgets();
 
@@ -203,7 +214,7 @@ void DebugWindow::connectWidgets()
 
         if (addr > 0xffff - 2) {
             std::cerr << "Can't set a breakpoint at address on top of stack - stack is currently < 2 bytes in size\n";
-            m_status.setText("Can't set breakpoint - the top of the stack does not contain an address.");
+            showStatusMessage("Can't set breakpoint - the top of the stack does not contain an address.", DefaultTransientMessageTimeout);
             return;
         }
 
@@ -387,7 +398,7 @@ void DebugWindow::breakAtProgramCounter(UnsignedWord address)
 
     breakpoint->addObserver(&m_pcObserver);
     std::cout << "setting breakpoint at 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << "\n";
-    setStatus(tr("Breakpoint set at PC = 0x%1.").arg(address, 4, 16, QLatin1Char('0')));
+    showStatusMessage(tr("Breakpoint set at PC = 0x%1.").arg(address, 4, 16, QLatin1Char('0')), DefaultTransientMessageTimeout);
 }
 
 void DebugWindow::breakIfStackPointerBelow(UnsignedWord address)
@@ -401,7 +412,7 @@ void DebugWindow::breakIfStackPointerBelow(UnsignedWord address)
     }
 
     breakpoint->addObserver(&m_spBelowObserver);
-    setStatus(tr("Breakpoint set at SP < 0x%1.").arg(address, 4, 16, QLatin1Char('0')));
+    showStatusMessage(tr("Breakpoint set at SP < 0x%1.").arg(address, 4, 16, QLatin1Char('0')), DefaultTransientMessageTimeout);
 }
 
 bool DebugWindow::addBreakpoint(Breakpoint * breakpoint)
@@ -423,12 +434,17 @@ bool DebugWindow::hasBreakpoint(const Breakpoint & breakpoint) const
     return existingBreakpoint != m_breakpoints.cend();
 }
 
-void DebugWindow::setStatus(const QString & status)
+void DebugWindow::showStatusMessage(const QString & status, int timeout)
 {
     m_status.setText(status);
+    m_statusClearTimer.stop();
+
+    if (0 < timeout) {
+        m_statusClearTimer.start(timeout);
+    }
 }
 
-void DebugWindow::clearStatus()
+void DebugWindow::clearStatusMessage()
 {
     m_status.clear();
 }
@@ -497,7 +513,7 @@ void DebugWindow::locateStackPointerInDisassembly()
 void DebugWindow::programCounterBreakpointTriggered(UnsignedWord address)
 {
     std::cout << "PC breakpoint hit, navigating to memory location\n";
-    setStatus(tr("Breakpoint hit: PC = 0x%1.").arg(address, 4, 16, QLatin1Char('0')));
+    showStatusMessage(tr("Breakpoint hit: PC = 0x%1.").arg(address, 4, 16, QLatin1Char('0')));
     show();
     activateWindow();
     raise();
@@ -509,7 +525,7 @@ void DebugWindow::programCounterBreakpointTriggered(UnsignedWord address)
 void DebugWindow::memoryChangeBreakpointTriggered(UnsignedWord address)
 {
     std::cout << "Memory monitor breakpoint hit, navigating to memory location\n";
-    setStatus(tr("Monitored memory location modified: 0x%1.").arg(address, 4, 16, QLatin1Char('0')));
+    showStatusMessage(tr("Monitored memory location modified: 0x%1.").arg(address, 4, 16, QLatin1Char('0')));
     show();
     activateWindow();
     raise();
@@ -519,7 +535,7 @@ void DebugWindow::memoryChangeBreakpointTriggered(UnsignedWord address)
 void DebugWindow::stackPointerBelowBreakpointTriggered(::Z80::UnsignedWord address)
 {
     std::cout << "Stack pointer breakpoint hit, navigating to memory location\n";
-    setStatus(tr("Stack pointer is below 0x%1.").arg(address, 4, 16, QLatin1Char('0')));
+    showStatusMessage(tr("Stack pointer is below 0x%1.").arg(address, 4, 16, QLatin1Char('0')));
     show();
     activateWindow();
     raise();

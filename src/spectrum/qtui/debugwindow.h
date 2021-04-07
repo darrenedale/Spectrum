@@ -38,8 +38,8 @@ namespace Spectrum::QtUi
         explicit DebugWindow(Thread *, QWidget * = nullptr);
         ~DebugWindow() override;
 
-        void setStatus(const QString & status);
-        void clearStatus();
+        void showStatusMessage(const QString & status, int timeout = 0);
+        void clearStatusMessage();
 
         void locateProgramCounterInMemory();
         void locateStackPointerInMemory();
@@ -74,7 +74,9 @@ namespace Spectrum::QtUi
 
             breakpoint->addObserver(&m_memoryBreakpointObserver);
             std::cout << "setting breakpoint monitoring 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << " for " << (sizeof(ValueType) * 8) << "-bit changes\n";
-            setStatus(tr("Breakpoint set monitoring 0x%1 for %2-bit changes.").arg(address, 4, 16, QLatin1Char('0')).arg(sizeof(ValueType) * 8));
+            showStatusMessage(
+                    tr("Breakpoint set monitoring 0x%1 for %2-bit changes.").arg(address, 4, 16, QLatin1Char('0')).arg(
+                            sizeof(ValueType) * 8));
         }
 
         /**
@@ -209,6 +211,8 @@ namespace Spectrum::QtUi
         ProgramCounterBreakpointObserver m_pcObserver;
         MemoryBreakpointObserver m_memoryBreakpointObserver;
         StackPointerBelowBreakpointObserver m_spBelowObserver;
+
+        QTimer m_statusClearTimer;
     };
 }
 

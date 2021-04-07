@@ -27,5 +27,10 @@ bool StackPointerBelowBreakpoint::operator==(const Breakpoint & other) const
 
 bool StackPointerBelowBreakpoint::check(const Spectrum::BaseSpectrum & spectrum)
 {
-    return spectrum.z80()->stackPointer() < address();
+    if (spectrum.z80()->stackPointer() < address()) {
+        notifyObservers();
+        return true;
+    }
+
+    return false;
 }
