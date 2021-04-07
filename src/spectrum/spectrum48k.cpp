@@ -3,6 +3,8 @@
 
 using namespace Spectrum;
 
+// NOTE a basic Memory object consisting of a contiguous array of 65536 bytes is allocated and owned by the Computer
+// base class and it takes care of deallocation on destruction
 Spectrum48k::Spectrum48k(const std::string & romFile)
 : BaseSpectrum(0x10000),
   m_romFile(romFile)

@@ -5,7 +5,7 @@
 #ifndef SPECTRUM_SPECTRUM128KMEMORY_H
 #define SPECTRUM_SPECTRUM128KMEMORY_H
 
-#include "../memory.h"
+#include "basespectrum.h"
 #include "../z80/types.h"
 
 namespace Spectrum
@@ -21,7 +21,7 @@ namespace Spectrum
      * including banks 2 and 5 (in which case the bank will appear both in the static section and the paged section).
      */
     class Spectrum128KMemory
-    : public Memory<Z80::UnsignedByte>
+    : public BaseSpectrum::MemoryType
     {
     public:
         /**

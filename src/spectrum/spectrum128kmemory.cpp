@@ -26,7 +26,7 @@ namespace
 }
 
 Spectrum128KMemory::Spectrum128KMemory()
-: Memory<Byte>(0x10000, nullptr),
+: BaseSpectrum::MemoryType(0x10000, nullptr),
   m_romNumber(RomNumber::Rom0),
   m_pagedBank(BankNumber::Bank0),
   m_roms(),

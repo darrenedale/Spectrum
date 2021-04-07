@@ -5,7 +5,7 @@
 using namespace Spectrum;
 
 Spectrum16k::Spectrum16k(const std::string & romFile)
-: BaseSpectrum(new Spectrum16KMemory())
+: BaseSpectrum(new Spectrum16kMemory())
 {
     (void) loadRom(romFile);
 }
