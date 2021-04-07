@@ -31,6 +31,7 @@
 #include "threadpauser.h"
 #include "../kempstonjoystick.h"
 #include "../interfacetwojoystick.h"
+#include "../kempstonmouse.h"
 #include "../snapshot.h"
 #include "../io/snasnapshotreader.h"
 #include "../io/z80snapshotreader.h"
@@ -92,6 +93,7 @@ MainWindow::MainWindow(QWidget * parent)
   m_joystickNone(tr("None")),
   m_joystickKempston(tr("Kempston")),
   m_joystickInterface2(tr("ZX Interface Two")),
+  m_kempstonMouse(tr("Kempston mouse")),
   m_reset(QIcon::fromTheme(QStringLiteral("start-over")), tr("Reset")),
   m_debug(tr("Debug")),
   m_debugStep(QIcon::fromTheme(QStringLiteral("debug-step-instruction")), tr("Step")),
@@ -100,9 +102,12 @@ MainWindow::MainWindow(QWidget * parent)
   m_emulationSpeedSpin(nullptr),
   m_debugWindow(&m_spectrumThread),
   m_displayRefreshTimer(nullptr),
-  m_joystick(nullptr)
+  m_joystick(nullptr),
+  m_mouse(nullptr)
 {
     setWindowTitle(QStringLiteral("Spectrum"));
+    setMouseTracking(true);
+
     // TODO read joystick type from config
     m_joystick = new Spectrum::KempstonJoystick();
     m_spectrum->setExecutionSpeedConstrained(true);
@@ -151,6 +156,9 @@ MainWindow::MainWindow(QWidget * parent)
     m_joystickInterface2.setCheckable(true);
     m_joystickNone.setCheckable(true);
     m_joystickKempston.setChecked(true);
+
+    m_kempstonMouse.setCheckable(true);
+    m_kempstonMouse.setChecked(false);
 
     auto * joystickInterface = new QActionGroup(this);
     joystickInterface->addAction(&m_joystickKempston);
@@ -296,6 +304,7 @@ void MainWindow::createMenuBar()
     subMenu->addAction(&m_joystickKempston);
     subMenu->addAction(&m_joystickInterface2);
     subMenu->addAction(&m_joystickNone);
+    menu->addAction(&m_kempstonMouse);
     menu->addSeparator();
     menu->addAction(m_pokesWidget.loadPokesAction());
     menu->addAction(m_pokesWidget.clearPokesAction());
@@ -376,6 +385,8 @@ void MainWindow::connectSignals()
 	connect(&m_joystickKempston, &QAction::triggered, this, &MainWindow::useKempstonJoystickTriggered);
 	connect(&m_joystickInterface2, &QAction::triggered, this, &MainWindow::useInterfaceTwoJoystickTriggered);
 	connect(&m_joystickNone, &QAction::triggered, this, &MainWindow::noJoystickTriggered);
+
+	connect(&m_kempstonMouse, &QAction::triggered, this, &MainWindow::kempstonMouseToggled);
 
 	connect(&m_debug, &QAction::triggered, this, &MainWindow::debugTriggered);
 	connect(&m_debugStep, &QAction::triggered, this, &MainWindow::stepTriggered);
@@ -1031,6 +1042,59 @@ void MainWindow::dropEvent(QDropEvent * event)
     }
 }
 
+void MainWindow::mouseMoveEvent(QMouseEvent * event)
+{
+    if (!m_mouse) {
+        return;
+    }
+
+    auto coordinates = m_displayWidget.mapFromParent(event->pos());
+    m_mouse->setX(coordinates.x());
+    m_mouse->setY(coordinates.y());
+}
+
+void MainWindow::mousePressEvent(QMouseEvent * event)
+{
+    if (!m_mouse) {
+        return;
+    }
+
+    auto buttons = event->buttons();
+
+    if (buttons & Qt::MouseButton::LeftButton) {
+        m_mouse->setButton1Pressed(true);
+    }
+
+    if (buttons & Qt::MouseButton::RightButton) {
+        m_mouse->setButton2Pressed(true);
+    }
+
+    if (buttons & Qt::MouseButton::MiddleButton) {
+        m_mouse->setButton3Pressed(true);
+    }
+}
+
+void MainWindow::mouseReleaseEvent(QMouseEvent * event)
+{
+    if (!m_mouse) {
+        return;
+    }
+
+    auto buttons = event->buttons();
+
+    if (buttons & Qt::MouseButton::LeftButton) {
+        m_mouse->setButton1Pressed(false);
+    }
+
+    if (buttons & Qt::MouseButton::RightButton) {
+        m_mouse->setButton2Pressed(false);
+    }
+
+    if (buttons & Qt::MouseButton::MiddleButton) {
+        m_mouse->setButton3Pressed(false);
+    }
+}
+
 void MainWindow::pauseResumeTriggered()
 {
     if (m_spectrumThread.isPaused()) {
@@ -1206,6 +1270,18 @@ void MainWindow::noJoystickTriggered()
     m_spectrum->setJoystickInterface(nullptr);
     delete m_joystick;
     m_joystick = nullptr;
+}
+
+void MainWindow::kempstonMouseToggled(bool on)
+{
+    m_spectrum.setMouseInterface(nullptr);
+
+    if (on) {
+        m_mouse = std::make_unique<KempstonMouse>();
+        m_spectrum.setMouseInterface(m_mouse.get());
+    } else {
+        m_mouse.reset();
+    }
 }
 
 void MainWindow::emulationSpeedChanged(int speed)

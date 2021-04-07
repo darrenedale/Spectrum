@@ -15,6 +15,7 @@ namespace Spectrum
     class DisplayDevice;
     class Keyboard;
     class JoystickInterface;
+    class MouseInterface;
 
     /**
      * Abstract base class for models of Spectrum.
@@ -235,6 +236,20 @@ namespace Spectrum
         void setJoystickInterface(JoystickInterface *);
 
         /**
+         * Set the mouse interface for the spectrum.
+         *
+         * The mouse interface is borrowed, not owned. It is the caller's responsibility to ensure it is destroyed at the
+         * appropriate time and to ensure that the Spectrum does not retain a reference to a mouse interface that has
+         * been destroyed.
+         *
+         * It is safe to provide a null mouse interface if you just want to remove the existing mouse interface from
+         * the Spectrum.
+         *
+         * @param mouse
+         */
+        void setMouseInterface(MouseInterface *);
+
+        /**
          * Fetch the current keyboard device for the Spectrum.
          *
          * This can be null if no keyboard has been attached.
@@ -306,6 +321,7 @@ namespace Spectrum
         DisplayDevices m_displayDevices;
         Keyboard * m_keyboard;
         JoystickInterface * m_joystick;
+        MouseInterface * m_mouse;
         std::string m_romFile;
     };
 }

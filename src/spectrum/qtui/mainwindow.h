@@ -12,6 +12,7 @@
 #include "debugwindow.h"
 #include "imagewidget.h"
 #include "pokeswidget.h"
+#include "../mouseinterface.h"
 #include "../joystickinterface.h"
 #include "../keyboard.h"
 #include "thread.h"
@@ -100,10 +101,12 @@ namespace Spectrum::QtUi
 	    void keyReleaseEvent(QKeyEvent *) override;
 	    void dragEnterEvent(QDragEnterEvent *) override;
 	    void dropEvent(QDropEvent *) override;
+	    void mouseMoveEvent(QMouseEvent *) override;
+	    void mousePressEvent(QMouseEvent *) override;
+	    void mouseReleaseEvent(QMouseEvent *) override;
         void refreshSpectrumDisplay();
 
         void updateStatusBarSpeedWidget();
-
 
     private:
 	    void attachSpectrumDevices();
@@ -126,6 +129,7 @@ namespace Spectrum::QtUi
         void useKempstonJoystickTriggered();
         void useInterfaceTwoJoystickTriggered();
         void noJoystickTriggered();
+        void kempstonMouseToggled(bool);
         void loadPokesTriggered();
         void emulationSpeedChanged(int);
         void stepTriggered();
@@ -165,6 +169,8 @@ namespace Spectrum::QtUi
         QAction m_joystickKempston;
         QAction m_joystickInterface2;
 
+        QAction m_kempstonMouse;
+
         QAction m_debug;
         QAction m_debugStep;
         QAction m_refreshScreen;
@@ -180,7 +186,8 @@ namespace Spectrum::QtUi
 
         QTimer m_displayRefreshTimer;
         JoystickInterface * m_joystick;
-    };
+        std::unique_ptr<MouseInterface> m_mouse;
+	};
 }
 
 #endif // SPECTRUM_EMULATOR_MAINWINDOW_H
