@@ -50,6 +50,18 @@ namespace Spectrum
         ~Spectrum48k() override;
 
         /**
+         * The Spectrum model type.
+         *
+         * Always Model::Spectrum48k.
+         *
+         * @return
+         */
+        [[nodiscard]] inline constexpr Model model() const override
+        {
+            return Model::Spectrum48k;
+        }
+
+        /**
          * Fetch a pointer to the Spectrum's display file.
          *
          * It's safe to use the returned pointer as a pointer to a contiguous block of 16kb of Spectrum RAM. Only

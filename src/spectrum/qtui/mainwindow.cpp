@@ -455,6 +455,46 @@ void MainWindow::refreshSpectrumDisplay()
     }
 }
 
+Spectrum::Model MainWindow::model() const
+{
+    assert(m_spectrum);
+    return m_spectrum->model();
+}
+
+void MainWindow::setModel(Spectrum::Model model)
+{
+    detachSpectrumDevices();
+    bool paused = m_spectrumThread.isPaused();
+    m_displayRefreshTimer.stop();
+    stopThread();
+
+    switch (model) {
+        case Model::Spectrum16k:
+            m_spectrum = std::make_unique<Spectrum16k>(Default16kRom);
+            break;
+
+        case Model::Spectrum48k:
+            m_spectrum = std::make_unique<Spectrum48k>(Default48kRom);
+            break;
+
+        case Model::Spectrum128k:
+            m_spectrum = std::make_unique<Spectrum128k>(Default128kRom0, Default128kRom1);
+            break;
+    }
+
+    attachSpectrumDevices();
+    m_spectrumThread.setSpectrum(*m_spectrum);
+    m_spectrumThread.start();
+
+    if (paused) {
+        m_spectrumThread.pause();
+    } else {
+        m_displayRefreshTimer.start();
+    }
+
+    setWindowTitle(QString::fromStdString(std::to_string(m_spectrum->model())));
+}
+
 void MainWindow::saveScreenshot(const QString & fileName)
 {
     ThreadPauser pauser(m_spectrumThread);
@@ -534,7 +574,7 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
     m_spectrum->dumpState();
 #endif
 
-    setWindowTitle(QStringLiteral("Spectrum | %1").arg(QFileInfo(fileName).fileName()));
+    setWindowTitle(QStringLiteral("%1 | %2").arg(QString::fromStdString(std::to_string(m_spectrum->model())), QFileInfo(fileName).fileName()));
     m_display.redrawDisplay(m_spectrum->displayMemory());
     m_displayWidget.setImage(m_display.image());
 
@@ -949,12 +989,42 @@ void MainWindow::closeEvent(QCloseEvent * ev)
     settings.setValue(QStringLiteral("emulationSpeed"), m_emulationSpeedSlider.value());
     settings.setValue(QStringLiteral("windowState"), saveState());
 
-    if (m_joystickKempston.isChecked()) {
-        settings.setValue(QStringLiteral("joystick1"), QStringLiteral("kempston"));
-    } else if (m_joystickInterface2.isChecked()) {
-        settings.setValue(QStringLiteral("joystick1"), QStringLiteral("zxinterfacetwo"));
-    } else if (m_joystickNone.isChecked()) {
-        settings.setValue(QStringLiteral("joystick1"), QStringLiteral("none"));
+    {
+        QString joystickType;
+
+        if (m_joystickKempston.isChecked()) {
+            joystickType = QStringLiteral("kempston");
+        } else if (m_joystickInterface2.isChecked()) {
+            joystickType = QStringLiteral("zxinterfacetwo");
+        } else if (m_joystickNone.isChecked()) {
+            joystickType = QStringLiteral("none");
+        }
+
+        settings.setValue(QStringLiteral("joystick1"), joystickType);
+    }
+
+    {
+        QString model;
+
+        if (!m_spectrum) {
+            model = QStringLiteral("none");
+        } else {
+            switch (m_spectrum->model()) {
+                case Model::Spectrum16k:
+                    model = QStringLiteral("16k");
+                    break;
+
+                case Model::Spectrum48k:
+                    model = QStringLiteral("48k");
+                    break;
+
+                case Model::Spectrum128k:
+                    model = QStringLiteral("128k");
+                    break;
+            }
+        }
+
+        settings.setValue(QStringLiteral("model"), model);
     }
 
     settings.endGroup();
@@ -978,17 +1048,34 @@ void MainWindow::showEvent(QShowEvent * ev)
     }
 
     m_emulationSpeedSlider.setValue(speed);
-    auto joystick = settings.value("joystick1").toString();
 
-    if (QStringLiteral("kempston") == joystick) {
-        m_joystickKempston.setChecked(true);
-        useKempstonJoystickTriggered();
-    } else if (QStringLiteral("zxinterfacetwo") == joystick) {
-        m_joystickInterface2.setChecked(true);
-        useInterfaceTwoJoystickTriggered();
-    } else {
-        m_joystickNone.setChecked(true);
-        noJoystickTriggered();
+    {
+        auto joystick = settings.value(QStringLiteral("joystick1")).toString();
+
+        if (QStringLiteral("kempston") == joystick) {
+            m_joystickKempston.setChecked(true);
+            useKempstonJoystickTriggered();
+        } else if (QStringLiteral("zxinterfacetwo") == joystick) {
+            m_joystickInterface2.setChecked(true);
+            useInterfaceTwoJoystickTriggered();
+        } else {
+            m_joystickNone.setChecked(true);
+            noJoystickTriggered();
+        }
+    }
+
+    // TODO probably need to move this to the constructor otherwise a show event will reset any existing, running
+    //  spectrum
+    {
+        auto model = settings.value(QStringLiteral("model")).toString();
+
+        if (QStringLiteral("16k") == model) {
+            setModel(Model::Spectrum16k);
+        } else if(QStringLiteral("48k") == model) {
+            setModel(Model::Spectrum48k);
+        } else if(QStringLiteral("128k") == model) {
+            setModel(Model::Spectrum128k);
+        }
     }
 
     restoreState(settings.value(QStringLiteral("windowState")).toByteArray());
@@ -1192,57 +1279,17 @@ void MainWindow::saveSnapshotTriggered()
 
 void MainWindow::model16Triggered()
 {
-    detachSpectrumDevices();
-    bool paused = m_spectrumThread.isPaused();
-    m_displayRefreshTimer.stop();
-    stopThread();
-    m_spectrum = std::make_unique<Spectrum16k>(Default16kRom);
-    attachSpectrumDevices();
-    m_spectrumThread.setSpectrum(*m_spectrum);
-    m_spectrumThread.start();
-    m_displayRefreshTimer.start();
-
-    if (paused) {
-        m_spectrumThread.pause();
-    } else {
-        m_displayRefreshTimer.start();
-    }
+    setModel(Model::Spectrum16k);
 }
 
 void MainWindow::model48Triggered()
 {
-    detachSpectrumDevices();
-    bool paused = m_spectrumThread.isPaused();
-    m_displayRefreshTimer.stop();
-    stopThread();
-    m_spectrum = std::make_unique<Spectrum48k>(Default48kRom);
-    attachSpectrumDevices();
-    m_spectrumThread.setSpectrum(*m_spectrum);
-    m_spectrumThread.start();
-
-    if (paused) {
-        m_spectrumThread.pause();
-    } else {
-        m_displayRefreshTimer.start();
-    }
+    setModel(Model::Spectrum48k);
 }
 
 void MainWindow::model128Triggered()
 {
-    detachSpectrumDevices();
-    bool paused = m_spectrumThread.isPaused();
-    m_displayRefreshTimer.stop();
-    stopThread();
-    m_spectrum = std::make_unique<Spectrum128k>(Default128kRom0, Default128kRom1);
-    attachSpectrumDevices();
-    m_spectrumThread.setSpectrum(*m_spectrum);
-    m_spectrumThread.start();
-
-    if (paused) {
-        m_spectrumThread.pause();
-    } else {
-        m_displayRefreshTimer.start();
-    }
+    setModel(Model::Spectrum128k);
 }
 
 void MainWindow::useKempstonJoystickTriggered()
@@ -1393,7 +1440,7 @@ bool MainWindow::loadSnapshotFromSlot(int slotIndex)
         return false;
     }
 
-    setWindowTitle(QStringLiteral("Spectrum | Snapshot slot %1").arg(slotIndex));
+    setWindowTitle(QStringLiteral("%1 | Snapshot slot %2").arg(QString::fromStdString(std::to_string(m_spectrum->model()))).arg(slotIndex));
     return true;
 }
 

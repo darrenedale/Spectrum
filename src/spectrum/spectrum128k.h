@@ -59,6 +59,18 @@ namespace Spectrum
         ~Spectrum128k() override;
 
         /**
+         * The Spectrum model type.
+         *
+         * Always Model::Spectrum128k.
+         *
+         * @return
+         */
+        [[nodiscard]] inline constexpr Model model() const override
+        {
+            return Model::Spectrum128k;
+        }
+
+        /**
          * Fetch the display memory.
          *
          * The returned pointer is guaranteed to be a contiguous array of at least 6912 bytes representing the

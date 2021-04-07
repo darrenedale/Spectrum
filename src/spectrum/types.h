@@ -5,9 +5,12 @@
 #ifndef SPECTRUM_TYPES_H
 #define SPECTRUM_TYPES_H
 
+#include <cstdint>
+#include <string>
+
 namespace Spectrum
 {
-    enum class Colour: std::uint8_t
+    enum class Colour : std::uint8_t
     {
         Black = 0,
         Blue,
@@ -18,6 +21,18 @@ namespace Spectrum
         Yellow,
         White,
     };
+
+    enum class Model : std::uint8_t
+    {
+        Spectrum16k,
+        Spectrum48k,
+        Spectrum128k,
+    };
+
+}
+namespace std
+{
+    std::string to_string(Spectrum::Model model);
 }
 
 #endif //SPECTRUM_TYPES_H

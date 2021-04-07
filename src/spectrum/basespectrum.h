@@ -9,6 +9,7 @@
 
 #include "../computer.h"
 #include "z80.h"
+#include "types.h"
 
 namespace Spectrum
 {
@@ -32,6 +33,13 @@ namespace Spectrum
          * The Z80 will be destroyed, and the memory will be destroyed if it is owned by the Spectrum.
          */
         ~BaseSpectrum() override;
+
+        /**
+         * Which model of Spectrum is it?
+         *
+         * @return
+         */
+        [[nodiscard]] virtual Model model() const = 0;
 
         /**
          * Convenience method to fetch the Spectrum's Z80 CPU.

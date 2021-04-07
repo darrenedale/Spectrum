@@ -35,6 +35,18 @@ namespace Spectrum
         Spectrum16k();
 
         /**
+         * The Spectrum model type.
+         *
+         * Always Model::Spectrum16k.
+         *
+         * @return
+         */
+        [[nodiscard]] inline constexpr Model model() const override
+        {
+            return Model::Spectrum16k;
+        }
+
+        /**
          * Initialise a new Spectrum48k with a ROM image on disk.
          *
          * Note that in the real world the ROM for a Spectrum 16K is the same as the ROM for a Spectrum 48K.

@@ -36,8 +36,11 @@ namespace Spectrum::QtUi
     Q_OBJECT
 
     public:
-         explicit MainWindow(QWidget * = nullptr);
-         ~MainWindow() override;
+        explicit MainWindow(QWidget * = nullptr);
+        ~MainWindow() override;
+
+        void setModel(Spectrum::Model model);
+        Spectrum::Model model() const;
 
         void saveScreenshot(const QString & fileName);
 
