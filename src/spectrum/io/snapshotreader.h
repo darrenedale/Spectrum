@@ -12,16 +12,32 @@
 
 namespace Spectrum::Io
 {
+    /**
+     * Base class for readers that read Spectrum snapshots in various formats.
+     */
     class SnapshotReader
     {
     public:
-        explicit SnapshotReader(std::istream * in)
+        /**
+         * Initialise a reader with a stream to read.
+         *
+         * The stream is borrowed not owned. The caller is responsible for ensuring the provided stream outlives the
+         * reader.
+         *
+         * @param in
+         */
+        explicit SnapshotReader(std::istream & in)
         : m_borrowedStream(true),
           m_hasBeenRead(false),
-          m_in(in),
+          m_in(&in),
           m_snapshot()
         {}
 
+        /**
+         * Initialise a reader with the name of a file to read.
+         *
+         * @param inFile
+         */
         explicit SnapshotReader(const std::string & inFile)
         : m_borrowedStream(false),
           m_hasBeenRead(false),
@@ -29,6 +45,7 @@ namespace Spectrum::Io
           m_snapshot()
         {}
 
+        // readers can be move constructed/assigned but not copied
         SnapshotReader(const SnapshotReader & other) = delete;
         SnapshotReader(SnapshotReader && other) noexcept;
         SnapshotReader & operator=(const SnapshotReader & other) = delete;
@@ -36,8 +53,22 @@ namespace Spectrum::Io
 
         virtual ~SnapshotReader();
 
+        /**
+         * Set the reader to read the given file.
+         *
+         * @param fileName
+         */
         void setFileName(const std::string & fileName);
-        void setStream(std::istream * in);
+
+        /**
+         * Set the reader to use the provided stream for reading.
+         *
+         * The stream is borrowed, not owned. It is the caller's responsibility to ensure the provided stream outlives
+         * the reader that is borrowing it.
+         *
+         * @param in
+         */
+        void setStream(std::istream & in);
 
         /**
          * Force the reader to attempt to read (another) snapshot from the stream.
@@ -89,17 +120,44 @@ namespace Spectrum::Io
             return m_snapshot;
         }
 
+        /**
+         * Check whether the stream the reader is using is open.
+         *
+         * @return
+         */
         [[nodiscard]] bool isOpen() const
         {
             return m_in && *m_in;
         }
 
     protected:
-        void disposeStream();
+        /**
+         * Fetch a reference to the stream from which to read the snapshot.
+         *
+         * Don't call this unless you are certain that there is a stream to read.
+         *
+         * @return
+         */
         std::istream & inputStream() const;
+
+        /**
+         * Read the snapshot contained in the stream into the provided Snapshot object.
+         *
+         * @param snapshot
+         *
+         * @return True on success, false on failure.
+         */
         virtual bool readInto(Snapshot & snapshot) const = 0;
 
     private:
+        /**
+         * Discard the stream.
+         *
+         * After a call to this method inputStream() will not be callable until a fresh stream is set. Any internal
+         * method that uses it must ensure a new stream is set before inputStream() can be called.
+         */
+        void disposeStream();
+
         bool m_borrowedStream;
         bool m_hasBeenRead = false;
         std::istream * m_in;
