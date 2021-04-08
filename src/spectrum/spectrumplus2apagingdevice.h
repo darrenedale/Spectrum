@@ -2,8 +2,8 @@
 // Created by darren on 06/04/2021.
 //
 
-#ifndef SPECTRUM_SPECTRUM128KPAGINGDEVICE_H
-#define SPECTRUM_SPECTRUM128KPAGINGDEVICE_H
+#ifndef SPECTRUM_SPECTRUMPLUS2APAGINGDEVICE_H
+#define SPECTRUM_SPECTRUMPLUS2APAGINGDEVICE_H
 
 #include "../z80/iodevice.h"
 #include "../z80/types.h"
@@ -15,7 +15,7 @@ namespace Spectrum
     /**
      * Z80 IO device to handle ROM and RAM paging for the Spectrum 128k.
      */
-    class Spectrum128KPagingDevice
+    class SpectrumPlus2aPagingDevice
     : public ::Z80::IODevice
     {
     public:
@@ -26,13 +26,13 @@ namespace Spectrum
          *
          * @param owner
          */
-        explicit Spectrum128KPagingDevice(Spectrum128k & owner)
+        explicit SpectrumPlus2aPagingDevice(Spectrum128k & owner)
         : m_pagingEnabled(true),
           m_spectrum(owner)
         {}
 
-        ~Spectrum128KPagingDevice() override;
-        
+        ~SpectrumPlus2aPagingDevice() = default;
+
         /**
          * Check whether the paging device provides data on a specified IO port.
          *
@@ -56,8 +56,10 @@ namespace Spectrum
          */
         [[nodiscard]] inline bool checkWritePort(::Z80::UnsignedWord port) const override
         {
-            // respond if bits 2 and 15 are both set low in the port, other bits are irrelevant
-            return (0b0111111111111101 == (port | 0b0111111111111101));
+            // respond if bits 1 and 15 are both set low and bit 14 is set high in the port, other bits are irrelevant
+            // respond if bits 1, 13, 14 and 15 are set low and bit 12 is set high in the port, other bits are irrelevant
+            return (0b0111111111111101 == (port | 0b0011111111111101))
+                || (0b0001111111111101 == (port | 0b0000111111111101));            
         }
 
         /**
@@ -82,7 +84,7 @@ namespace Spectrum
          * The value written is interpreted as:
          * bits 0-2: the RAM bank to page into the upper 16kb of the address space
          * bit 3:    which screen buffer to use for output (0 = normal buffer [bank 5], 1 = shadow buffer [bank 7])
-         * bit 4:    which ROM to page into the lower 16kb of the address space
+         * bit 4:    low bit of the ROM to page into the lower 16kb of the address space
          * bit 5:    if set, disable all paging features from now until the Spectrum is reset
          *
          * @param port
@@ -141,6 +143,9 @@ namespace Spectrum
             m_pagingEnabled = enabled;
         }
 
+        void writePort7ffd(::Z80::UnsignedByte value);
+        void writePort1ffd(::Z80::UnsignedByte value);
+        
     private:
         /**
          * Flag indicating whether memory paging is currently enabled.
@@ -154,4 +159,4 @@ namespace Spectrum
     };
 }
 
-#endif //SPECTRUM_SPECTRUM128KPAGINGDEVICE_H
+#endif //SPECTRUM_SPECTRUMPLUS2APAGINGDEVICE_H
