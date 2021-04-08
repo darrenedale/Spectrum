@@ -11,9 +11,12 @@ add_executable(
         spectrum16k.cpp
         spectrum48k.cpp
         spectrum128k.cpp
+        spectrumplus2a.cpp
         spectrum16kmemory.cpp
         spectrum128kmemory.cpp
         spectrum128kpagingdevice.cpp
+        spectrumplus2amemory.cpp
+        spectrumplus2apagingdevice.cpp
         z80.cpp
         keyboard.cpp
         joystickinterface.cpp
@@ -76,8 +79,7 @@ add_executable(
         ../z80/assembly/disassembler.cpp
         ../z80/assembly/mnemonic.cpp
         ../z80/assembly/operand.cpp
-        ../z80/types.cpp
-)
+        ../z80/types.cpp)
 
 # TODO libz is only required for debug builds (crc32 memory checksums when dumping Spectrum state to stdout)
 target_link_libraries(spectrum Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Gamepad z)

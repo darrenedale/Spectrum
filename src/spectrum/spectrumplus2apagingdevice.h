@@ -10,7 +10,7 @@
 
 namespace Spectrum
 {
-    class Spectrum128k;
+    class SpectrumPlus2a;
 
     /**
      * Z80 IO device to handle ROM and RAM paging for the Spectrum 128k.
@@ -26,12 +26,12 @@ namespace Spectrum
          *
          * @param owner
          */
-        explicit SpectrumPlus2aPagingDevice(Spectrum128k & owner)
+        explicit SpectrumPlus2aPagingDevice(SpectrumPlus2a & owner)
         : m_pagingEnabled(true),
           m_spectrum(owner)
         {}
 
-        ~SpectrumPlus2aPagingDevice() = default;
+        ~SpectrumPlus2aPagingDevice() override;
 
         /**
          * Check whether the paging device provides data on a specified IO port.
@@ -97,7 +97,7 @@ namespace Spectrum
          *
          * @return A const reference to the Spectrum.
          */
-        [[nodiscard]] const Spectrum128k & spectrum() const
+        [[nodiscard]] const SpectrumPlus2a & spectrum() const
         {
             return m_spectrum;
         }
@@ -107,7 +107,7 @@ namespace Spectrum
          *
          * @return A reference to the Spectrum.
          */
-        Spectrum128k & spectrum()
+        SpectrumPlus2a & spectrum()
         {
             return m_spectrum;
         }
@@ -155,7 +155,7 @@ namespace Spectrum
         /**
          * The Spectrum 128K whose memory paging is being managed.
          */
-        Spectrum128k & m_spectrum;
+        SpectrumPlus2a & m_spectrum;
     };
 }
 

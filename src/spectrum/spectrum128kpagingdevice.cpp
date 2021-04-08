@@ -28,7 +28,7 @@ namespace
     constexpr const UnsignedByte DisablePagingMask = 1 << DisablePagingBit;
 }
 
-~Spectrum128KPagingDevice::Spectrum128KPagingDevice() = default;
+Spectrum128KPagingDevice::~Spectrum128KPagingDevice() = default;
 
 void Spectrum128KPagingDevice::writeByte(UnsignedWord port, UnsignedByte value)
 {
