@@ -126,7 +126,7 @@ namespace Z80::Assembly
          */
         bool canDisassembleMore() const
         {
-            return m_pc < m_memory->size();
+            return m_pc < m_memory->availableSize();
         }
 
         /**

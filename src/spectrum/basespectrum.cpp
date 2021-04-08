@@ -37,7 +37,7 @@ namespace Spectrum
     }
 
     BaseSpectrum::BaseSpectrum(MemoryType::Size memorySize)
-    : Computer(memorySize),
+    : Computer(0x10000, memorySize),
       m_executionSpeed(1.0),
       m_interruptTStateCounter(0),
       m_displayDevices(),

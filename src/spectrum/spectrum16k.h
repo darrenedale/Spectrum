@@ -35,18 +35,6 @@ namespace Spectrum
         Spectrum16k();
 
         /**
-         * The Spectrum model type.
-         *
-         * Always Model::Spectrum16k.
-         *
-         * @return
-         */
-        [[nodiscard]] inline constexpr Model model() const override
-        {
-            return Model::Spectrum16k;
-        }
-
-        /**
          * Initialise a new Spectrum48k with a ROM image on disk.
          *
          * Note that in the real world the ROM for a Spectrum 16K is the same as the ROM for a Spectrum 48K.
@@ -62,6 +50,18 @@ namespace Spectrum
         void operator=(Spectrum16k &&) = delete;
 
         ~Spectrum16k() override;
+
+        /**
+         * The Spectrum model type.
+         *
+         * Always Model::Spectrum16k.
+         *
+         * @return
+         */
+        [[nodiscard]] inline constexpr Model model() const override
+        {
+            return Model::Spectrum16k;
+        }
 
         /**
          * It's safe to use the returned pointer as a pointer to a contiguous block of 16kb of Spectrum RAM. Only

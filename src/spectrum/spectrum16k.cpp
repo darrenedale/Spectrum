@@ -1,11 +1,10 @@
 #include <fstream>
 #include "spectrum16k.h"
-#include "spectrum16kmemory.h"
 
 using namespace Spectrum;
 
 Spectrum16k::Spectrum16k(const std::string & romFile)
-: BaseSpectrum(new Spectrum16kMemory())
+: BaseSpectrum(0x8000)
 {
     (void) loadRom(romFile);
 }

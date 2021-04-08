@@ -2,6 +2,7 @@
 #define COMPUTER_H
 
 #include <algorithm>
+#include <memory>
 #include <cstdint>
 #include <vector>
 #include <cassert>
@@ -25,8 +26,8 @@ public:
      *
      * @param memSize
      */
-    explicit Computer(typename MemoryType::Size memSize = 0)
-    : m_memory(new MemoryType(memSize)),
+    explicit Computer(typename MemoryType::Size memSize = 0, std::optional<typename MemoryType::Size> availableMem = {})
+    : m_memory(new MemoryType(memSize, availableMem)),
       m_memoryOwned(true)
     {
         assert(0 <= memSize);
@@ -47,7 +48,7 @@ public:
     : m_memory(memory),
       m_memoryOwned(takeOwnership)
     {
-        assert(memory && 0 < memory->size());
+        assert(memory && 0 < memory->addressableSize());
     }
 
     /**
@@ -114,7 +115,7 @@ public:
      */
     inline int memorySize() const
     {
-        return m_memory->size();
+        return m_memory->addressableSize();
     }
 
     /**

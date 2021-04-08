@@ -34,7 +34,7 @@ namespace
      */
     void fetchInstructionMachineCode(::Z80::Z80::MemoryType * memory, int address, UnsignedByte machineCode[4])
     {
-        auto bytesAvailable = memory->size() - address;
+        auto bytesAvailable = memory->addressableSize() - address;
 
         if (bytesAvailable < 4) {
             memory->readBytes(address, bytesAvailable, machineCode);
@@ -50,7 +50,7 @@ Disassembler::Mnemonics Disassembler::disassembleFrom(int address, int maxCount)
     static UnsignedByte machineCode[4];
     Mnemonics ret;
 
-    while (0 != maxCount && address < m_memory->size()) {
+    while (0 != maxCount && address < m_memory->addressableSize()) {
         fetchInstructionMachineCode(m_memory, address, machineCode);
         auto mnemonic = disassembleOne(machineCode);
         address += mnemonic.size;
@@ -68,7 +68,7 @@ Mnemonic Disassembler::nextMnemonic()
 {
     static UnsignedByte machineCode[4];
 
-    if (m_pc >= m_memory->size()) {
+    if (m_pc >= m_memory->addressableSize()) {
         return {
             Instruction::NOP,
             {},

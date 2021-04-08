@@ -40,9 +40,9 @@ Snapshot::Snapshot(const ::Z80::Registers & registers, BaseSpectrum::MemoryType 
     copyRegisters(registers);
 
     if (memory) {
-        m_memory.image = new Z80::UnsignedByte[memory->size()];
+        m_memory.image = new Z80::UnsignedByte[memory->addressableSize()];
 
-        for (std::uint32_t address = 0; address < memory->size(); ++address) {
+        for (std::uint32_t address = 0; address < memory->addressableSize(); ++address) {
             *(m_memory.image + address) = memory->readByte(address);
         }
     } else {

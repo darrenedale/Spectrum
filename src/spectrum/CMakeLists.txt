@@ -11,7 +11,6 @@ add_executable(
         spectrum16k.cpp
         spectrum48k.cpp
         spectrum128k.cpp
-        spectrum16kmemory.cpp
         spectrum128kmemory.cpp
         spectrum128kpagingdevice.cpp
         z80.cpp

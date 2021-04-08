@@ -1223,7 +1223,7 @@ int Z80::Z80::fetchExecuteCycle()
         // TODO R register?
         tStates = PlainOpcodeTStates[Z80__PLAIN__NOP];
     } else {
-        auto bytesAvailable = memory()->size() - m_registers.pc;
+        auto bytesAvailable = memory()->addressableSize() - m_registers.pc;
 
         if (bytesAvailable < 4) {
             memory()->readBytes(m_registers.pc, bytesAvailable, machineCode);

@@ -5,6 +5,7 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
+#include <optional>
 #include <cassert>
 #include <cstdint>
 #include <cstring>
@@ -27,16 +28,15 @@ public:
     using Size = std::uint64_t;
     using Byte = byte_t;
 
-    explicit Memory(Size size = 0)
-    : m_size(size),
-      m_storage(nullptr),
+    explicit Memory(Size addressableSize = 0, std::optional<Size> availableSize = {})
+    : m_addressableSize(addressableSize),
+      m_availableSize(availableSize ? *availableSize : addressableSize),
+      m_storage(new Byte[m_availableSize]),
       m_borrowedStorage(false)
-    {
-        m_storage = new Byte[size];
-    }
+    {}
 
-    Memory(Size size, Byte * storage)
-    : m_size(size),
+    Memory(Size addressableSize, Byte * storage)
+    : m_addressableSize(addressableSize),
       m_storage(storage),
       m_borrowedStorage(true)
     {}
@@ -48,29 +48,54 @@ public:
         }
 
         m_storage = nullptr;
-        m_size = 0;
-    }
-
-    // TODO differentiate between addressable size and available size
-    inline std::uint64_t size() const
-    {
-        return m_size;
-    }
-
-    virtual void clear()
-    {
-        std::memset(m_storage, 0, size());
+        m_addressableSize = 0;
+        m_availableSize = 0;
     }
 
     /**
-     * The caller is responsible for ensuring the address is in bounds.
+     * How much memory can be addressed in modelled memory.
+     *
+     * @return
+     */
+    inline Size addressableSize() const
+    {
+        return m_addressableSize;
+    }
+
+    /**
+     * How much memory is actually installed in the modelled memory.
+     *
+     * @return
+     */
+    inline Size availableSize() const
+    {
+        return m_availableSize;
+    }
+
+    /**
+     * Set all installed memory to 0 bytes.
+     */
+    virtual void clear()
+    {
+        std::memset(m_storage, 0, availableSize());
+    }
+
+    /**
+     * The caller is responsible for ensuring the address is in addressable bounds.
+     *
+     * Reads from valid addresses beyond the installed memory are no-ops that return 0xff.
      *
      * @param address
      * @return
      */
     virtual inline Byte readByte(Address address) const
     {
-        assert(address < size());
+        assert(address < addressableSize());
+
+        if (address >= availableSize()) {
+            return 0xff;
+        }
+
         return *mapAddress(address);
     }
 
@@ -78,7 +103,7 @@ public:
      * Read a number of bytes into a buffer.
      *
      * The provided buffer must be large enough to store the requested number of bytes. The provided count must not
-     * extend beyond the size of the memory. The caller is responsible for both of these things.
+     * extend beyond the addressable size of the memory. The caller is responsible for both of these things.
      *
      * This is not an efficient implementation but it is safe. If performance is your goal, you'd probably be better off
      * simply using pointerTo() to read the bytes, as long as you can be sure that all the bytes you are interested in
@@ -93,7 +118,7 @@ public:
      */
     virtual inline Byte * readBytes(Address address, Size count, Byte * buffer) const
     {
-        assert(address + count <= size());
+        assert(address + count <= addressableSize());
 
         while (count--) {
             *buffer++ = readByte(address++);
@@ -103,14 +128,21 @@ public:
     }
 
     /**
-     * The caller is responsible for ensuring the address is in bounds.
+     * The caller is responsible for ensuring the address is in addressable bounds.
+     *
+     * Writes to valid addresses beyond the installed memory are no-ops.
      *
      * @param address
      * @return
      */
     virtual inline void writeByte(Address address, Byte byte)
     {
-        assert(address < size());
+        assert(address < addressableSize());
+
+        if (address >= availableSize()) {
+            return ;
+        }
+
         *mapAddress(address) = byte;
     }
 
@@ -130,7 +162,7 @@ public:
      */
     virtual inline void writeBytes(Address address, Size count, Byte * bytes)
     {
-        assert(address + count <= size());
+        assert(address + count <= addressableSize());
 
         while (count--) {
             writeByte(address++, *bytes++);
@@ -150,7 +182,7 @@ public:
     inline word_t readWord(Address address) const
     {
         static Byte buffer[sizeof(word_t)];
-        assert(address <= size() - sizeof(word_t));
+        assert(address <= addressableSize() - sizeof(word_t));
         readBytes(address, sizeof(word_t), buffer);
         return *reinterpret_cast<word_t *>(buffer);
     }
@@ -169,7 +201,7 @@ public:
     template<class word_t>
     inline void writeWord(Address address, word_t word) const
     {
-        assert(address <= size() - sizeof(word_t));
+        assert(address <= addressableSize() - sizeof(word_t));
         writeBytes(address, reinterpret_cast<Byte *>(&word), sizeof(word));
     }
 
@@ -325,7 +357,12 @@ protected:
     }
 
 private:
-    Size m_size;
+    // maximum addressable space in the memory represented
+    Size m_addressableSize;
+
+    // actual amount of memory "installed"
+    Size m_availableSize;
+
     Byte * m_storage;
     bool m_borrowedStorage;
 };
