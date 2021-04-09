@@ -49,7 +49,7 @@ namespace Spectrum
         /**
          * Initialise a new Spectrum128k with ROM images loaded from disk.
          */
-        explicit Spectrum128k(const std::string & romFile0, const std::string & romFile1);
+        Spectrum128k(const std::string & romFile0, const std::string & romFile1);
 
         // Spectrum128k instances can't be copy or move constructed or assigned
         Spectrum128k(const Spectrum128k &) = delete;

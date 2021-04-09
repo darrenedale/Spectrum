@@ -8,7 +8,7 @@
 #include <iostream>
 
 #include "../cpu.h"
-#include "../memory.h"
+#include "../simplememory.h"
 #include "registers.h"
 #include "types.h"
 #include "endian.h"

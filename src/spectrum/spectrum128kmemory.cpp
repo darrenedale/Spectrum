@@ -25,8 +25,10 @@ namespace
     constexpr const Spectrum128KMemory::Address PagedRamTop = PagedRamBase + BankSize - 1;
 }
 
+using MemoryType = BaseSpectrum::MemoryType;
+
 Spectrum128KMemory::Spectrum128KMemory()
-: BaseSpectrum::MemoryType(0x10000, nullptr),
+: MemoryType(0x10000),
   m_romNumber(RomNumber::Rom0),
   m_pagedBank(BankNumber::Bank0),
   m_roms(),
@@ -35,7 +37,7 @@ Spectrum128KMemory::Spectrum128KMemory()
 
 Spectrum128KMemory::~Spectrum128KMemory() = default;
 
-Spectrum128KMemory::Byte * Spectrum128KMemory::mapAddress(Memory::Address address) const
+Spectrum128KMemory::Byte * Spectrum128KMemory::mapAddress(MemoryType::Address address) const
 {
     if (address <= RomTop) {
         return const_cast<Byte *>(currentRomPointer() + address);
@@ -55,6 +57,7 @@ Spectrum128KMemory::Byte * Spectrum128KMemory::mapAddress(Memory::Address addres
 
     // unreachable code
     assert(false);
+    return nullptr;
 }
 
 bool Spectrum128KMemory::loadRom(const std::string & fileName, RomNumber romNumber)

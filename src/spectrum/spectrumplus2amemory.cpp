@@ -24,16 +24,19 @@ namespace
     constexpr const SpectrumPlus2aMemory::Address PagedRamBase = 0xc000;
     constexpr const SpectrumPlus2aMemory::Address PagedRamTop = PagedRamBase + BankSize - 1;
 
+    // four special configurations of memory paging (the banks that are paged into the address space for each config)
     constexpr const std::uint8_t SpecialMemoryConfigurations[4][4] = {
-        {0, 1, 2, 3,},
-        {4, 5, 6, 7,},
-        {4, 5, 6, 3,},
-        {4, 7, 6, 3,},
+        {0, 1, 2, 3,},      // config 0
+        {4, 5, 6, 7,},      // config 1
+        {4, 5, 6, 3,},      // config 2
+        {4, 7, 6, 3,},      // config 3
     };
 }
 
+using MemoryType = BaseSpectrum::MemoryType;
+
 SpectrumPlus2aMemory::SpectrumPlus2aMemory()
-: BaseSpectrum::MemoryType(0x10000, nullptr),
+: MemoryType(0x10000),
   m_pagingMode(PagingMode::Normal),
   m_romNumber(RomNumber::Rom0),
   m_pagedBank(BankNumber::Bank0),
@@ -44,7 +47,7 @@ SpectrumPlus2aMemory::SpectrumPlus2aMemory()
 
 SpectrumPlus2aMemory::~SpectrumPlus2aMemory() = default;
 
-SpectrumPlus2aMemory::Byte * SpectrumPlus2aMemory::mapAddress(Memory::Address address) const
+SpectrumPlus2aMemory::Byte * SpectrumPlus2aMemory::mapAddress(MemoryType::Address address) const
 {
     if (PagingMode::Special == pagingMode()) {
         auto idx = static_cast<int>(specialPagingConfiguration());
@@ -84,6 +87,7 @@ SpectrumPlus2aMemory::Byte * SpectrumPlus2aMemory::mapAddress(Memory::Address ad
 
     // unreachable code
     assert(false);
+    return nullptr;
 }
 
 bool SpectrumPlus2aMemory::loadRom(const std::string & fileName, RomNumber romNumber)

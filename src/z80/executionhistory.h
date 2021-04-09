@@ -6,7 +6,7 @@
 #define Z80_EXECUTIONHISTORY_H
 
 #include <array>
-#include "../memory.h"
+#include "../simplememory.h"
 #include "types.h"
 #include "registers.h"
 #include "assembly/operand.h"

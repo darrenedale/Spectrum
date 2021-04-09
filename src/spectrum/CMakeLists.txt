@@ -11,8 +11,8 @@ add_executable(
         spectrum16k.cpp
         spectrum48k.cpp
         spectrum128k.cpp
+        spectrumplus2.cpp
         spectrumplus2a.cpp
-        spectrum16kmemory.cpp
         spectrum128kmemory.cpp
         spectrum128kpagingdevice.cpp
         spectrumplus2amemory.cpp
@@ -69,6 +69,7 @@ add_executable(
         qtui/hexspinbox.cpp
         ../computer.h
         ../cpu.cpp
+        ../simplememory.h
         ../memory.h
         ../z80/z80.cpp
         ../z80/executionhistory.cpp

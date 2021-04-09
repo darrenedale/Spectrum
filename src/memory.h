@@ -1,5 +1,5 @@
 //
-// Created by darren on 25/03/2021.
+// Created by darren on 09/04/2021.
 //
 
 #ifndef MEMORY_H
@@ -8,49 +8,32 @@
 #include <optional>
 #include <cassert>
 #include <cstdint>
-#include <cstring>
 
 /**
- * A class representing the memory for a computer.
- *
- * The default implementation represents a simple linear address space that is fully allocated and does not do any
- * paging or mapping. More complicated models can be represented by subclassing and reimplementing mapAddress(). For
- * example, the Spectrum 128k memory bank paging can be implemented this way by mapping addresses above 0xc000 into the
- * currently paged-in memory bank, and addresses below 0x4000 into the currently paged-in ROM.
+ * An interface for the memory for a computer.
  *
  * @tparam byte_t The storage type for a single byte of memory. Defaults to std::uint8_t (an unsigned 8-bit value).
+ * @tparam address_t The storage type to represent an address. Defaults to std::uint64_t (an unsigned 64-bit value).
+ * @tparam size_t The storage type for the memory size. Defaults to std::uint64_t (an unsigned 64-bit value).
  */
-template<class byte_t = std::uint8_t>
+template<class byte_t = std::uint8_t, class address_t = std::uint64_t, class size_t = std::uint64_t>
 class Memory
 {
+    static_assert(std::is_integral_v<byte_t>, "byte type for memory must be an integer type");
+    static_assert(std::is_integral_v<address_t>, "address type for memory must be an integer type");
+    static_assert(std::is_integral_v<size_t>, "size type for memory must be an integer type");
+
 public:
     using Address = std::uint64_t;
     using Size = std::uint64_t;
     using Byte = byte_t;
 
     explicit Memory(Size addressableSize = 0, std::optional<Size> availableSize = {})
-    : m_addressableSize(addressableSize),
-      m_availableSize(availableSize ? *availableSize : addressableSize),
-      m_storage(new Byte[m_availableSize]),
-      m_borrowedStorage(false)
+            : m_addressableSize(addressableSize),
+              m_availableSize(availableSize ? *availableSize : addressableSize)
     {}
 
-    Memory(Size addressableSize, Byte * storage)
-    : m_addressableSize(addressableSize),
-      m_storage(storage),
-      m_borrowedStorage(true)
-    {}
-
-    virtual ~Memory()
-    {
-        if (!m_borrowedStorage) {
-            delete[] m_storage;
-        }
-
-        m_storage = nullptr;
-        m_addressableSize = 0;
-        m_availableSize = 0;
-    }
+    virtual ~Memory() = default;
 
     /**
      * How much memory can be addressed in modelled memory.
@@ -73,11 +56,13 @@ public:
     }
 
     /**
-     * Set all installed memory to 0 bytes.
+     * Set all memory to 0 bytes.
      */
     virtual void clear()
     {
-        std::memset(m_storage, 0, availableSize());
+        for (Address address = 0; address < addressableSize(); ++address) {
+            writeByte(address, 0x00);
+        }
     }
 
     /**
@@ -181,6 +166,7 @@ public:
     template<class word_t>
     inline word_t readWord(Address address) const
     {
+        static_assert(std::is_integral_v<word_t>, "type to read must be an int type");
         static Byte buffer[sizeof(word_t)];
         assert(address <= addressableSize() - sizeof(word_t));
         readBytes(address, sizeof(word_t), buffer);
@@ -201,6 +187,7 @@ public:
     template<class word_t>
     inline void writeWord(Address address, word_t word) const
     {
+        static_assert(std::is_integral_v<word_t>, "type to write must be an int type");
         assert(address <= addressableSize() - sizeof(word_t));
         writeBytes(address, reinterpret_cast<Byte *>(&word), sizeof(word));
     }
@@ -240,7 +227,7 @@ public:
     {
         return readWord<std::uint64_t>(address);
     }
-    
+
     /**
      * The caller is responsible for ensuring the address is in bounds.
      *
@@ -351,10 +338,7 @@ protected:
      * @param address
      * @return
      */
-    virtual inline Byte * mapAddress(Address address) const
-    {
-        return m_storage + address;
-    }
+    virtual inline Byte * mapAddress(Address address) const = 0;
 
 private:
     // maximum addressable space in the memory represented
@@ -362,9 +346,6 @@ private:
 
     // actual amount of memory "installed"
     Size m_availableSize;
-
-    Byte * m_storage;
-    bool m_borrowedStorage;
 };
 
-#endif //SPECTRUM_MEMORY_H
+#endif //MEMORY_H

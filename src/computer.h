@@ -7,7 +7,7 @@
 #include <vector>
 #include <cassert>
 
-#include "memory.h"
+#include "simplememory.h"
 
 class Cpu;
 
@@ -16,7 +16,8 @@ class Computer
 {
 public:
     using ByteType = byte_t;
-    using MemoryType = Memory<ByteType>;
+    template<class address_t = std::uint64_t, class size_t = std::uint64_t>
+    using MemoryType = Memory<byte_t, address_t, size_t>;
 
     /**
      * Initialise a new Computer with memory of a given size, which it owns.
@@ -26,8 +27,8 @@ public:
      *
      * @param memSize
      */
-    explicit Computer(typename MemoryType::Size memSize = 0, std::optional<typename MemoryType::Size> availableMem = {})
-    : m_memory(new MemoryType(memSize, availableMem)),
+    explicit Computer(typename MemoryType<>::Size memSize = 0, std::optional<typename MemoryType<>::Size> availableMem = {})
+    : m_memory(new SimpleMemory<ByteType>(memSize, std::move(availableMem))),
       m_memoryOwned(true)
     {
         assert(0 <= memSize);
@@ -44,7 +45,7 @@ public:
      *
      * @param memory
      */
-    explicit Computer(MemoryType * memory, bool takeOwnership = false)
+    explicit Computer(MemoryType<> * memory, bool takeOwnership = false)
     : m_memory(memory),
       m_memoryOwned(takeOwnership)
     {
@@ -101,7 +102,7 @@ public:
      *
      * @return
      */
-    inline MemoryType * memory() const
+    inline MemoryType<> * memory() const
     {
         return m_memory;
     }
@@ -158,7 +159,7 @@ public:
      * @param memory
      * @param size
      */
-    inline void setMemory(MemoryType * memory)
+    inline void setMemory(MemoryType<> * memory)
     {
         if (m_memoryOwned) {
             delete m_memory;
@@ -175,7 +176,7 @@ public:
      * @param memory
      * @param size
      */
-    inline void giveMemory(MemoryType * memory)
+    inline void giveMemory(MemoryType<> * memory)
     {
         if (m_memoryOwned) {
             delete m_memory;
@@ -207,7 +208,7 @@ protected:
     using Cpus = std::vector<Cpu *>;
 
     Cpus m_cpus;
-    MemoryType * m_memory;
+    MemoryType<> * m_memory;
 
 private:
     bool m_memoryOwned;

@@ -67,7 +67,7 @@ namespace Spectrum
          * It's safe to use the returned pointer as a pointer to a contiguous block of 16kb of Spectrum RAM. Only
          * the first 6912 bytes is the display file.
          */
-        [[nodiscard]] std::uint8_t * displayMemory() const override
+        [[nodiscard]] ByteType * displayMemory() const override
         {
             return memory()->pointerTo(DisplayMemoryOffset);
         }

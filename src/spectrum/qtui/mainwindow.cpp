@@ -27,6 +27,7 @@
 #include "../spectrum16k.h"
 #include "../spectrum48k.h"
 #include "../spectrum128k.h"
+#include "../spectrumplus2.h"
 #include "../spectrumplus2a.h"
 #include "mainwindow.h"
 #include "threadpauser.h"
@@ -80,14 +81,18 @@ namespace
     const std::string DefaultPlus3Rom1 = "spectrumplus3-1.rom";
     const std::string DefaultPlus3Rom2 = "spectrumplus3-2.rom";
     const std::string DefaultPlus3aRom3 = "spectrumplus3-3.rom";
+    const std::string DefaultTc2048Rom = "tc2048.rom";
 
     // ms to wait for the thread to stop before forcibly terminating it
     constexpr const int ThreadStopWaitThreshold = 3000;
 }
 
+/**
+ * @param parent
+ */
 MainWindow::MainWindow(QWidget * parent)
 : QMainWindow(parent),
-  m_spectrum(new Spectrum128k(Default128kRom0, Default128kRom1)),
+  m_spectrum(std::make_unique<Spectrum128k>(Default128kRom0, Default128kRom1)),
   m_spectrumThread(*m_spectrum),
   m_display(),
   m_displayWidget(),
@@ -97,7 +102,8 @@ MainWindow::MainWindow(QWidget * parent)
   m_pauseResume(QIcon::fromTheme(QStringLiteral("media-playback-start")), tr("Start/Pause")),
   m_model16(tr("Spectrum 16k")),
   m_model48(tr("Spectrum 48k")),
-  m_model128(tr("Spectrum 128k/+2")),
+  m_model128(tr("Spectrum 128k")),
+  m_modelPlus2(tr("Spectrum +2")),
   m_modelPlus2a(tr("Spectrum +2a")),
   m_saveScreenshot(QIcon::fromTheme(QStringLiteral("image")), tr("Screenshot")),
   m_colourDisplay(tr("Colour")),
@@ -141,20 +147,15 @@ MainWindow::MainWindow(QWidget * parent)
     m_save.setShortcut(tr("Ctrl+S"));
     m_pauseResume.setShortcuts({Qt::Key::Key_Pause, Qt::Key::Key_Escape, tr("Ctrl+P"),});
 
-    m_model16.setCheckable(true);
-    m_model16.setChecked(false);
-    m_model48.setCheckable(true);
-    m_model48.setChecked(false);
-    m_model128.setCheckable(true);
-    m_model128.setChecked(true);
-    m_modelPlus2a.setCheckable(true);
-    m_modelPlus2a.setChecked(false);
-
     auto * model = new QActionGroup(this);
-    model->addAction(&m_model16);
-    model->addAction(&m_model48);
-    model->addAction(&m_model128);
-    model->addAction(&m_modelPlus2a);
+
+    for (auto * action : {&m_model16, &m_model48, &m_model128, &m_modelPlus2, &m_modelPlus2a, }) {
+        action->setCheckable(true);
+        action->setChecked(false);
+        model->addAction(action);
+    }
+
+    m_model128.setChecked(true);
 
     m_colourDisplay.setCheckable(true);
     m_monochromeDisplay.setCheckable(true);
@@ -309,10 +310,11 @@ void MainWindow::createMenuBar()
     menu->addAction(&m_reset);
     menu->addSeparator();
     subMenu = menu->addMenu(tr("Model"));
-    subMenu->addAction(&m_model16);
-    subMenu->addAction(&m_model48);
-    subMenu->addAction(&m_model128);
-    subMenu->addAction(&m_modelPlus2a);
+
+    for (auto * action : {&m_model16, &m_model48, &m_model128, &m_modelPlus2, &m_modelPlus2a, }) {
+        subMenu->addAction(action);
+    }
+
     subMenu = menu->addMenu(tr("Joysticks"));
     subMenu->addAction(&m_joystickKempston);
     subMenu->addAction(&m_joystickInterface2);
@@ -394,6 +396,7 @@ void MainWindow::connectSignals()
 	connect(&m_model16, &QAction::triggered, this, &MainWindow::model16Triggered);
 	connect(&m_model48, &QAction::triggered, this, &MainWindow::model48Triggered);
 	connect(&m_model128, &QAction::triggered, this, &MainWindow::model128Triggered);
+	connect(&m_modelPlus2, &QAction::triggered, this, &MainWindow::modelPlus2Triggered);
 	connect(&m_modelPlus2a, &QAction::triggered, this, &MainWindow::modelPlus2aTriggered);
 
 	connect(&m_joystickKempston, &QAction::triggered, this, &MainWindow::useKempstonJoystickTriggered);
@@ -489,20 +492,33 @@ void MainWindow::setModel(Spectrum::Model model)
     switch (model) {
         case Model::Spectrum16k:
             m_spectrum = std::make_unique<Spectrum16k>(Default16kRom);
+            m_model16.setChecked(true);
             break;
 
         case Model::Spectrum48k:
             m_spectrum = std::make_unique<Spectrum48k>(Default48kRom);
+            m_model48.setChecked(true);
             break;
 
         case Model::Spectrum128k:
             m_spectrum = std::make_unique<Spectrum128k>(Default128kRom0, Default128kRom1);
+            m_model128.setChecked(true);
+            break;
+
+        case Model::SpectrumPlus2:
+            m_spectrum = std::make_unique<SpectrumPlus2>(DefaultPlus2Rom0, DefaultPlus2Rom1);
+            m_modelPlus2.setChecked(true);
             break;
 
         case Model::SpectrumPlus2a:
             m_spectrum = std::make_unique<SpectrumPlus2a>(DefaultPlus2aRom0, DefaultPlus2aRom1, DefaultPlus2aRom2, DefaultPlus2aRom3);
+            m_modelPlus2a.setChecked(true);
             break;
     }
+
+#if (!defined(NDEBUG))
+    m_spectrum->dumpState();
+#endif
 
     attachSpectrumDevices();
     m_spectrumThread.setSpectrum(*m_spectrum);
@@ -514,6 +530,7 @@ void MainWindow::setModel(Spectrum::Model model)
         m_displayRefreshTimer.start();
     }
 
+    refreshSpectrumDisplay();
     setWindowTitle(QString::fromStdString(std::to_string(m_spectrum->model())));
 }
 
@@ -636,25 +653,24 @@ void MainWindow::saveSnapshot(const QString & fileName, QString format)
     }
 
     if ("sna" == format) {
-        auto * z80 = m_spectrum->z80();
-        z80->execute(reinterpret_cast<const Z80::UnsignedByte *>("\xcd\x00\x00"), false);
-        auto writer = SnaSnapshotWriter(Snapshot(*m_spectrum));
-        z80->execute(reinterpret_cast<const Z80::UnsignedByte *>("\xed\x45"), false);
+        m_spectrum->z80()->execute(reinterpret_cast<const Z80::UnsignedByte *>("\xcd\x00\x00"), false);
 
-        if (!writer.writeTo(fileName.toStdString())) {
+        if (!Snapshot(*m_spectrum).saveAs<SnaSnapshotWriter>(fileName.toStdString())) {
             std::cerr << "failed to write snapshot to '" << fileName.toStdString() << "'\n";
             statusBar()->showMessage(tr("Failed to save snapshot to %1.").arg(fileName), DefaultStatusBarMessageTimeout);
         } else {
             statusBar()->showMessage(tr("Snapshot successfully saved to %1.").arg(fileName), DefaultStatusBarMessageTimeout);
         }
-    } else if ("z80" == format) {
-        auto writer = Z80SnapshotWriter(Snapshot(*m_spectrum));
 
-        if (!writer.writeTo(fileName.toStdString())) {
+        m_spectrum->z80()->execute(reinterpret_cast<const Z80::UnsignedByte *>("\xed\x45"), false);
+    } else if ("z80" == format) {
+        if (!Snapshot(*m_spectrum).saveAs<Z80SnapshotWriter>(fileName.toStdString())) {
             std::cerr << "failed to write snapshot to '" << fileName.toStdString() << "'\n";
-            statusBar()->showMessage(tr("Failed to save snapshot to %1.").arg(fileName), DefaultStatusBarMessageTimeout);
+            statusBar()->showMessage(tr("Failed to save snapshot to %1.").arg(fileName),
+                                     DefaultStatusBarMessageTimeout);
         } else {
-            statusBar()->showMessage(tr("Snapshot successfully saved to %1.").arg(fileName), DefaultStatusBarMessageTimeout);
+            statusBar()->showMessage(tr("Snapshot successfully saved to %1.").arg(fileName),
+                                     DefaultStatusBarMessageTimeout);
         }
     } else if ("sp" == format) {
         std::cerr << "Not yet implemented.\n";
@@ -1057,12 +1073,17 @@ void MainWindow::closeEvent(QCloseEvent * ev)
                     model = QStringLiteral("128k");
                     break;
 
+                case Model::SpectrumPlus2:
+                    model = QStringLiteral("+2");
+                    break;
+
                 case Model::SpectrumPlus2a:
                     model = QStringLiteral("+2a");
                     break;
             }
         }
 
+        std::cout << "storing last used model for next startup: " << qPrintable(model) << '\n';
         settings.setValue(QStringLiteral("model"), model);
     }
 
@@ -1114,6 +1135,8 @@ void MainWindow::showEvent(QShowEvent * ev)
             setModel(Model::Spectrum48k);
         } else if(QStringLiteral("128k") == model) {
             setModel(Model::Spectrum128k);
+        } else if(QStringLiteral("+2") == model) {
+            setModel(Model::SpectrumPlus2);
         } else if(QStringLiteral("+2a") == model) {
             setModel(Model::SpectrumPlus2a);
         }
@@ -1147,22 +1170,47 @@ void MainWindow::keyReleaseEvent(QKeyEvent * event)
 
 void MainWindow::dragEnterEvent(QDragEnterEvent * event)
 {
-    if (event->mimeData()->hasUrls() && !event->mimeData()->urls().isEmpty() && QStringLiteral("file") == event->mimeData()->urls().first().scheme()) {
+    // NOTE when all this logic is combined into a single if() we get apparently random segfaults accessing the URL
+    // scheme, even though we've checked to ensure that the list is not empty and therefore we're entitled to assume
+    // that QList::(const)first() is valid
+    if (!event->mimeData()->hasUrls()) {
+        return;
+    }
+
+    const auto urls = event->mimeData()->urls();
+
+    if (urls.isEmpty()) {
+        return;
+    }
+
+    const auto & scheme = urls.first().scheme();
+
+    if (QStringLiteral("file") == scheme) {
         event->acceptProposedAction();
     }
 }
 
 void MainWindow::dropEvent(QDropEvent * event)
 {
-    if (event->mimeData()->hasUrls()) {
-        auto url = event->mimeData()->urls().first();
+    // NOTE when all this logic is combined into a single if() we get apparently random segfaults accessing the URL
+    // scheme, even though we've checked to ensure that the list is not empty and therefore we're entitled to assume
+    // that QList::(const)first() is valid
+    if (!event->mimeData()->hasUrls()) {
+        return;
+    }
 
-        if (QStringLiteral("file") != url.scheme()) {
-            std::cerr << "remote URLs cannot yet be loaded.\n";
-            return;
-        }
+    const auto urls = event->mimeData()->urls();
 
+    if (urls.isEmpty()) {
+        return;
+    }
+
+    const auto & url = urls.constFirst();
+
+    if (QStringLiteral("file") == url.scheme()) {
         loadSnapshot(url.path());
+    } else {
+        std::cerr << "remote URLs cannot yet be loaded.\n";
     }
 }
 
@@ -1332,6 +1380,11 @@ void MainWindow::model48Triggered()
 void MainWindow::model128Triggered()
 {
     setModel(Model::Spectrum128k);
+}
+
+void MainWindow::modelPlus2Triggered()
+{
+    setModel(Model::SpectrumPlus2);
 }
 
 void MainWindow::modelPlus2aTriggered()

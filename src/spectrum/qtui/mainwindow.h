@@ -129,6 +129,7 @@ namespace Spectrum::QtUi
         void model16Triggered();
         void model48Triggered();
         void model128Triggered();
+        void modelPlus2Triggered();
         void modelPlus2aTriggered();
         void useKempstonJoystickTriggered();
         void useInterfaceTwoJoystickTriggered();
@@ -163,6 +164,7 @@ namespace Spectrum::QtUi
         QAction m_model16;
         QAction m_model48;
         QAction m_model128;
+        QAction m_modelPlus2;
         QAction m_modelPlus2a;
 
         QAction m_saveScreenshot;

@@ -27,6 +27,7 @@ namespace Spectrum
         Spectrum16k,
         Spectrum48k,
         Spectrum128k,
+        SpectrumPlus2,
         SpectrumPlus2a,
     };
 

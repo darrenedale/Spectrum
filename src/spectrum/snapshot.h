@@ -5,7 +5,7 @@
 #ifndef SPECTRUM_SNAPSHOT_H
 #define SPECTRUM_SNAPSHOT_H
 
-#include "../memory.h"
+#include "../simplememory.h"
 #include "../z80/registers.h"
 #include "../z80/z80.h"
 #include "types.h"
@@ -13,6 +13,11 @@
 
 namespace Spectrum
 {
+    namespace Io
+    {
+        class SnapshotWriter;
+    }
+
     class Snapshot
     {
     public:
@@ -109,6 +114,7 @@ namespace Spectrum
         template <class Writer>
         bool saveAs(const std::string & fileName) const
         {
+            static_assert(std::is_base_of_v<Io::SnapshotWriter, Writer>, "writer class must be a SnapshotWriter subclass");
             return Writer(*this).writeTo(fileName);
         }
 

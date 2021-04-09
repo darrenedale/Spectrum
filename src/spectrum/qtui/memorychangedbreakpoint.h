@@ -20,6 +20,8 @@ namespace Spectrum::QtUi
     class MemoryChangedBreakpoint
     : public MemoryBreakpoint
     {
+    static_assert(std::is_integral_v<ValueType>, "type of value to monitor for memory changes must be an int type");
+
     private:
         using UnsignedWord = ::Z80::UnsignedWord;
 

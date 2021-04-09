@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-#include "memory.h"
+#include "simplememory.h"
 
 class Cpu
 {

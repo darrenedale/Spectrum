@@ -21,7 +21,7 @@ namespace Spectrum
      * including banks 2 and 5 (in which case the bank will appear both in the static section and the paged section).
      */
     class SpectrumPlus2aMemory
-    : public BaseSpectrum::MemoryType
+    : public Memory<BaseSpectrum::ByteType>
     {
     public:
         /**

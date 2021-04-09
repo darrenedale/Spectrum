@@ -2,6 +2,7 @@
 // Created by darren on 07/04/2021.
 //
 
+#include <cassert>
 #include "types.h"
 
 std::string std::to_string(Spectrum::Model model)
@@ -16,7 +17,14 @@ std::string std::to_string(Spectrum::Model model)
         case Spectrum::Model::Spectrum128k:
             return "Spectrum 128K";
 
+        case Spectrum::Model::SpectrumPlus2:
+            return "Spectrum +2";
+
         case Spectrum::Model::SpectrumPlus2a:
             return "Spectrum +2a";
     }
+
+    // unreachable code
+    assert(false);
+    return {};
 }
