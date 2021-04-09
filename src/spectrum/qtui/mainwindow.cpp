@@ -913,8 +913,36 @@ bool MainWindow::eventFilter(QObject * target, QEvent * event)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wswitch"
     if (&m_displayWidget == target) {
-
         switch (event->type()) {
+            case QEvent::Type::MouseMove:
+                if (m_mouse) {
+                    auto coordinates = dynamic_cast<QMouseEvent *>(event)->pos();
+                    // TODO scale down for display size
+                    m_mouse->setX(coordinates.x());
+                    m_mouse->setY(coordinates.y());
+                }
+                break;
+                
+            case QEvent::Type::MouseButtonPress:
+            case QEvent::Type::MouseButtonRelease:
+                if (m_mouse) {
+                    auto pressed = event->type() == QEvent::Type::MouseButtonPress;
+                    auto buttons = dynamic_cast<QMouseEvent *>(event)->buttons();
+
+                    if (buttons & Qt::MouseButton::LeftButton) {
+                        m_mouse->setButton1Pressed(pressed);
+                    }
+
+                    if (buttons & Qt::MouseButton::RightButton) {
+                        m_mouse->setButton2Pressed(pressed);
+                    }
+
+                    if (buttons & Qt::MouseButton::MiddleButton) {
+                        m_mouse->setButton3Pressed(pressed);
+                    }
+                }
+                break;
+                
             case QEvent::Type::KeyPress: {
                 auto qtKey = static_cast<Qt::Key>(dynamic_cast<QKeyEvent *>(event)->key());
 
@@ -1214,59 +1242,6 @@ void MainWindow::dropEvent(QDropEvent * event)
     }
 }
 
-void MainWindow::mouseMoveEvent(QMouseEvent * event)
-{
-    if (!m_mouse) {
-        return;
-    }
-
-    auto coordinates = m_displayWidget.mapFromParent(event->pos());
-    m_mouse->setX(coordinates.x());
-    m_mouse->setY(coordinates.y());
-}
-
-void MainWindow::mousePressEvent(QMouseEvent * event)
-{
-    if (!m_mouse) {
-        return;
-    }
-
-    auto buttons = event->buttons();
-
-    if (buttons & Qt::MouseButton::LeftButton) {
-        m_mouse->setButton1Pressed(true);
-    }
-
-    if (buttons & Qt::MouseButton::RightButton) {
-        m_mouse->setButton2Pressed(true);
-    }
-
-    if (buttons & Qt::MouseButton::MiddleButton) {
-        m_mouse->setButton3Pressed(true);
-    }
-}
-
-void MainWindow::mouseReleaseEvent(QMouseEvent * event)
-{
-    if (!m_mouse) {
-        return;
-    }
-
-    auto buttons = event->buttons();
-
-    if (buttons & Qt::MouseButton::LeftButton) {
-        m_mouse->setButton1Pressed(false);
-    }
-
-    if (buttons & Qt::MouseButton::RightButton) {
-        m_mouse->setButton2Pressed(false);
-    }
-
-    if (buttons & Qt::MouseButton::MiddleButton) {
-        m_mouse->setButton3Pressed(false);
-    }
-}
-
 void MainWindow::pauseResumeTriggered()
 {
     if (m_spectrumThread.isPaused()) {
@@ -1419,8 +1394,10 @@ void MainWindow::kempstonMouseToggled(bool on)
     if (on) {
         m_mouse = std::make_unique<KempstonMouse>();
         m_spectrum->setMouseInterface(m_mouse.get());
+        m_displayWidget.setMouseTracking(true);
     } else {
         m_mouse.reset();
+        m_displayWidget.setMouseTracking(false);
     }
 }
 

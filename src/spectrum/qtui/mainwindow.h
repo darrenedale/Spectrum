@@ -104,9 +104,6 @@ namespace Spectrum::QtUi
 	    void keyReleaseEvent(QKeyEvent *) override;
 	    void dragEnterEvent(QDragEnterEvent *) override;
 	    void dropEvent(QDropEvent *) override;
-	    void mouseMoveEvent(QMouseEvent *) override;
-	    void mousePressEvent(QMouseEvent *) override;
-	    void mouseReleaseEvent(QMouseEvent *) override;
         void refreshSpectrumDisplay();
 
         void updateStatusBarSpeedWidget();
