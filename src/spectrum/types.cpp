@@ -15,5 +15,8 @@ std::string std::to_string(Spectrum::Model model)
 
         case Spectrum::Model::Spectrum128k:
             return "Spectrum 128K";
+
+        case Spectrum::Model::SpectrumPlus2a:
+            return "Spectrum +2a";
     }
 }

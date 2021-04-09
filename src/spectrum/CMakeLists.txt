@@ -11,8 +11,12 @@ add_executable(
         spectrum16k.cpp
         spectrum48k.cpp
         spectrum128k.cpp
+        spectrumplus2a.cpp
+        spectrum16kmemory.cpp
         spectrum128kmemory.cpp
         spectrum128kpagingdevice.cpp
+        spectrumplus2amemory.cpp
+        spectrumplus2apagingdevice.cpp
         z80.cpp
         keyboard.cpp
         joystickinterface.cpp

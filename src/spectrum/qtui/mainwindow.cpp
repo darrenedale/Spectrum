@@ -27,6 +27,7 @@
 #include "../spectrum16k.h"
 #include "../spectrum48k.h"
 #include "../spectrum128k.h"
+#include "../spectrumplus2a.h"
 #include "mainwindow.h"
 #include "threadpauser.h"
 #include "../kempstonjoystick.h"
@@ -68,6 +69,16 @@ namespace
     const std::string Default48kRom = "spectrum48.rom";
     const std::string Default128kRom0 = "spectrum128-0.rom";
     const std::string Default128kRom1 = "spectrum128-1.rom";
+    const std::string DefaultPlus2Rom0 = "spectrumplus2-0.rom";
+    const std::string DefaultPlus2Rom1 = "spectrumplus2-1.rom";
+    const std::string DefaultPlus2aRom0 = "spectrumplus3-0.rom";
+    const std::string DefaultPlus2aRom1 = "spectrumplus3-1.rom";
+    const std::string DefaultPlus2aRom2 = "spectrumplus3-2.rom";
+    const std::string DefaultPlus2aRom3 = "spectrumplus3-3.rom";
+    const std::string DefaultPlus3Rom0 = "spectrumplus3-0.rom";
+    const std::string DefaultPlus3Rom1 = "spectrumplus3-1.rom";
+    const std::string DefaultPlus3Rom2 = "spectrumplus3-2.rom";
+    const std::string DefaultPlus3aRom3 = "spectrumplus3-3.rom";
 
     // ms to wait for the thread to stop before forcibly terminating it
     constexpr const int ThreadStopWaitThreshold = 3000;
@@ -85,7 +96,8 @@ MainWindow::MainWindow(QWidget * parent)
   m_pauseResume(QIcon::fromTheme(QStringLiteral("media-playback-start")), tr("Start/Pause")),
   m_model16(tr("Spectrum 16k")),
   m_model48(tr("Spectrum 48k")),
-  m_model128(tr("Spectrum 128k")),
+  m_model128(tr("Spectrum 128k/+2")),
+  m_modelPlus2a(tr("Spectrum +2a")),
   m_saveScreenshot(QIcon::fromTheme(QStringLiteral("image")), tr("Screenshot")),
   m_colourDisplay(tr("Colour")),
   m_monochromeDisplay(tr("Monochrome")),
@@ -134,11 +146,14 @@ MainWindow::MainWindow(QWidget * parent)
     m_model48.setChecked(false);
     m_model128.setCheckable(true);
     m_model128.setChecked(true);
+    m_modelPlus2a.setCheckable(true);
+    m_modelPlus2a.setChecked(false);
 
     auto * model = new QActionGroup(this);
     model->addAction(&m_model16);
     model->addAction(&m_model48);
     model->addAction(&m_model128);
+    model->addAction(&m_modelPlus2a);
 
     m_colourDisplay.setCheckable(true);
     m_monochromeDisplay.setCheckable(true);
@@ -296,6 +311,7 @@ void MainWindow::createMenuBar()
     subMenu->addAction(&m_model16);
     subMenu->addAction(&m_model48);
     subMenu->addAction(&m_model128);
+    subMenu->addAction(&m_modelPlus2a);
     subMenu = menu->addMenu(tr("Joysticks"));
     subMenu->addAction(&m_joystickKempston);
     subMenu->addAction(&m_joystickInterface2);
@@ -377,6 +393,7 @@ void MainWindow::connectSignals()
 	connect(&m_model16, &QAction::triggered, this, &MainWindow::model16Triggered);
 	connect(&m_model48, &QAction::triggered, this, &MainWindow::model48Triggered);
 	connect(&m_model128, &QAction::triggered, this, &MainWindow::model128Triggered);
+	connect(&m_modelPlus2a, &QAction::triggered, this, &MainWindow::modelPlus2aTriggered);
 
 	connect(&m_joystickKempston, &QAction::triggered, this, &MainWindow::useKempstonJoystickTriggered);
 	connect(&m_joystickInterface2, &QAction::triggered, this, &MainWindow::useInterfaceTwoJoystickTriggered);
@@ -479,6 +496,10 @@ void MainWindow::setModel(Spectrum::Model model)
 
         case Model::Spectrum128k:
             m_spectrum = std::make_unique<Spectrum128k>(Default128kRom0, Default128kRom1);
+            break;
+
+        case Model::SpectrumPlus2a:
+            m_spectrum = std::make_unique<SpectrumPlus2a>(DefaultPlus2aRom0, DefaultPlus2aRom1, DefaultPlus2aRom2, DefaultPlus2aRom3);
             break;
     }
 
@@ -1021,6 +1042,10 @@ void MainWindow::closeEvent(QCloseEvent * ev)
                 case Model::Spectrum128k:
                     model = QStringLiteral("128k");
                     break;
+
+                case Model::SpectrumPlus2a:
+                    model = QStringLiteral("+2a");
+                    break;
             }
         }
 
@@ -1075,6 +1100,8 @@ void MainWindow::showEvent(QShowEvent * ev)
             setModel(Model::Spectrum48k);
         } else if(QStringLiteral("128k") == model) {
             setModel(Model::Spectrum128k);
+        } else if(QStringLiteral("+2a") == model) {
+            setModel(Model::SpectrumPlus2a);
         }
     }
 
@@ -1290,6 +1317,11 @@ void MainWindow::model48Triggered()
 void MainWindow::model128Triggered()
 {
     setModel(Model::Spectrum128k);
+}
+
+void MainWindow::modelPlus2aTriggered()
+{
+    setModel(Model::SpectrumPlus2a);
 }
 
 void MainWindow::useKempstonJoystickTriggered()
