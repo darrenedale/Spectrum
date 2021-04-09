@@ -54,10 +54,10 @@ void SnapshotReader::setFileName(const std::string & fileName)
     m_borrowedStream = false;
 }
 
-void SnapshotReader::setStream(std::istream * in)
+void SnapshotReader::setStream(std::istream & in)
 {
     disposeStream();
-    m_in = in;
+    m_in = &in;
     m_borrowedStream = true;
 }
 

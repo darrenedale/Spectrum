@@ -37,6 +37,7 @@
 #include "../io/snasnapshotreader.h"
 #include "../io/z80snapshotreader.h"
 #include "../io/spsnapshotreader.h"
+#include "../io/zx82snapshotreader.h"
 #include "../io/zxsnapshotreader.h"
 #include "../io/z80snapshotwriter.h"
 #include "../io/snasnapshotwriter.h"
@@ -541,6 +542,17 @@ QString MainWindow::guessSnapshotFormat(const QString & fileName)
         return matches.captured(1).toLower();
     }
 
+    QFile in(fileName);
+
+    if (in.open(QIODevice::OpenModeFlag::ReadOnly)) {
+        auto signature = in.read(4);
+
+        if ("ZX82" == signature) {
+            in.close();
+            return "zx82";
+        }
+    }
+
     return {};
 }
 
@@ -565,6 +577,8 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
         reader = std::make_unique<Z80SnapshotReader>(fileName.toStdString());
     } else if ("sp" == format) {
         reader = std::make_unique<SpSnapshotReader>(fileName.toStdString());
+    } else if ("zx82" == format) {
+        reader = std::make_unique<ZX82SnapshotReader>(fileName.toStdString());
     } else if ("zx" == format) {
         reader = std::make_unique<ZXSnapshotReader>(fileName.toStdString());
     }
@@ -1248,6 +1262,7 @@ void MainWindow::loadSnapshotTriggered()
         filters << tr("SNA Snapshots (*.sna)");
         filters << tr("Z80 Snapshots (*.z80)");
         filters << tr("SP Snapshots (*.sp)");
+        filters << tr("ZX82 Snapshots (*.zx82)");
         filters << tr("ZX Snapshots (*.zx)");
     }
 
