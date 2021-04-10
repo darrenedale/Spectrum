@@ -71,21 +71,11 @@ namespace Spectrum
         cpu->reset();
     }
 
-#if(!defined(NDEBUG))
-#include <zlib.h>
+#if (!defined(NDEBUG))
+
     void BaseSpectrum::dumpState(std::ostream & out) const
     {
         z80()->dumpState(out);
-        out << "\nMemory state:\n";
-        std::uint32_t crc = crc32(0L, nullptr, 0);
-        crc = crc32(crc, memory()->pointerTo(0), 0x4000);
-        out << "ROM checksum: 0x" << std::setw(8) << crc << '\n';
-        crc = crc32(0L, nullptr, 0);
-        crc = crc32(crc, memory()->pointerTo(0x4000), 0x4000);
-        crc = crc32(crc, memory()->pointerTo(0x8000), 0x4000);
-        crc = crc32(crc, memory()->pointerTo(0xc000), 0x4000);
-        out << "48k RAM checksum: 0x" << std::setw(8) << crc << '\n'
-                  << std::dec << std::setfill(' ');
     }
 #endif
 
