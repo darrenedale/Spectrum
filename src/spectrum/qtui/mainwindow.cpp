@@ -67,21 +67,21 @@ namespace
         Button3,
     };
 
-    const std::string Default16kRom = "spectrum48.rom";
-    const std::string Default48kRom = "spectrum48.rom";
-    const std::string Default128kRom0 = "spectrum128-0.rom";
-    const std::string Default128kRom1 = "spectrum128-1.rom";
-    const std::string DefaultPlus2Rom0 = "spectrumplus2-0.rom";
-    const std::string DefaultPlus2Rom1 = "spectrumplus2-1.rom";
-    const std::string DefaultPlus2aRom0 = "spectrumplus3-0.rom";
-    const std::string DefaultPlus2aRom1 = "spectrumplus3-1.rom";
-    const std::string DefaultPlus2aRom2 = "spectrumplus3-2.rom";
-    const std::string DefaultPlus2aRom3 = "spectrumplus3-3.rom";
-    const std::string DefaultPlus3Rom0 = "spectrumplus3-0.rom";
-    const std::string DefaultPlus3Rom1 = "spectrumplus3-1.rom";
-    const std::string DefaultPlus3Rom2 = "spectrumplus3-2.rom";
-    const std::string DefaultPlus3aRom3 = "spectrumplus3-3.rom";
-    const std::string DefaultTc2048Rom = "tc2048.rom";
+    constexpr const char * Default16kRom = "roms/spectrum48.rom";
+    constexpr const char * Default48kRom = "roms/spectrum48.rom";
+    constexpr const char * Default128kRom0 = "roms/spectrum128-0.rom";
+    constexpr const char * Default128kRom1 = "roms/spectrum128-1.rom";
+    constexpr const char * DefaultPlus2Rom0 = "roms/spectrumplus2-0.rom";
+    constexpr const char * DefaultPlus2Rom1 = "roms/spectrumplus2-1.rom";
+    constexpr const char * DefaultPlus2aRom0 = "roms/spectrumplus3-0.rom";
+    constexpr const char * DefaultPlus2aRom1 = "roms/spectrumplus3-1.rom";
+    constexpr const char * DefaultPlus2aRom2 = "roms/spectrumplus3-2.rom";
+    constexpr const char * DefaultPlus2aRom3 = "roms/spectrumplus3-3.rom";
+    constexpr const char * DefaultPlus3Rom0 = "roms/spectrumplus3-0.rom";
+    constexpr const char * DefaultPlus3Rom1 = "roms/spectrumplus3-1.rom";
+    constexpr const char * DefaultPlus3Rom2 = "roms/spectrumplus3-2.rom";
+    constexpr const char * DefaultPlus3aRom3 = "roms/spectrumplus3-3.rom";
+    constexpr const char * DefaultTc2048Rom = "roms/tc2048.rom";
 
     // ms to wait for the thread to stop before forcibly terminating it
     constexpr const int ThreadStopWaitThreshold = 3000;
