@@ -18,7 +18,7 @@ constexpr const int ErrInvalidInstructionCount = 2;
 
 int main(int argc, char ** argv)
 {
-    UnsignedByte memory[0x3fff];
+    auto * memory = new SimpleMemory(0x4000);
     const char * romFileName = "spectrum48.rom";
     int maxInstructions = -1;
 
@@ -43,14 +43,14 @@ int main(int argc, char ** argv)
         return ErrNoRomFile;
     }
 
-    romFile.read(reinterpret_cast<std::ifstream::char_type *>(memory), 0x4000);
+    romFile.read(reinterpret_cast<std::ifstream::char_type *>(memory->pointerTo(0)), 0x4000);
 
     if (romFile.bad() || romFile.fail()) {
         std::cerr << "failed to read ROM file '" << romFileName << "'\n";
         return ErrRomFileReadError;
     }
 
-    Disassembler disassembler(memory, sizeof(memory));
+    Disassembler disassembler(memory);
     std::cout << std::hex << std::setfill('0');
 
     if (0 <= maxInstructions) {
@@ -71,7 +71,7 @@ int main(int argc, char ** argv)
                     std::cout << ' ';
                 }
 
-                std::cout << "0x" << static_cast<std::uint16_t>(*(memory + address));
+                std::cout << "0x" << static_cast<std::uint16_t>((*memory)[address]);
                 ++address;
             }
 
@@ -95,7 +95,7 @@ int main(int argc, char ** argv)
                     std::cout << ' ';
                 }
 
-                std::cout << "0x" << static_cast<std::uint16_t>(*(memory + address));
+                std::cout << "0x" << static_cast<std::uint16_t>((*memory)[address]);
                 ++address;
             }
 

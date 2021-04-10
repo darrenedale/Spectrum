@@ -153,8 +153,6 @@ void DebugWindow::createDockWidgets()
 
 void DebugWindow::layoutWidget()
 {
-	QLabel * tmpLabel;
-
 	// registers
 	auto * plainRegisters = new QGroupBox(tr("Registers"));
 	auto * plainRegistersLayout = new QVBoxLayout();
