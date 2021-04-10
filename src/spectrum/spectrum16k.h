@@ -19,6 +19,8 @@ namespace Spectrum
      *
      * The 6912 bytes of memory at 0x4000 (16384) - right at the beginning of the RAM segment of the address space - is
      * the display file, basically the Spectrum's VRAM.
+     *
+     * TODO fix crash when ROM can't be loaded
      */
     class Spectrum16k
     : public BaseSpectrum
