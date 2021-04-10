@@ -41,7 +41,7 @@ namespace Spectrum::Io
         explicit SnapshotReader(const std::string & inFile)
         : m_borrowedStream(false),
           m_hasBeenRead(false),
-          m_in(new std::ifstream(inFile)),
+          m_in(new std::ifstream(inFile, std::ios::binary | std::ios::in)),
           m_snapshot()
         {}
 

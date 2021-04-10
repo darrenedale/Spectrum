@@ -92,7 +92,7 @@ SpectrumPlus2aMemory::Byte * SpectrumPlus2aMemory::mapAddress(MemoryType::Addres
 
 bool SpectrumPlus2aMemory::loadRom(const std::string & fileName, RomNumber romNumber)
 {
-    std::ifstream in(fileName);
+    std::ifstream in(fileName, std::ios::binary | std::ios::in);
 
     if (!in) {
         std::cerr << "failed to open 128k ROM image file \"" << fileName << "\"\n";

@@ -62,7 +62,7 @@ Spectrum128KMemory::Byte * Spectrum128KMemory::mapAddress(MemoryType::Address ad
 
 bool Spectrum128KMemory::loadRom(const std::string & fileName, RomNumber romNumber)
 {
-    std::ifstream in(fileName);
+    std::ifstream in(fileName, std::ios::binary | std::ios::in);
 
     if (!in) {
         std::cerr << "failed to open 128k ROM image file \"" << fileName << "\"\n";

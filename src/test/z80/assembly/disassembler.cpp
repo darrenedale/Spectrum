@@ -36,7 +36,7 @@ int main(int argc, char ** argv)
         }
     }
 
-    std::ifstream romFile(romFileName);
+    std::ifstream romFile(romFileName, std::ios::binary | std::ios::in);
 
     if (!romFile) {
         std::cerr << "failed to open ROM file '" << romFileName << "'\n";

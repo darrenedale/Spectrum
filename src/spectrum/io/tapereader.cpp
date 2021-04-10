@@ -43,7 +43,7 @@ void TapeReader::disposeStream()
 void TapeReader::setFileName(const std::string & fileName)
 {
     disposeStream();
-    m_in = new std::ifstream(fileName);
+    m_in = new std::ifstream(fileName, std::ios::binary | std::ios::in);
     m_borrowedStream = false;
 }
 

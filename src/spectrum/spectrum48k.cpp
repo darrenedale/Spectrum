@@ -18,7 +18,7 @@ Spectrum48k::~Spectrum48k() = default;
 bool Spectrum48k::loadRom(const std::string & fileName)
 {
     static constexpr const std::size_t RomFileSize = 0x4000;
-    std::ifstream inFile(fileName);
+    std::ifstream inFile(fileName, std::ios::binary | std::ios::in);
 
     if (!inFile) {
         std::cerr << "spectrum ROM file \"" << fileName << "\" could not be opened.\n";

@@ -19,7 +19,7 @@ namespace Spectrum::Io
 
         explicit TapeReader(const std::string & inFile)
         : m_borrowedStream(false),
-          m_in(new std::ifstream(inFile))
+          m_in(new std::ifstream(inFile, std::ios::binary | std::ios::in))
         {}
 
         TapeReader(const SnapshotReader & other) = delete;
