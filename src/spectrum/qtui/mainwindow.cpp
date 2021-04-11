@@ -98,7 +98,7 @@ MainWindow::MainWindow(QWidget * parent)
   m_displayWidget(),
   m_pokesWidget(),
   m_load(QIcon::fromTheme(QStringLiteral("document-open")), tr("Load snapshot")),
-  m_save(QIcon::fromTheme(QStringLiteral("document-save")), tr("save snapshot")),
+  m_save(QIcon::fromTheme(QStringLiteral("document-save")), tr("Save snapshot")),
   m_pauseResume(QIcon::fromTheme(QStringLiteral("media-playback-start")), tr("Start/Pause")),
   m_model16(tr("Spectrum 16k")),
   m_model48(tr("Spectrum 48k")),
@@ -128,6 +128,8 @@ MainWindow::MainWindow(QWidget * parent)
     setMouseTracking(true);
 
     m_spectrum->setExecutionSpeedConstrained(true);
+
+    m_debugWindow.setWindowFlag(Qt::WindowType::Window);
     m_displayWidget.keepAspectRatio();
     m_displayWidget.setFocusPolicy(Qt::FocusPolicy::ClickFocus);
     m_displayWidget.setFocus();
@@ -270,34 +272,33 @@ void MainWindow::createMenuBar()
     menu->addAction(&m_load);
     menu->addAction(&m_save);
 
-    // F1 loads from default slot, F2 saves to default slot
-    // Shift + F1-5 loads from slot 1-5
-    // Shift + Alt + F1-5 saves to slot 1-5
+    // F1-5 loads from slot 1-5
+    // Shift + F1-5 saves to slot 1-5
 
     auto * subMenu = menu->addMenu(tr("Load slot"));
-    subMenu->addAction(tr("Default slot"), [this]() {
-        // TODO configuration to set default slot
-        loadSnapshotFromSlot(1);
-    }, Qt::Key::Key_F1);
-    subMenu->addSeparator();
+//    subMenu->addAction(tr("Default slot"), [this]() {
+//        // TODO configuration to set default slot
+//        loadSnapshotFromSlot(1);
+//    }, Qt::Key::Key_F1);
+//    subMenu->addSeparator();
 
     for (int slotIndex = 1; slotIndex <= 5; ++slotIndex) {
         subMenu->addAction(tr("Slot %1").arg(slotIndex),  [this, slotIndex]() {
             loadSnapshotFromSlot(slotIndex);
-        }, QKeySequence(tr("Shift+F%1").arg(slotIndex)));
+        }, QKeySequence(tr("F%1").arg(slotIndex)));
     }
 
     subMenu = menu->addMenu(tr("Save slot"));
-    subMenu->addAction(tr("Default slot"), [this]() {
-        // TODO configuration to set default slot
-        saveSnapshotToSlot(1, QStringLiteral("z80"));
-    }, Qt::Key::Key_F2);
-    subMenu->addSeparator();
+//    subMenu->addAction(tr("Default slot"), [this]() {
+//        // TODO configuration to set default slot
+//        saveSnapshotToSlot(1, QStringLiteral("z80"));
+//    }, Qt::Key::Key_F2);
+//    subMenu->addSeparator();
 
     for (int slotIndex = 1; slotIndex <= 5; ++slotIndex) {
         subMenu->addAction(tr("Slot %1").arg(slotIndex), [this, slotIndex]() {
             saveSnapshotToSlot(slotIndex, QStringLiteral("z80"));
-        }, QKeySequence(tr("Shift+Ctrl+F%1").arg(slotIndex)));
+        }, QKeySequence(tr("Shift+F%1").arg(slotIndex)));
     }
 
     menu->addSeparator();
@@ -357,6 +358,9 @@ void MainWindow::createToolBars()
 
     tempToolBar = addToolBar(tr("Speed"));
     tempToolBar->setObjectName(QStringLiteral("speed-toolbar"));
+    auto geom = tempToolBar->geometry();
+    geom.moveLeft(width() / 3 * 2);
+    tempToolBar->setGeometry(geom);
     tempToolBar->addWidget(new QLabel(tr("Speed")));
     tempToolBar->addWidget(&m_emulationSpeedSlider);
     tempToolBar->addWidget(&m_emulationSpeedSpin);
@@ -542,7 +546,7 @@ void MainWindow::saveScreenshot(const QString & fileName)
         std::ofstream outFile(fileName.toStdString());
 
         if (!outFile.is_open()) {
-            std::cout << "Could not open file '" << fileName.toStdString() << "' for writing\n";
+            std::cerr << "Could not open file '" << fileName.toStdString() << "' for writing\n";
             return;
         }
 
@@ -1111,7 +1115,6 @@ void MainWindow::closeEvent(QCloseEvent * ev)
             }
         }
 
-        std::cout << "storing last used model for next startup: " << qPrintable(model) << '\n';
         settings.setValue(QStringLiteral("model"), model);
     }
 
@@ -1129,7 +1132,7 @@ void MainWindow::showEvent(QShowEvent * ev)
     m_lastSnapshotLoadDir = settings.value(QStringLiteral("lastSnapshotLoadDir")).toString();
     m_lastScreenshotDir = settings.value(QStringLiteral("lastScreenshotDir")).toString();
     m_lastPokeLoadDir = settings.value(QStringLiteral("lastPokeLoadDir")).toString();
-    auto speed = settings.value(QStringLiteral("emulationSpeed"), 1).toInt(&ok);
+    auto speed = settings.value(QStringLiteral("emulationSpeed"), 100).toInt(&ok);
 
     if (!ok) {
         speed = 100;
@@ -1211,9 +1214,7 @@ void MainWindow::dragEnterEvent(QDragEnterEvent * event)
         return;
     }
 
-    const auto & scheme = urls.first().scheme();
-
-    if (QStringLiteral("file") == scheme) {
+    if (urls.constFirst().isLocalFile()) {
         event->acceptProposedAction();
     }
 }
@@ -1235,8 +1236,8 @@ void MainWindow::dropEvent(QDropEvent * event)
 
     const auto & url = urls.constFirst();
 
-    if (QStringLiteral("file") == url.scheme()) {
-        loadSnapshot(url.path());
+    if (url.isLocalFile()) {
+        loadSnapshot(url.toLocalFile());
     } else {
         std::cerr << "remote URLs cannot yet be loaded.\n";
     }
