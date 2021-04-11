@@ -1,2 +1,8 @@
 build/
 cmake-build*/
+dist/**/Games/*.z80
+dist/**/Games/*.sna
+dist/**/Games/*.sp
+dist/**/Games/*.tap
+dist/**/Games/*.tzx
+/dist/windows/Spectrum.zip
