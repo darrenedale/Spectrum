@@ -890,7 +890,6 @@ constexpr const std::uint8_t Z80::Z80::DdCbOrFdCbOpcodeTStates[256] = {
 
 Z80::Z80::Z80(Memory * memory)
 : Cpu(memory),
-  m_memory(memory),
   m_clockSpeed(DefaultClockSpeed),
   m_nmiPending(false),
   m_interruptRequested(false),

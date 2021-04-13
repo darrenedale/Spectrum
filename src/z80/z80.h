@@ -1062,9 +1062,6 @@ namespace Z80
 
         Registers m_registers;
 
-        // memory
-        Memory * m_memory;
-
         // interrupt handling
         std::uint32_t m_tStates;
         bool m_iff1;

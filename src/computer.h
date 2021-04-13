@@ -166,8 +166,11 @@ public:
             m_memoryOwned = false;
         }
 
-        // TODO pass the memory to the CPUs
         m_memory = memory;
+
+        for (auto * cpu : cpus()) {
+            cpu->setMemory(m_memory);
+        }
     }
 
     /**
@@ -182,9 +185,12 @@ public:
             delete m_memory;
         }
 
-        // TODO pass the memory to the CPUs
         m_memoryOwned = true;
         m_memory = memory;
+
+        for (auto * cpu : cpus()) {
+            cpu->setMemory(m_memory);
+        }
     }
 
     /**

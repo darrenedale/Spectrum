@@ -25,7 +25,7 @@ namespace Spectrum
     : public Computer<::Z80::UnsignedByte>
     {
     public:
-        using MemoryType = Memory<ByteType>;
+        using MemoryType = Memory<::Z80::UnsignedByte>;
         using DisplayDevices = std::vector<DisplayDevice *>;
 
         /**
