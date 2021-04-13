@@ -83,12 +83,14 @@ namespace Spectrum
          */
         void clear() override;
 
+        [[nodiscard]] std::unique_ptr<Memory> clone() const override;
+
         /**
          * Fetch the current paging mode.
          *
          * @return
          */
-        inline PagingMode pagingMode() const
+        [[nodiscard]] inline PagingMode pagingMode() const
         {
             return m_pagingMode;
         }
@@ -190,7 +192,7 @@ namespace Spectrum
          */
         [[nodiscard]] const Byte * bankPointer(BankNumber bank) const
         {
-            return m_ramBanks[static_cast<int>(bank)];
+            return m_ramBanks[static_cast<int>(bank)].data();
         }
 
         /**
@@ -200,7 +202,7 @@ namespace Spectrum
          */
         Byte * bankPointer(BankNumber bank)
         {
-            return m_ramBanks[static_cast<int>(bank)];
+            return m_ramBanks[static_cast<int>(bank)].data();
         }
 
         /**
@@ -230,7 +232,7 @@ namespace Spectrum
          */
         [[nodiscard]] const Byte * romPointer(RomNumber rom) const
         {
-            return m_roms[static_cast<int>(rom)];
+            return m_roms[static_cast<int>(rom)].data();
         }
 
         /**
@@ -240,7 +242,7 @@ namespace Spectrum
          */
         Byte * romPointer(RomNumber rom)
         {
-            return m_roms[static_cast<int>(rom)];
+            return m_roms[static_cast<int>(rom)].data();
         }
 
         /**
@@ -297,7 +299,7 @@ namespace Spectrum
         [[nodiscard]] Byte * mapAddress(Address address) const override;
 
     private:
-        using BankStorage = Byte[BankSize];
+        using BankStorage = std::array<Byte, BankSize>;
 
         /**
          * The current paging mode.
@@ -312,7 +314,7 @@ namespace Spectrum
         /**
          * Storage for the ROMs.
          */
-        BankStorage m_roms[4];
+        std::array<BankStorage, 4> m_roms;
 
         /**
          * The currently paged-in RAM bank.
@@ -322,7 +324,7 @@ namespace Spectrum
         /**
          * Storage for the RAM banks.
          */
-        BankStorage m_ramBanks[8];
+        std::array<BankStorage, 8> m_ramBanks;
 
         /**
          * Which configuration is in use for Special pagign mode.

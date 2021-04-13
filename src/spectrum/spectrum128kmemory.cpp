@@ -48,11 +48,11 @@ Spectrum128KMemory::Byte * Spectrum128KMemory::mapAddress(MemoryType::Address ad
     }
 
     if (address >= Bank2Base) {
-        return const_cast<Byte *>(m_ramBanks[static_cast<int>(BankNumber::Bank2)] + address - Bank2Base);
+        return const_cast<Byte *>(m_ramBanks[static_cast<int>(BankNumber::Bank2)].data() + address - Bank2Base);
     }
 
     if (address >= Bank5Base) {
-        return const_cast<Byte *>(m_ramBanks[static_cast<int>(BankNumber::Bank5)] + address - Bank5Base);
+        return const_cast<Byte *>(m_ramBanks[static_cast<int>(BankNumber::Bank5)].data() + address - Bank5Base);
     }
 
     // unreachable code
@@ -65,14 +65,14 @@ bool Spectrum128KMemory::loadRom(const std::string & fileName, RomNumber romNumb
     std::ifstream in(fileName, std::ios::binary | std::ios::in);
 
     if (!in) {
-        std::cerr << "failed to open 128k ROM image file \"" << fileName << "\"\n";
+        std::cerr << "failed to open ROM image file \"" << fileName << "\"\n";
         return false;
     }
 
-    in.read(reinterpret_cast<std::ifstream::char_type *>(m_roms[static_cast<int>(romNumber)]), RomSize);
+    in.read(reinterpret_cast<std::ifstream::char_type *>(m_roms[static_cast<int>(romNumber)].data()), RomSize);
 
     if (in.fail() && !in.eof()) {
-        std::cerr << "failed to read 128k ROM image file \"" << fileName << "\"\n";
+        std::cerr << "failed to read ROM image file \"" << fileName << "\"\n";
         return false;
     }
 
@@ -82,22 +82,36 @@ bool Spectrum128KMemory::loadRom(const std::string & fileName, RomNumber romNumb
 void Spectrum128KMemory::clear()
 {
     for (auto & rom : m_roms) {
-        std::memset(rom, 0, RomSize);
+        rom.fill(0);
     }
 
     for (auto & bank : m_ramBanks) {
-        std::memset(bank, 0, BankSize);
+        bank.fill(0);
     }
+}
+
+std::unique_ptr<Memory<Spectrum128KMemory::Byte>> Spectrum128KMemory::clone() const
+{
+    auto ret = std::make_unique<Spectrum128KMemory>();
+
+    // NOTE we'd get better performance out of std::memcpy() because the array copy constructor iterates over the array
+    // and invokes the copy constructor for each element. since memory cloning is never (and should never) be used in
+    // performance-sensitive code paths we don't need to squeeze out the performance, so we stick with idiomatic code
+    ret->m_ramBanks = m_ramBanks;
+    ret->m_roms = m_roms;
+    ret->m_romNumber = m_romNumber;
+    ret->m_pagedBank = m_pagedBank;
+    return ret;
 }
 
 void Spectrum128KMemory::readFromBank(BankNumber bank, Byte * buffer, UnsignedWord size, UnsignedWord offset)
 {
-    assert(offset + size < BankSize);
-    std::memcpy(buffer, m_ramBanks[static_cast<int>(bank)] + offset, size);
+    assert(offset + size <= BankSize);
+    std::memcpy(buffer, m_ramBanks[static_cast<int>(bank)].data() + offset, size);
 }
 
 void Spectrum128KMemory::writeToBank(BankNumber bank, Byte * data, UnsignedWord size, UnsignedWord offset)
 {
-    assert(offset + size < BankSize);
-    std::memcpy(m_ramBanks[static_cast<int>(bank)] + offset, data, size);
+    assert(offset + size <= BankSize);
+    std::memcpy(m_ramBanks[static_cast<int>(bank)].data() + offset, data, size);
 }

@@ -67,6 +67,8 @@ namespace Spectrum
          */
         void clear() override;
 
+        [[nodiscard]] std::unique_ptr<Memory> clone() const override;
+
         /**
          * Determine the currently paged-in ROM.
          *
@@ -122,7 +124,7 @@ namespace Spectrum
          */
         [[nodiscard]] const Byte * bankPointer(BankNumber bank) const
         {
-            return m_ramBanks[static_cast<int>(bank)];
+            return m_ramBanks[static_cast<int>(bank)].data();
         }
 
         /**
@@ -132,7 +134,7 @@ namespace Spectrum
          */
         Byte * bankPointer(BankNumber bank)
         {
-            return m_ramBanks[static_cast<int>(bank)];
+            return m_ramBanks[static_cast<int>(bank)].data();
         }
 
         /**
@@ -162,7 +164,7 @@ namespace Spectrum
          */
         [[nodiscard]] const Byte * romPointer(RomNumber rom) const
         {
-            return m_roms[static_cast<int>(rom)];
+            return m_roms[static_cast<int>(rom)].data();
         }
 
         /**
@@ -172,7 +174,7 @@ namespace Spectrum
          */
         Byte * romPointer(RomNumber rom)
         {
-            return m_roms[static_cast<int>(rom)];
+            return m_roms[static_cast<int>(rom)].data();
         }
 
         /**
@@ -229,7 +231,7 @@ namespace Spectrum
         [[nodiscard]] Byte * mapAddress(Address address) const override;
 
     private:
-        using BankStorage = Byte[BankSize];
+        using BankStorage = std::array<Byte, BankSize>;
 
         /**
          * The currently paged-in ROM.
@@ -239,7 +241,7 @@ namespace Spectrum
         /**
          * Storage for the ROMs.
          */
-        BankStorage m_roms[2];
+        std::array<BankStorage, 2> m_roms;
 
         /**
          * The currently paged-in RAM bank.
@@ -249,7 +251,7 @@ namespace Spectrum
         /**
          * Storage for the RAM banks.
          */
-        BankStorage m_ramBanks[8];
+        std::array<BankStorage, 8> m_ramBanks;
     };
 }
 

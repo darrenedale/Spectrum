@@ -54,15 +54,15 @@ SpectrumPlus2aMemory::Byte * SpectrumPlus2aMemory::mapAddress(MemoryType::Addres
         const Byte * base;
 
         if (address < 0x4000) {
-            base = m_ramBanks[SpecialMemoryConfigurations[idx][0]];
+            base = m_ramBanks[SpecialMemoryConfigurations[idx][0]].data();
         } else if (address < 0x8000) {
-            base = m_ramBanks[SpecialMemoryConfigurations[idx][1]];
+            base = m_ramBanks[SpecialMemoryConfigurations[idx][1]].data();
             address -= 0x4000;
         } else if (address < 0xc000) {
-            base = m_ramBanks[SpecialMemoryConfigurations[idx][2]];
+            base = m_ramBanks[SpecialMemoryConfigurations[idx][2]].data();
             address -= 0x8000;
         } else {
-            base = m_ramBanks[SpecialMemoryConfigurations[idx][3]];
+            base = m_ramBanks[SpecialMemoryConfigurations[idx][3]].data();
             address -= 0xc000;
         }
 
@@ -77,11 +77,11 @@ SpectrumPlus2aMemory::Byte * SpectrumPlus2aMemory::mapAddress(MemoryType::Addres
         }
 
         if (address >= Bank2Base) {
-            return const_cast<Byte *>(m_ramBanks[static_cast<int>(BankNumber::Bank2)] + address - Bank2Base);
+            return const_cast<Byte *>(m_ramBanks[static_cast<int>(BankNumber::Bank2)].data() + address - Bank2Base);
         }
 
         if (address >= Bank5Base) {
-            return const_cast<Byte *>(m_ramBanks[static_cast<int>(BankNumber::Bank5)] + address - Bank5Base);
+            return const_cast<Byte *>(m_ramBanks[static_cast<int>(BankNumber::Bank5)].data() + address - Bank5Base);
         }
     }
 
@@ -95,14 +95,14 @@ bool SpectrumPlus2aMemory::loadRom(const std::string & fileName, RomNumber romNu
     std::ifstream in(fileName, std::ios::binary | std::ios::in);
 
     if (!in) {
-        std::cerr << "failed to open 128k ROM image file \"" << fileName << "\"\n";
+        std::cerr << "failed to open ROM image file \"" << fileName << "\"\n";
         return false;
     }
 
-    in.read(reinterpret_cast<std::ifstream::char_type *>(m_roms[static_cast<int>(romNumber)]), RomSize);
+    in.read(reinterpret_cast<std::ifstream::char_type *>(m_roms[static_cast<int>(romNumber)].data()), RomSize);
 
     if (in.fail() && !in.eof()) {
-        std::cerr << "failed to read 128k ROM image file \"" << fileName << "\"\n";
+        std::cerr << "failed to read ROM image file \"" << fileName << "\"\n";
         return false;
     }
 
@@ -112,22 +112,38 @@ bool SpectrumPlus2aMemory::loadRom(const std::string & fileName, RomNumber romNu
 void SpectrumPlus2aMemory::clear()
 {
     for (auto & rom : m_roms) {
-        std::memset(rom, 0, RomSize);
+        rom.fill(0);
     }
 
     for (auto & bank : m_ramBanks) {
-        std::memset(bank, 0, BankSize);
+        bank.fill(0);
     }
+}
+
+std::unique_ptr<Memory<SpectrumPlus2aMemory::Byte>> SpectrumPlus2aMemory::clone() const
+{
+    auto ret = std::make_unique<SpectrumPlus2aMemory>();
+
+    // NOTE we'd get better performance out of std::memcpy() because the array copy constructor iterates over the array
+    // and invokes the copy constructor for each element. since memory cloning is never (and should never) be used in
+    // performance-sensitive code paths we don't need to squeeze out the performance, so we stick with idiomatic code
+    ret->m_ramBanks = m_ramBanks;
+    ret->m_roms = m_roms;
+    ret->m_pagingMode = m_pagingMode;
+    ret->m_romNumber = m_romNumber;
+    ret->m_pagedBank = m_pagedBank;
+    ret->m_specialPagingConfiguration = m_specialPagingConfiguration;
+    return ret;
 }
 
 void SpectrumPlus2aMemory::readFromBank(BankNumber bank, Byte * buffer, UnsignedWord size, UnsignedWord offset)
 {
-    assert(offset + size < BankSize);
-    std::memcpy(buffer, m_ramBanks[static_cast<int>(bank)] + offset, size);
+    assert(offset + size <= BankSize);
+    std::memcpy(buffer, m_ramBanks[static_cast<int>(bank)].data() + offset, size);
 }
 
 void SpectrumPlus2aMemory::writeToBank(BankNumber bank, Byte * data, UnsignedWord size, UnsignedWord offset)
 {
-    assert(offset + size < BankSize);
-    std::memcpy(m_ramBanks[static_cast<int>(bank)] + offset, data, size);
+    assert(offset + size <= BankSize);
+    std::memcpy(m_ramBanks[static_cast<int>(bank)].data() + offset, data, size);
 }

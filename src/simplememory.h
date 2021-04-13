@@ -7,6 +7,7 @@
 
 #include "memory.h"
 #include <cstring>
+#include <vector>
 
 /**
  * Simple memory for a computer - an array of bytes.
@@ -28,31 +29,28 @@ public:
 
     explicit SimpleMemory(Size addressableSize = 0, std::optional<Size> availableSize = {})
     : Memory<byte_t, address_t, size_t>(addressableSize, std::move(availableSize)),
-      m_storage(new Byte[this->availableSize()]),
-      m_borrowedStorage(false)
+      m_storage(this->availableSize(), 0)
     {}
 
-    SimpleMemory(Size addressableSize, Byte * storage, std::optional<Size> availableSize = {})
-    : Memory<byte_t, address_t, size_t>(addressableSize, std::move(availableSize)),
-      m_storage(storage),
-      m_borrowedStorage(true)
-    {}
-
-    virtual ~SimpleMemory()
-    {
-        if (!m_borrowedStorage) {
-            delete[] m_storage;
-        }
-
-        m_storage = nullptr;
-    }
+    SimpleMemory(const Memory<byte_t, address_t, size_t> &) = delete;
+    SimpleMemory(Memory<byte_t, address_t, size_t> &&) = delete;
+    void operator=(const Memory<byte_t, address_t, size_t> &) = delete;
+    void operator=(Memory<byte_t, address_t, size_t> &&) = delete;
+    ~SimpleMemory() override = default;
 
     /**
      * Set all installed memory to 0 bytes.
      */
     void clear() override
     {
-        std::memset(m_storage, 0, this->availableSize());
+        std::memset(m_storage.data(), 0, this->availableSize());
+    }
+
+    std::unique_ptr<Memory<byte_t, address_t, size_t>> clone() const override
+    {
+        auto ret = std::make_unique<SimpleMemory<byte_t, address_t, size_t>>(this->addressableSize(), this->availableSize());
+        std::memcpy(ret->m_storage.data(), this->m_storage.data(), this->availableSize());
+        return ret;
     }
 
 protected:
@@ -68,12 +66,11 @@ protected:
      */
     virtual inline Byte * mapAddress(Address address) const
     {
-        return m_storage + address;
+        return const_cast<Byte *>(m_storage.data()) + address;
     }
 
 private:
-    Byte * m_storage;
-    bool m_borrowedStorage;
+    std::vector<Byte> m_storage;
 };
 
 #endif //SIMPLEMEMORY_H

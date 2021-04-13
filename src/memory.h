@@ -6,6 +6,7 @@
 #define MEMORY_H
 
 #include <optional>
+#include <memory>
 #include <cassert>
 #include <cstdint>
 
@@ -32,7 +33,10 @@ public:
             : m_addressableSize(addressableSize),
               m_availableSize(availableSize ? *availableSize : addressableSize)
     {}
-
+    Memory(const Memory & other) = delete;
+    Memory(Memory && other) = delete;
+    void operator=(const Memory<byte_t, address_t, size_t> &) = delete;
+    void operator=(Memory<byte_t, address_t, size_t> &&) = delete;
     virtual ~Memory() = default;
 
     /**
@@ -64,6 +68,13 @@ public:
             writeByte(address, 0x00);
         }
     }
+
+    /**
+     * Create a clone of the memory object.
+     *
+     * @return
+     */
+    virtual std::unique_ptr<Memory<byte_t, address_t, size_t>> clone() const = 0;
 
     /**
      * The caller is responsible for ensuring the address is in addressable bounds.
