@@ -31,7 +31,43 @@ namespace Spectrum
         SpectrumPlus2a,
     };
 
+    /**
+     * Enumeration of the available RAM banks for 128k models.
+     */
+    enum class MemoryBankNumber128k : std::uint8_t
+    {
+        Bank0 = 0,
+        Bank1,
+        Bank2,
+        Bank3,
+        Bank4,
+        Bank5,
+        Bank6,
+        Bank7,
+    };
+
+    /**
+     * Available ROMs for 128k/plus2
+     */
+    enum class RomNumber128k : std::uint8_t
+    {
+        Rom0 = 0,
+        Rom1,
+    };
+
+    /**
+     * Available ROMs for plus2a/plus3
+     */
+    enum class RomNumberPlus2a : std::uint8_t
+    {
+        Rom0 = 0,
+        Rom1,
+        Rom2,
+        Rom3,
+    };
+
 }
+
 namespace std
 {
     std::string to_string(Spectrum::Model model);

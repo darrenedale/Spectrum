@@ -38,28 +38,12 @@ namespace Spectrum
         /**
          * Enumeration of the available ROMs.
          */
-        enum class RomNumber : std::uint8_t
-        {
-            Rom0 = 0,
-            Rom1,
-            Rom2,
-            Rom3,
-        };
+        using RomNumber = RomNumberPlus2a;
 
         /**
          * Enumeration of the available RAM banks.
          */
-        enum class BankNumber : std::uint8_t
-        {
-            Bank0 = 0,
-            Bank1,
-            Bank2,
-            Bank3,
-            Bank4,
-            Bank5,
-            Bank6,
-            Bank7,
-        };
+        using BankNumber = MemoryBankNumber128k;
 
         enum class SpecialPagingConfiguration : std::uint8_t
         {
