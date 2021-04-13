@@ -31,6 +31,8 @@ namespace Spectrum
     : public BaseSpectrum
     {
     public:
+        using MemoryType = Spectrum128KMemory;
+
         enum class ScreenBuffer : std::uint8_t
         {
             Normal,       // display the normal screen buffer

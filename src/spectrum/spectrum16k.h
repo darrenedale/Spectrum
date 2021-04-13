@@ -26,6 +26,7 @@ namespace Spectrum
     : public BaseSpectrum
     {
     public:
+        using MemoryType = SimpleMemory<::Z80::UnsignedByte>;
         static constexpr const int DisplayMemoryOffset = 0x4000;
         static constexpr const int DisplayMemorySize = 6912;
 

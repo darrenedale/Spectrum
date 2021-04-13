@@ -6,6 +6,7 @@
 #define SPECTRUM_SPECTRUMPLUS2_H
 
 #include "spectrum128k.h"
+#include "spectrumplus2memory.h"
 
 namespace Spectrum
 {
@@ -19,6 +20,8 @@ namespace Spectrum
     : public Spectrum128k
     {
     public:
+        using MemoryType = SpectrumPlus2Memory;
+
         using Spectrum128k::Spectrum128k;
         ~SpectrumPlus2() override;
 
