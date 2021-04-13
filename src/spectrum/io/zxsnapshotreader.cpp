@@ -7,6 +7,7 @@
 #include <bit>
 
 #include "zxsnapshotreader.h"
+#include "../spectrum48k.h"
 #include "../../z80/types.h"
 
 using namespace Spectrum::Io;
@@ -92,11 +93,11 @@ namespace
     constexpr const std::uint16_t MemoryImageOffset = 16252;
 }
 
-bool ZXSnapshotReader::readInto(Snapshot & snapshot) const
+const Spectrum::Snapshot * ZXSnapshotReader::read() const
 {
     if (!isOpen()) {
         std::cerr << "Input stream is not open.\n";
-        return false;
+        return nullptr;
     }
 
     auto & in = inputStream();
@@ -106,18 +107,19 @@ bool ZXSnapshotReader::readInto(Snapshot & snapshot) const
 
     if (in.fail() || sizeof(ZXFileContent) != in.gcount()) {
         std::cerr << "Failed to read from input stream.\n";
-        return false;
+        return nullptr;
     }
 
-    auto & registers = snapshot.registers();
+    auto snapshot = std::make_unique<Snapshot>(Model::Spectrum48k);
+    auto & registers = snapshot->registers();
     registers.a = content.a;
     registers.f = content.f;
     registers.aShadow = content.aShadow;
     registers.fShadow = content.fShadow;
     registers.i = content.i;
     registers.r = content.r;
-    snapshot.iff1 = (1 == content.interruptStatus);
-    snapshot.iff2 = snapshot.iff1;
+    snapshot->iff1 = (1 == content.interruptStatus);
+    snapshot->iff2 = snapshot->iff1;
 
     if (std::endian::native == std::endian::big) {
         registers.bc = content.bc;
@@ -147,22 +149,25 @@ bool ZXSnapshotReader::readInto(Snapshot & snapshot) const
     
     switch (content.interruptMode) {
         case 0xffff:
-            snapshot.im = InterruptMode::IM0;
+            snapshot->im = InterruptMode::IM0;
             break;
 
         case 0:
-            snapshot.im = InterruptMode::IM1;
+            snapshot->im = InterruptMode::IM1;
             break;
 
         case 1:
-            snapshot.im = InterruptMode::IM2;
+            snapshot->im = InterruptMode::IM2;
             break;
 
         default:
             std::cerr << "Invalid interrupt mode in .ZX input stream.\n";
-            return false;
+            return nullptr;
     }
 
-    std::memcpy(snapshot.memory().image + MemoryImageOffset, content.memory, sizeof(content.memory));
-    return true;
+    auto memory = std::make_unique<SimpleMemory<Spectrum48k::ByteType>>(0x10000);
+    std::memcpy(memory->pointerTo(0) + MemoryImageOffset, content.memory, sizeof(content.memory));
+    snapshot->setMemory(std::move(memory));
+    setSnapshot(std::move(snapshot));
+    return this->snapshot();
 }

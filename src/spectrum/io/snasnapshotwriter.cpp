@@ -9,8 +9,14 @@ using namespace Spectrum::Io;
 bool SnaSnapshotWriter::writeTo(std::ostream & out) const
 {
     auto & snap = snapshot();
+
+    if (Model::Spectrum48k != snap.model()) {
+        std::cerr << "Only Spectrum 48k snapshots are currently supported by the SNA file writer\n";
+        return false;
+    }
+
     auto & registers = snap.registers();
-    auto & memory = snap.memory();
+    auto * memory = snap.memory();
 
     out.put(static_cast<std::ostream::char_type>(registers.i));
     writeHostWord(out, registers.hlShadow);
@@ -29,9 +35,9 @@ bool SnaSnapshotWriter::writeTo(std::ostream & out) const
     out.put(static_cast<std::ostream::char_type>(snap.im));
     out.put(static_cast<std::ostream::char_type>(snap.border));
 
-    if (memory.image) {
+    if (memory) {
         // only the RAM is written to .sna files
-        out.write(reinterpret_cast<std::ostream::char_type *>(memory.image + 0x4000), memory.size - 0x4000);
+        out.write(reinterpret_cast<const std::ostream::char_type *>(memory->pointerTo(0x4000)), static_cast<std::streamsize>(memory->availableSize() - 0x4000));
     }
 
     return !out.bad() && !out.fail();

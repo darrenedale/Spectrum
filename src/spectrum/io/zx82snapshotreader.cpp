@@ -6,6 +6,7 @@
 #include <iostream>
 #include <iomanip>
 #include "zx82snapshotreader.h"
+#include "../spectrum48k.h"
 
 using namespace Spectrum::Io;
 using ::Z80::UnsignedByte;
@@ -88,11 +89,11 @@ namespace
     }
 }
 
-bool ZX82SnapshotReader::readInto(Snapshot & snapshot) const
+const Spectrum::Snapshot * ZX82SnapshotReader::read() const
 {
     if (!isOpen()) {
         std::cerr << "Input stream is not open.\n";
-        return false;
+        return nullptr;
     }
 
     auto & in = inputStream();
@@ -101,31 +102,32 @@ bool ZX82SnapshotReader::readInto(Snapshot & snapshot) const
 
     if (in.gcount() != sizeof(SnapshotHeader)) {
         std::cerr << "The stream is not a valid ZX82 stream: failed to read complete header.\n";
-        return false;
+        return nullptr;
     }
 
     if (header.identifier != Identifier) {
         std::cerr << "The stream is not a valid ZX82 stream: incorrect file signature.\n";
-        return false;
+        return nullptr;
     }
     
     if (header.type != Type::Snapshot) {
         std::cerr << "The stream is not a ZX82 snapshot: type is 0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(header.type)
           << std::dec << std::setfill(' ') << ".\n";
-        return false;
+        return nullptr;
     }
 
     if (header.compressionType != CompressionType::None && header.compressionType != CompressionType::RunLength) {
         std::cerr << "The stream contains an invalid compression type identifier (0x"
             << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(header.compressionType)
             << std::dec << std::setfill(' ') << ").\n";
-        return false;
+        return nullptr;
     }
 
-    snapshot.border = static_cast<Colour>(header.borderColour);
-    snapshot.im = header.interruptMode;
-    snapshot.iff1 = 0 != header.iff1;
-    auto & registers = snapshot.registers();
+    auto snapshot = std::make_unique<Snapshot>(Model::Spectrum48k);
+    snapshot->border = static_cast<Colour>(header.borderColour);
+    snapshot->im = header.interruptMode;
+    snapshot->iff1 = 0 != header.iff1;
+    auto & registers = snapshot->registers();
     registers.i = header.i;
     registers.r = header.r;
 
@@ -157,20 +159,34 @@ bool ZX82SnapshotReader::readInto(Snapshot & snapshot) const
         registers.pc = swapByteOrder(header.pc.word);
     }
 
+    auto memory = std::make_unique<SimpleMemory<Spectrum48k::ByteType>>(0x10000);
+
     if (CompressionType::RunLength == header.compressionType) {
         // Speculator docs say data can be 65496 bytes in length...
         UnsignedByte buffer[65496];
         in.read(reinterpret_cast<std::istream::char_type *>(buffer), 65496);
 
-        if (!decompress(snapshot.memory().image + MemoryImageOffset, buffer, in.gcount())) {
+        if (in.fail()) {
+            std::cerr << "Error reading RAM image from stream\n";
+            return nullptr;
+        }
+
+        if (!decompress(memory->pointerTo(0) + MemoryImageOffset, buffer, in.gcount())) {
             std::cerr << "Error decompressing RAM image\n";
-            return false;
+            return nullptr;
         }
     } else {
-        in.read(reinterpret_cast<std::istream::char_type *>(snapshot.memory().image + MemoryImageOffset), 49152);
+        in.read(reinterpret_cast<std::istream::char_type *>(memory->pointerTo(0) + MemoryImageOffset), 49152);
+
+        if (in.fail()) {
+            std::cerr << "Error reading RAM image from stream\n";
+            return nullptr;
+        }
     }
 
-    return true;
+    snapshot->setMemory(std::move(memory));
+    setSnapshot(std::move(snapshot));
+    return this->snapshot();
 }
 
 bool ZX82SnapshotReader::decompress(UnsignedByte * dest, UnsignedByte * source, std::size_t size)

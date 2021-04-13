@@ -18,8 +18,23 @@ namespace Spectrum::Io
     public:
         using SnapshotReader::SnapshotReader;
 
+        /**
+         * Read a Z80 snapshot from the stream.
+         *
+         * The returned snapshot is owned by the reader and must not be destroyed.
+         *
+         * @return The snapshot.
+         */
+        const Snapshot * read() const override;
+
     protected:
-        bool readInto(Snapshot & snapshot) const override;
+        /**
+         * Decompress a block of compressed memory.
+         *
+         * @param dest A buffer of at least XXX bytes in which to store the decompressed memory.
+         * @param source The compressed memory.
+         * @param size The number of bytes in the source.
+         */
         static void decompress(Z80::UnsignedByte * dest, Z80::UnsignedByte * source, std::size_t size);
 
         /**

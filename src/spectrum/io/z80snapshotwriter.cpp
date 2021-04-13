@@ -13,8 +13,14 @@ bool Z80SnapshotWriter::writeTo(std::ostream & out) const
 {
     // TODO this only writes a v1 file; support v2 and v3 file output
     auto & snap = snapshot();
+
+    if (Model::Spectrum48k != snap.model()) {
+        std::cerr << "Only Spectrum 48k snapshots are currently supported by the Z80 file writer\n";
+        return false;
+    }
+
     auto & registers = snap.registers();
-    auto & memory = snap.memory();
+    auto * memory = snap.memory();
 
     out.put(static_cast<std::ostream::char_type>(registers.a));
     out.put(static_cast<std::ostream::char_type>(registers.f));
@@ -37,9 +43,9 @@ bool Z80SnapshotWriter::writeTo(std::ostream & out) const
     out.put(static_cast<std::ostream::char_type>(snap.iff2 ? 0x01 : 0x00));
     out.put(static_cast<std::ostream::char_type>(snap.im) & 0x03);
 
-    if (memory.image) {
+    if (memory) {
         // only the RAM is written to .z80 files
-        out.write(reinterpret_cast<std::ostream::char_type *>(memory.image + 0x4000), memory.size - 0x4000);
+        out.write(reinterpret_cast<const std::ostream::char_type *>(memory->pointerTo(0x4000)), static_cast<std::streamsize>(memory->availableSize() - 0x4000));
     }
 
     return !out.bad() && !out.fail();

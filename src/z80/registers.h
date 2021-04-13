@@ -175,15 +175,19 @@ namespace Z80
      * All values are stored in host byte order. Accessors are provided for all registers in Z80 byte order also, and
      * these are writable. Where host byte order and Z80 byte order differ, the Z80 accessors provide an instance of a
      * utility class that provides automatic conversion. Given that in some contexts we want to read/write registers in
-     * Z80 byte order and in others we want to read/write in host byte order, this abstractions enables this to be done
+     * Z80 byte order and in others we want to read/write in host byte order, this abstraction enables this to be done
      * transparently using a consistent interface regardless of the host platform.
      *
      * Host byte order rather than Z80 byte order is used for storage because it makes it easier, clearer, more
      * efficient and less error prone when doing things like incrementing the stack pointer, manipulating the program
      * counter, taking jumps etc.
+     *
+     * Access to members is direct rather than through accessors and mutators for ease and speed of access - it would be
+     * an understatement to say that the registers will be accessed A LOT by a running Z80.
      */
     struct Registers
     {
+        // 16-bit register pairs in host byte order
         UnsignedWord af;
         UnsignedWord bc;
         UnsignedWord de;
@@ -193,16 +197,24 @@ namespace Z80
         UnsignedWord pc;
         UnsignedWord sp;
 
+        // 16-bit shadow register pairs in host byte order
         UnsignedWord afShadow;
         UnsignedWord bcShadow;
         UnsignedWord deShadow;
         UnsignedWord hlShadow;
 
+        // memptr register in host byte order
         UnsignedWord memptr;
 
+        // interrupt vector and refresh registers
         UnsignedByte i;
         UnsignedByte r;
 
+        // Individual bytes from each 16-bit register pair. These are all references to the actual byte in the register
+        // pair above, so writing an 8-bit register will automatically update the appropriate 16-bit register pair at
+        // zero cost, and writing the 16-bit register pair will automatically update the appropriate 8-bit registers at
+        // zero cost. The particular byte to reference is determined at compile-time (assuming the compiler handles
+        // constexpr correctly) based on the native byte order, so construction is zero-cost in this regard.
         UnsignedByte & a = (*(reinterpret_cast<UnsignedByte *>(&af) + (ByteOrderMatch ? 1 : 0)));
         UnsignedByte & f = (*(reinterpret_cast<UnsignedByte *>(&af) + (ByteOrderMatch ? 0 : 1)));
         UnsignedByte & b = (*(reinterpret_cast<UnsignedByte *>(&bc) + (ByteOrderMatch ? 1 : 0)));
@@ -215,6 +227,9 @@ namespace Z80
         UnsignedByte & ixl = (*(reinterpret_cast<UnsignedByte *>(&ix) + (ByteOrderMatch ? 0 : 1)));
         UnsignedByte & iyh = (*(reinterpret_cast<UnsignedByte *>(&iy) + (ByteOrderMatch ? 1 : 0)));
         UnsignedByte & iyl = (*(reinterpret_cast<UnsignedByte *>(&iy) + (ByteOrderMatch ? 0 : 1)));
+
+        // Individual bytes from each 16-bit shadow register pair. These work the same as the main register pair bytes
+        // above
         UnsignedByte & aShadow = (*(reinterpret_cast<UnsignedByte *>(&afShadow) + (ByteOrderMatch ? 1 : 0)));
         UnsignedByte & fShadow = (*(reinterpret_cast<UnsignedByte *>(&afShadow) + (ByteOrderMatch ? 0 : 1)));
         UnsignedByte & bShadow = (*(reinterpret_cast<UnsignedByte *>(&bcShadow) + (ByteOrderMatch ? 1 : 0)));
@@ -233,6 +248,16 @@ namespace Z80
         UnsignedByte & memptrH = (*(reinterpret_cast<UnsignedByte *>(&memptr) + (ByteOrderMatch ? 1 : 0)));
         UnsignedByte & memptrL = (*(reinterpret_cast<UnsignedByte *>(&memptr) + (ByteOrderMatch ? 0 : 1)));
 
+        // Read-write access to the register pairs in Z80 byte order. If the native byte order of the host is the same
+        // as Z80 byte order these are simply references to the main register pair member variables above. If the byte
+        // orders differ, these are instances of a utility class that provides automatic byte-order swapping plus
+        // assignment and the basic arithmetic and comparison logic that is commonly used with Z80 16-bit register
+        // values. If the utility class is necessary, there may be some small overhead in some arithmetic and
+        // comparison operations, depending on the compiler and optimisation level, and there will certainly be some
+        // small overhead when performing operations involving native byte order values due to the need to swap bytes
+        // around
+        //
+        // The size of the utility class is 16 bits.
         RegisterZ80Endian afZ80 = {af};
         RegisterZ80Endian bcZ80 = {bc};
         RegisterZ80Endian deZ80 = {de};
@@ -242,6 +267,8 @@ namespace Z80
         RegisterZ80Endian pcZ80 = {pc};
         RegisterZ80Endian spZ80 = {sp};
 
+        // Read-write access to the shadow register pairs in Z80 byte order. These work the same as the primary Z80 byte
+        // order register pairs above.
         RegisterZ80Endian afShadowZ80 = {afShadow};
         RegisterZ80Endian bcShadowZ80 = {bcShadow};
         RegisterZ80Endian deShadowZ80 = {deShadow};
@@ -257,13 +284,25 @@ namespace Z80
         Registers(const Registers & other);
 
         Registers & operator=(const Registers & other);
-        
+
+        // move assignment is deleted for now since we've no way to reset the references of a pre-existing object; so
+        // moving is no different from copying
         void operator=(Registers && other) = delete;
 
+        /**
+         * Reset the register values to their default state.
+         */
         void reset();
     };
 
+    /**
+     * Output stream formatter for a Z80 byte-order register pair object.
+     *
+     * @param out
+     * @param reg
+     * @return
+     */
     std::ostream & operator<<(std::ostream & out, const RegisterZ80Endian & reg);
 }
 
-#endif //Z80_REGISTERS_H
+#endif // Z80_REGISTERS_H

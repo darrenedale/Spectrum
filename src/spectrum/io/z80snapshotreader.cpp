@@ -9,6 +9,10 @@
 
 #include "z80snapshotreader.h"
 #include "../types.h"
+#include "../spectrum48k.h"
+#include "../spectrum128k.h"
+#include "../spectrumplus2.h"
+#include "../spectrumplus2a.h"
 #include "../../z80/types.h"
 
 using namespace Spectrum::Io;
@@ -189,11 +193,11 @@ namespace
     }
 }
 
-bool Z80SnapshotReader::readInto(Snapshot & snapshot) const
+const Spectrum::Snapshot * Z80SnapshotReader::read() const
 {
     if (!isOpen()) {
         std::cerr << "Input stream is not open.\n";
-        return false;
+        return nullptr;
     }
 
     auto & in = inputStream();
@@ -202,6 +206,8 @@ bool Z80SnapshotReader::readInto(Snapshot & snapshot) const
                        // to initialise
     in.read(reinterpret_cast<std::istream::char_type *>(&header), sizeof(HeaderV1));
     auto format = Format::Version1;
+    std::unique_ptr<Snapshot> snapshot = nullptr;
+    std::unique_ptr<BaseSpectrum::MemoryType> memory = nullptr;
 
     if (0x0000 == header.extendedHeaderIndicator) {
         in.read(reinterpret_cast<std::istream::char_type *>(&header) + sizeof(HeaderV1), sizeof(HeaderV2) - sizeof(HeaderV1));
@@ -209,36 +215,96 @@ bool Z80SnapshotReader::readInto(Snapshot & snapshot) const
 
         switch (format) {
             case Format::Version2:
-                if (header.v2MachineType != V2MachineType::Spectrum48k && header.v2MachineType != V2MachineType::Spectrum48kInterface1) {
-                    std::cerr << "The stream is for a Spectrum model not currently supported.\n";
-                    // TODO position stream read pointer at end of V2 content
-                    return false;
+                switch (header.v2MachineType) {
+                    case V2MachineType::Spectrum48k:
+                    case V2MachineType::Spectrum48kInterface1:
+                        snapshot = std::make_unique<Snapshot>(Model::Spectrum48k);
+                        memory = std::make_unique<Spectrum48k::MemoryType>(0x10000);
+                        break;
+
+                    case V2MachineType::Spectrum128k:
+                    case V2MachineType::Spectrum128kInterface1:
+                        snapshot = std::make_unique<Snapshot>(Model::Spectrum128k);
+                        memory = std::make_unique<Spectrum128k::MemoryType>();
+                        break;
+
+                    case V2MachineType::SpectrumPlus2:
+                        snapshot = std::make_unique<Snapshot>(Model::SpectrumPlus2);
+                        memory = std::make_unique<SpectrumPlus2::MemoryType>();
+                        break;
+
+                    case V2MachineType::SpectrumPlus2A:
+                        snapshot = std::make_unique<Snapshot>(Model::SpectrumPlus2a);
+                        memory = std::make_unique<SpectrumPlus2a::MemoryType>();
+                        break;
+
+                    default:
+                        // no other spectrum models are currently supported
+                        break;
                 }
                 break;
 
             case Format::Version3:
             case Format::Version3_1:
-                if (header.v3MachineType != V3MachineType::Spectrum48k && header.v3MachineType != V3MachineType::Spectrum48kInterface1 && header.v3MachineType != V3MachineType::Spectrum48kMgt) {
-                    std::cerr << "The stream is for a Spectrum model not currently supported.\n";
-                    // TODO position stream read pointer at end of V3 content
-                    return false;
-                }
-
                 // NOTE the format enumerator is the number of bytes in the extended header for that version, so
                 // subtracting Version2 from the extendedHeaderLength tells us how many more bytes of header to read
                 // since we've already read the full V2 header content
                 in.read(reinterpret_cast<std::istream::char_type *>(&header) + sizeof(HeaderV2), header.extendedHeaderLength - static_cast<std::streamsize>(Format::Version2));
+
+                switch (header.v3MachineType) {
+                    case V3MachineType::Spectrum48k:
+                    case V3MachineType::Spectrum48kInterface1:
+                    case V3MachineType::Spectrum48kMgt:
+                        snapshot = std::make_unique<Snapshot>(Model::Spectrum48k);
+                        memory = std::make_unique<Spectrum48k::MemoryType>(0x10000);
+                        // paged RAM bank and ROM are not relevant
+                        break;
+
+                    case V3MachineType::Spectrum128k:
+                    case V3MachineType::Spectrum128kInterface1:
+                    case V3MachineType::Spectrum128kMgt:
+                        snapshot = std::make_unique<Snapshot>(Model::Spectrum128k);
+                        snapshot->pagedBankNumber = MemoryBankNumber128k::Bank0;
+                        snapshot->romNumber = RomNumber128k::Rom0;
+                        memory = std::make_unique<Spectrum128k::MemoryType>();
+                        break;
+
+                    case V3MachineType::SpectrumPlus2:
+                        snapshot = std::make_unique<Snapshot>(Model::SpectrumPlus2);
+                        snapshot->pagedBankNumber = MemoryBankNumber128k::Bank0;
+                        snapshot->romNumber = RomNumber128k::Rom0;
+                        memory = std::make_unique<SpectrumPlus2::MemoryType>();
+                        break;
+
+                    case V3MachineType::SpectrumPlus2A:
+                        snapshot = std::make_unique<Snapshot>(Model::SpectrumPlus2a);
+                        snapshot->pagedBankNumber = MemoryBankNumber128k::Bank0;
+                        snapshot->romNumber = RomNumberPlus2a::Rom0;
+                        memory = std::make_unique<SpectrumPlus2a::MemoryType>();
+                        break;
+
+                    default:
+                        // no other spectrum models are currently supported
+                        break;
+                }
                 break;
 
             default:
                 std::cerr << "The version (" << static_cast<uint32_t>(format) << ") of the stream content is not recognised.\n";
-                return false;
+                return nullptr;
         }
     } else {
-        std::cout << "Reading Z80 v1 format snapshot.\n";
+        snapshot = std::make_unique<Snapshot>(Model::Spectrum48k);
+        memory = std::make_unique<Spectrum48k::MemoryType>(0x10000);
     }
 
-    auto & registers = snapshot.registers();
+    if (!snapshot) {
+        std::cerr << "The stream is for a Spectrum model not currently supported.\n";
+        return nullptr;
+    }
+
+    assert(memory);
+    auto & registers = snapshot->registers();
 
     registers.af = static_cast<UnsignedWord>(header.a) << 8 | header.f;
     registers.bc = z80ToHostByteOrder(header.bc);
@@ -256,10 +322,10 @@ bool Z80SnapshotReader::readInto(Snapshot & snapshot) const
     registers.i = header.i;
     registers.r = ((header.fileFlags1 & 0x01) << 7) | (header.r & 0x7f);
 
-    snapshot.iff1 = header.iff1;
-    snapshot.iff2 = header.iff2;
-    snapshot.border = static_cast<Colour>((header.fileFlags1 & 0b00001110) >> 1);
-    snapshot.im = static_cast<InterruptMode>(header.fileFlags2 & 0x03);
+    snapshot->iff1 = header.iff1;
+    snapshot->iff2 = header.iff2;
+    snapshot->border = static_cast<Colour>((header.fileFlags1 & 0b00001110) >> 1);
+    snapshot->im = static_cast<InterruptMode>(header.fileFlags2 & 0x03);
 
     if (format == Format::Version1) {
         registers.pc = z80ToHostByteOrder(header.pc);
@@ -271,7 +337,7 @@ bool Z80SnapshotReader::readInto(Snapshot & snapshot) const
 
             if (in.fail() && !in.eof()) {
                 std::cerr << "Failed reading compressed memory image\n";
-                return false;
+                return nullptr;
             }
 
             // work out the actual size of the compressed data (i.e. look for the end marker)
@@ -279,58 +345,118 @@ bool Z80SnapshotReader::readInto(Snapshot & snapshot) const
 
             if (!size) {
                 std::cerr << "failed to find end of memory image marker in stream\n";
-                return false;
+                return nullptr;
             }
 
-            // decompress it into the snapshot's memory image
-            decompress(snapshot.memory().image + MemoryImageOffset, buffer, *size);
+            // decompress it into the memory image
+            decompress(memory->pointerTo(0) + MemoryImageOffset, buffer, *size);
         } else {
-            in.read(reinterpret_cast<std::istream::char_type *>(snapshot.memory().image + MemoryImageOffset), (0x10000 - MemoryImageOffset));
+            in.read(reinterpret_cast<std::istream::char_type *>(memory->pointerTo(0) + MemoryImageOffset), (0x10000 - MemoryImageOffset));
+
+            if (in.fail() && !in.eof()) {
+                std::cerr << "Error reading memory image\n";
+                return nullptr;
+            }
         }
     } else {
         registers.pc = z80ToHostByteOrder(header.pcV2);
 
-        while (!in.eof() && !in.fail()) {
+        // TODO for 128k models, page in the appropriate ROM and RAM - where is this stored in the snapshot file?
+
+        while (true) {
+            in.peek();
+
+            if (in.eof()) {
+                break;
+            }
+
+            if (in.fail()) {
+                std::cerr << "failed to read from stream at " << in.tellg() << " (expecting memory page)\n";
+                return nullptr;
+            }
+
             auto size = readHostWord(in);
             auto page = static_cast<std::uint8_t>(in.get());
-            bool readPage = true;
-            UnsignedByte * pageMemory;
+            UnsignedByte * pageMemory = nullptr;
 
-            switch (page) {
-                case 4:
-                    pageMemory = snapshot.memory().image + 0x8000;
+            std::cout << "found page " << static_cast<std::uint16_t>(page) << " of size " << size << " bytes at " << in.tellg() << " (0x" << std::hex << std::setfill('0') << std::setw(8) << in.tellg() << std::dec << std::setfill(' ') << ")\n";
+
+            switch (snapshot->model()) {
+                case Model::Spectrum48k:
+                    switch (page) {
+                        case 4:
+                            pageMemory = memory->pointerTo(0x8000);
+                            break;
+
+                        case 5:
+                            pageMemory = memory->pointerTo(0xc000);
+                            break;
+
+                        case 8:
+                            pageMemory = memory->pointerTo(0x4000);
+                            break;
+
+                        default:
+                            in.seekg(in.tellg() + static_cast<std::streamsize>(size), std::ios_base::cur);
+                            break;
+                    }
                     break;
 
-                case 5:
-                    pageMemory = snapshot.memory().image + 0xc000;
+                case Model::Spectrum128k: {
+                        using Memory = Spectrum128k::MemoryType;
+                        // in Z80 files page #0 is represented by 0x03, page #1 by 0x04, etc. up to page#7 by 0x0a
+                        page -= 3;
+                        pageMemory = dynamic_cast<Memory *>(memory.get())->bankPointer(static_cast<Memory::BankNumber>(page));
+                    }
                     break;
 
-                case 8:
-                    pageMemory = snapshot.memory().image + 0x4000;
+                case Model::SpectrumPlus2: {
+                        using Memory = SpectrumPlus2::MemoryType;
+                        // in Z80 files page #0 is represented by 0x03, page #1 by 0x04, etc. up to page#7 by 0x0a
+                        page -= 3;
+                        pageMemory = dynamic_cast<Memory *>(memory.get())->bankPointer(static_cast<Memory::BankNumber>(page));
+                    }
+                    break;
+
+                case Model::SpectrumPlus2a: {
+                        using Memory = SpectrumPlus2a::MemoryType;
+                        // in Z80 files page #0 is represented by 0x03, page #1 by 0x04, etc. up to page#7 by 0x0a
+                        page -= 3;
+                        pageMemory = dynamic_cast<Memory *>(memory.get())->bankPointer(static_cast<Memory::BankNumber>(page));
+                    }
                     break;
 
                 default:
-                    in.seekg(in.tellg() + static_cast<std::streamsize>(size), std::ios_base::cur);
-                    readPage = false;
+                    // should never get here - if it's an unsupported model we should already have exited
                     break;
             }
 
-            if (readPage) {
-                auto * buffer = new UnsignedByte[size];
-                in.read(reinterpret_cast<std::istream::char_type *>(buffer), size);
-                decompress(pageMemory, buffer, size);
-                delete[] buffer;
+            // pageMemory will be nullptr if it's a page that the model doesn't support
+            if (pageMemory) {
+                std::cout << "reading page into bank starting at " << static_cast<const void *>(pageMemory) << '\n';
+                std::vector<UnsignedByte> buffer(size);
+                in.read(reinterpret_cast<std::istream::char_type *>(buffer.data()), size);
+
+                if (size != in.gcount()) {
+                    std::cerr << "truncated read (expected " << size << " read " << in.gcount() << ") for bank #" << static_cast<std::uint16_t>(page) << '\n';
+                    return nullptr;
+                }
+
+                decompress(pageMemory, buffer.data(), size);
             }
         }
     }
 
-    return true;
+    snapshot->setMemory(std::move(memory));
+    setSnapshot(std::move(snapshot));
+    return this->snapshot();
 }
 
 void Z80SnapshotReader::decompress(UnsignedByte * dest, UnsignedByte * source, std::size_t size)
 {
     static const std::uint16_t rleMarker = 0xeded;
     auto * end = source + size;
+    auto * initialDest = dest;
 
     while (source < end) {
         if (rleMarker == *(reinterpret_cast<std::uint16_t *>(source))) {
@@ -342,7 +468,6 @@ void Z80SnapshotReader::decompress(UnsignedByte * dest, UnsignedByte * source, s
             *(dest++) = *(source++);
         }
     }
-
 }
 
 std::optional<std::size_t> Z80SnapshotReader::compressedSize(UnsignedByte * memory, std::size_t max)

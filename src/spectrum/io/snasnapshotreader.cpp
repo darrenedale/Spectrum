@@ -6,6 +6,7 @@
 #include <cassert>
 
 #include "snasnapshotreader.h"
+#include "../spectrum48k.h"
 #include "../types.h"
 #include "../../z80/types.h"
 
@@ -49,12 +50,10 @@ namespace
  * @param snapshot
  * @return
  */
-bool SnaSnapshotReader::readInto(Snapshot & snapshot) const
+const Spectrum::Snapshot * SnaSnapshotReader::read() const
 {
-    assert(0xffff <= snapshot.memory().size);
-
     if (!isOpen()) {
-        return false;
+        return nullptr;
     }
     
     auto & in = inputStream();
@@ -65,10 +64,11 @@ bool SnaSnapshotReader::readInto(Snapshot & snapshot) const
     
     if (in.fail()) {
         std::cerr << "Failed to read SNA header from input stream.\n";
-        return false;
+        return nullptr;
     }
 
-    auto & registers = snapshot.registers();
+    auto snapshot = std::make_unique<Snapshot>(Model::Spectrum48k);
+    auto & registers = snapshot->registers();
     registers.af = z80ToHostByteOrder(header.af);
     registers.bc = z80ToHostByteOrder(header.bc);
     registers.de = z80ToHostByteOrder(header.de);
@@ -87,10 +87,14 @@ bool SnaSnapshotReader::readInto(Snapshot & snapshot) const
     registers.i = header.i;
     registers.r = header.r;
 
-    snapshot.iff1 = header.iff & 0x04;
-    snapshot.iff2 = snapshot.iff1;
-    snapshot.im = static_cast<InterruptMode>(header.im & 0x07);
-    snapshot.border = static_cast<Colour>(header.border & 0x03);
-    in.read(reinterpret_cast<std::istream::char_type *>(snapshot.memory().image + MemoryImageOffset), 0xc000);
-    return true;
+    snapshot->iff1 = header.iff & 0x04;
+    snapshot->iff2 = snapshot->iff1;
+    snapshot->im = static_cast<InterruptMode>(header.im & 0x07);
+    snapshot->border = static_cast<Colour>(header.border & 0x03);
+
+    auto memory = std::make_unique<SimpleMemory<Spectrum48k::ByteType>>(0x10000);
+    in.read(reinterpret_cast<std::istream::char_type *>(memory->pointerTo(0) + MemoryImageOffset), 0xc000);
+    snapshot->setMemory(std::move(memory));
+    setSnapshot(std::move(snapshot));
+    return this->snapshot();
 }

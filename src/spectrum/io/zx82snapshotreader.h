@@ -23,16 +23,16 @@ namespace Spectrum::Io
     public:
         using SnapshotReader::SnapshotReader;
 
-    protected:
         /**
-         * Read the snapshot represented by the file into the provided Snapshot object.
+         * Read the snapshot represented by the file.
          *
          * @param snapshot
          *
          * @return True on success, false on failure.
          */
-        bool readInto(Snapshot & snapshot) const override;
+        const Snapshot * read() const override;
 
+    protected:
         /**
          * Decompress bytes read from the file/stream using the IFF/ILBM runLength1 scheme.
          *

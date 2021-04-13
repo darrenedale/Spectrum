@@ -8,6 +8,7 @@
 #include <cstring>
 
 #include "spsnapshotreader.h"
+#include "../spectrum48k.h"
 #include "../types.h"
 #include "../../z80/types.h"
 
@@ -87,11 +88,11 @@ namespace
     };
 }
 
-bool SpSnapshotReader::readInto(Snapshot & snapshot) const
+const Spectrum::Snapshot * SpSnapshotReader::read() const
 {
     if (!isOpen()) {
         std::cerr << "Input stream is not open.\n";
-        return false;
+        return nullptr;
     }
 
     auto & in = inputStream();
@@ -105,14 +106,14 @@ bool SpSnapshotReader::readInto(Snapshot & snapshot) const
 
     if (in.fail()) {
         std::cerr << "Error reading SP header from stream\n";
-        return false;
+        return nullptr;
     }
 
     // validate header
     if (*reinterpret_cast<const std::uint16_t *>("SP") !=
         *reinterpret_cast<const std::uint16_t *>(header.signature)) {
         std::cerr << "Not an SP file.";
-        return false;
+        return nullptr;
     }
 
     // NOTE from here on, the length and baseAddress members of the header are in host byte order
@@ -132,13 +133,14 @@ bool SpSnapshotReader::readInto(Snapshot & snapshot) const
                   << std::dec << header.length << ") > 0xffff\n";
         std::cerr << std::setfill(' ');
 #endif
-        return false;
+        return nullptr;
     }
 
     header.border = header.border & 0x07;
 
     // set state
-    auto & registers = snapshot.registers();
+    auto snapshot = std::make_unique<Snapshot>(Model::Spectrum48k);
+    auto & registers = snapshot->registers();
 
     registers.bc = z80ToHostByteOrder(header.registers.bc);
     registers.de = z80ToHostByteOrder(header.registers.de);
@@ -158,17 +160,17 @@ bool SpSnapshotReader::readInto(Snapshot & snapshot) const
     registers.sp = z80ToHostByteOrder(header.sp);
     registers.pc = z80ToHostByteOrder(header.pc);
 
-    snapshot.border = static_cast<Colour>(header.border);
+    snapshot->border = static_cast<Colour>(header.border);
 
     // NOTE from here on, the status member of the header is in host byte order
     header.status = z80ToHostByteOrder(header.status);
     // bit 0 = IFF1
-    snapshot.iff1 = header.status & 0x0001;
+    snapshot->iff1 = header.status & 0x0001;
     // bit 2 = IFF2
-    snapshot.iff2 = header.status & 0x0004;
+    snapshot->iff2 = header.status & 0x0004;
 
     // bit 1 = IM
-    snapshot.im = (header.status & 0x0002 ? ::InterruptMode::IM2 : ::InterruptMode::IM1);
+    snapshot->im = (header.status & 0x0002 ? ::InterruptMode::IM2 : ::InterruptMode::IM1);
 
     // bit 4 = interrupt pending
 //    if (header.status & 0x0010) {
@@ -177,16 +179,15 @@ bool SpSnapshotReader::readInto(Snapshot & snapshot) const
 
     // NOTE bit 5 of status indicates flash state but we don't use this
 
-    in.read(reinterpret_cast<std::istream::char_type *>(snapshot.memory().image + header.baseAddress), header.length);
+    auto memory = std::make_unique<SimpleMemory<Spectrum48k::ByteType>>(0x10000);
+    in.read(reinterpret_cast<std::istream::char_type *>(memory->pointerTo(0) + header.baseAddress), header.length);
 
     if (in.fail()) {
         std::cerr << "Error reading program from stream\n";
-        return false;
+        return nullptr;
     }
 
-    if (!in.eof()) {
-        std::cerr << "Warning: ignored extraneous content at end of stream (from byte " << in.tellg() << " onward).\n";
-    }
-
-    return true;
+    snapshot->setMemory(std::move(memory));
+    setSnapshot(std::move(snapshot));
+    return this->snapshot();
 }

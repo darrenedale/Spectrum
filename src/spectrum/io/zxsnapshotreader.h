@@ -15,8 +15,7 @@ namespace Spectrum::Io
     public:
         using SnapshotReader::SnapshotReader;
 
-    protected:
-        bool readInto(Snapshot & snapshot) const override;
+        const Snapshot * read() const override;
     };
 }
 

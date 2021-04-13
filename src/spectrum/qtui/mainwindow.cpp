@@ -616,15 +616,23 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
         return false;
     }
 
-    bool successful;
-    const auto & snapshot = reader->read(successful);
+    const auto * snapshot = reader->read();
 
-    if (!successful) {
+    if (!snapshot) {
         statusBar()->showMessage(tr("The snapshot file %1 is not valid.").arg(fileName), DefaultStatusBarMessageTimeout);
         return false;
     }
 
-    snapshot.applyTo(*m_spectrum);
+    if (!snapshot->canApplyTo(*m_spectrum)) {
+        statusBar()->showMessage(
+            tr("The snapshot file %1 is not compatible with the running Spectrum (it requires a %2).")
+                .arg(fileName, QString::fromStdString(std::to_string(snapshot->model()))),
+            DefaultStatusBarMessageTimeout
+        );
+        return false;
+    }
+
+    snapshot->applyTo(*m_spectrum);
 
 #if(!defined(NDEBUG))
     m_spectrum->dumpState();

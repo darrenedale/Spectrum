@@ -28,9 +28,8 @@ namespace Spectrum::Io
          */
         explicit SnapshotReader(std::istream & in)
         : m_borrowedStream(true),
-          m_hasBeenRead(false),
           m_in(&in),
-          m_snapshot()
+          m_snapshot(nullptr)
         {}
 
         /**
@@ -40,9 +39,8 @@ namespace Spectrum::Io
          */
         explicit SnapshotReader(const std::string & inFile)
         : m_borrowedStream(false),
-          m_hasBeenRead(false),
           m_in(new std::ifstream(inFile, std::ios::binary | std::ios::in)),
-          m_snapshot()
+          m_snapshot(nullptr)
         {}
 
         // readers can be move constructed/assigned but not copied
@@ -56,12 +54,16 @@ namespace Spectrum::Io
         /**
          * Set the reader to read the given file.
          *
+         * Setting the stream invalidates any snapshot previously retrieved from the reader.
+         *
          * @param fileName
          */
         void setFileName(const std::string & fileName);
 
         /**
          * Set the reader to use the provided stream for reading.
+         *
+         * Setting the stream invalidates any snapshot previously retrieved from the reader.
          *
          * The stream is borrowed, not owned. It is the caller's responsibility to ensure the provided stream outlives
          * the reader that is borrowing it.
@@ -73,32 +75,11 @@ namespace Spectrum::Io
         /**
          * Force the reader to attempt to read (another) snapshot from the stream.
          *
-         * @param ok This parameter will be filled with true/false to indicate success/failure
-         *
-         * @return The snapshot read. Any previously-retrieved snapshots will also be updated to reflect the newly-read
-         * snapshot. Take copies of them first if you need to retain their content. If the read is not successful (see
-         * the value of ok) the content of the snapshot is undefined.
+         * @return The snapshot read. The snapshot returned is valid only while the reader exists and only until one of
+         * read(), setFileName() or setStream() is next called. On error nullptr will be returned. The returned snapshot
+         * is owned by the reader and should not be disposed of externally.
          */
-        inline const Snapshot & read(bool & ok) const
-        {
-            ok = readInto(m_snapshot);
-            return m_snapshot;
-        }
-
-        /**
-         * Force the reader to attempt to read (another) snapshot from the stream.
-         *
-         * @warning There is no way to determine whether the read was successful. Use read(bool) instead.
-         *
-         * @return The snapshot read. Any previously-retrieved snapshots will also be updated to reflect the newly-read
-         * snapshot. Take copies of them first if you need to retain their content. If the read is not successful
-         * the content of the snapshot is undefined.
-         */
-        inline const Snapshot & read() const
-        {
-            readInto(m_snapshot);
-            return m_snapshot;
-        }
+        [[nodiscard]] virtual const Snapshot * read() const = 0;
 
         /**
          * Retrieve the Snapshot read from the stream.
@@ -111,13 +92,13 @@ namespace Spectrum::Io
          *
          * @return
          */
-        [[nodiscard]] const Snapshot & snapshot() const
+        [[nodiscard]] const Snapshot * snapshot() const
         {
-            if (!m_hasBeenRead) {
-                read();
+            if (!m_snapshot) {
+                return read();
             }
 
-            return m_snapshot;
+            return m_snapshot.get();
         }
 
         /**
@@ -138,16 +119,17 @@ namespace Spectrum::Io
          *
          * @return
          */
-        std::istream & inputStream() const;
+        [[nodiscard]] std::istream & inputStream() const;
 
         /**
-         * Read the snapshot contained in the stream into the provided Snapshot object.
+         * Implementing classes can call this to cache the snapshot in read() to make it available from snapshot()
          *
          * @param snapshot
-         *
-         * @return True on success, false on failure.
          */
-        virtual bool readInto(Snapshot & snapshot) const = 0;
+        void setSnapshot(std::unique_ptr<Snapshot> snapshot) const
+        {
+            m_snapshot = std::move(snapshot);
+        }
 
     private:
         /**
@@ -159,9 +141,8 @@ namespace Spectrum::Io
         void disposeStream();
 
         bool m_borrowedStream;
-        bool m_hasBeenRead = false;
         std::istream * m_in;
-        mutable Snapshot m_snapshot;
+        mutable std::unique_ptr<Snapshot> m_snapshot;
     };
 }
 

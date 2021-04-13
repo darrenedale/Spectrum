@@ -2,111 +2,117 @@
 // Created by darren on 14/03/2021.
 //
 
-#include <cstring>
-
 #include "snapshot.h"
 #include "displaydevice.h"
+#include "spectrum48k.h"
+#include "spectrum16k.h"
+#include "spectrum128k.h"
+#include "spectrumplus2.h"
+#include "spectrumplus2a.h"
 
 using namespace Spectrum;
 
 using InterruptMode = ::Z80::InterruptMode;
 
+Snapshot::Snapshot(Model model)
+: Snapshot({}, nullptr)
+{
+    m_model = model;
+}
+
 Snapshot::Snapshot(const BaseSpectrum & spectrum)
 : Snapshot(spectrum.z80()->registers(), spectrum.memory())
 {
+    m_model = spectrum.model();
     auto * cpu = spectrum.z80();
     iff1 = cpu->iff1();
     iff2 = cpu->iff2();
     im = cpu->interruptMode();
 
     if (!spectrum.displayDevices().empty()) {
-        border = spectrum.displayDevices()[0]->border();
+        border = spectrum.displayDevices().front()->border();
     }
 }
 
-Snapshot::Snapshot(BaseSpectrum::MemoryType * memory)
-: Snapshot({}, memory)
-{
-}
-
-Snapshot::Snapshot(const ::Z80::Registers & registers, BaseSpectrum::MemoryType * memory)
-: m_registers(),
-  m_memory(),
+Snapshot::Snapshot(Registers registers, BaseSpectrum::MemoryType * memory)
+: m_model(Model::Spectrum48k),
+  m_registers(std::move(registers)),
+  m_memory(memory ? memory->clone() : nullptr),
   iff1(false),
   iff2(false),
   im(InterruptMode::IM0),
   border(Colour::White)
 {
-    copyRegisters(registers);
-
-    if (memory) {
-        m_memory.image = new Z80::UnsignedByte[memory->addressableSize()];
-
-        for (std::uint32_t address = 0; address < memory->addressableSize(); ++address) {
-            *(m_memory.image + address) = memory->readByte(address);
-        }
-    } else {
-        m_memory.image = new Z80::UnsignedByte[0x10000];
-    }
 }
 
-Snapshot::~Snapshot() noexcept
-{
-    delete m_memory.image;
-}
+Snapshot::~Snapshot() noexcept = default;
 
 Snapshot::Snapshot(const Snapshot & other)
-: m_registers(other.m_registers),
+: m_model(other.m_model),
+  m_registers(other.m_registers),
+  m_memory(other.m_memory ? other.m_memory->clone() : nullptr),
   iff1(other.iff1),
   iff2(other.iff2),
   im(other.im),
   border(other.border)
-{
-    if (other.m_memory.image) {
-        m_memory.image = new Z80::UnsignedByte[other.m_memory.size];
-        std::memcpy(m_memory.image, other.m_memory.image, other.m_memory.size);
-    }
-}
+{}
 
 Snapshot::Snapshot(Snapshot && other) noexcept
-: m_registers(other.m_registers),
-  m_memory(other.m_memory),
+: m_model(other.m_model),
+  m_registers(std::move(other.m_registers)),
+  m_memory(std::move(other.m_memory)),
   iff1(other.iff1),
   iff2(other.iff2),
   im(other.im),
   border(other.border)
+{}
+
+Snapshot & Snapshot::operator=(const Snapshot & other)
 {
-    other.m_memory.image = nullptr;
-    other.m_memory.size = 0;
+    if (this == &other) {
+        return *this;
+    }
+
+    m_model = other.m_model;
+    m_registers = other.m_registers;
+    iff1 = other.iff1;
+    iff2 = other.iff2;
+    im = other.im;
+    border = other.border;
+
+    if (other.m_memory) {
+        m_memory = other.m_memory->clone();
+    } else {
+        m_memory.reset();
+    }
+
+    return *this;
+}
+
+Snapshot & Snapshot::operator=(Snapshot && other) noexcept
+{
+    if (this == &other) {
+        return *this;
+    }
+
+    m_model = other.m_model;
+    m_registers = other.m_registers;
+    iff1 = other.iff1;
+    iff2 = other.iff2;
+    im = other.im;
+    border = other.border;
+    m_memory = std::move(other.m_memory);
+    return *this;
 }
 
 void Snapshot::applyTo(BaseSpectrum & spectrum) const
 {
-    // TODO throw if spectrum has insufficient memory
-    // TODO throw if snapshot has no memory
+    assert (spectrum.model() == model());
+    assert(m_memory);
+
     spectrum.reset();
     auto * cpu = spectrum.z80();
-    auto & registers = cpu->registers();
-    registers.af = m_registers.af;
-    registers.bc = m_registers.bc;
-    registers.de = m_registers.de;
-    registers.hl = m_registers.hl;
-    registers.ix = m_registers.ix;
-    registers.iy = m_registers.iy;
-
-    registers.pc = m_registers.pc;
-    registers.sp = m_registers.sp;
-
-    registers.afShadow = m_registers.afShadow;
-    registers.bcShadow = m_registers.bcShadow;
-    registers.deShadow = m_registers.deShadow;
-    registers.hlShadow = m_registers.hlShadow;
-
-    registers.memptr = m_registers.memptr;
-
-    registers.i = m_registers.i;
-    registers.r = m_registers.r;
-    
+    cpu->registers() = m_registers;
     cpu->setIff1(iff1);
     cpu->setIff2(iff2);
     cpu->setInterruptMode(im);
@@ -115,112 +121,130 @@ void Snapshot::applyTo(BaseSpectrum & spectrum) const
         display->setBorder(border);
     }
 
-    // TODO for now we assume that the Spectrum already has its ROM loaded but should we incorporate this into the
-    //  snapshot image so that different ROMs are supported
-    spectrum.memory()->writeBytes(0x4000, m_memory.size - 0x4000, m_memory.image + 0x4000);
+    // NOTE we can't simply replace the memory object in the Spectrum because the snapshot memory doesn't have the ROM
+    // loaded
+    // TODO consider what we could do about this
+    switch (model()) {
+        case Model::Spectrum48k:
+            assert(dynamic_cast<Spectrum48k::MemoryType *>(m_memory.get()));
+            spectrum.memory()->writeBytes(0x4000, 0x10000 - 0x4000, m_memory->pointerTo(0x4000));
+            break;
+
+        case Model::Spectrum16k:
+            assert(dynamic_cast<Spectrum16k::MemoryType *>(m_memory.get()));
+            spectrum.memory()->writeBytes(0x4000, 0x8000 - 0x4000, m_memory->pointerTo(0x4000));
+            break;
+
+        case Model::Spectrum128k: {
+                auto * memory = dynamic_cast<Spectrum128k::MemoryType *>(m_memory.get());
+                auto * spectrumMemory = dynamic_cast<Spectrum128k::MemoryType *>(spectrum.memory());
+                assert(memory);
+                assert(spectrumMemory);
+
+                for (std::uint8_t bankNumber = 0; bankNumber < 8; ++bankNumber) {
+                    spectrumMemory->writeToBank(static_cast<MemoryBankNumber128k>(bankNumber), memory->bankPointer(static_cast<MemoryBankNumber128k>(bankNumber)), Spectrum128KMemory::BankSize);
+                }
+
+                if (std::holds_alternative<RomNumber128k>(romNumber)) {
+                    spectrumMemory->pageRom(std::get<RomNumber128k>(romNumber));
+                } else {
+                    spectrumMemory->pageRom(RomNumber128k::Rom0);
+                }
+
+                spectrumMemory->pageBank(pagedBankNumber);
+            }
+            break;
+
+        case Model::SpectrumPlus2: {
+                auto * memory = dynamic_cast<SpectrumPlus2::MemoryType *>(m_memory.get());
+                auto * spectrumMemory = dynamic_cast<SpectrumPlus2::MemoryType *>(spectrum.memory());
+                assert(memory);
+                assert(spectrumMemory);
+                spectrumMemory->pageBank(pagedBankNumber);
+
+                if (std::holds_alternative<RomNumber128k>(romNumber)) {
+                    spectrumMemory->pageRom(std::get<RomNumber128k>(romNumber));
+                } else {
+                    spectrumMemory->pageRom(RomNumber128k::Rom0);
+                }
+
+                for (std::uint8_t bankNumber = 0; bankNumber < 8; ++bankNumber) {
+                    spectrumMemory->writeToBank(static_cast<MemoryBankNumber128k>(bankNumber), memory->bankPointer(static_cast<MemoryBankNumber128k>(bankNumber)), Spectrum128KMemory::BankSize);
+                }
+            }
+            break;
+
+        case Model::SpectrumPlus2a:
+            assert(dynamic_cast<Spectrum16k::MemoryType *>(m_memory.get()));
+            std::cerr << "Snapshots for model type " << std::to_string(model()) << " not yet implemented\n";
+            break;
+    }
 }
 
 void Snapshot::readFrom(BaseSpectrum & spectrum)
 {
     auto * cpu = spectrum.z80();
-    copyRegisters(cpu->registers());
+    m_registers = cpu->registers();
     iff1 = cpu->iff1();
     iff2 = cpu->iff2();
     im = cpu->interruptMode();
 
     if (!spectrum.displayDevices().empty()) {
-        border = spectrum.displayDevices()[0]->border();
-    }
-
-    auto size = spectrum.memorySize();
-
-    if (0 == size) {
-        delete[] m_memory.image;
-        m_memory.image = nullptr;
+        border = spectrum.displayDevices().front()->border();
     } else {
-        if (size > m_memory.size) {
-            delete[] m_memory.image;
-            m_memory.image = new Z80::UnsignedByte[size];
-        }
-
-        spectrum.memory()->readBytes(0, size, m_memory.image);
+        border = Colour::White;
     }
 
-    m_memory.size = size;
+    m_memory = spectrum.memory()->clone();
 }
 
-void Snapshot::copyRegisters(const ::Z80::Registers & registers)
+bool Snapshot::canApplyTo(BaseSpectrum & spectrum) const
 {
-    m_registers.af = registers.af;
-    m_registers.bc = registers.bc;
-    m_registers.de = registers.de;
-    m_registers.hl = registers.hl;
-    m_registers.ix = registers.ix;
-    m_registers.iy = registers.iy;
-    m_registers.pc = registers.pc;
-    m_registers.sp = registers.sp;
-
-    m_registers.afShadow = registers.afShadow;
-    m_registers.bcShadow = registers.bcShadow;
-    m_registers.deShadow = registers.deShadow;
-    m_registers.hlShadow = registers.hlShadow;
-
-    m_registers.i = registers.i;
-    m_registers.r = registers.r;
-
-    m_registers.a = registers.a;
-    m_registers.f = registers.f;
-    m_registers.b = registers.b;
-    m_registers.c = registers.c;
-    m_registers.d = registers.d;
-    m_registers.e = registers.e;
-    m_registers.h = registers.h;
-    m_registers.l = registers.l;
-
-    m_registers.aShadow = registers.aShadow;
-    m_registers.fShadow = registers.fShadow;
-    m_registers.bShadow = registers.bShadow;
-    m_registers.cShadow = registers.cShadow;
-    m_registers.dShadow = registers.dShadow;
-    m_registers.eShadow = registers.eShadow;
-    m_registers.hShadow = registers.hShadow;
-    m_registers.lShadow = registers.lShadow;
-
-    m_registers.memptr = registers.memptr;
-}
-
-Snapshot & Snapshot::operator=(const Snapshot & other)
-{
-    m_registers = other.m_registers;
-    iff1 = other.iff1;
-    iff2 = other.iff2;
-    im = other.im;
-    border = other.border;
-
-    if (0 == other.m_memory.size) {
-        delete[] m_memory.image;
-    } else {
-        if (m_memory.size < other.m_memory.size) {
-            delete[] m_memory.image;
-            m_memory.image = new Z80::UnsignedByte[other.m_memory.size];
-        }
-
-        std::memcpy(m_memory.image, other.m_memory.image, other.m_memory.size);
+    if (spectrum.model() != model()) {
+        std::cerr << "incompatible models\n";
+        return false;
     }
 
-    m_memory.size = other.m_memory.size;
-    return *this;
-}
+    if(!(m_memory)) {
+        return false;
+    }
 
-Snapshot & Snapshot::operator=(Snapshot && other) noexcept
-{
-    m_registers = other.m_registers;
-    iff1 = other.iff1;
-    iff2 = other.iff2;
-    im = other.im;
-    border = other.border;
-    m_memory = other.m_memory;
-    other.m_memory.image = nullptr;
-    other.m_memory.size = 0;
-    return *this;
+    switch (model()) {
+        case Model::Spectrum48k:
+            if (!dynamic_cast<Spectrum48k::MemoryType *>(m_memory.get())) {
+                std::cerr << "incompatible memory types\n";
+                return false;
+            }
+            break;
+
+        case Model::Spectrum16k: // NOLINT(bugprone-branch-clone) 16K and 48K memory types happen to be the same ATM
+            if (!dynamic_cast<Spectrum16k::MemoryType *>(m_memory.get())) {
+                std::cerr << "incompatible memory types\n";
+                return false;
+            }
+            break;
+
+        case Model::Spectrum128k:
+            if (!dynamic_cast<Spectrum128k::MemoryType *>(m_memory.get())) {
+                std::cerr << "incompatible memory types\n";
+                return false;
+            }
+            break;
+
+        case Model::SpectrumPlus2:
+            if (!dynamic_cast<SpectrumPlus2::MemoryType *>(m_memory.get())) {
+                std::cerr << "incompatible memory types\n";
+                return false;
+            }
+            break;
+
+        case Model::SpectrumPlus2a:
+            if (!dynamic_cast<SpectrumPlus2a::MemoryType *>(m_memory.get())) {
+                std::cerr << "incompatible memory types\n";
+                return false;
+            }
+            break;
+    }
+
+    return true;
 }
