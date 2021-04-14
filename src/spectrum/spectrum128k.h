@@ -32,12 +32,7 @@ namespace Spectrum
     {
     public:
         using MemoryType = Spectrum128KMemory;
-
-        enum class ScreenBuffer : std::uint8_t
-        {
-            Normal,       // display the normal screen buffer
-            Shadow,       // display the shadow screen buffer
-        };
+        using ScreenBuffer = ScreenBuffer128k;
 
         static constexpr const int DisplayMemorySize = 6912;
 
