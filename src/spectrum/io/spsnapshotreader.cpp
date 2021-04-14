@@ -179,7 +179,7 @@ const Spectrum::Snapshot * SpSnapshotReader::read() const
 
     // NOTE bit 5 of status indicates flash state but we don't use this
 
-    auto memory = std::make_unique<SimpleMemory<Spectrum48k::ByteType>>(0x10000);
+    auto memory = std::make_unique<Spectrum48k::MemoryType>(0x10000);
     in.read(reinterpret_cast<std::istream::char_type *>(memory->pointerTo(0) + header.baseAddress), header.length);
 
     if (in.fail()) {

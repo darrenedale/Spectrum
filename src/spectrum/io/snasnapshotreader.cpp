@@ -20,7 +20,7 @@ using ::Z80::hostToZ80ByteOrder;
 
 namespace
 {
-    #pragma pack(1) // the compiler must not pad this struct otherwise header won't be read from the stream correctly
+#pragma pack(push, 1) // the compiler must not pad this struct otherwise header won't be read from the stream correctly
     struct Header
     {
         UnsignedByte i;
@@ -40,6 +40,7 @@ namespace
         UnsignedByte im;        // only bits 0-2 are significant
         UnsignedByte border;    // only bits 0-3 are significant
     };
+#pragma pack(pop)
 
     constexpr const int MemoryImageOffset = 0x4000;
 }

@@ -8,12 +8,10 @@
 #include <cstring>
 
 #include "z80snapshotreader.h"
-#include "../types.h"
 #include "../spectrum48k.h"
 #include "../spectrum128k.h"
 #include "../spectrumplus2.h"
 #include "../spectrumplus2a.h"
-#include "../../z80/types.h"
 
 using namespace Spectrum::Io;
 
@@ -34,6 +32,9 @@ namespace
         Version3_1 = 55,
     };
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
+    // several enumerated values are required for the format but never actually used by the reader
     enum class V1MachineType : uint8_t
     {
         Spectrum48k = 0,
@@ -78,7 +79,11 @@ namespace
         TC2068,
         TS2068 = 128,
     };
+#pragma clang diagnostic pop
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
+    // sound is not currently emulated so this struct is never used but must be present in the format
     struct SoundChipRegisters
     {
         UnsignedByte register1;
@@ -99,13 +104,18 @@ namespace
         UnsignedByte register16;
     };
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
+    // this is never used because it's emulator config not machine state
     struct JoystickMapping
     {
         UnsignedWord mappings[5];
         UnsignedWord keys[5];
     };
+#pragma clang diagnostic pop
 
-    #pragma pack(push, 1) // the compiler must not pad this struct otherwise header won't be read from the stream correctly
+#pragma pack(push, 1)
+    // the compiler must not pad this struct otherwise header won't be read from the stream correctly
     struct HeaderV1
     {
         UnsignedByte a;
@@ -133,9 +143,10 @@ namespace
         UnsignedByte iff2;
         UnsignedByte fileFlags2;
     };
-    #pragma pack(pop)
+#pragma pack(pop)
 
-    #pragma pack(push, 1) // the compiler must not pad this struct otherwise header won't be read from the stream correctly
+#pragma pack(push, 1)
+    // the compiler must not pad this struct otherwise header won't be read from the stream correctly
     struct HeaderV2 : public HeaderV1
     {
         UnsignedWord extendedHeaderLength;
@@ -146,7 +157,11 @@ namespace
             V2MachineType v2MachineType;
             V3MachineType v3MachineType;
         };
-        UnsignedByte samRamState;
+        union {
+            UnsignedByte samRamState;     // if machine type is SamRam
+            UnsignedByte lastOut0x7ffd;   // if machine type is 128K Spectrum (128K, plus2/2a/3)
+            UnsignedByte lastOut0xf4;     // if machine type is Times
+        };
         union
         {
             UnsignedByte interface1RomPaged;   // 0xff if IF1 ROM is paged
@@ -156,9 +171,10 @@ namespace
         UnsignedByte lastOut0xfffd;
         SoundChipRegisters soundChipRegisters;
     };
-    #pragma pack(pop)
+#pragma pack(pop)
 
-    #pragma pack(push, 1) // the compiler must not pad this struct otherwise header won't be read from the stream correctly
+#pragma pack(push, 1)
+    // the compiler must not pad this struct otherwise header won't be read from the stream correctly
     struct HeaderV3 : public HeaderV2
     {
         UnsignedWord lowTStateCounter;
@@ -173,14 +189,24 @@ namespace
         UnsignedByte discipleInhibitButtonState;
         UnsignedByte discipleInhibitFlag;
     };
-    #pragma pack(pop)
+#pragma pack(pop)
 
-    #pragma pack(push, 1) // the compiler must not pad this struct otherwise header won't be read from the stream correctly
+#pragma pack(push, 1)
+    // the compiler must not pad this struct otherwise header won't be read from the stream correctly
     struct HeaderV3_1 : public HeaderV3
     {
         UnsignedByte lastOut0x1ffd;
     };
-    #pragma pack(pop)
+#pragma pack(pop)
+
+    // bits and masks to read values from flag bytes
+    constexpr const std::uint8_t PagedRamMask128k = 0b00000111;      // applied to lastOut0x7ffd to retrieve the currently paged memory bank
+    constexpr const std::uint8_t PagedRomBit128k = 4;                // the bit that indicates which ROM is paged in lastOut0x7ffd
+    constexpr const std::uint8_t PagedRomMask128k = 1 << PagedRomBit128k; // applied to lastOut0x7ffd to retrieve the currently paged ROM
+    constexpr const std::uint8_t ShadowDisplayFileFlag = 0b00010000; // applied to lastOut0x7ffd to determine whether the shadow display file is in use
+    constexpr const std::uint8_t PagingDisabledFlag = 0b00100000;    // applied to lastOut0x7ffd to determine whether paging is disabled
+    constexpr const std::uint8_t PagedRomBitPlus2a = 2;                // the high bit of the paged in ROM number in lastOut0x1ffd
+    constexpr const std::uint8_t PagedRomMaskPlus2a = 1 << PagedRomBitPlus2a; // applied to lastOut0x1ffd to retrieve the high bit of the currently paged ROM
 
     constexpr const std::uint8_t CompressedMemoryFlag = 0b00100000;
     constexpr const std::uint16_t MemoryImageOffset = 16384;
@@ -361,7 +387,37 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
     } else {
         registers.pc = z80ToHostByteOrder(header.pcV2);
 
-        // TODO for 128k models, page in the appropriate ROM and RAM - where is this stored in the snapshot file?
+        // for 128k models, page in the appropriate ROM and RAM and set the display buffer and paging disabled flags
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch"
+        switch (snapshot->model()) {
+            case Model::Spectrum128k:
+            case Model::SpectrumPlus2:
+            case Model::SpectrumPlus2a:
+                snapshot->screenBuffer = (header.lastOut0x7ffd & ShadowDisplayFileFlag ? ScreenBuffer128k::Shadow : ScreenBuffer128k::Normal);
+                snapshot->pagedBankNumber = static_cast<MemoryBankNumber128k>(header.lastOut0x7ffd & PagedRamMask128k);
+
+                // TODO if paging was disabled then a further OUT to port 0x7ffd was executed with bit 5 reset, paging
+                //  will still be disabled but this byte will indicate that it's enabled - therefore our snapshot won't
+                //  reflect the true state of the spectrum from which it was created. is there anywhere else in the file
+                //  format that indicates paging status? while a genuine problem, it's unlikely to affect much as I
+                //  believe disabling paging was very rare in the real world
+                snapshot->pagingEnabled = !(header.lastOut0x7ffd & PagingDisabledFlag);
+
+                if (Model::SpectrumPlus2a == snapshot->model()) {
+                    // ROM number is made up of bit 4 in lastOut0x7ffd and bit 2 in lastOut0x1ffd
+                    snapshot->romNumber = static_cast<RomNumberPlus2a>(
+                            ((header.lastOut0x1ffd & PagedRomMaskPlus2a) >> (PagedRomBitPlus2a -1 )) |  // high bit
+                            ((header.lastOut0x7ffd & PagedRomMask128k) >> PagedRomBit128k)              // low bit
+                        );
+                } else {
+                    // ROM number is simply value of bit 4 = Rom0 or Rom1
+                    snapshot->romNumber = static_cast<RomNumber128k>((header.lastOut0x7ffd & PagedRomMask128k)
+                            >> PagedRomBit128k);
+                }
+                break;
+        }
+#pragma clang diagnostic pop
 
         while (true) {
             in.peek();
@@ -378,8 +434,6 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
             auto size = readHostWord(in);
             auto page = static_cast<std::uint8_t>(in.get());
             UnsignedByte * pageMemory = nullptr;
-
-            std::cout << "found page " << static_cast<std::uint16_t>(page) << " of size " << size << " bytes at " << in.tellg() << " (0x" << std::hex << std::setfill('0') << std::setw(8) << in.tellg() << std::dec << std::setfill(' ') << ")\n";
 
             switch (snapshot->model()) {
                 case Model::Spectrum48k:
@@ -433,7 +487,6 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
 
             // pageMemory will be nullptr if it's a page that the model doesn't support
             if (pageMemory) {
-                std::cout << "reading page into bank starting at " << static_cast<const void *>(pageMemory) << '\n';
                 std::vector<UnsignedByte> buffer(size);
                 in.read(reinterpret_cast<std::istream::char_type *>(buffer.data()), size);
 
@@ -456,7 +509,6 @@ void Z80SnapshotReader::decompress(UnsignedByte * dest, UnsignedByte * source, s
 {
     static const std::uint16_t rleMarker = 0xeded;
     auto * end = source + size;
-    auto * initialDest = dest;
 
     while (source < end) {
         if (rleMarker == *(reinterpret_cast<std::uint16_t *>(source))) {

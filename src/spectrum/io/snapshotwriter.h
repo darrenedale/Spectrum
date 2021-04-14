@@ -60,14 +60,10 @@ namespace Spectrum::Io
         /**
          * Helper to write a single native (i.e.. host) endian word to the output stream.
          *
-         * This will be used a lot, e.g. when writing registers. The word will be written in Z80 byte order, and will
-         * be converted from host byte order if necessary - just provide it with the word in host byte order and it
-         * will do the right thing.
+         * The word will be written in Z80 byte order, and will be converted from host byte order if necessary - just
+         * provide it the word in host byte order and it will do the right thing.
          *
          * If your word is already in Z80 byte order, use writeZ80Word().
-         *
-         * These two helpers are provided on the assumption that most snapshot formats will expect values to be written
-         * in Z80 byte order.
          *
          * @param out
          * @param word
@@ -78,9 +74,6 @@ namespace Spectrum::Io
          * Helper to write a single Z80-endian (i.e. little-endian) word to the output stream.
          *
          * If your word is in the native (host) byte order, use writeHostWord().
-         *
-         * These two helpers are provided on the assumption that most snapshot formats will expect values to be written
-         * in Z80 byte order.
          *
          * @param out
          * @param word

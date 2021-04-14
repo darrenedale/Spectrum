@@ -3,12 +3,47 @@
 //
 
 #include "snasnapshotwriter.h"
+#include "../../z80/types.h"
 
 using namespace Spectrum::Io;
+
+using ::Z80::UnsignedByte;
+using ::Z80::UnsignedWord;
+using ::Z80::hostToZ80ByteOrder;
+
+namespace
+{
+    // all words are in Z80 byte order
+    struct Header
+    {
+        UnsignedByte i;
+        UnsignedWord hlShadow;
+        UnsignedWord deShadow;
+        UnsignedWord bcShadow;
+        UnsignedWord afShadow;
+        UnsignedWord hl;
+        UnsignedWord de;
+        UnsignedWord bc;
+        UnsignedWord iy;
+        UnsignedWord ix;
+        UnsignedByte iff2;
+        UnsignedByte r;
+        UnsignedWord af;
+        UnsignedWord sp;
+        UnsignedByte im;
+        UnsignedByte border;
+    };
+}
 
 bool SnaSnapshotWriter::writeTo(std::ostream & out) const
 {
     auto & snap = snapshot();
+    auto * memory = snap.memory();
+
+    if (!memory) {
+        std::cerr << "Snapshot is incomplete (no memory)\n";
+        return false;
+    }
 
     if (Model::Spectrum48k != snap.model()) {
         std::cerr << "Only Spectrum 48k snapshots are currently supported by the SNA file writer\n";
@@ -16,27 +51,34 @@ bool SnaSnapshotWriter::writeTo(std::ostream & out) const
     }
 
     auto & registers = snap.registers();
-    auto * memory = snap.memory();
-
-    out.put(static_cast<std::ostream::char_type>(registers.i));
-    writeHostWord(out, registers.hlShadow);
-    writeHostWord(out, registers.deShadow);
-    writeHostWord(out, registers.bcShadow);
-    writeHostWord(out, registers.afShadow);
-    writeHostWord(out, registers.hl);
-    writeHostWord(out, registers.de);
-    writeHostWord(out, registers.bc);
-    writeHostWord(out, registers.iy);
-    writeHostWord(out, registers.ix);
-    out.put(static_cast<std::ostream::char_type>(snap.iff2 ? 0x02 : 0x00));
-    out.put(static_cast<std::ostream::char_type>(registers.r));
-    writeHostWord(out, registers.af);
-    writeHostWord(out, registers.sp);
-    out.put(static_cast<std::ostream::char_type>(snap.im));
-    out.put(static_cast<std::ostream::char_type>(snap.border));
+    Header header {
+        .i = registers.i,
+        .hlShadow = hostToZ80ByteOrder(registers.hlShadow),
+        .deShadow = hostToZ80ByteOrder(registers.deShadow),
+        .bcShadow = hostToZ80ByteOrder(registers.bcShadow),
+        .afShadow = hostToZ80ByteOrder(registers.afShadow),
+        .hl = hostToZ80ByteOrder(registers.hl),
+        .de = hostToZ80ByteOrder(registers.de),
+        .bc = hostToZ80ByteOrder(registers.bc),
+        .iy = hostToZ80ByteOrder(registers.iy),
+        .ix = hostToZ80ByteOrder(registers.ix),
+        .iff2 = static_cast<UnsignedByte>(snap.iff2 ? 0x02 : 0x00),
+        .r = registers.r,
+        .af = hostToZ80ByteOrder(registers.af),
+        .sp = hostToZ80ByteOrder(registers.sp),
+        .im = static_cast<UnsignedByte>(snap.im),
+        .border = static_cast<UnsignedByte>(snap.border),
+    };
+    
+    out.write(reinterpret_cast<std::ostream::char_type *>(&header), sizeof(Header));
+    
+    if (out.bad()) {
+        std::cerr << "error writing .sna header\n";
+        return false;
+    }
 
     if (memory) {
-        // only the RAM is written to .sna files
+        // only RAM is written to .sna files (not ROM)
         out.write(reinterpret_cast<const std::ostream::char_type *>(memory->pointerTo(0x4000)), static_cast<std::streamsize>(memory->availableSize() - 0x4000));
     }
 

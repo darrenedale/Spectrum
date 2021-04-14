@@ -42,6 +42,7 @@
 #include "../io/zxsnapshotreader.h"
 #include "../io/z80snapshotwriter.h"
 #include "../io/snasnapshotwriter.h"
+#include "../io/spsnapshotwriter.h"
 #include "../io/pokfilereader.h"
 
 using namespace Spectrum::QtUi;
@@ -569,8 +570,9 @@ QString MainWindow::guessSnapshotFormat(const QString & fileName)
         auto signature = in.read(4);
 
         if ("ZX82" == signature) {
-            in.close();
-            return "zx82";
+            return QStringLiteral("zx82");
+        } else if (signature.startsWith("SP")) {
+            return QStringLiteral("sp");
         }
     }
 
@@ -634,10 +636,6 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
 
     snapshot->applyTo(*m_spectrum);
 
-#if(!defined(NDEBUG))
-    m_spectrum->dumpState();
-#endif
-
     setWindowTitle(QStringLiteral("%1 | %2").arg(QString::fromStdString(std::to_string(m_spectrum->model())), QFileInfo(fileName).fileName()));
     m_display.redrawDisplay(m_spectrum->displayMemory());
     m_displayWidget.setImage(m_display.image());
@@ -664,32 +662,38 @@ void MainWindow::saveSnapshot(const QString & fileName, QString format)
         }
     }
 
+    // snapshot must remain valid while the writer is alive
+    std::unique_ptr<Snapshot> snapshot;
+    std::unique_ptr<SnapshotWriter> writer;
+
     if ("sna" == format) {
+        // push the current PC onto the stack
         m_spectrum->z80()->execute(reinterpret_cast<const Z80::UnsignedByte *>("\xcd\x00\x00"), false);
-
-        if (!Snapshot(*m_spectrum).saveAs<SnaSnapshotWriter>(fileName.toStdString())) {
-            std::cerr << "failed to write snapshot to '" << fileName.toStdString() << "'\n";
-            statusBar()->showMessage(tr("Failed to save snapshot to %1.").arg(fileName), DefaultStatusBarMessageTimeout);
-        } else {
-            statusBar()->showMessage(tr("Snapshot successfully saved to %1.").arg(fileName), DefaultStatusBarMessageTimeout);
-        }
-
-        m_spectrum->z80()->execute(reinterpret_cast<const Z80::UnsignedByte *>("\xed\x45"), false);
+        snapshot = m_spectrum->snapshot();
+        writer = std::make_unique<SnaSnapshotWriter>(*snapshot);
     } else if ("z80" == format) {
-        if (!Snapshot(*m_spectrum).saveAs<Z80SnapshotWriter>(fileName.toStdString())) {
-            std::cerr << "failed to write snapshot to '" << fileName.toStdString() << "'\n";
-            statusBar()->showMessage(tr("Failed to save snapshot to %1.").arg(fileName),
-                                     DefaultStatusBarMessageTimeout);
-        } else {
-            statusBar()->showMessage(tr("Snapshot successfully saved to %1.").arg(fileName),
-                                     DefaultStatusBarMessageTimeout);
-        }
+        snapshot = m_spectrum->snapshot();
+        writer = std::make_unique<Z80SnapshotWriter>(*snapshot);
     } else if ("sp" == format) {
-        std::cerr << "Not yet implemented.\n";
-        statusBar()->showMessage(tr("Saving .sp snapshots is not yet implemented.").arg(fileName), DefaultStatusBarMessageTimeout);
-    } else {
+        snapshot = m_spectrum->snapshot();
+        writer = std::make_unique<SpSnapshotWriter>(*snapshot);
+    }
+
+    if (!writer) {
         std::cerr << "unrecognised format '" << format.toStdString() << "' from filename '" << fileName.toStdString() << "'\n";
         statusBar()->showMessage(tr("Unrecognised snapshot format %1.").arg(format), DefaultStatusBarMessageTimeout);
+    }
+
+    if (!writer->writeTo(fileName.toStdString())) {
+        std::cerr << "failed to write snapshot to '" << fileName.toStdString() << "'\n";
+        statusBar()->showMessage(tr("Failed to save snapshot to %1.").arg(fileName), DefaultStatusBarMessageTimeout);
+    } else {
+        statusBar()->showMessage(tr("Snapshot successfully saved to %1.").arg(fileName), DefaultStatusBarMessageTimeout);
+    }
+
+    if (QStringLiteral("sna") == format) {
+        // pop the PC off the stack
+        m_spectrum->z80()->execute(reinterpret_cast<const Z80::UnsignedByte *>("\xed\x45"), false);
     }
 }
 
