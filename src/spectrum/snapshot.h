@@ -23,9 +23,17 @@ namespace Spectrum
      * A representation of the state of a Spectrum at a point in time.
      *
      * The snapshot class is used to capture the state to store in a snapshot file when saving and to recreate the state
-     * when loading a snapshot file to apply to a Spectrum instance. It contains the model type from which the snapshot
-     * was originally captured, a memory image, a full set of Z80 registers, the Z80 interrupt state and the Spectrum
-     * border colour.
+     * when loading a snapshot file to apply to a Spectrum instance. It contains:
+     * - the model type from which the snapshot was originally captured
+     * - a memory object
+     * - a full set of Z80 registers
+     * - the Z80 interrupt state
+     * - the Spectrum border colour if it had any display devices attached when created
+     * - the paged ROM and RAM bank (for 128k models)
+     * - whether or not paging has been disabled (for 128k models)
+     * - which screen buffer is in use (for 128k models)
+     *
+     * TODO support special paging mode for +2a/+3
      */
     class Snapshot
     {
@@ -71,10 +79,24 @@ namespace Spectrum
         std::variant<RomNumber128k, RomNumberPlus2a> romNumber;
 
         /**
+         * For 128K models, which screen buffer is currently in use.
+         */
+        ScreenBuffer128k screenBuffer;
+
+        /**
+         * For 128K models, whether or not paging is enabled.
+         */
+        bool pagingEnabled;
+
+        /**
          * Create a snapshot of the current state of a Spectrum.
          *
          * The snapshot will take a copy of the Spectrum's memory, registers and CPU state. If the spectrum has at least
          * one display device, the border colour from the first display device will be stored.
+         *
+         * Note that only the "lowest common denominator" properties of the snapshot are set - those properties that are
+         * common to all Spectrums, as defined in the BaseSpectrum class. Individual models will need to set additional
+         * state in the Snapshot (such as memory paging details) as appropriate.
          */
         explicit Snapshot(const BaseSpectrum &);
 
@@ -248,6 +270,10 @@ namespace Spectrum
          */
         std::unique_ptr<BaseSpectrum::MemoryType> m_memory;
     };
+
+#if (!defined(NDEBUG))
+    std::ostream & operator<<(std::ostream & out, const Snapshot & snap);
+#endif
 }
 
 #endif //SPECTRUM_SNAPSHOT_H

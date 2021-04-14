@@ -121,6 +121,19 @@ namespace Spectrum
         }
 
         /**
+         * Set whether paging should be enabled or not.
+         *
+         * This should only need to be called internally in response to the managed Spectrum being reset or when
+         * applying a snapshot. Generally, it should not be used.
+         *
+         * @param enabled
+         */
+        void setPagingEnabled(bool enabled)
+        {
+            m_pagingEnabled = enabled;
+        }
+
+        /**
          * Reset the device.
          *
          * After reset, paging is enabled again.
@@ -131,18 +144,6 @@ namespace Spectrum
         }
 
     protected:
-        /**
-         * Set whether paging should be enabled or not.
-         *
-         * This should only need to be called internally in response to the managed Spectrum being reset.
-         *
-         * @param enabled
-         */
-        void setPagingEnabled(bool enabled)
-        {
-            m_pagingEnabled = enabled;
-        }
-
         void writePort7ffd(::Z80::UnsignedByte value);
         void writePort1ffd(::Z80::UnsignedByte value);
         
