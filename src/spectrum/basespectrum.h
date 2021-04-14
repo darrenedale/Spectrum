@@ -6,7 +6,7 @@
 #define SPECTRUM_BASESPECTRUM_H
 
 #include <ostream>
-
+#include <memory>
 #include "../computer.h"
 #include "z80.h"
 #include "types.h"
@@ -17,6 +17,7 @@ namespace Spectrum
     class Keyboard;
     class JoystickInterface;
     class MouseInterface;
+    class Snapshot;
 
     /**
      * Abstract base class for models of Spectrum.
@@ -41,6 +42,12 @@ namespace Spectrum
          * @return
          */
         [[nodiscard]] virtual Model model() const = 0;
+
+        /**
+         * Create a snapshot from the Spectrum.
+         * @return
+         */
+        [[nodiscard]] virtual std::unique_ptr<Snapshot> snapshot() const = 0;
 
         /**
          * Convenience method to fetch the Spectrum's Z80 CPU.

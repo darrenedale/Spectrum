@@ -3,6 +3,7 @@
 #include "spectrumplus2a.h"
 #include "spectrumplus2amemory.h"
 #include "basespectrum.h"
+#include "snapshot.h"
 
 using namespace Spectrum;
 
@@ -70,4 +71,14 @@ void SpectrumPlus2a::reloadRoms()
     memoryPlus2a()->loadRom(m_romFiles[1], RomNumber::Rom1);
     memoryPlus2a()->loadRom(m_romFiles[2], RomNumber::Rom2);
     memoryPlus2a()->loadRom(m_romFiles[3], RomNumber::Rom3);
+}
+
+std::unique_ptr<Snapshot> SpectrumPlus2a::snapshot() const
+{
+    auto snapshot = std::make_unique<Snapshot>(*this);
+    snapshot->pagedBankNumber = memoryPlus2a()->currentPagedBank();
+    snapshot->romNumber = memoryPlus2a()->currentRom();
+    snapshot->screenBuffer = screenBuffer();
+    snapshot->pagingEnabled = pager()->pagingEnabled();
+    return snapshot;
 }

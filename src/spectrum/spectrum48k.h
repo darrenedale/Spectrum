@@ -63,6 +63,13 @@ namespace Spectrum
         }
 
         /**
+         * Create a snapshot of the Spectrum 48K's current state.
+         *
+         * @return A new snapshot.
+         */
+        [[nodiscard]] std::unique_ptr<Snapshot> snapshot() const override;
+
+        /**
          * Fetch a pointer to the Spectrum's display file.
          *
          * It's safe to use the returned pointer as a pointer to a contiguous block of 16kb of Spectrum RAM. Only

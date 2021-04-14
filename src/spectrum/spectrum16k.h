@@ -66,6 +66,8 @@ namespace Spectrum
             return Model::Spectrum16k;
         }
 
+        [[nodiscard]] std::unique_ptr<Snapshot> snapshot() const override;
+
         /**
          * It's safe to use the returned pointer as a pointer to a contiguous block of 16kb of Spectrum RAM. Only
          * the first 6912 bytes is the display file.

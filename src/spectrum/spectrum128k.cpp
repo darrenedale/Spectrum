@@ -3,6 +3,7 @@
 #include "spectrum128k.h"
 #include "spectrum128kmemory.h"
 #include "basespectrum.h"
+#include "snapshot.h"
 
 using namespace Spectrum;
 
@@ -66,4 +67,14 @@ void Spectrum128k::reloadRoms()
     assert(memory128());
     memory128()->loadRom(m_romFiles[0], RomNumber::Rom0);
     memory128()->loadRom(m_romFiles[1], RomNumber::Rom1);
+}
+
+std::unique_ptr<Snapshot> Spectrum128k::snapshot() const
+{
+    auto snapshot = std::make_unique<Snapshot>(*this);
+    snapshot->pagedBankNumber = memory128()->currentPagedBank();
+    snapshot->romNumber = memory128()->currentRom();
+    snapshot->screenBuffer = screenBuffer();
+    snapshot->pagingEnabled = pager()->pagingEnabled();
+    return snapshot;
 }

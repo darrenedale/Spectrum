@@ -67,6 +67,8 @@ namespace Spectrum
             return Model::Spectrum128k;
         }
 
+        [[nodiscard]] std::unique_ptr<Snapshot> snapshot() const override;
+
         /**
          * Fetch the display memory.
          *
@@ -109,6 +111,32 @@ namespace Spectrum
         inline void setScreenBuffer(ScreenBuffer buffer)
         {
             m_screenBuffer = buffer;
+        }
+
+        /**
+         * Fetch a read-only pointer to the device controlling memory paging for the Spectrum.
+         *
+         * The pointer is only valid as long as the Spectrum is alive. The Spectrum owns the pointer and it must not
+         * be destroyed.
+         *
+         * @return A pointer to the Spectrum128KPagingDevice.
+         */
+        [[nodiscard]] inline const Spectrum128KPagingDevice * pager() const
+        {
+            return &m_pager;
+        }
+
+        /**
+         * Fetch a read-write pointer to the device controlling memory paging for the Spectrum.
+         *
+         * The pointer is only valid as long as the Spectrum is alive. The Spectrum owns the pointer and it must not
+         * be destroyed.
+         *
+         * @return A pointer to the Spectrum128KPagingDevice.
+         */
+        [[nodiscard]] inline Spectrum128KPagingDevice * pager()
+        {
+            return &m_pager;
         }
 
         /**

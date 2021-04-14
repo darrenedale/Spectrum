@@ -1,5 +1,7 @@
 #include <fstream>
 #include "spectrum48k.h"
+#include "snapshot.h"
+#include "displaydevice.h"
 
 using namespace Spectrum;
 
@@ -41,3 +43,7 @@ void Spectrum48k::reloadRoms()
     loadRom(m_romFile);
 }
 
+std::unique_ptr<Snapshot> Spectrum48k::snapshot() const
+{
+    return std::make_unique<Snapshot>(*this);
+}

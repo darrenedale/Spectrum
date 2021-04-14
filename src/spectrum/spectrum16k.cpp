@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <fstream>
 #include "spectrum16k.h"
+#include "snapshot.h"
 
 using namespace Spectrum;
 
@@ -43,3 +44,7 @@ void Spectrum16k::reloadRoms()
     loadRom(m_romFile);
 }
 
+std::unique_ptr<Snapshot> Spectrum16k::snapshot() const
+{
+    return std::make_unique<Snapshot>(*this);
+}
