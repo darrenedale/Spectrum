@@ -6,15 +6,13 @@
 #define Z80_ENDIAN_H
 
 #include "types.h"
+#include "../util/endian.h"
 
 namespace Z80
 {
-    static inline constexpr UnsignedWord swapByteOrder(UnsignedWord value)
-    {
-        return (((value & 0xff00) >> 8) & 0x00ff) | (((value & 0x00ff) << 8) & 0xff00);
-    }
+    using Util::swapByteOrder;
 
-    static inline constexpr UnsignedWord z80ToHostByteOrder(UnsignedWord value)
+    inline constexpr UnsignedWord z80ToHostByteOrder(UnsignedWord value)
     {
         if constexpr (Z80ByteOrder == HostByteOrder) {
             return value;
@@ -23,7 +21,7 @@ namespace Z80
         return swapByteOrder(value);
     }
 
-    static inline constexpr UnsignedWord hostToZ80ByteOrder(UnsignedWord value)
+    inline constexpr UnsignedWord hostToZ80ByteOrder(UnsignedWord value)
     {
         if constexpr (Z80ByteOrder == HostByteOrder) {
             return value;
