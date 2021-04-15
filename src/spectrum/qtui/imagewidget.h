@@ -10,7 +10,7 @@ class QPaintEvent;
 namespace Spectrum
 {
     class ImageWidget
-            : public QWidget
+    : public QWidget
     {
     Q_OBJECT
 
