@@ -47,3 +47,23 @@ std::unique_ptr<Snapshot> Spectrum48k::snapshot() const
 {
     return std::make_unique<Snapshot>(*this);
 }
+
+bool Spectrum48k::canApplySnapshot(const Snapshot & snapshot)
+{
+    return snapshot.model() == model() && dynamic_cast<const MemoryType *>(snapshot.memory());
+}
+
+void Spectrum48k::applySnapshot(const Snapshot & snapshot)
+{
+    assert(snapshot.model() == model());
+    assert(dynamic_cast<const MemoryType *>(snapshot.memory()));
+
+    reset();
+    applySnapshotCpuState(snapshot);
+
+    for (auto * display : displayDevices()) {
+        display->setBorder(snapshot.border);
+    }
+
+    memory()->writeBytes(0x4000, 0x10000 - 0x4000, snapshot.memory()->pointerTo(0x4000));
+}

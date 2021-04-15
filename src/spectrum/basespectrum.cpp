@@ -1,16 +1,13 @@
 #include "basespectrum.h"
-
-#include <cstring>
-#include <iostream>
 #include <fstream>
 #include <chrono>
 #include <thread>
-
 #include "displaydevice.h"
 #include "joystickinterface.h"
 #include "mouseinterface.h"
 #include "keyboard.h"
 #include "z80.h"
+#include "snapshot.h"
 
 namespace
 {
@@ -189,4 +186,15 @@ namespace Spectrum
 
         m_displayDevices.erase(pos, pos);
     }
+
+    void BaseSpectrum::applySnapshotCpuState(const Snapshot & snapshot)
+    {
+        auto * cpu = z80();
+        assert(cpu);
+        cpu->registers() = snapshot.registers();
+        cpu->setIff1(snapshot.iff1);
+        cpu->setIff2(snapshot.iff2);
+        cpu->setInterruptMode(snapshot.im);
+    }
+
 }

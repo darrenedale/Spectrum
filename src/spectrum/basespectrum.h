@@ -50,6 +50,51 @@ namespace Spectrum
         [[nodiscard]] virtual std::unique_ptr<Snapshot> snapshot() const = 0;
 
         /**
+         * Check whether a snapshot can be applied to a Spectrum.
+         *
+         * @param snapshot The Snapshot to check.
+         * @return true if the snapshot can be applied to this Spectrum, false otherwise.
+         */
+        [[nodiscard]] virtual bool canApplySnapshot(const Snapshot & snapshot) = 0;
+
+        /**
+         * Convenience overload to check whether a snapshot pointer can be applied to a Spectrum.
+         *
+         * Delegates to the const reference overload.
+         *
+         * @param snapshot The pointer to the snapshot to check. Must not be nullptr.
+         * @return true if the snapshot can be applied to this Spectrum, false otherwise.
+         */
+        [[nodiscard]] virtual bool canApplySnapshot(const Snapshot * snapshot)
+        {
+            assert(snapshot);
+            return canApplySnapshot(*snapshot);
+        }
+
+        /**
+         * Apply a snapshot to the Spectrum.
+         *
+         * It is the caller's responsibility to ensure that the snapshot can be applied to the Spectrum model. See
+         * canApplySnapshot().
+         *
+         * @param snapshot The snapshot to apply.
+         */
+        virtual void applySnapshot(const Snapshot & snapshot) = 0;
+
+        /**
+         * Convenience overload to apply a snapshot pointer.
+         *
+         * Delegates to the const reference overload.
+         *
+         * @param snapshot Pointer to the snapshot to apply. Must not be nullptr.
+         */
+        virtual void applySnapshot(const Snapshot * snapshot)
+        {
+            assert (snapshot);
+            applySnapshot(*snapshot);
+        }
+
+        /**
          * Convenience method to fetch the Spectrum's Z80 CPU.
          *
          * @return
@@ -329,6 +374,15 @@ namespace Spectrum
          * Ask the spectrum to reload its ROM files.
          */
         virtual void reloadRoms() = 0;
+
+        /**
+         * Helper to apply the CPU state from a Snapshot to the current Spectrum.
+         *
+         * This is common to all Spectrum models.
+         *
+         * @param snapshot The snapshot with the CPU state to apply.
+         */
+        void applySnapshotCpuState(const Snapshot & snapshot);
 
     private:
         double m_executionSpeed;

@@ -6,7 +6,6 @@
 #define SPECTRUM_SNAPSHOT_H
 
 #include <variant>
-#include "../simplememory.h"
 #include "../z80/registers.h"
 #include "../z80/z80.h"
 #include "types.h"
@@ -198,52 +197,6 @@ namespace Spectrum
         void setMemory(std::unique_ptr<BaseSpectrum::MemoryType> && memory)
         {
             m_memory = std::move(memory);
-        }
-
-        /**
-         * Check whether the snapshot can be applied to the provided Spectrum.
-         *
-         * The two are compatible if all of the following are true:
-         * - the snapshot's model is the same as the Spectrum's model
-         * - the snapshot contains a memory object
-         * - the snapshot's stored memory type is the same as that used by the specific Spectrum subclass
-         *
-         * If the two are not compatible, you will need to create a new Spectrum object based on the model() of the
-         * snapshot.
-         *
-         * @return true if the Spectrum and Snapshot are compatible, false otherwise.
-         */
-        [[nodiscard]] bool canApplyTo(BaseSpectrum &) const;
-
-        /**
-         * Attempt to apply the snapshot to the provided Spectrum.
-         *
-         * It is the caller's responsibility to ensure that the provided Spectrum is suitable for the snapshot. See
-         * canApplyTo().
-         */
-        void applyTo(BaseSpectrum &) const;
-
-        /**
-         * Populate the snapshot from the provided Spectrum.
-         *
-         * The spectrum's memory, registers and CPU state will be copied into the snapshot.
-         */
-        void readFrom(BaseSpectrum &);
-
-        /**
-         * Save the snapshot to a file using a specified writer class.
-         *
-         * On success the file specified will be overwritten.
-         *
-         * @tparam Writer The writer class to use.
-         * @param fileName The path to the file to save to.
-         * @return
-         */
-        template <class Writer>
-        [[nodiscard]] bool saveAs(const std::string & fileName) const
-        {
-            static_assert(std::is_base_of_v<Io::SnapshotWriter, Writer>, "writer class must be a SnapshotWriter subclass");
-            return Writer(*this).writeTo(fileName);
         }
 
     private:

@@ -3,6 +3,7 @@
 #include "spectrumplus2a.h"
 #include "spectrumplus2amemory.h"
 #include "basespectrum.h"
+#include "displaydevice.h"
 #include "snapshot.h"
 
 using namespace Spectrum;
@@ -81,4 +82,38 @@ std::unique_ptr<Snapshot> SpectrumPlus2a::snapshot() const
     snapshot->screenBuffer = screenBuffer();
     snapshot->pagingEnabled = pager()->pagingEnabled();
     return snapshot;
+}
+
+bool SpectrumPlus2a::canApplySnapshot(const Snapshot & snapshot)
+{
+    return snapshot.model() == model()
+           && dynamic_cast<const MemoryType *>(snapshot.memory())
+           && std::holds_alternative<RomNumberPlus2a>(snapshot.romNumber);
+}
+
+void SpectrumPlus2a::applySnapshot(const Snapshot & snapshot)
+{
+    assert(snapshot.model() == model());
+    assert(std::holds_alternative<RomNumberPlus2a>(snapshot.romNumber));
+    auto * snapshotMemory = dynamic_cast<const MemoryType *>(snapshot.memory());
+    assert(snapshotMemory);
+
+    reset();
+    applySnapshotCpuState(snapshot);
+
+    for (auto * display : displayDevices()) {
+        display->setBorder(snapshot.border);
+    }
+
+    setScreenBuffer(snapshot.screenBuffer);
+    pager()->setPagingEnabled(snapshot.pagingEnabled);
+    auto * memory = memoryPlus2a();
+    memory->pageRom(std::get<RomNumberPlus2a>(snapshot.romNumber));
+    memory->pageBank(snapshot.pagedBankNumber);
+
+    for (std::uint8_t bankNumber = 0; bankNumber < 8; ++bankNumber) {
+        memory->writeToBank(static_cast<MemoryBankNumber128k>(bankNumber),
+                            snapshotMemory->bankPointer(static_cast<MemoryBankNumber128k>(bankNumber)),
+                            MemoryType::BankSize);
+    }
 }

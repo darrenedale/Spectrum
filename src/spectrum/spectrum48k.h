@@ -70,6 +70,25 @@ namespace Spectrum
         [[nodiscard]] std::unique_ptr<Snapshot> snapshot() const override;
 
         /**
+         * Check whether a snapshot can be applied to a 48K Spectrum.
+         *
+         * The snapshot can be applied if its model is Spectrum48K and it has an appropriate memory object.
+         *
+         * @param snapshot The Snapshot to check.
+         * @return true if the snapshot can be applied to this Spectrum, false otherwise.
+         */
+        [[nodiscard]] bool canApplySnapshot(const Snapshot &snapshot) override;
+
+        /**
+         * Apply the provided snapshot to this Spectrum.
+         *
+         * The caller must ensure that the snapshot is compatible before calling this method.
+         *
+         * @param snapshot The snapshot to apply.
+         */
+        void applySnapshot(const Snapshot &snapshot) override;
+
+        /**
          * Fetch a pointer to the Spectrum's display file.
          *
          * It's safe to use the returned pointer as a pointer to a contiguous block of 16kb of Spectrum RAM. Only

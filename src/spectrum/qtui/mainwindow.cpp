@@ -625,16 +625,16 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
         return false;
     }
 
-    if (!snapshot->canApplyTo(*m_spectrum)) {
+    if (!m_spectrum->canApplySnapshot(*snapshot)) {
         statusBar()->showMessage(
-            tr("The snapshot file %1 is not compatible with the running Spectrum (it requires a %2).")
-                .arg(fileName, QString::fromStdString(std::to_string(snapshot->model()))),
-            DefaultStatusBarMessageTimeout
+                tr("The snapshot file %1 is not compatible with the running Spectrum (it requires a %2).")
+                        .arg(fileName, QString::fromStdString(std::to_string(snapshot->model()))),
+                DefaultStatusBarMessageTimeout
         );
         return false;
     }
 
-    snapshot->applyTo(*m_spectrum);
+    m_spectrum->applySnapshot(*snapshot);
 
     setWindowTitle(QStringLiteral("%1 | %2").arg(QString::fromStdString(std::to_string(m_spectrum->model())), QFileInfo(fileName).fileName()));
     m_display.redrawDisplay(m_spectrum->displayMemory());
