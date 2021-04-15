@@ -13,6 +13,7 @@
 #include <QSpinBox>
 #include <QDockWidget>
 #include <QFileDialog>
+#include <QMessageBox>
 #include <QEvent>
 #include <QKeyEvent>
 #include <QMimeData>
@@ -447,8 +448,9 @@ void MainWindow::connectSignals()
 
 void MainWindow::refreshSpectrumDisplay()
 {
+    auto image = m_display.image();
+
     if (m_debug.isChecked()) {
-        auto image = m_display.image();
         image = image.scaledToWidth(image.width() * 2);
         auto pen = QColor(*reinterpret_cast<QRgb *>(image.bits()));
 
@@ -474,11 +476,21 @@ void MainWindow::refreshSpectrumDisplay()
         painter.drawText(2, y += 10, QStringLiteral("DE: $%1").arg(registers.de, 4, 16, fill));
         painter.drawText(2, y + 10, QStringLiteral("HL: $%1").arg(registers.hl, 4, 16, fill));
         painter.end();
-
-        m_displayWidget.setImage(image);
-    } else {
-        m_displayWidget.setImage(m_display.image());
     }
+
+    if (m_spectrumThread.isPaused()) {
+        QPainter painter(&image);
+        QColor fillColour(0x88, 0x88, 0x88, 0x88);
+        auto width = image.width() / 5;
+        auto height = image.height() / 2;
+        auto x = image.width() / 4;
+        auto y = image.height() / 4;
+        painter.fillRect(x, y, width, height, fillColour);
+        painter.fillRect(image.width() - x - width, y, width, height, fillColour);
+        painter.end();
+    }
+
+    m_displayWidget.setImage(image);
 }
 
 Spectrum::Model MainWindow::model() const
@@ -625,13 +637,34 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
         return false;
     }
 
-    if (!m_spectrum->canApplySnapshot(*snapshot)) {
-        statusBar()->showMessage(
-                tr("The snapshot file %1 is not compatible with the running Spectrum (it requires a %2).")
-                        .arg(fileName, QString::fromStdString(std::to_string(snapshot->model()))),
-                DefaultStatusBarMessageTimeout
-        );
-        return false;
+    if (bool canApply = m_spectrum->canApplySnapshot(*snapshot); !canApply) {
+        if (snapshot->model() != m_spectrum->model()) {
+            if (QMessageBox::StandardButton::Yes != QMessageBox::question(
+                    this,
+                    tr("Incompatible Spectrum Model"),
+                    tr("The loaded snapshot requires a %1.\n\nDo you want to change the emulated Spectrum model and load the snapshot?")
+                            .arg(QString::fromStdString(std::to_string(snapshot->model())))
+            )) {
+                statusBar()->showMessage(
+                        tr("The snapshot file %1 is not compatible with the running Spectrum (it requires a %2).")
+                                .arg(fileName, QString::fromStdString(std::to_string(snapshot->model()))),
+                        DefaultStatusBarMessageTimeout
+                );
+                return false;
+            }
+
+            setModel(snapshot->model());
+            canApply = m_spectrum->canApplySnapshot(*snapshot);
+        }
+
+        if (!canApply) {
+            statusBar()->showMessage(
+                    tr("The snapshot file %1 cannot be loaded.")
+                            .arg(fileName, QString::fromStdString(std::to_string(snapshot->model()))),
+                    DefaultStatusBarMessageTimeout
+            );
+            return false;
+        }
     }
 
     m_spectrum->applySnapshot(*snapshot);
