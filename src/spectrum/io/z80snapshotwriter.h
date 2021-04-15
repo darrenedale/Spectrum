@@ -12,13 +12,17 @@ namespace Spectrum::Io
     /**
      * Writes a snapshot in .z80 format.
      *
-     * All generated snapshots are use the extended .z80 format with compressed memory images stored in pages. The
-     * format doesn't support 16K models directly so snapshots of 16K models are output as 48K models.
+     * All generated snapshots use the extended .z80 format with compressed memory images stored in pages. The format
+     * doesn't support 16K models directly so snapshots of 16K models are output as 48K models (with the extra 32k of
+     * memory as all 0xff bytes, as they would present when addressed in a 16K model).
      */
     class Z80SnapshotWriter
     : public SnapshotWriter
     {
     public:
+        /**
+         * Import base class constructors.
+         */
         using SnapshotWriter::SnapshotWriter;
 
         /**
@@ -29,9 +33,16 @@ namespace Spectrum::Io
          * @return true if the write succeeded, false if not.
          */
         bool writeTo(std::ostream & out) const override;
+
+        /**
+         * Import remaining overloads of writeTo() from base class.
+         */
         using SnapshotWriter::writeTo;
 
     protected:
+        /**
+         * Convenience alias for the type representing compressed memory.
+         */
         using CompressedMemory = std::vector<::Z80::UnsignedByte>;
 
         /**
@@ -92,7 +103,7 @@ namespace Spectrum::Io
         bool writePlus2aPlus3(std::ostream & out) const;
 
         /**
-         * Helper to write a memory page from a 128k Spectrum model to an output stream.
+         * Helper to write a memory page to an output stream.
          *
          * @param out The stream to write to.
          * @param memory A pointer to the memory in the memory page to write. This *must* be 16kb in size.
@@ -105,7 +116,7 @@ namespace Spectrum::Io
         /**
          * Helper to compress a memory image.
          *
-         * Note that in come rare circumstances the "compressed" memory can be larger than the uncompressed.
+         * Note that in some rare circumstances the "compressed" memory can be larger than the uncompressed.
          *
          * @param memory A pointer to the uncompressed memory to compress.
          * @param size The size of the uncompressed memory.

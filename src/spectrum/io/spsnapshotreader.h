@@ -12,14 +12,27 @@
 
 namespace Spectrum::Io
 {
+    /**
+     * Read a snapshot in .sp format.
+     */
     class SpSnapshotReader
     : public SnapshotReader
     {
     public:
+        /**
+         * Import the base class constructors.
+         */
         using SnapshotReader::SnapshotReader;
-        const Snapshot * read() const override;
 
-    protected:
+        /**
+         * Read a snapshot from the current stream.
+         *
+         * The returned pointer is owned by the reader. It must not be destroyed nor dereferenced after the reader has
+         * been destroyed.
+         *
+         * @return The snapshot, or nullptr if the read failed.
+         */
+        const Snapshot * read() const override;
     };
 }
 

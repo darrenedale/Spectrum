@@ -8,16 +8,19 @@
 
 #include "zxsnapshotreader.h"
 #include "../spectrum48k.h"
-#include "../../z80/types.h"
+#include "../../util/endian.h"
 
 using namespace Spectrum::Io;
 
 using UnsignedByte = ::Z80::UnsignedByte;
 using InterruptMode = ::Z80::InterruptMode;
-using ::Z80::swapByteOrder;
+using Spectrum::Snapshot;
 
 namespace
 {
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
+    // required for format compatibility but unused
     struct Settings
     {
         std::uint16_t setting1;     // apparently always 0x000a
@@ -26,6 +29,7 @@ namespace
         std::uint16_t setting4;     // apparently always 0x0001
         std::uint16_t setting5;     // apparently always 0x0001
     };
+#pragma clang diagnostic pop
 
     // from http://spectrum-zx.chat.ru/faq/fileform.html
     //    Offset   Size   Description
@@ -52,6 +56,9 @@ namespace
     // the originating emulator to store the registers, etc. (e.g. PC and SP were represented using 32-bit ints)
     //
     // words are typed as uint16_t rather than UnsignedWord to make it clear that they're not in Z80 byte order
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
+    // several members are required for format compatibility but are unused
     struct ZXFileContent
     {
         UnsignedByte memory[49284];     // starting from 16252 (0x3f7c - part way through character data in ROM...)
@@ -89,11 +96,14 @@ namespace
         std::uint16_t interruptMode;    // 0xffff = IM0, 0 = IM1, 1 = IM2
         UnsignedByte unused11[10];      // apparently always all 0x00
     };
+#pragma clang diagnostic pop
 
     constexpr const std::uint16_t MemoryImageOffset = 16252;
+
+    using Util::swapByteOrder;
 }
 
-const Spectrum::Snapshot * ZXSnapshotReader::read() const
+const Snapshot * ZXSnapshotReader::read() const
 {
     if (!isOpen()) {
         std::cerr << "Input stream is not open.\n";
@@ -121,6 +131,11 @@ const Spectrum::Snapshot * ZXSnapshotReader::read() const
     snapshot->iff1 = (1 == content.interruptStatus);
     snapshot->iff2 = snapshot->iff1;
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "Simplify"
+#pragma ide diagnostic ignored "UnreachableCode"
+    // NOTE one of these two branches will be diagnosed as unnecessary, depending on the byte order of the host, but the
+    // code is required for cross-platform compatibility
     if (std::endian::native == std::endian::big) {
         registers.bc = content.bc;
         registers.de = content.de;
@@ -146,7 +161,8 @@ const Spectrum::Snapshot * ZXSnapshotReader::read() const
         registers.pc = swapByteOrder(content.pc);
         registers.sp = swapByteOrder(content.sp);
     }
-    
+#pragma clang diagnostic pop
+
     switch (content.interruptMode) {
         case 0xffff:
             snapshot->im = InterruptMode::IM0;
@@ -165,8 +181,8 @@ const Spectrum::Snapshot * ZXSnapshotReader::read() const
             return nullptr;
     }
 
-    auto memory = std::make_unique<SimpleMemory<Spectrum48k::ByteType>>(0x10000);
-    std::memcpy(memory->pointerTo(0) + MemoryImageOffset, content.memory, sizeof(content.memory));
+    auto memory = std::make_unique<Spectrum48k::MemoryType>(0x10000);
+    std::memcpy(memory->pointerTo(MemoryImageOffset), content.memory, sizeof(content.memory));
     snapshot->setMemory(std::move(memory));
     setSnapshot(std::move(snapshot));
     return this->snapshot();

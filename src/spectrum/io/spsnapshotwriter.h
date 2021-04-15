@@ -9,13 +9,30 @@
 
 namespace Spectrum::Io
 {
+    /**
+     * Write a Spectrum snapshot in .sp format.
+     */
     class SpSnapshotWriter
     : public SnapshotWriter
     {
     public:
+        /**
+         * Import the base class constructors.
+         */
         using SnapshotWriter::SnapshotWriter;
 
+        /**
+         * Write the current snapshot to the provided stream.
+         *
+         * @param out The stream to write the snapshot to.
+         *
+         * @return true if the snapshot was written successfully, false otherwise.
+         */
         bool writeTo(std::ostream & out) const override;
+
+        /**
+         * Import the remaining overloads of writeTo() from the base class.
+         */
         using SnapshotWriter::writeTo;
     };
 }

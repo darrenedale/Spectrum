@@ -8,7 +8,6 @@
 
 using namespace Spectrum::Io;
 
-
 SnapshotReader::SnapshotReader(SnapshotReader && other) noexcept
 : m_borrowedStream(other.m_borrowedStream),
   m_in(other.m_in),
@@ -16,11 +15,6 @@ SnapshotReader::SnapshotReader(SnapshotReader && other) noexcept
 {
     other.m_in = nullptr;
     other.m_borrowedStream = false;
-}
-
-SnapshotReader::~SnapshotReader()
-{
-    disposeStream();
 }
 
 SnapshotReader & SnapshotReader::operator=(SnapshotReader && other) noexcept
@@ -36,6 +30,11 @@ SnapshotReader & SnapshotReader::operator=(SnapshotReader && other) noexcept
     return *this;
 }
 
+SnapshotReader::~SnapshotReader()
+{
+    disposeStream();
+}
+
 void SnapshotReader::disposeStream()
 {
     if (!m_borrowedStream) {
@@ -49,7 +48,7 @@ void SnapshotReader::setFileName(const std::string & fileName)
 {
     disposeStream();
     m_in = new std::ifstream(fileName, std::ios::binary | std::ios::in);
-    m_snapshot.reset(nullptr);
+    m_snapshot.reset();
     m_borrowedStream = false;
 }
 
@@ -57,7 +56,7 @@ void SnapshotReader::setStream(std::istream & in)
 {
     disposeStream();
     m_in = &in;
-    m_snapshot.reset(nullptr);
+    m_snapshot.reset();
     m_borrowedStream = true;
 }
 

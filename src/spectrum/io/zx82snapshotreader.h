@@ -21,22 +21,26 @@ namespace Spectrum::Io
     : public SnapshotReader
     {
     public:
+        /**
+         * Import the base class constructors.
+         */
         using SnapshotReader::SnapshotReader;
 
         /**
-         * Read the snapshot represented by the file.
+         * Attempt to read a snapshot from the current stream.
          *
-         * @param snapshot
+         * The returned pointer is owned by the reader. It must not be destroyed nor dereferenced after the reader has
+         * been destroyed.
          *
-         * @return True on success, false on failure.
+         * @return A pointer to a snapshot on success, nullptr on failure.
          */
         const Snapshot * read() const override;
 
     protected:
         /**
-         * Decompress bytes read from the file/stream using the IFF/ILBM runLength1 scheme.
+         * Decompress bytes read from the stream using the IFF/ILBM runLength1 scheme.
          *
-         * The data is decompressed into a pre-allocated buffer. The buffer must be at least 48kb in size in order t
+         * The data is decompressed into a pre-allocated buffer. The buffer must be at least 48kb in size in order to
          * store a fully-decompressed Spectrum 48K RAM image.
          *
          * @param dest A buffer into which to store the decompressed bytes.

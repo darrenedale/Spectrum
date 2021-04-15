@@ -7,6 +7,7 @@
 #include <iomanip>
 #include "zx82snapshotreader.h"
 #include "../spectrum48k.h"
+#include "../../util/endian.h"
 
 using namespace Spectrum::Io;
 using ::Z80::UnsignedByte;
@@ -20,6 +21,9 @@ namespace
     // the identifier required at the start of the header
     const std::uint32_t Identifier = *reinterpret_cast<const std::uint32_t *>("ZX82");
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
+    // these are all the types of data that can be stored in .zx82 files, but we only use Snapshot
     enum class Type : std::uint8_t
     {
         BasicProgram = 0x00,
@@ -28,6 +32,7 @@ namespace
         Code = 0x03,
         Snapshot = 0x04,
     };
+#pragma clang diagnostic pop
 
     enum class CompressionType : std::uint8_t
     {
@@ -43,8 +48,11 @@ namespace
         };
     };
 
-    // NOTE all 16-bit values are big endian (MC68000 byte order)
 #pragma pack(push, 1)
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
+    // fileLength, startAddress and arrayName are not used for Snapshot type stream content
+    // NOTE all 16-bit values are big endian (MC68000 byte order)
     struct Header
     {
         std::uint32_t identifier;
@@ -54,10 +62,11 @@ namespace
         std::uint16_t startAddress;
         std::uint16_t arrayName;
     };
+#pragma clang diagnostic pop
 #pragma pack(pop)
 
-    // NOTE all register paris are big endian (MC68000 byte order)
 #pragma pack(push, 1)
+    // NOTE all register paris are big endian (MC68000 byte order)
     struct SnapshotHeader
     : public Header
     {
@@ -75,7 +84,10 @@ namespace
         RegisterPair afShadow;
         RegisterPair sp;
         std::uint8_t i;
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
         std::uint8_t unused;
+#pragma clang diagnostic pop
         std::uint8_t r;
         std::uint8_t iff1;
         RegisterPair pc;
@@ -83,10 +95,7 @@ namespace
 #pragma pack(pop)
 
     // used to convert 16-bit values from MC68000 byte order to host-native byte order if required
-    inline std::uint16_t swapByteOrder(std::uint16_t value)
-    {
-        return ((value & 0x00ff) << 8) | ((value & 0xff00) >> 8);
-    }
+    using Util::swapByteOrder;
 }
 
 const Spectrum::Snapshot * ZX82SnapshotReader::read() const
@@ -131,6 +140,11 @@ const Spectrum::Snapshot * ZX82SnapshotReader::read() const
     registers.i = header.i;
     registers.r = header.r;
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "Simplify"
+#pragma ide diagnostic ignored "UnreachableCode"
+    // NOTE one of these two branches will be diagnosed as unnecessary, depending on the byte order of the host, but the
+    // code is required for cross-platform compatibility
     if constexpr (std::endian::native == std::endian::big) {
         registers.iy = header.iy.word;
         registers.ix = header.ix.word;
@@ -158,27 +172,28 @@ const Spectrum::Snapshot * ZX82SnapshotReader::read() const
         registers.sp = swapByteOrder(header.sp.word);
         registers.pc = swapByteOrder(header.pc.word);
     }
+#pragma clang diagnostic pop
 
-    auto memory = std::make_unique<SimpleMemory<Spectrum48k::ByteType>>(0x10000);
+    auto memory = std::make_unique<Spectrum48k::MemoryType>(0x10000);
 
     if (CompressionType::RunLength == header.compressionType) {
         // Speculator docs say data can be 65496 bytes in length...
-        UnsignedByte buffer[65496];
-        in.read(reinterpret_cast<std::istream::char_type *>(buffer), 65496);
+        std::array<UnsignedByte, 65496> buffer; // NOLINT(cppcoreguidelines-pro-type-member-init) we're going to fill it right away with content from the stream
+        in.read(reinterpret_cast<std::istream::char_type *>(buffer.data()), buffer.size());
 
-        if (in.fail()) {
+        if (in.fail() && !in.eof()) {
             std::cerr << "Error reading RAM image from stream\n";
             return nullptr;
         }
 
-        if (!decompress(memory->pointerTo(0) + MemoryImageOffset, buffer, in.gcount())) {
+        if (!decompress(memory->pointerTo(0) + MemoryImageOffset, buffer.data(), in.gcount())) {
             std::cerr << "Error decompressing RAM image\n";
             return nullptr;
         }
     } else {
         in.read(reinterpret_cast<std::istream::char_type *>(memory->pointerTo(0) + MemoryImageOffset), 49152);
 
-        if (in.fail()) {
+        if (in.fail() && !in.eof()) {
             std::cerr << "Error reading RAM image from stream\n";
             return nullptr;
         }

@@ -22,14 +22,32 @@ namespace Spectrum::Io
      *     spectrum.z80()->execute({0xed, 0x45}, false);
      *
      *     // save the snapshot ...
+     *
+     * This is a quirk of the .sna format - it doesn't store the PC in the snapshot, it expects the PC to be on the top
+     * of the Spectrum stack, and expects a RETN instruction to be executed to when the snapshot is restored to a
+     * Spectrum.
      */
     class SnaSnapshotWriter
     : public SnapshotWriter
     {
     public:
+        /**
+         * Import the base class constructor.
+         */
         using SnapshotWriter::SnapshotWriter;
 
+        /**
+         * Write the snapshot in .sna format to the provided stream.
+         *
+         * @param out The stream to write the snapshot to.
+         *
+         * @return
+         */
         bool writeTo(std::ostream & out) const override;
+
+        /**
+         * Import the other overloads of writeTo() from the base class.
+         */
         using SnapshotWriter::writeTo;
     };
 }

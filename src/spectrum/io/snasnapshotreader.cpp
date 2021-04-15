@@ -3,15 +3,11 @@
 //
 
 #include <iostream>
-#include <cassert>
 
 #include "snasnapshotreader.h"
 #include "../spectrum48k.h"
-#include "../types.h"
-#include "../../z80/types.h"
 
 using namespace Spectrum::Io;
-
 using ::Z80::UnsignedByte;
 using ::Z80::UnsignedWord;
 using ::Z80::InterruptMode;
@@ -20,7 +16,8 @@ using ::Z80::hostToZ80ByteOrder;
 
 namespace
 {
-#pragma pack(push, 1) // the compiler must not pad this struct otherwise header won't be read from the stream correctly
+#pragma pack(push, 1)
+    // the compiler must not pad this struct otherwise header won't be read from the stream correctly
     struct Header
     {
         UnsignedByte i;
@@ -42,6 +39,9 @@ namespace
     };
 #pragma pack(pop)
 
+    /**
+     * First byte of the Spectrum memory image that the snapshot stores.
+     */
     constexpr const int MemoryImageOffset = 0x4000;
 }
 

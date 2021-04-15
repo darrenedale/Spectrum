@@ -64,9 +64,17 @@ namespace
 
         UnsignedWord sp;            // the stack pointer, Z80 byte order
         UnsignedWord pc;            // the program counter, Z80 byte order
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
+        // reserved by the format for future use and currently unused by this code
         UnsignedWord reserved1;
+#pragma clang diagnostic pop
         UnsignedByte border;
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
+        // reserved by the format for future use and currently unused by this code
         UnsignedByte reserved2;
+#pragma clang diagnostic pop
 
         //   Bit     Description
         //   ------------------------------------------------------------------------

@@ -12,16 +12,26 @@
 
 namespace Spectrum::Io
 {
+    /**
+     * Read a snapshot in .z80 format.
+     *
+     * All versions of the format (at the time of writing) are supported. Only the models supported by the emulator will
+     * be read; other models will not produce a Snapshot object (read() and snapshot() will return nullptr).
+     */
     class Z80SnapshotReader
     : public SnapshotReader
     {
     public:
+        /**
+         * Import the base class constructors.
+         */
         using SnapshotReader::SnapshotReader;
 
         /**
          * Read a Z80 snapshot from the stream.
          *
-         * The returned snapshot is owned by the reader and must not be destroyed.
+         * The returned pointer is owned by the reader. It must not be destroyed nor dereferenced after the reader has
+         * been destroyed.
          *
          * @return The snapshot.
          */

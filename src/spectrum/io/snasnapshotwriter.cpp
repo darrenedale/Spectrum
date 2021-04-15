@@ -3,7 +3,6 @@
 //
 
 #include "snasnapshotwriter.h"
-#include "../../z80/types.h"
 
 using namespace Spectrum::Io;
 
@@ -77,10 +76,7 @@ bool SnaSnapshotWriter::writeTo(std::ostream & out) const
         return false;
     }
 
-    if (memory) {
-        // only RAM is written to .sna files (not ROM)
-        out.write(reinterpret_cast<const std::ostream::char_type *>(memory->pointerTo(0x4000)), static_cast<std::streamsize>(memory->availableSize() - 0x4000));
-    }
-
+    // only RAM is written to .sna files (not ROM)
+    out.write(reinterpret_cast<const std::ostream::char_type *>(memory->pointerTo(0x4000)), static_cast<std::streamsize>(memory->availableSize() - 0x4000));
     return !out.bad() && !out.fail();
 }

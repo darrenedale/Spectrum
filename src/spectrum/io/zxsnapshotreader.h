@@ -9,12 +9,29 @@
 
 namespace Spectrum::Io
 {
+    /**
+     * Reader class for snapshots in .zx format.
+     *
+     * References:
+     * - http://spectrum-zx.chat.ru/faq/fileform.html
+     */
     class ZXSnapshotReader
     : public SnapshotReader
     {
     public:
+        /**
+         * Import the base class constructors.
+         */
         using SnapshotReader::SnapshotReader;
 
+        /**
+         * Attempt to read a snapshot from the current stream.
+         *
+         * The returned pointer is owned by the reader. It must not be destroyed nor dereferenced after the reader has
+         * been destroyed.
+         *
+         * @return A Snapshot, or nullptr if the read failed.
+         */
         const Snapshot * read() const override;
     };
 }

@@ -49,12 +49,15 @@ namespace Spectrum::Io
         SnapshotReader & operator=(const SnapshotReader & other) = delete;
         SnapshotReader & operator=(SnapshotReader && other) noexcept;
 
+        /**
+         * Destructor.
+         */
         virtual ~SnapshotReader();
 
         /**
          * Set the reader to read the given file.
          *
-         * Setting the stream invalidates any snapshot previously retrieved from the reader.
+         * Setting the file invalidates any snapshot previously retrieved from the reader.
          *
          * @param fileName
          */
@@ -73,11 +76,16 @@ namespace Spectrum::Io
         void setStream(std::istream & in);
 
         /**
-         * Force the reader to attempt to read (another) snapshot from the stream.
+         * Attempt to read (another) snapshot from the current stream.
          *
-         * @return The snapshot read. The snapshot returned is valid only while the reader exists and only until one of
-         * read(), setFileName() or setStream() is next called. On error nullptr will be returned. The returned snapshot
-         * is owned by the reader and should not be disposed of externally.
+         * Subclasses implementing this method must return a pointer to a Snapshot on success or nullptr on failure. The
+         * returned pointer is owned by the reader. It must not be destroyed nor dereferenced after the reader has been
+         * destroyed. It is recommended that the return value is implemented by passing the created Snapshot to the
+         * setSnapshot() method of this base class and returning snapshot() to ensure that the created Snapshot's
+         * lifetime is managed correctly.
+         *
+         * @return A pointer to the snapshot read, or nullptr on error. The snapshot returned is valid only while the
+         * reader exists and only until one of read(), setFileName() or setStream() is next called.
          */
         [[nodiscard]] virtual const Snapshot * read() const = 0;
 
@@ -140,8 +148,20 @@ namespace Spectrum::Io
          */
         void disposeStream();
 
+        /**
+         * Flag to indicate whether the reader is borrowing the stream it's reading. If this is set, the destructor will
+         * not destroy the stream, otherwise it will.
+         */
         bool m_borrowedStream;
+
+        /**
+         * The stream to read from.
+         */
         std::istream * m_in;
+
+        /**
+         * The last snapshot read from the current stream, if any.
+         */
         mutable std::unique_ptr<Snapshot> m_snapshot;
     };
 }

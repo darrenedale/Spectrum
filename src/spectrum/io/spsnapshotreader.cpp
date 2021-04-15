@@ -5,12 +5,9 @@
 #include <iostream>
 #include <iomanip>
 #include <iterator>
-#include <cstring>
 
 #include "spsnapshotreader.h"
 #include "../spectrum48k.h"
-#include "../types.h"
-#include "../../z80/types.h"
 
 using namespace Spectrum::Io;
 
@@ -121,10 +118,10 @@ const Spectrum::Snapshot * SpSnapshotReader::read() const
     header.baseAddress = z80ToHostByteOrder(header.baseAddress);
 
     if (0x0000ffff < static_cast<int>(header.baseAddress) + header.length - 1) {
-#if (!defined(ndebug))
         std::cerr << std::hex << std::setfill('0');
         std::cerr << "Program extends beyond upper bounds of RAM (0x" << std::setw(4) << header.baseAddress << " + "
                   << std::dec << header.length << ") > 0xffff\n";
+#if (!defined(ndebug))
         std::cerr << "Base address: 0x" << std::hex << std::setw(4) << header.baseAddress << "\n";
         std::cerr << "Length      : " << std::dec << header.length << " bytes\n";
         std::cerr << "End address : 0x" << std::hex << std::setw(5)

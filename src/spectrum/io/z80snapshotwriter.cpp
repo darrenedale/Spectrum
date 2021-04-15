@@ -3,7 +3,6 @@
 //
 
 #include <iostream>
-
 #include "z80snapshotwriter.h"
 #include "../spectrum128kmemory.h"
 #include "../spectrumplus2amemory.h"
@@ -17,6 +16,7 @@ namespace
 {
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
+    // these are required by the format but many are unused because we don't support all models
     enum class MachineType : uint8_t
     {
         Spectrum48k = 0,
