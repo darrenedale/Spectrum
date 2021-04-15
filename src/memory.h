@@ -156,7 +156,7 @@ public:
      * @param count The number of bytes.
      * @param bytes The bytes to write to the memory.
      */
-    virtual inline void writeBytes(Address address, Size count, Byte * bytes)
+    virtual inline void writeBytes(Address address, Size count, const Byte * bytes)
     {
         assert(address + count <= addressableSize());
 

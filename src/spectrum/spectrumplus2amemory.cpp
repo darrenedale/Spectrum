@@ -142,7 +142,7 @@ void SpectrumPlus2aMemory::readFromBank(BankNumber bank, Byte * buffer, Unsigned
     std::memcpy(buffer, m_ramBanks[static_cast<int>(bank)].data() + offset, size);
 }
 
-void SpectrumPlus2aMemory::writeToBank(BankNumber bank, Byte * data, UnsignedWord size, UnsignedWord offset)
+void SpectrumPlus2aMemory::writeToBank(BankNumber bank, const Byte * data, UnsignedWord size, UnsignedWord offset)
 {
     assert(offset + size <= BankSize);
     std::memcpy(m_ramBanks[static_cast<int>(bank)].data() + offset, data, size);

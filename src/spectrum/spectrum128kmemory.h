@@ -193,7 +193,7 @@ namespace Spectrum
          * @param size The number of bytes to write. Defaults to a full bank.
          * @param offset The offset into the bank at which to start writing. Defaults to the first byte in the bank.
          */
-        void writeToBank(BankNumber bank, Byte * data, ::Z80::UnsignedWord size = BankSize, ::Z80::UnsignedWord offset = 0);
+        void writeToBank(BankNumber bank, const Byte * data, ::Z80::UnsignedWord size = BankSize, ::Z80::UnsignedWord offset = 0);
 
         /**
          * Read directly from a specified memory bank.
