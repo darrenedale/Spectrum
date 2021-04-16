@@ -96,10 +96,10 @@ namespace Spectrum
      */
     enum class SpecialPagingConfiguration : std::uint8_t
     {
-        Config1,
-        Config2,
-        Config3,
-        Config4,
+        Config1 = 0,
+        Config2 = 1,
+        Config3 = 2,
+        Config4 = 3,
     };
 
     /**
