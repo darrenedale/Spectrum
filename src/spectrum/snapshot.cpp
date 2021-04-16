@@ -41,7 +41,9 @@ Snapshot::Snapshot(Registers registers, BaseSpectrum::MemoryType * memory)
   pagedBankNumber(MemoryBankNumber128k::Bank0),
   romNumber(RomNumber128k::Rom0),
   screenBuffer(ScreenBuffer128k::Normal),
-  pagingEnabled(true)
+  pagingEnabled(true),
+  pagingMode(PagingMode::Normal),
+  specialPagingConfig()
 {}
 
 Snapshot::~Snapshot() noexcept = default;
@@ -57,7 +59,9 @@ Snapshot::Snapshot(const Snapshot & other)
   pagedBankNumber(other.pagedBankNumber),
   romNumber(other.romNumber),
   screenBuffer(ScreenBuffer128k::Normal),
-  pagingEnabled(other.pagingEnabled)
+  pagingEnabled(other.pagingEnabled),
+  pagingMode(PagingMode::Normal),
+  specialPagingConfig()
 {}
 
 Snapshot::Snapshot(Snapshot && other) noexcept
@@ -71,7 +75,9 @@ Snapshot::Snapshot(Snapshot && other) noexcept
   pagedBankNumber(other.pagedBankNumber),
   romNumber(other.romNumber),
   screenBuffer(ScreenBuffer128k::Normal),
-  pagingEnabled(other.pagingEnabled)
+  pagingEnabled(other.pagingEnabled),
+  pagingMode(other.pagingMode),
+  specialPagingConfig(other.specialPagingConfig)
 {}
 
 Snapshot & Snapshot::operator=(const Snapshot & other)
@@ -90,6 +96,8 @@ Snapshot & Snapshot::operator=(const Snapshot & other)
     romNumber = other.romNumber;
     screenBuffer = other.screenBuffer;
     pagingEnabled = other.pagingEnabled;
+    pagingMode = other.pagingMode;
+    specialPagingConfig = other.specialPagingConfig;
 
     if (other.m_memory) {
         m_memory = other.m_memory->clone();
@@ -116,6 +124,8 @@ Snapshot & Snapshot::operator=(Snapshot && other) noexcept
     romNumber = other.romNumber;
     screenBuffer = other.screenBuffer;
     pagingEnabled = other.pagingEnabled;
+    pagingMode = other.pagingMode;
+    specialPagingConfig = other.specialPagingConfig;
     m_memory = std::move(other.m_memory);
     return *this;
 }
@@ -123,6 +133,11 @@ Snapshot & Snapshot::operator=(Snapshot && other) noexcept
 #if (!defined(NDEBUG))
 #include <iostream>
 #include "../util/crc32.h"
+#include "spectrum16k.h"
+#include "spectrum48k.h"
+#include "spectrum128k.h"
+#include "spectrumplus2.h"
+#include "spectrumplus2a.h"
 
 std::ostream & Spectrum::operator<<(std::ostream & out, const Snapshot & snap)
 {
@@ -187,12 +202,19 @@ std::ostream & Spectrum::operator<<(std::ostream & out, const Snapshot & snap)
             << "  Current page: " << static_cast<std::uint16_t>(snap.pagedBankNumber) << '\n';
 
         if (Model::SpectrumPlus2a == snap.model()) {
+            out << "  Paging mode: " << snap.pagingMode << '\n';
+
+            if (PagingMode::Special == snap.pagingMode) {
+                out << "  Special paging mode config: " << snap.specialPagingConfig << '\n';
+            }
+
             auto * memory = dynamic_cast<const SpectrumPlus2a::MemoryType *>(snap.memory());
 
             for (std::uint8_t page = 0; page < 8; ++page) {
                 out << "  Page " << std::dec << static_cast<std::uint16_t>(page) << " checksum: 0x" << std::setw(8)
                     << Util::crc32(memory->bankPointer(static_cast<MemoryBankNumber128k>(page)), SpectrumPlus2a::MemoryType::BankSize) << '\n';
             }
+
         } else {
             auto * memory = dynamic_cast<const Spectrum128KMemory *>(snap.memory());
 

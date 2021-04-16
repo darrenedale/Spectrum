@@ -35,6 +35,7 @@ namespace Spectrum
         Spectrum128k,
         SpectrumPlus2,
         SpectrumPlus2a,
+        SpectrumPlus3,
     };
 
     /**
@@ -82,6 +83,26 @@ namespace Spectrum
     };
 
     /**
+     * Paging modes for the +2a/+3.
+     */
+    enum class PagingMode : std::uint8_t
+    {
+        Normal,
+        Special,
+    };
+
+    /**
+     * Special paging configurations for the +2a/+3
+     */
+    enum class SpecialPagingConfiguration : std::uint8_t
+    {
+        Config1,
+        Config2,
+        Config3,
+        Config4,
+    };
+
+    /**
      * Write a human-readable representation of a Spectrum colour to an output stream.
      *
      * @param out The stream to write to.
@@ -89,28 +110,67 @@ namespace Spectrum
      *
      * @return
      */
-    std::ostream & operator<<(std::ostream & out, Spectrum::Colour colour);
+    std::ostream & operator<<(std::ostream & out, Colour colour);
 
     /**
      * Write a human-readable representation of a Spectrum model to an output stream.
      *
      * @param out The stream to write to.
-     * @param colour The model type to write.
+     * @param model The model type to write.
      *
      * @return
      */
-    std::ostream & operator<<(std::ostream & out, Spectrum::Model model);
+    std::ostream & operator<<(std::ostream & out, Model model);
+
+    /**
+     * Write a human-readable representation of a Spectrum 128K ROM number.
+     *
+     * @param out The stream to write to.
+     * @param rom The rom to write.
+     *
+     * @return
+     */
+    std::ostream & operator<<(std::ostream & out, RomNumber128k rom);
+
+    /**
+     * Write a human-readable representation of a Spectrum +2a/+3 ROM number.
+     *
+     * @param out The stream to write to.
+     * @param rom The rom to write.
+     *
+     * @return
+     */
+    std::ostream & operator<<(std::ostream & out, RomNumberPlus2a rom);
 
     /**
      * Write a human-readable representation of a Spectrum screen buffer type to an output stream.
      *
      * @param out The stream to write to.
-     * @param colour The buffer type to write.
+     * @param bufferType The buffer type to write.
      *
      * @return
      */
-    std::ostream & operator<<(std::ostream & out, Spectrum::ScreenBuffer128k bufferType);
+    std::ostream & operator<<(std::ostream & out, ScreenBuffer128k bufferType);
 
+    /**
+     * Write a human-readable representation of a Spectrum +2a/+3 paging mode to an output stream.
+     *
+     * @param out The stream to write to.
+     * @param mode The mode to write.
+     *
+     * @return
+     */
+    std::ostream & operator<<(std::ostream & out, PagingMode mode);
+
+    /**
+     * Write a human-readable representation of a Spectrum special paging configuration to an output stream.
+     *
+     * @param out The stream to write to.
+     * @param config The configuration to write.
+     *
+     * @return
+     */
+    std::ostream & operator<<(std::ostream & out, SpecialPagingConfiguration config);
 }
 
 namespace std
@@ -126,9 +186,29 @@ namespace std
     std::string to_string(Spectrum::Model model);
 
     /**
+     * Fetch a human-readable string representation of a Spectrum 128K ROM.
+     */
+    std::string to_string(Spectrum::RomNumber128k rom);
+
+    /**
+     * Fetch a human-readable string representation of a Spectrum +2a/+3 ROM.
+     */
+    std::string to_string(Spectrum::RomNumberPlus2a rom);
+
+    /**
      * Fetch a human-readable string representation of a Spectrum screen buffer type.
      */
     std::string to_string(Spectrum::ScreenBuffer128k);
+
+    /**
+     * Fetch a human-readable string representation of a Spectrum +2a/+3 paging mode.
+     */
+    std::string to_string(Spectrum::PagingMode);
+
+    /**
+     * Fetch a human-readable string representation of a Spectrum +2a/+3 special paging mode configuration.
+     */
+    std::string to_string(Spectrum::SpecialPagingConfiguration);
 }
 
 #endif //SPECTRUM_TYPES_H

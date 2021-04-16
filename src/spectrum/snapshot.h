@@ -31,8 +31,7 @@ namespace Spectrum
      * - the paged ROM and RAM bank (for 128k models)
      * - whether or not paging has been disabled (for 128k models)
      * - which screen buffer is in use (for 128k models)
-     *
-     * TODO support special paging mode for +2a/+3
+     * - paging mode and special paging config (for +2a/+3 models)
      */
     class Snapshot
     {
@@ -86,6 +85,16 @@ namespace Spectrum
          * For 128K models, whether or not paging is enabled.
          */
         bool pagingEnabled;
+
+        /**
+         * For +2a/+3, which paging mode is in use.
+         */
+        PagingMode pagingMode;
+
+        /**
+         * For +2a/+3 special paging mode, which paging configuration is in use.
+         */
+        SpecialPagingConfiguration specialPagingConfig;
 
         /**
          * Create a snapshot of the current state of a Spectrum.

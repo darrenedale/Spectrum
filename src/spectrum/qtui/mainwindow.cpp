@@ -1,4 +1,3 @@
-#include <cstring>
 #include <filesystem>
 #include <iostream>
 #include <fstream>
@@ -30,6 +29,7 @@
 #include "../spectrum128k.h"
 #include "../spectrumplus2.h"
 #include "../spectrumplus2a.h"
+#include "../spectrumplus3.h"
 #include "mainwindow.h"
 #include "threadpauser.h"
 #include "../kempstonjoystick.h"
@@ -82,7 +82,7 @@ namespace
     constexpr const char * DefaultPlus3Rom0 = "roms/spectrumplus3-0.rom";
     constexpr const char * DefaultPlus3Rom1 = "roms/spectrumplus3-1.rom";
     constexpr const char * DefaultPlus3Rom2 = "roms/spectrumplus3-2.rom";
-    constexpr const char * DefaultPlus3aRom3 = "roms/spectrumplus3-3.rom";
+    constexpr const char * DefaultPlus3Rom3 = "roms/spectrumplus3-3.rom";
     constexpr const char * DefaultTc2048Rom = "roms/tc2048.rom";
 
     // ms to wait for the thread to stop before forcibly terminating it
@@ -107,6 +107,7 @@ MainWindow::MainWindow(QWidget * parent)
   m_model128(tr("Spectrum 128k")),
   m_modelPlus2(tr("Spectrum +2")),
   m_modelPlus2a(tr("Spectrum +2a")),
+  m_modelPlus3(tr("Spectrum +3")),
   m_saveScreenshot(QIcon::fromTheme(QStringLiteral("image")), tr("Screenshot")),
   m_colourDisplay(tr("Colour")),
   m_monochromeDisplay(tr("Monochrome")),
@@ -153,7 +154,7 @@ MainWindow::MainWindow(QWidget * parent)
 
     auto * model = new QActionGroup(this);
 
-    for (auto * action : {&m_model16, &m_model48, &m_model128, &m_modelPlus2, &m_modelPlus2a, }) {
+    for (auto * action : {&m_model16, &m_model48, &m_model128, &m_modelPlus2, &m_modelPlus2a, &m_modelPlus3, }) {
         action->setCheckable(true);
         action->setChecked(false);
         model->addAction(action);
@@ -314,7 +315,7 @@ void MainWindow::createMenuBar()
     menu->addSeparator();
     subMenu = menu->addMenu(tr("Model"));
 
-    for (auto * action : {&m_model16, &m_model48, &m_model128, &m_modelPlus2, &m_modelPlus2a, }) {
+    for (auto * action : {&m_model16, &m_model48, &m_model128, &m_modelPlus2, &m_modelPlus2a, &m_modelPlus3, }) {
         subMenu->addAction(action);
     }
 
@@ -404,6 +405,7 @@ void MainWindow::connectSignals()
 	connect(&m_model128, &QAction::triggered, this, &MainWindow::model128Triggered);
 	connect(&m_modelPlus2, &QAction::triggered, this, &MainWindow::modelPlus2Triggered);
 	connect(&m_modelPlus2a, &QAction::triggered, this, &MainWindow::modelPlus2aTriggered);
+	connect(&m_modelPlus3, &QAction::triggered, this, &MainWindow::modelPlus3Triggered);
 
 	connect(&m_joystickKempston, &QAction::triggered, this, &MainWindow::useKempstonJoystickTriggered);
 	connect(&m_joystickInterface2, &QAction::triggered, this, &MainWindow::useInterfaceTwoJoystickTriggered);
@@ -530,6 +532,11 @@ void MainWindow::setModel(Spectrum::Model model)
         case Model::SpectrumPlus2a:
             m_spectrum = std::make_unique<SpectrumPlus2a>(DefaultPlus2aRom0, DefaultPlus2aRom1, DefaultPlus2aRom2, DefaultPlus2aRom3);
             m_modelPlus2a.setChecked(true);
+            break;
+
+        case Model::SpectrumPlus3:
+            m_spectrum = std::make_unique<SpectrumPlus3>(DefaultPlus3Rom0, DefaultPlus3Rom1, DefaultPlus3Rom2, DefaultPlus3Rom3);
+            m_modelPlus3.setChecked(true);
             break;
     }
 
@@ -1411,6 +1418,11 @@ void MainWindow::modelPlus2Triggered()
 void MainWindow::modelPlus2aTriggered()
 {
     setModel(Model::SpectrumPlus2a);
+}
+
+void MainWindow::modelPlus3Triggered()
+{
+    setModel(Model::SpectrumPlus3);
 }
 
 void MainWindow::useKempstonJoystickTriggered()

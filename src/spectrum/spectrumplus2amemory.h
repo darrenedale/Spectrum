@@ -29,12 +29,6 @@ namespace Spectrum
          */
         static constexpr const int BankSize = 0x4000;
 
-        enum class PagingMode : std::uint8_t
-        {
-            Normal,
-            Special,
-        };
-
         /**
          * Enumeration of the available ROMs.
          */
@@ -44,14 +38,6 @@ namespace Spectrum
          * Enumeration of the available RAM banks.
          */
         using BankNumber = MemoryBankNumber128k;
-
-        enum class SpecialPagingConfiguration : std::uint8_t
-        {
-            Config1,
-            Config2,
-            Config3,
-            Config4,
-        };
 
         SpectrumPlus2aMemory();
         SpectrumPlus2aMemory(const SpectrumPlus2aMemory &) = delete;

@@ -7,7 +7,6 @@
 #include <QSlider>
 #include <QSpinBox>
 #include <QTimer>
-
 #include "qimagedisplaydevice.h"
 #include "debugwindow.h"
 #include "imagewidget.h"
@@ -128,6 +127,7 @@ namespace Spectrum::QtUi
         void model128Triggered();
         void modelPlus2Triggered();
         void modelPlus2aTriggered();
+        void modelPlus3Triggered();
         void useKempstonJoystickTriggered();
         void useInterfaceTwoJoystickTriggered();
         void noJoystickTriggered();
@@ -163,6 +163,7 @@ namespace Spectrum::QtUi
         QAction m_model128;
         QAction m_modelPlus2;
         QAction m_modelPlus2a;
+        QAction m_modelPlus3;
 
         QAction m_saveScreenshot;
         QAction m_colourDisplay;

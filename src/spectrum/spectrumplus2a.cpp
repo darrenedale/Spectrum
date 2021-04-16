@@ -18,13 +18,13 @@ SpectrumPlus2a::SpectrumPlus2a(const std::string & romFile0, const std::string &
 : BaseSpectrum(new SpectrumPlus2aMemory()),
   m_pager(*this),
   m_screenBuffer(ScreenBuffer::Normal),
-  m_romFiles{romFile0, romFile1}
+  m_romFiles{romFile0, romFile1, romFile2, romFile3}
 {
     auto * mem = memoryPlus2a();
     mem->loadRom(romFile0, RomNumber::Rom0);
     mem->loadRom(romFile1, RomNumber::Rom1);
-    mem->loadRom(romFile1, RomNumber::Rom2);
-    mem->loadRom(romFile1, RomNumber::Rom3);
+    mem->loadRom(romFile2, RomNumber::Rom2);
+    mem->loadRom(romFile3, RomNumber::Rom3);
     auto * cpu = z80();
     assert(cpu);
     cpu->connectIODevice(&m_pager);
@@ -81,6 +81,8 @@ std::unique_ptr<Snapshot> SpectrumPlus2a::snapshot() const
     snapshot->romNumber = memoryPlus2a()->currentRom();
     snapshot->screenBuffer = screenBuffer();
     snapshot->pagingEnabled = pager()->pagingEnabled();
+    snapshot->pagingMode = memoryPlus2a()->pagingMode();
+    snapshot->specialPagingConfig = memoryPlus2a()->specialPagingConfiguration();
     return snapshot;
 }
 
@@ -110,6 +112,8 @@ void SpectrumPlus2a::applySnapshot(const Snapshot & snapshot)
     auto * memory = memoryPlus2a();
     memory->pageRom(std::get<RomNumberPlus2a>(snapshot.romNumber));
     memory->pageBank(snapshot.pagedBankNumber);
+    memory->setPagingMode(snapshot.pagingMode);
+    memory->setSpecialPagingConfiguration(snapshot.specialPagingConfig);
 
     for (std::uint8_t bankNumber = 0; bankNumber < 8; ++bankNumber) {
         memory->writeToBank(static_cast<MemoryBankNumber128k>(bankNumber),

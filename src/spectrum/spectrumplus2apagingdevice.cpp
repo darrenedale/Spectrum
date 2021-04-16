@@ -6,10 +6,14 @@
 #include "spectrumplus2apagingdevice.h"
 #include "spectrumplus2amemory.h"
 
+#if (!defined(NDEBUG))
+#include <iostream>
+#include <iomanip>
+#endif
+
 using namespace Spectrum;
 using ::Z80::UnsignedWord;
 using ::Z80::UnsignedByte;
-using SpecialPagingConfiguration = SpectrumPlus2aMemory::SpecialPagingConfiguration;
 
 namespace
 {
@@ -95,7 +99,10 @@ void SpectrumPlus2aPagingDevice::writePort1ffd(::Z80::UnsignedByte value)
     auto * memory = dynamic_cast<SpectrumPlus2aMemory *>(spectrum().memory());
     assert(memory);
 
-    if (value & PagingModeMask) {
+    auto pagingMode = (value & PagingModeMask ? PagingMode::Special : PagingMode::Normal);
+    memory->setPagingMode(pagingMode);
+
+    if (pagingMode == PagingMode::Special) {
         // special paging mode
         memory->setSpecialPagingConfiguration(static_cast<SpecialPagingConfiguration>((value & SpecialPagingConfigurationMask) >> SpecialPagingConfigurationShift));
     } else {
@@ -104,6 +111,11 @@ void SpectrumPlus2aPagingDevice::writePort1ffd(::Z80::UnsignedByte value)
                 ((value & RomNumberHighMask) >> (RomNumberHighBit - 1))
                 | (static_cast<std::uint8_t>(memory->currentRom()) & 0x01)
             );
+
+#if (!defined(NDEBUG))
+        std::cout << "Received OUT 0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(value) << " on port 0x1ffd\n";
+        std::cout << "ROM: " << rom << '\n';
+#endif
         memory->pageRom(rom);
         
         if (value & DiskMotorMask) {
