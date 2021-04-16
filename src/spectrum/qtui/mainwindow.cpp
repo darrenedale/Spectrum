@@ -24,14 +24,15 @@
 #include <QStringBuilder>
 #include <memory>
 
+#include "application.h"
+#include "mainwindow.h"
+#include "threadpauser.h"
 #include "../spectrum16k.h"
 #include "../spectrum48k.h"
 #include "../spectrum128k.h"
 #include "../spectrumplus2.h"
 #include "../spectrumplus2a.h"
 #include "../spectrumplus3.h"
-#include "mainwindow.h"
-#include "threadpauser.h"
 #include "../kempstonjoystick.h"
 #include "../interfacetwojoystick.h"
 #include "../kempstonmouse.h"
@@ -48,9 +49,10 @@
 
 using namespace Spectrum::QtUi;
 using namespace Spectrum::Io;
-
 using ::Z80::InterruptMode;
 using ::Spectrum::Keyboard;
+
+namespace fs = std::filesystem;
 
 namespace
 {
@@ -503,42 +505,92 @@ Spectrum::Model MainWindow::model() const
 
 void MainWindow::setModel(Spectrum::Model model)
 {
+    std::unique_ptr<BaseSpectrum> newSpectrum;
+    QString error;
+
+    switch (model) {
+        case Model::Spectrum16k:
+            if (!fs::exists(Default16kRom)) {
+                error = tr("The ROM file for the %1 is missing.").arg(QString::fromStdString(std::to_string(model)));
+            } else {
+                newSpectrum = std::make_unique<Spectrum16k>(Default16kRom);
+                m_model16.setChecked(true);
+            }
+            break;
+
+        case Model::Spectrum48k:
+            if (!fs::exists(Default48kRom)) {
+                error = tr("The ROM file for the %1 is missing.").arg(QString::fromStdString(std::to_string(model)));
+            } else {
+                newSpectrum = std::make_unique<Spectrum48k>(Default48kRom);
+                m_model48.setChecked(true);
+            }
+            break;
+
+        case Model::Spectrum128k:
+            if (!fs::exists(Default128kRom0)) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("first"), QString::fromStdString(std::to_string(model)));
+            } else if (!fs::exists(Default128kRom0)) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("second"), QString::fromStdString(std::to_string(model)));
+            } else {
+                newSpectrum = std::make_unique<Spectrum128k>(Default128kRom0, Default128kRom1);
+                m_model128.setChecked(true);
+            }
+            break;
+
+        case Model::SpectrumPlus2:
+            if (!fs::exists(DefaultPlus2Rom0)) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("first"), QString::fromStdString(std::to_string(model)));
+            } else if (!fs::exists(DefaultPlus2Rom1)) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("second"), QString::fromStdString(std::to_string(model)));
+            } else {
+                newSpectrum = std::make_unique<SpectrumPlus2>(DefaultPlus2Rom0, DefaultPlus2Rom1);
+                m_modelPlus2.setChecked(true);
+            }
+            break;
+
+        case Model::SpectrumPlus2a:
+            if (!fs::exists(DefaultPlus2aRom0)) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("first"), QString::fromStdString(std::to_string(model)));
+            } else if (!fs::exists(DefaultPlus2aRom1)) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("second"), QString::fromStdString(std::to_string(model)));
+            } else if (!fs::exists(DefaultPlus2aRom2)) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("third"), QString::fromStdString(std::to_string(model)));
+            } else if (!fs::exists(DefaultPlus2aRom3)) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("fourth"), QString::fromStdString(std::to_string(model)));
+            } else {
+                newSpectrum = std::make_unique<SpectrumPlus2a>(DefaultPlus2aRom0, DefaultPlus2aRom1, DefaultPlus2aRom2, DefaultPlus2aRom3);
+                m_modelPlus2a.setChecked(true);
+            }
+            break;
+
+        case Model::SpectrumPlus3:
+            if (!fs::exists(DefaultPlus2aRom0)) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("first"), QString::fromStdString(std::to_string(model)));
+            } else if (!fs::exists(DefaultPlus2aRom1)) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("second"), QString::fromStdString(std::to_string(model)));
+            } else if (!fs::exists(DefaultPlus2aRom2)) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("third"), QString::fromStdString(std::to_string(model)));
+            } else if (!fs::exists(DefaultPlus2aRom3)) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("fourth"), QString::fromStdString(std::to_string(model)));
+            } else {
+                newSpectrum = std::make_unique<SpectrumPlus3>(DefaultPlus3Rom0, DefaultPlus3Rom1, DefaultPlus3Rom2, DefaultPlus3Rom3);
+                m_modelPlus3.setChecked(true);
+            }
+            break;
+    }
+
+    if (!newSpectrum) {
+        assert(!error.isEmpty());
+        Application::instance()->showMessage(error, DefaultStatusBarMessageTimeout);
+        return;
+    }
+    
     detachSpectrumDevices();
     bool paused = m_spectrumThread.isPaused();
     m_displayRefreshTimer.stop();
     stopThread();
-
-    switch (model) {
-        case Model::Spectrum16k:
-            m_spectrum = std::make_unique<Spectrum16k>(Default16kRom);
-            m_model16.setChecked(true);
-            break;
-
-        case Model::Spectrum48k:
-            m_spectrum = std::make_unique<Spectrum48k>(Default48kRom);
-            m_model48.setChecked(true);
-            break;
-
-        case Model::Spectrum128k:
-            m_spectrum = std::make_unique<Spectrum128k>(Default128kRom0, Default128kRom1);
-            m_model128.setChecked(true);
-            break;
-
-        case Model::SpectrumPlus2:
-            m_spectrum = std::make_unique<SpectrumPlus2>(DefaultPlus2Rom0, DefaultPlus2Rom1);
-            m_modelPlus2.setChecked(true);
-            break;
-
-        case Model::SpectrumPlus2a:
-            m_spectrum = std::make_unique<SpectrumPlus2a>(DefaultPlus2aRom0, DefaultPlus2aRom1, DefaultPlus2aRom2, DefaultPlus2aRom3);
-            m_modelPlus2a.setChecked(true);
-            break;
-
-        case Model::SpectrumPlus3:
-            m_spectrum = std::make_unique<SpectrumPlus3>(DefaultPlus3Rom0, DefaultPlus3Rom1, DefaultPlus3Rom2, DefaultPlus3Rom3);
-            m_modelPlus3.setChecked(true);
-            break;
-    }
+    m_spectrum = std::move(newSpectrum);
 
 #if (!defined(NDEBUG))
     m_spectrum->dumpState();
@@ -1163,6 +1215,10 @@ void MainWindow::closeEvent(QCloseEvent * ev)
 
                 case Model::SpectrumPlus2a:
                     model = QStringLiteral("+2a");
+                    break;
+
+                case Model::SpectrumPlus3:
+                    model = QStringLiteral("+3");
                     break;
             }
         }
