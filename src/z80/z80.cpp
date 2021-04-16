@@ -1289,21 +1289,21 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Z80__PLAIN__RLCA:						// 0x07
-			/* FLAGS: S, Z and P preserved, H and N cleared, C modified directly by
-				instruction */
 			{
-				bool bit = (m_registers.a) & 0x80;
-				(m_registers.a) <<= 1;
+				bool bit = m_registers.a & 0x80;
+				m_registers.a <<= 1;
 
 				if (bit) {
-					(m_registers.a) |= 0x01;
+					m_registers.a |= 0x01;
 					Z80_FLAG_C_SET;
 				}
 				else {
-					(m_registers.a) &= 0xfe;
+					m_registers.a &= 0xfe;
 					Z80_FLAG_C_CLEAR;
 				}
 
+				Z80_FLAG_F5_UPDATE(m_registers.a & Z80_FLAG_F5_MASK);
+				Z80_FLAG_F3_UPDATE(m_registers.a & Z80_FLAG_F3_MASK);
 				Z80_FLAG_H_CLEAR;
 				Z80_FLAG_N_CLEAR;
 			}
@@ -1338,8 +1338,6 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Z80__PLAIN__RRCA:						// 0x0f
-			/* FLAGS: S, Z and P preserved, H and N cleared, C modified directly by
-				instruction */
 			{
 				bool bit = (m_registers.a) & 0x01;
 				(m_registers.a) >>= 1;
