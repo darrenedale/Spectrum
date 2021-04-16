@@ -9,13 +9,13 @@
 using namespace Spectrum;
 
 using ::Z80::UnsignedByte;
-using RomNumber = Spectrum128KMemory::RomNumber;
-using BankNumber = Spectrum128KMemory::BankNumber;
+using RomNumber = Spectrum128kMemory::RomNumber;
+using BankNumber = Spectrum128kMemory::BankNumber;
 
 // NOTE the base class constructor ensures that the Computer instance owns the allocated memory object and will destroy
 // it in its destructor
 Spectrum128k::Spectrum128k(const std::string & romFile0, const std::string & romFile1)
-: BaseSpectrum(new Spectrum128KMemory()),
+: BaseSpectrum(new Spectrum128kMemory()),
   m_pager(*this),
   m_screenBuffer(ScreenBuffer::Normal),
   m_romFiles{romFile0, romFile1}

@@ -14,7 +14,7 @@ namespace Spectrum
     /**
      * Abstraction of a Spectrum +2a
      *
-     * The Spectrum 128K's fundamentals are nearly identical to those of the Spectrum 48K: a Z80 running at roughly
+     * The Spectrum +2a's fundamentals are nearly identical to those of the Spectrum 48K: a Z80 running at roughly
      * 3.5MHz, 16kb of ROM in the lower 16kb of the Z80's address space and 48kb of read/write RAM in the remainder. The
      * main differences are:
      * - one of two available 16kb ROM images can be paged into the ROM area, at the programmer's discretion
@@ -44,7 +44,7 @@ namespace Spectrum
         SpectrumPlus2a();
 
         /**
-         * Initialise a new Spectrum128k with ROM images loaded from disk.
+         * Initialise a new Spectrum +2a with ROM images loaded from disk.
          */
         explicit SpectrumPlus2a(const std::string & romFile0, const std::string & romFile1, const std::string & romFile2, const std::string & romFile3);
 
@@ -53,6 +53,10 @@ namespace Spectrum
         SpectrumPlus2a(SpectrumPlus2a &&) = delete;
         void operator=(const SpectrumPlus2a &) = delete;
         void operator=(SpectrumPlus2a &&) = delete;
+
+        /**
+         * Destructor.
+         */
         ~SpectrumPlus2a() override;
 
         /**
@@ -67,6 +71,11 @@ namespace Spectrum
             return Model::SpectrumPlus2a;
         }
 
+        /**
+         * Take a snapshot of the +2a state.
+         *
+         * @return A snapshot, or nullptr if a snapshot can't be created.
+         */
         [[nodiscard]] std::unique_ptr<Snapshot> snapshot() const override;
 
         /**
@@ -123,7 +132,7 @@ namespace Spectrum
         /**
          * Set which screen buffer is currently active.
          *
-         * You should never need to call this directly, unless you are reimplementing the Spectrum128KPagingDevice
+         * You should never need to call this directly, unless you are reimplementing the SpectrumPlus2aPagingDevice
          * functionality.
          *
          * @param buffer

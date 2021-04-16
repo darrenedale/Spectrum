@@ -31,6 +31,9 @@ namespace Spectrum
           m_spectrum(owner)
         {}
 
+        /**
+         * Destructor.
+         */
         ~SpectrumPlus2aPagingDevice() override;
 
         /**

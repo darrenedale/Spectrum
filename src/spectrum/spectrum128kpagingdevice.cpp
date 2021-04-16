@@ -36,15 +36,15 @@ void Spectrum128KPagingDevice::writeByte(UnsignedWord port, UnsignedByte value)
         return;
     }
 
-    auto * memory = dynamic_cast<Spectrum128KMemory *>(spectrum().memory());
+    auto * memory = dynamic_cast<Spectrum128kMemory *>(spectrum().memory());
     assert(memory);
 
     // ram bank to page is in bits 0-2
-    auto ramBank = static_cast<Spectrum128KMemory::BankNumber>(value & RamBankMask);
+    auto ramBank = static_cast<Spectrum128kMemory::BankNumber>(value & RamBankMask);
     memory->pageBank(ramBank);
 
     // rom number is in bit 4
-    auto rom = static_cast<Spectrum128KMemory::RomNumber>((value & RomNumberMask) >> RomNumberBit);
+    auto rom = static_cast<Spectrum128kMemory::RomNumber>((value & RomNumberMask) >> RomNumberBit);
     memory->pageRom(rom);
 
     auto screenBuffer = (value & ScreenBufferMask) ? Spectrum128k::ScreenBuffer::Shadow : Spectrum128k::ScreenBuffer::Normal;

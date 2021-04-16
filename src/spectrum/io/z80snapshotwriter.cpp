@@ -265,7 +265,7 @@ bool Z80SnapshotWriter::write128Plus2(std::ostream & out) const
         return false;
     }
 
-    const auto * memory = dynamic_cast<const Spectrum128KMemory *>(snapshot().memory());
+    const auto * memory = dynamic_cast<const Spectrum128kMemory *>(snapshot().memory());
     assert(memory);
 
     for (int bank = 0; bank < 8; ++bank) {

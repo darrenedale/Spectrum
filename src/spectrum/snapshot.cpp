@@ -216,7 +216,7 @@ std::ostream & Spectrum::operator<<(std::ostream & out, const Snapshot & snap)
             }
 
         } else {
-            auto * memory = dynamic_cast<const Spectrum128KMemory *>(snap.memory());
+            auto * memory = dynamic_cast<const Spectrum128kMemory *>(snap.memory());
 
             for (std::uint8_t page = 0; page < 8; ++page) {
                 out << "  Page " << std::dec << static_cast<std::uint16_t>(page) << " checksum: 0x" << std::setw(8)

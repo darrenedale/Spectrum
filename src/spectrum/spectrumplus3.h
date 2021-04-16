@@ -27,11 +27,16 @@ namespace Spectrum
         using SpectrumPlus2a::SpectrumPlus2a;
 
         /**
-         * Destructor;
+         * Destructor
          */
         ~SpectrumPlus3() override;
 
-        [[nodiscard]] inline Model model() const override
+        /**
+         * The model type.
+         *
+         * @return always Model::SpectrumPlus3.
+         */
+        [[nodiscard]] inline constexpr Model model() const override
         {
             return Model::SpectrumPlus3;
         }

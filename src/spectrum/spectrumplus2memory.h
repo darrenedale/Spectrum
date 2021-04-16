@@ -9,7 +9,7 @@
 
 namespace Spectrum
 {
-    using SpectrumPlus2Memory = Spectrum128KMemory;
+    using SpectrumPlus2Memory = Spectrum128kMemory;
 }
 
 #endif //SPECTRUM_SPECTRUMPLUS2MEMORY_H

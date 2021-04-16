@@ -20,7 +20,7 @@ namespace Spectrum
      * 0xcfff) if static, made up of banks 5 and 2 (in that order). The final 16K of RAM can use any of the 8 RAM banks,
      * including banks 2 and 5 (in which case the bank will appear both in the static section and the paged section).
      */
-    class Spectrum128KMemory
+    class Spectrum128kMemory
     : public Memory<BaseSpectrum::ByteType>
     {
     public:
@@ -39,12 +39,12 @@ namespace Spectrum
          */
         using BankNumber = MemoryBankNumber128k;
 
-        Spectrum128KMemory();
-        Spectrum128KMemory(const Spectrum128KMemory &) = delete;
-        Spectrum128KMemory(Spectrum128KMemory &&) = delete;
-        void operator=(const Spectrum128KMemory &) = delete;
-        void operator=(Spectrum128KMemory &&) = delete;
-        ~Spectrum128KMemory() override;
+        Spectrum128kMemory();
+        Spectrum128kMemory(const Spectrum128kMemory &) = delete;
+        Spectrum128kMemory(Spectrum128kMemory &&) = delete;
+        void operator=(const Spectrum128kMemory &) = delete;
+        void operator=(Spectrum128kMemory &&) = delete;
+        ~Spectrum128kMemory() override;
 
         /**
          * Clear the memory.

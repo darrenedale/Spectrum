@@ -52,6 +52,9 @@ namespace Spectrum
         void operator=(const Spectrum16k &) = delete;
         void operator=(Spectrum16k &&) = delete;
 
+        /**
+         * Destructor.
+         */
         ~Spectrum16k() override;
 
         /**
@@ -66,8 +69,12 @@ namespace Spectrum
             return Model::Spectrum16k;
         }
 
+        /**
+         * Take a snapshot of the Spectrum 16K.
+         *
+         * @return A Snapshot, or nullptr if the snapshot can't be taken.
+         */
         [[nodiscard]] std::unique_ptr<Snapshot> snapshot() const override;
-
 
         /**
          * Check whether a snapshot can be applied to a 16K Spectrum.

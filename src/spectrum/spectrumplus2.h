@@ -22,10 +22,22 @@ namespace Spectrum
     public:
         using MemoryType = SpectrumPlus2Memory;
 
+        /**
+         * Import the base class constructors.
+         */
         using Spectrum128k::Spectrum128k;
+
+        /**
+         * Destructor.
+         */
         ~SpectrumPlus2() override;
 
-        [[nodiscard]] inline Model model() const override
+        /**
+         * Report the SpectrumPlus2 model.
+         *
+         * @return Always Model::SpectrumPlus2.
+         */
+        [[nodiscard]] inline constexpr Model model() const override
         {
             return Model::SpectrumPlus2;
         }

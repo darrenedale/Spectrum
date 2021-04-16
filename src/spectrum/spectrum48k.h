@@ -48,14 +48,15 @@ namespace Spectrum
         void operator=(const Spectrum48k &) = delete;
         void operator=(Spectrum48k &&) = delete;
 
+        /**
+         * Destructor.
+         */
         ~Spectrum48k() override;
 
         /**
          * The Spectrum model type.
          *
-         * Always Model::Spectrum48k.
-         *
-         * @return
+         * @return Always Model::Spectrum48k.
          */
         [[nodiscard]] inline constexpr Model model() const override
         {

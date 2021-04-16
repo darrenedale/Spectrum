@@ -31,7 +31,7 @@ namespace Spectrum
     : public BaseSpectrum
     {
     public:
-        using MemoryType = Spectrum128KMemory;
+        using MemoryType = Spectrum128kMemory;
         using ScreenBuffer = ScreenBuffer128k;
 
         static constexpr const int DisplayMemorySize = 6912;
@@ -58,15 +58,18 @@ namespace Spectrum
         /**
          * The Spectrum model type.
          *
-         * Always Model::Spectrum128k.
-         *
-         * @return
+         * @return Always Model::Spectrum128k.
          */
         [[nodiscard]] inline constexpr Model model() const override
         {
             return Model::Spectrum128k;
         }
 
+        /**
+         * Take a snapshot of the Spectrum 128K state.
+         *
+         * @return A snapshot, or nullptr if the snapshot could not be taken.
+         */
         [[nodiscard]] std::unique_ptr<Snapshot> snapshot() const override;
 
         /**
@@ -182,9 +185,9 @@ namespace Spectrum
          *
          * @return
          */
-        [[nodiscard]] inline Spectrum128KMemory * memory128() const
+        [[nodiscard]] inline Spectrum128kMemory * memory128() const
         {
-            return dynamic_cast<Spectrum128KMemory *>(memory());
+            return dynamic_cast<Spectrum128kMemory *>(memory());
         }
 
     private:
