@@ -46,15 +46,24 @@ namespace Spectrum::Io
         using CompressedMemory = std::vector<::Z80::UnsignedByte>;
 
         /**
-         * Helper to construct the byte representing the last output to port 0x7ddf.
+         * Helper to construct the byte representing the last output to port 0x7ffd.
          *
-         * 0x7ddf is the port on which the memory paging for 128K models is controlled. The value of this byte
-         * represents the paging state of the snapshot. The state of the current snapshot will be encoded into the
-         * returned byte.
+         * 0x7ffd is the port on which the memory paging for 128K models is controlled. The value of this byte represents the paging state of the snapshot. The
+         * state of the current snapshot will be encoded into the returned byte.
          *
          * @return
          */
         [[nodiscard]] std::uint8_t lastOut0x7ffd() const;
+
+        /**
+         * Helper to construct the byte representing the last output to port 0x1ffd.
+         *
+         * 0x1ffd is the port on which the extended memory paging features of the +2a/+3 models are controlled. The value of this byte represents the extended
+         * paging state of the snapshot. The state of the current snapshot will be encoded into the returned byte.
+         *
+         * @return
+         */
+        [[nodiscard]] std::uint8_t lastOut0x1ffd() const;
 
         /**
          * Write the header for the current snapshot.

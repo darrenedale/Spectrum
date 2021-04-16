@@ -11,6 +11,7 @@
 #include "../spectrum128k.h"
 #include "../spectrumplus2.h"
 #include "../spectrumplus2a.h"
+#include "../spectrumplus3.h"
 
 using namespace Spectrum::Io;
 
@@ -263,6 +264,11 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
                         memory = std::make_unique<SpectrumPlus2a::MemoryType>();
                         break;
 
+                    case V2MachineType::SpectrumPlus3:
+                        snapshot = std::make_unique<Snapshot>(Model::SpectrumPlus3);
+                        memory = std::make_unique<SpectrumPlus3::MemoryType>();
+                        break;
+
                     default:
                         // no other spectrum models are currently supported
                         break;
@@ -306,6 +312,13 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
                         snapshot->pagedBankNumber = MemoryBankNumber128k::Bank0;
                         snapshot->romNumber = RomNumberPlus2a::Rom0;
                         memory = std::make_unique<SpectrumPlus2a::MemoryType>();
+                        break;
+
+                    case V3MachineType::SpectrumPlus3:
+                        snapshot = std::make_unique<Snapshot>(Model::SpectrumPlus3);
+                        snapshot->pagedBankNumber = MemoryBankNumber128k::Bank0;
+                        snapshot->romNumber = RomNumberPlus2a::Rom0;
+                        memory = std::make_unique<SpectrumPlus3::MemoryType>();
                         break;
 
                     default:
@@ -393,6 +406,7 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
             case Model::Spectrum128k:
             case Model::SpectrumPlus2:
             case Model::SpectrumPlus2a:
+            case Model::SpectrumPlus3:
                 snapshot->screenBuffer = (header.lastOut0x7ffd & ShadowDisplayFileFlag ? ScreenBuffer128k::Shadow : ScreenBuffer128k::Normal);
                 snapshot->pagedBankNumber = static_cast<MemoryBankNumber128k>(header.lastOut0x7ffd & PagedRamMask128k);
 
@@ -406,9 +420,22 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
                 if (Model::SpectrumPlus2a == snapshot->model()) {
                     // ROM number is made up of bit 4 in lastOut0x7ffd and bit 2 in lastOut0x1ffd
                     snapshot->romNumber = static_cast<RomNumberPlus2a>(
-                            ((header.lastOut0x1ffd & PagedRomMaskPlus2a) >> (PagedRomBitPlus2a -1 )) |  // high bit
+                            ((header.lastOut0x1ffd & PagedRomMaskPlus2a) >> (PagedRomBitPlus2a - 1)) |  // high bit
                             ((header.lastOut0x7ffd & PagedRomMask128k) >> PagedRomBit128k)              // low bit
+                    );
+                } else if (Model::SpectrumPlus3 == snapshot->model()) {
+                    if (header.lastOut0x1ffd & 0x01) {
+                        snapshot->pagingMode = PagingMode::Special;
+                        // paging config is in bits 1 and 2
+                        snapshot->specialPagingConfig = static_cast<SpecialPagingConfiguration>((header.lastOut0x1ffd & 0b00000110) >> 1);
+                    } else {
+                        snapshot->pagingMode = PagingMode::Normal;
+                        // ROM number is made up of bit 4 in lastOut0x7ffd and bit 2 in lastOut0x1ffd
+                        snapshot->romNumber = static_cast<RomNumberPlus2a>(
+                                ((header.lastOut0x1ffd & PagedRomMaskPlus2a) >> (PagedRomBitPlus2a - 1)) |  // high bit
+                                ((header.lastOut0x7ffd & PagedRomMask128k) >> PagedRomBit128k)              // low bit
                         );
+                    }
                 } else {
                     // ROM number is simply value of bit 4 = Rom0 or Rom1
                     snapshot->romNumber = static_cast<RomNumber128k>((header.lastOut0x7ffd & PagedRomMask128k)

@@ -169,7 +169,6 @@ bool Z80SnapshotWriter::writeHeader(std::ostream & out) const
         .fileFlags2 = static_cast<UnsignedByte>(snap.im),
         .extendedHeaderLength = 55,
         .pcV2 = hostToZ80ByteOrder(snap.registers().pc),
-        .machineType = MachineType::Spectrum128k,
         .lastOut0x7ffd = 0x00,      // if machine type is 128K Spectrum (128K, plus2/2a/3)
         .interface1RomPaged = 0x00, // 0xff if IF1 ROM is paged
         .fileFlags3 = 0b00000011,   // bit 0 = R reg emulation on, bit 1 = LDIR emulation on (other bits not relevant)
@@ -208,10 +207,13 @@ bool Z80SnapshotWriter::writeHeader(std::ostream & out) const
         case Model::SpectrumPlus2a:
             header.machineType = MachineType::SpectrumPlus2A;
             header.lastOut0x7ffd = lastOut0x7ffd();
-            // TODO support special paging in snapshots
-            // for now, special paging is never in use so all we need to store in this flag is the bit that represents
-            // the high bit of the ROM number
-            header.lastOut0x1ffd = (static_cast<UnsignedByte>(std::get<RomNumberPlus2a>(snap.romNumber)) & 0b00000010) << 1;
+            header.lastOut0x1ffd = lastOut0x1ffd();
+            break;
+
+        case Model::SpectrumPlus3:
+            header.machineType = MachineType::SpectrumPlus3;
+            header.lastOut0x7ffd = lastOut0x7ffd();
+            header.lastOut0x1ffd = lastOut0x1ffd();
             break;
     }
 
@@ -305,10 +307,34 @@ bool Z80SnapshotWriter::writePlus2aPlus3(std::ostream & out) const
 std::uint8_t Z80SnapshotWriter::lastOut0x7ffd() const
 {
     const auto & snap = snapshot();
-    return (static_cast<std::uint8_t>(snap.pagedBankNumber) & 0b00000111) |             // paged bank in bits 0-2
-        (snap.screenBuffer == ScreenBuffer128k::Shadow ? 0b00001000 : 0) |              // shadow buffer flag in bit 3
-        (static_cast<std::uint8_t>(std::get<RomNumber128k>(snap.romNumber)) << 4) |     // rom number in bit 4
-        (!snap.pagingEnabled ? 0b00100000 : 0);                                         // paging disabled flag in bit 5
+
+    // we know that all possible values for the variant can be cast to int types
+    const auto romNumber = std::visit([](auto && romNumber) -> UnsignedByte {
+        return static_cast<UnsignedByte>(romNumber);
+    }, snap.romNumber);
+
+    return (static_cast<std::uint8_t>(snap.pagedBankNumber) & 0b00000111) |     // paged bank in bits 0-2
+        (snap.screenBuffer == ScreenBuffer128k::Shadow ? 0b00001000 : 0) |      // shadow buffer flag in bit 3
+        ((romNumber & 0x01) << 4) |                                             // rom number (or low bit thereof) in bit 4
+        (!snap.pagingEnabled ? 0b00100000 : 0);                                 // paging disabled flag in bit 5
+}
+
+std::uint8_t Z80SnapshotWriter::lastOut0x1ffd() const
+{
+    const auto & snap = snapshot();
+
+    if (PagingMode::Special == snap.pagingMode) {
+        // bits 1 and 2 contain the special paging config
+        return 0x01 | (static_cast<UnsignedByte>(snap.specialPagingConfig) << 1);
+    }
+
+    // we know that all possible values for the variant can be cast to int types
+    const auto romNumber = std::visit([](auto && romNumber) -> UnsignedByte {
+        return static_cast<UnsignedByte>(romNumber);
+    }, snap.romNumber);
+
+    // for normal paging all we need to store in this flag is the bit that represents the high bit of the ROM number
+    return (romNumber & 0x02) << 1;
 }
 
 std::vector<::Z80::UnsignedByte> Z80SnapshotWriter::compressMemory(const ::Z80::UnsignedByte * memory, std::uint32_t size)
