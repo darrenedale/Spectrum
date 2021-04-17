@@ -8,7 +8,6 @@
 #include <QLabel>
 #include <QFileDialog>
 #include <QToolBar>
-#include <QToolButton>
 #include <QUuid>
 #include <QRegularExpression>
 #include <QVariant>
@@ -18,6 +17,7 @@
 #include "application.h"
 #include "threadpauser.h"
 #include "../io/pokfilereader.h"
+#include "../../util/debug.h"
 
 using namespace Spectrum::QtUi;
 using namespace Spectrum::Io;
@@ -167,21 +167,21 @@ void PokesWidget::addPokeWidget(const QString & name, const QString & uuid)
 void PokesWidget::removePoke(int idx)
 {
     if (0 > idx || pokeCount() <= idx) {
-        std::cerr << "index " << idx << " out of bounds.\n";
+        Util::debug << "index " << idx << " out of bounds.\n";
         return;
     }
 
     auto * item = m_layout.itemAt(idx);
 
     if (!item->widget()) {
-        std::cerr << "item at index " << idx << " is not a widget.\n";
+        Util::debug << "item at index " << idx << " is not a widget.\n";
         return;
     }
 
     auto uuid = item->widget()->property(UuidPropertyName).toString();
 
     if (uuid.isEmpty()) {
-        std::cerr << "item at index " << idx << " has an empty UUID.\n";
+        Util::debug << "item at index " << idx << " has an empty UUID.\n";
         return;
     }
 
@@ -262,7 +262,7 @@ void PokesWidget::undoPokeTriggered(const QString & uuid)
     auto stdUuid = uuid.toStdString();
 
     if (!m_pokes.contains(stdUuid)) {
-        std::cerr << "Poke with UUID " << stdUuid << " not found\n";
+        Util::debug << "Poke with UUID " << stdUuid << " not found\n";
         return;
     }
 
@@ -280,7 +280,7 @@ void PokesWidget::applyPokeTriggered(const QString & uuid)
     auto stdUuid = uuid.toStdString();
 
     if (!m_pokes.contains(stdUuid)) {
-        std::cerr << "Poke with UUID " << stdUuid << " not found\n";
+        Util::debug << "Poke with UUID " << stdUuid << " not found\n";
         return;
     }
 
