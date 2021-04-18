@@ -2,13 +2,10 @@
 // Created by darren on 23/03/2021.
 //
 
-#include <iostream>
-#include <iomanip>
-
 #include <QHBoxLayout>
 #include <QLabel>
-
 #include "interruptwidget.h"
+#include "../../util/debug.h"
 
 using namespace Spectrum::QtUi;
 
@@ -98,7 +95,7 @@ void InterruptWidget::setRegister(Register8 reg, UnsignedByte value)
             break;
 
         default:
-            std::cerr << "Only registers I and R are present in this widget.\n";
+            Util::debug << "Only registers I and R are present in this widget.\n";
             break;
     }
 }
@@ -113,7 +110,7 @@ UnsignedByte InterruptWidget::registerValue(Register8 reg)
             return m_r.value();
 
         default:
-            std::cerr << "Only registers I and Y are present in this widget.\n";
+            Util::debug << "Only registers I and R are present in this widget.\n";
             return 0;
     }
 }

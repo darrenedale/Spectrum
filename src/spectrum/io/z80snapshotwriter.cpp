@@ -6,6 +6,7 @@
 #include "z80snapshotwriter.h"
 #include "../spectrum128kmemory.h"
 #include "../spectrumplus2amemory.h"
+#include "../../util/debug.h"
 
 using namespace Spectrum::Io;
 using ::Z80::UnsignedWord;
@@ -224,7 +225,7 @@ bool Z80SnapshotWriter::writeHeader(std::ostream & out) const
 bool Z80SnapshotWriter::write48k(std::ostream & out) const
 {
     if (!writeHeader(out)) {
-        std::cerr << "failed writing .z80 header\n";
+        Util::debug << "failed writing .z80 header\n";
         return false;
     }
 
@@ -232,7 +233,7 @@ bool Z80SnapshotWriter::write48k(std::ostream & out) const
         !writeMemoryPage(out, snapshot().memory()->pointerTo(0xc000), MemoryBankNumber128k::Bank2) ||
         !writeMemoryPage(out, snapshot().memory()->pointerTo(0x4000), MemoryBankNumber128k::Bank5)
     ) {
-        std::cerr << "failed writing memory to .z80 file\n";
+        Util::debug << "failed writing memory to .z80 file\n";
         return false;
     }
 
@@ -242,7 +243,7 @@ bool Z80SnapshotWriter::write48k(std::ostream & out) const
 bool Z80SnapshotWriter::write16k(std::ostream & out) const
 {
     if (!writeHeader(out)) {
-        std::cerr << "failed writing .z80 header\n";
+        Util::debug << "failed writing .z80 header\n";
         return false;
     }
 
@@ -253,7 +254,7 @@ bool Z80SnapshotWriter::write16k(std::ostream & out) const
         !writeMemoryPage(out, emptyPage.data(), MemoryBankNumber128k::Bank1) ||
         !writeMemoryPage(out, emptyPage.data(), MemoryBankNumber128k::Bank2)
     ) {
-        std::cerr << "failed writing memory to .z80 file\n";
+        Util::debug << "failed writing memory to .z80 file\n";
         return false;
     }
 
@@ -263,7 +264,7 @@ bool Z80SnapshotWriter::write16k(std::ostream & out) const
 bool Z80SnapshotWriter::write128Plus2(std::ostream & out) const
 {
     if (!writeHeader(out)) {
-        std::cerr << "failed writing .z80 header\n";
+        Util::debug << "failed writing .z80 header\n";
         return false;
     }
 
@@ -274,7 +275,7 @@ bool Z80SnapshotWriter::write128Plus2(std::ostream & out) const
         auto bankNumber = static_cast<MemoryBankNumber128k>(bank);
 
         if (!writeMemoryPage(out, memory->bankPointer(bankNumber), bankNumber)) {
-            std::cerr << "failed writing memory page #" << bank << " to .z80 file\n";
+            Util::debug << "failed writing memory page #" << bank << " to .z80 file\n";
             return false;
         }
     }
@@ -285,7 +286,7 @@ bool Z80SnapshotWriter::write128Plus2(std::ostream & out) const
 bool Z80SnapshotWriter::writePlus2aPlus3(std::ostream & out) const
 {
     if (!writeHeader(out)) {
-        std::cerr << "failed writing .z80 header\n";
+        Util::debug << "failed writing .z80 header\n";
         return false;
     }
 
@@ -296,7 +297,7 @@ bool Z80SnapshotWriter::writePlus2aPlus3(std::ostream & out) const
         auto bankNumber = static_cast<MemoryBankNumber128k>(bank);
 
         if (!writeMemoryPage(out, memory->bankPointer(bankNumber), bankNumber)) {
-            std::cerr << "failed writing memory page #" << bank << " to .z80 file\n";
+            Util::debug << "failed writing memory page #" << bank << " to .z80 file\n";
             return false;
         }
     }

@@ -8,6 +8,7 @@
 #include "zx82snapshotreader.h"
 #include "../spectrum48k.h"
 #include "../../util/endian.h"
+#include "../../util/debug.h"
 
 using namespace Spectrum::Io;
 using ::Z80::UnsignedByte;
@@ -101,7 +102,7 @@ namespace
 const Spectrum::Snapshot * ZX82SnapshotReader::read() const
 {
     if (!isOpen()) {
-        std::cerr << "Input stream is not open.\n";
+        Util::debug << "Input stream is not open.\n";
         return nullptr;
     }
 
@@ -110,23 +111,23 @@ const Spectrum::Snapshot * ZX82SnapshotReader::read() const
     in.read(reinterpret_cast<std::istream::char_type *>(&header), sizeof(SnapshotHeader));
 
     if (in.gcount() != sizeof(SnapshotHeader)) {
-        std::cerr << "The stream is not a valid ZX82 stream: failed to read complete header.\n";
+        Util::debug << "The stream is not a valid ZX82 stream: failed to read complete header.\n";
         return nullptr;
     }
 
     if (header.identifier != Identifier) {
-        std::cerr << "The stream is not a valid ZX82 stream: incorrect file signature.\n";
+        Util::debug << "The stream is not a valid ZX82 stream: incorrect file signature.\n";
         return nullptr;
     }
     
     if (header.type != Type::Snapshot) {
-        std::cerr << "The stream is not a ZX82 snapshot: type is 0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(header.type)
+        Util::debug << "The stream is not a ZX82 snapshot: type is 0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(header.type)
           << std::dec << std::setfill(' ') << ".\n";
         return nullptr;
     }
 
     if (header.compressionType != CompressionType::None && header.compressionType != CompressionType::RunLength) {
-        std::cerr << "The stream contains an invalid compression type identifier (0x"
+        Util::debug << "The stream contains an invalid compression type identifier (0x"
             << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(header.compressionType)
             << std::dec << std::setfill(' ') << ").\n";
         return nullptr;
@@ -182,19 +183,19 @@ const Spectrum::Snapshot * ZX82SnapshotReader::read() const
         in.read(reinterpret_cast<std::istream::char_type *>(buffer.data()), buffer.size());
 
         if (in.fail() && !in.eof()) {
-            std::cerr << "Error reading RAM image from stream\n";
+            Util::debug << "Error reading RAM image from stream\n";
             return nullptr;
         }
 
         if (!decompress(memory->pointerTo(0) + MemoryImageOffset, buffer.data(), in.gcount())) {
-            std::cerr << "Error decompressing RAM image\n";
+            Util::debug << "Error decompressing RAM image\n";
             return nullptr;
         }
     } else {
         in.read(reinterpret_cast<std::istream::char_type *>(memory->pointerTo(0) + MemoryImageOffset), 49152);
 
         if (in.fail() && !in.eof()) {
-            std::cerr << "Error reading RAM image from stream\n";
+            Util::debug << "Error reading RAM image from stream\n";
             return nullptr;
         }
     }
@@ -222,12 +223,12 @@ bool ZX82SnapshotReader::decompress(UnsignedByte * dest, UnsignedByte * source, 
             len = (~len) + 2;
 
             if (source >= sourceEnd) {
-                std::cerr << "invalid compressed image: reading the source byte to replicate " << static_cast<std::uint16_t>(len) << " times would overflow buffer\n";
+                Util::debug << "invalid compressed image: reading the source byte to replicate " << static_cast<std::uint16_t>(len) << " times would overflow buffer\n";
                 return false;
             }
 
             if (dest + len > destEnd) {
-                std::cerr << "invalid compressed data: decompressing " << static_cast<std::uint16_t>(len) << " bytes would overflow 48K RAM\n";
+                Util::debug << "invalid compressed data: decompressing " << static_cast<std::uint16_t>(len) << " bytes would overflow 48K RAM\n";
                 return false;
             }
 
@@ -242,12 +243,12 @@ bool ZX82SnapshotReader::decompress(UnsignedByte * dest, UnsignedByte * source, 
             len += 1;
 
             if (source + len > sourceEnd) {
-                std::cerr << "invalid compressed image: reading " << static_cast<std::uint16_t>(len) << " source bytes would overflow buffer\n";
+                Util::debug << "invalid compressed image: reading " << static_cast<std::uint16_t>(len) << " source bytes would overflow buffer\n";
                 return false;
             }
 
             if (dest + len > destEnd) {
-                std::cerr << "invalid compressed data: decompressing " << static_cast<std::uint16_t>(len) << " bytes would overflow 48K RAM\n";
+                Util::debug << "invalid compressed data: decompressing " << static_cast<std::uint16_t>(len) << " bytes would overflow 48K RAM\n";
                 return false;
             }
 

@@ -3,6 +3,7 @@
 //
 
 #include "snasnapshotwriter.h"
+#include "../../util/debug.h"
 
 using namespace Spectrum::Io;
 
@@ -40,12 +41,12 @@ bool SnaSnapshotWriter::writeTo(std::ostream & out) const
     auto * memory = snap.memory();
 
     if (!memory) {
-        std::cerr << "Snapshot is incomplete (no memory)\n";
+        Util::debug << "Snapshot is incomplete (no memory)\n";
         return false;
     }
 
     if (Model::Spectrum48k != snap.model()) {
-        std::cerr << "Only Spectrum 48k snapshots are currently supported by the SNA file writer\n";
+        Util::debug << "Only Spectrum 48k snapshots are currently supported by the SNA file writer\n";
         return false;
     }
 
@@ -72,7 +73,7 @@ bool SnaSnapshotWriter::writeTo(std::ostream & out) const
     out.write(reinterpret_cast<std::ostream::char_type *>(&header), sizeof(Header));
     
     if (out.bad()) {
-        std::cerr << "error writing .sna header\n";
+        Util::debug << "error writing .sna header\n";
         return false;
     }
 

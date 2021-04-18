@@ -6,6 +6,7 @@
 #include <iomanip>
 #include "kempstonmouse.h"
 #include "../z80/types.h"
+#include "../util/debug.h"
 
 using namespace Spectrum;
 using ::Z80::UnsignedWord;
@@ -45,7 +46,7 @@ bool KempstonMouse::checkReadPort(UnsignedWord port) const
     if (ButtonsReadPort == port
         || XReadPort == port
         || YReadPort == port) {
-        std::cout << "kempston mouse responds to port " << port << '\n';
+        Util::debug << "kempston mouse responds to port " << port << '\n';
     }
 #endif
     return ButtonsReadPort == port
@@ -63,20 +64,20 @@ UnsignedByte KempstonMouse::readByte(UnsignedWord port)
     if (ButtonsReadPort == (port /*& ButtonsReadPortMask*/)) {
         if (button1Pressed()) {
 #if (!defined(NDEBUG))
-            std::cout << "reporting mouse button 1 pressed\n";
+            Util::debug << "reporting mouse button 1 pressed\n";
 #endif
             ret ^= (1 << LeftButtonBit);
         }
 
         if (button2Pressed()) {
 #if (!defined(NDEBUG))
-            std::cout << "reporting mouse button 2 pressed\n";
+            Util::debug << "reporting mouse button 2 pressed\n";
 #endif
             ret ^= (1 << RightButtonBit);
         }
 
 #if (!defined(NDEBUG))
-            std::cout << "buttons: " << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(ret) << std::dec << std::setfill(' ') << '\n';
+        Util::debug << "buttons: " << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(ret) << std::dec << std::setfill(' ') << '\n';
 #endif
 
 //        if (button3Pressed()) {
@@ -85,13 +86,13 @@ UnsignedByte KempstonMouse::readByte(UnsignedWord port)
     } else if (XReadPort == (port /*& XReadPortMask*/)) {
         ret = static_cast<std::uint8_t>(x());
 #if (!defined(NDEBUG))
-            std::cout << "x: " << static_cast<std::uint16_t>(ret) << '\n';
+        Util::debug << "x: " << static_cast<std::uint16_t>(ret) << '\n';
 #endif
     } else if (YReadPort == (port /*& YReadPortMask*/)) {
         // TODO bound to 0-192?
         ret = static_cast<std::uint8_t>(y());
 #if (!defined(NDEBUG))
-            std::cout << "y: " << static_cast<std::uint16_t>(ret) << '\n';
+        Util::debug << "y: " << static_cast<std::uint16_t>(ret) << '\n';
 #endif
     }
 

@@ -6,8 +6,8 @@
 #include <iomanip>
 #include <QHBoxLayout>
 #include <QLabel>
-
 #include "programpointerswidget.h"
+#include "../../util/debug.h"
 
 
 using namespace Spectrum::QtUi;
@@ -84,7 +84,7 @@ void ProgramPointersWidget::setRegister(Register16 reg, UnsignedWord value)
             break;
 
         default:
-            std::cerr << "Only registers PC and SP are present in this widget.\n";
+            Util::debug << "Only registers PC and SP are present in this widget.\n";
             break;
     }
 }
@@ -99,7 +99,7 @@ UnsignedWord ProgramPointersWidget::registerValue(Register16 reg) const
             return m_pc.value();
 
         default:
-            std::cerr << "Only registers PC and SP are present in this widget.\n";
+            Util::debug << "Only registers PC and SP are present in this widget.\n";
             return 0;
     }
 }

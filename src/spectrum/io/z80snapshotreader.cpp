@@ -2,16 +2,15 @@
 // Created by darren on 22/03/2021.
 //
 
-#include <iostream>
 #include <iterator>
 #include <cstring>
-
 #include "z80snapshotreader.h"
 #include "../spectrum48k.h"
 #include "../spectrum128k.h"
 #include "../spectrumplus2.h"
 #include "../spectrumplus2a.h"
 #include "../spectrumplus3.h"
+#include "../../util/debug.h"
 
 using namespace Spectrum::Io;
 
@@ -222,7 +221,7 @@ namespace
 const Spectrum::Snapshot * Z80SnapshotReader::read() const
 {
     if (!isOpen()) {
-        std::cerr << "Input stream is not open.\n";
+        Util::debug << "Input stream is not open.\n";
         return nullptr;
     }
 
@@ -328,7 +327,7 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
                 break;
 
             default:
-                std::cerr << "The version (" << static_cast<uint32_t>(format) << ") of the stream content is not recognised.\n";
+                Util::debug << "The version (" << static_cast<uint32_t>(format) << ") of the stream content is not recognised.\n";
                 return nullptr;
         }
     } else {
@@ -337,7 +336,7 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
     }
 
     if (!snapshot) {
-        std::cerr << "The stream is for a Spectrum model not currently supported.\n";
+        Util::debug << "The stream is for a Spectrum model not currently supported.\n";
         return nullptr;
     }
 
@@ -374,7 +373,7 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
             in.read(reinterpret_cast<std::istream::char_type *>(buffer), 0xffff);
 
             if (in.fail() && !in.eof()) {
-                std::cerr << "Failed reading compressed memory image\n";
+                Util::debug << "Failed reading compressed memory image\n";
                 return nullptr;
             }
 
@@ -382,7 +381,7 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
             auto size = compressedSize(buffer, in.gcount());
 
             if (!size) {
-                std::cerr << "failed to find end of memory image marker in stream\n";
+                Util::debug << "failed to find end of memory image marker in stream\n";
                 return nullptr;
             }
 
@@ -392,7 +391,7 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
             in.read(reinterpret_cast<std::istream::char_type *>(memory->pointerTo(0) + MemoryImageOffset), (0x10000 - MemoryImageOffset));
 
             if (in.fail() && !in.eof()) {
-                std::cerr << "Error reading memory image\n";
+                Util::debug << "Error reading memory image\n";
                 return nullptr;
             }
         }
@@ -453,7 +452,7 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
             }
 
             if (in.fail()) {
-                std::cerr << "failed to read from stream at " << in.tellg() << " (expecting memory page)\n";
+                Util::debug << "failed to read from stream at " << in.tellg() << " (expecting memory page)\n";
                 return nullptr;
             }
 
@@ -517,7 +516,7 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
                 in.read(reinterpret_cast<std::istream::char_type *>(buffer.data()), size);
 
                 if (size != in.gcount()) {
-                    std::cerr << "truncated read (expected " << size << " read " << in.gcount() << ") for bank #" << static_cast<std::uint16_t>(page) << '\n';
+                    Util::debug << "truncated read (expected " << size << " read " << in.gcount() << ") for bank #" << static_cast<std::uint16_t>(page) << '\n';
                     return nullptr;
                 }
 

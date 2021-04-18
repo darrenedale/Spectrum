@@ -2,12 +2,11 @@
 // Created by darren on 22/03/2021.
 //
 
-#include <iostream>
 #include <cstring>
 #include <bit>
-
 #include "zxsnapshotreader.h"
 #include "../spectrum48k.h"
+#include "../../util/debug.h"
 #include "../../util/endian.h"
 
 using namespace Spectrum::Io;
@@ -106,7 +105,7 @@ namespace
 const Snapshot * ZXSnapshotReader::read() const
 {
     if (!isOpen()) {
-        std::cerr << "Input stream is not open.\n";
+        Util::debug << "Input stream is not open.\n";
         return nullptr;
     }
 
@@ -116,7 +115,7 @@ const Snapshot * ZXSnapshotReader::read() const
     in.read(reinterpret_cast<std::istream::char_type *>(&content), sizeof(ZXFileContent));
 
     if (in.fail() || sizeof(ZXFileContent) != in.gcount()) {
-        std::cerr << "Failed to read from input stream.\n";
+        Util::debug << "Failed to read from input stream.\n";
         return nullptr;
     }
 
@@ -177,7 +176,7 @@ const Snapshot * ZXSnapshotReader::read() const
             break;
 
         default:
-            std::cerr << "Invalid interrupt mode in .ZX input stream.\n";
+            Util::debug << "Invalid interrupt mode in .ZX input stream.\n";
             return nullptr;
     }
 
