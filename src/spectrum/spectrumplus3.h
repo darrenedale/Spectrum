@@ -6,7 +6,7 @@
 #define SPECTRUM_SPECTRUMPLUS3_H
 
 #include "spectrumplus2a.h"
-#include "spectrumplus3memory.h"
+#include "memoryplus3.h"
 
 namespace Spectrum
 {
@@ -19,7 +19,7 @@ namespace Spectrum
     : public SpectrumPlus2a
     {
     public:
-        using MemoryType = SpectrumPlus3Memory;
+        using MemoryType = MemoryPlus3;
 
         /**
          * Import base class constructors.

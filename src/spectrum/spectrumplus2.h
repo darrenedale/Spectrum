@@ -6,7 +6,7 @@
 #define SPECTRUM_SPECTRUMPLUS2_H
 
 #include "spectrum128k.h"
-#include "spectrumplus2memory.h"
+#include "memoryplus2.h"
 
 namespace Spectrum
 {
@@ -20,7 +20,7 @@ namespace Spectrum
     : public Spectrum128k
     {
     public:
-        using MemoryType = SpectrumPlus2Memory;
+        using MemoryType = MemoryPlus2;
 
         /**
          * Import the base class constructors.

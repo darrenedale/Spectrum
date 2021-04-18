@@ -2,8 +2,8 @@
 // Created by darren on 06/04/2021.
 //
 
-#ifndef SPECTRUM_SPECTRUM128KPAGINGDEVICE_H
-#define SPECTRUM_SPECTRUM128KPAGINGDEVICE_H
+#ifndef SPECTRUM_PAGINGDEVICE128K_H
+#define SPECTRUM_PAGINGDEVICE128K_H
 
 #include "../z80/iodevice.h"
 #include "../z80/types.h"
@@ -15,7 +15,7 @@ namespace Spectrum
     /**
      * Z80 IO device to handle ROM and RAM paging for the Spectrum 128k.
      */
-    class Spectrum128KPagingDevice
+    class PagingDevice128k
     : public ::Z80::IODevice
     {
     public:
@@ -26,12 +26,12 @@ namespace Spectrum
          *
          * @param owner
          */
-        explicit Spectrum128KPagingDevice(Spectrum128k & owner)
+        explicit PagingDevice128k(Spectrum128k & owner)
         : m_pagingEnabled(true),
           m_spectrum(owner)
         {}
 
-        ~Spectrum128KPagingDevice() override;
+        ~PagingDevice128k() override;
         
         /**
          * Check whether the paging device provides data on a specified IO port.
@@ -154,4 +154,4 @@ namespace Spectrum
     };
 }
 
-#endif //SPECTRUM_SPECTRUM128KPAGINGDEVICE_H
+#endif //SPECTRUM_PAGINGDEVICE128K_H

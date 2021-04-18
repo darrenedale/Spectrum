@@ -6,8 +6,8 @@
 #define SPECTRUM_SPECTRUM128K_H
 
 #include "basespectrum.h"
-#include "spectrum128kmemory.h"
-#include "spectrum128kpagingdevice.h"
+#include "memory128k.h"
+#include "pagingdevice128k.h"
 
 namespace Spectrum
 {
@@ -31,7 +31,7 @@ namespace Spectrum
     : public BaseSpectrum
     {
     public:
-        using MemoryType = Spectrum128kMemory;
+        using MemoryType = Memory128k;
         using ScreenBuffer = ScreenBuffer128k;
 
         static constexpr const int DisplayMemorySize = 6912;
@@ -144,7 +144,7 @@ namespace Spectrum
          *
          * @return A pointer to the Spectrum128KPagingDevice.
          */
-        [[nodiscard]] inline const Spectrum128KPagingDevice * pager() const
+        [[nodiscard]] inline const PagingDevice128k * pager() const
         {
             return &m_pager;
         }
@@ -157,7 +157,7 @@ namespace Spectrum
          *
          * @return A pointer to the Spectrum128KPagingDevice.
          */
-        [[nodiscard]] inline Spectrum128KPagingDevice * pager()
+        [[nodiscard]] inline PagingDevice128k * pager()
         {
             return &m_pager;
         }
@@ -185,16 +185,16 @@ namespace Spectrum
          *
          * @return
          */
-        [[nodiscard]] inline Spectrum128kMemory * memory128() const
+        [[nodiscard]] inline Memory128k * memory128() const
         {
-            return dynamic_cast<Spectrum128kMemory *>(memory());
+            return dynamic_cast<Memory128k *>(memory());
         }
 
     private:
         /**
          * The device instance to handle memory paging.
          */
-        Spectrum128KPagingDevice m_pager;
+        PagingDevice128k m_pager;
 
         /**
          * The current screen buffer.

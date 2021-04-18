@@ -3,8 +3,8 @@
 //
 
 #include "spectrumplus2a.h"
-#include "spectrumplus2apagingdevice.h"
-#include "spectrumplus2amemory.h"
+#include "pagingdeviceplus2a.h"
+#include "memoryplus2a.h"
 
 #if (!defined(NDEBUG))
 #include <iostream>
@@ -55,9 +55,9 @@ namespace
     constexpr const UnsignedByte SpecialPagingConfigurationShift = 1;
 }
 
-SpectrumPlus2aPagingDevice::~SpectrumPlus2aPagingDevice() = default;
+PagingDevicePlus2a::~PagingDevicePlus2a() = default;
 
-void SpectrumPlus2aPagingDevice::writeByte(UnsignedWord port, UnsignedByte value)
+void PagingDevicePlus2a::writeByte(UnsignedWord port, UnsignedByte value)
 {
     if (!pagingEnabled()) {
         return;
@@ -70,20 +70,18 @@ void SpectrumPlus2aPagingDevice::writeByte(UnsignedWord port, UnsignedByte value
     }
 }
 
-void SpectrumPlus2aPagingDevice::writePort7ffd(::Z80::UnsignedByte value)
+void PagingDevicePlus2a::writePort7ffd(::Z80::UnsignedByte value)
 {
-    auto * memory = dynamic_cast<SpectrumPlus2aMemory *>(spectrum().memory());
+    auto * memory = dynamic_cast<MemoryPlus2a *>(spectrum().memory());
     assert(memory);
 
     // ram bank to page is in bits 0-2
-    auto ramBank = static_cast<SpectrumPlus2aMemory::BankNumber>(value & RamBankMask);
-    memory->pageBank(ramBank);
+//    auto ramBank = static_cast<SpectrumPlus2aMemory::BankNumber>(value & RamBankMask);
+    memory->pageRam(value & RamBankMask);
 
     // rom number low bit is in bit 4; high bit is retained from current ROM
-    auto rom = static_cast<SpectrumPlus2aMemory::RomNumber>(
-            ((value & RomNumberLowMask) >> RomNumberLowBit)
-            | (static_cast<std::uint8_t>(memory->currentRom()) & 0x02)
-        );
+    auto rom = ((value & RomNumberLowMask) >> RomNumberLowBit)
+            | (static_cast<std::uint8_t>(memory->currentRom()) & 0x02);
     memory->pageRom(rom);
 
     auto screenBuffer = (value & ScreenBufferMask) ? SpectrumPlus2a::ScreenBuffer::Shadow : SpectrumPlus2a::ScreenBuffer::Normal;
@@ -94,9 +92,9 @@ void SpectrumPlus2aPagingDevice::writePort7ffd(::Z80::UnsignedByte value)
     }
 }
 
-void SpectrumPlus2aPagingDevice::writePort1ffd(::Z80::UnsignedByte value)
+void PagingDevicePlus2a::writePort1ffd(::Z80::UnsignedByte value)
 {
-    auto * memory = dynamic_cast<SpectrumPlus2aMemory *>(spectrum().memory());
+    auto * memory = dynamic_cast<MemoryPlus2a *>(spectrum().memory());
     assert(memory);
 
     auto pagingMode = (value & PagingModeMask ? PagingMode::Special : PagingMode::Normal);
@@ -107,7 +105,7 @@ void SpectrumPlus2aPagingDevice::writePort1ffd(::Z80::UnsignedByte value)
         memory->setSpecialPagingConfiguration(static_cast<SpecialPagingConfiguration>((value & SpecialPagingConfigurationMask) >> SpecialPagingConfigurationShift));
     } else {
         // rom number high bit is in bit 2; low bit is retained from current ROM
-        auto rom = static_cast<SpectrumPlus2aMemory::RomNumber>(
+        auto rom = static_cast<MemoryPlus2a::RomNumber>(
                 ((value & RomNumberHighMask) >> (RomNumberHighBit - 1))
                 | (static_cast<std::uint8_t>(memory->currentRom()) & 0x01)
             );

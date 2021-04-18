@@ -8,8 +8,6 @@
 using Spectrum::Model;
 using Spectrum::Colour;
 using Spectrum::ScreenBuffer128k;
-using Spectrum::RomNumber128k;
-using Spectrum::RomNumberPlus2a;
 using Spectrum::SpecialPagingConfiguration;
 using Spectrum::PagingMode;
 
@@ -36,42 +34,6 @@ std::string std::to_string(Model model)
     }
 
     // unreachable code
-    assert(false);
-}
-
-std::string std::to_string(RomNumber128k rom)
-{
-    switch (rom) {
-        case RomNumber128k::Rom0:
-            return "ROM 0"s;
-
-        case RomNumber128k::Rom1:
-            return "ROM 1"s;
-    }
-
-    // unreachable code - someone has added a ROM and hasn't updated the function or has type punned an invalid value to
-    // a ROM
-    assert(false);
-}
-
-std::string std::to_string(RomNumberPlus2a rom)
-{
-    switch (rom) {
-        case RomNumberPlus2a::Rom0:
-            return "ROM 0"s;
-
-        case RomNumberPlus2a::Rom1:
-            return "ROM 1"s;
-
-        case RomNumberPlus2a::Rom2:
-            return "ROM 2"s;
-
-        case RomNumberPlus2a::Rom3:
-            return "ROM 3"s;
-    }
-
-    // unreachable code - someone has added a ROM and hasn't updated the function or has type punned an invalid value to
-    // a ROM
     assert(false);
 }
 
@@ -168,18 +130,6 @@ std::ostream & Spectrum::operator<<(std::ostream & out, Spectrum::Colour colour)
 std::ostream & Spectrum::operator<<(std::ostream & out, Spectrum::Model model)
 {
     out << std::to_string(model);
-    return out;
-}
-
-std::ostream & Spectrum::operator<<(std::ostream & out, Spectrum::RomNumber128k rom)
-{
-    out << std::to_string(rom);
-    return out;
-}
-
-std::ostream & Spectrum::operator<<(std::ostream & out, Spectrum::RomNumberPlus2a rom)
-{
-    out << std::to_string(rom);
     return out;
 }
 

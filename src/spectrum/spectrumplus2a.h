@@ -6,8 +6,8 @@
 #define SPECTRUM_SPECTRUMPLUS2A_H
 
 #include "basespectrum.h"
-#include "spectrumplus2amemory.h"
-#include "spectrumplus2apagingdevice.h"
+#include "memoryplus2a.h"
+#include "pagingdeviceplus2a.h"
 
 namespace Spectrum
 {
@@ -31,7 +31,7 @@ namespace Spectrum
     : public BaseSpectrum
     {
     public:
-        using MemoryType = SpectrumPlus2aMemory;
+        using MemoryType = MemoryPlus2a;
         using ScreenBuffer = ScreenBuffer128k;
 
         static constexpr const int DisplayMemorySize = 6912;
@@ -150,7 +150,7 @@ namespace Spectrum
          *
          * @return A pointer to the SpectrumPlus2aPagingDevice.
          */
-        [[nodiscard]] inline const SpectrumPlus2aPagingDevice * pager() const
+        [[nodiscard]] inline const PagingDevicePlus2a * pager() const
         {
             return &m_pager;
         }
@@ -163,7 +163,7 @@ namespace Spectrum
          *
          * @return A pointer to the SpectrumPlus2aPagingDevice.
          */
-        [[nodiscard]] inline SpectrumPlus2aPagingDevice * pager()
+        [[nodiscard]] inline PagingDevicePlus2a * pager()
         {
             return &m_pager;
         }
@@ -191,16 +191,16 @@ namespace Spectrum
          *
          * @return
          */
-        [[nodiscard]] inline SpectrumPlus2aMemory * memoryPlus2a() const
+        [[nodiscard]] inline MemoryPlus2a * memoryPlus2a() const
         {
-            return dynamic_cast<SpectrumPlus2aMemory *>(memory());
+            return dynamic_cast<MemoryPlus2a *>(memory());
         }
 
     private:
         /**
          * The device instance to handle memory paging.
          */
-        SpectrumPlus2aPagingDevice m_pager;
+        PagingDevicePlus2a m_pager;
 
         /**
          * The current screen buffer.

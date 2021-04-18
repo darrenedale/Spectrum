@@ -1,7 +1,7 @@
 #include <cassert>
 #include <fstream>
 #include "spectrum128k.h"
-#include "spectrum128kmemory.h"
+#include "memory128k.h"
 #include "basespectrum.h"
 #include "displaydevice.h"
 #include "snapshot.h"
@@ -9,20 +9,18 @@
 using namespace Spectrum;
 
 using ::Z80::UnsignedByte;
-using RomNumber = Spectrum128kMemory::RomNumber;
-using BankNumber = Spectrum128kMemory::BankNumber;
 
 // NOTE the base class constructor ensures that the Computer instance owns the allocated memory object and will destroy
 // it in its destructor
 Spectrum128k::Spectrum128k(const std::string & romFile0, const std::string & romFile1)
-: BaseSpectrum(new Spectrum128kMemory()),
+: BaseSpectrum(new Memory128k()),
   m_pager(*this),
   m_screenBuffer(ScreenBuffer::Normal),
   m_romFiles{romFile0, romFile1}
 {
     auto * mem = memory128();
-    mem->loadRom(romFile0, RomNumber::Rom0);
-    mem->loadRom(romFile1, RomNumber::Rom1);
+    mem->loadRom(romFile0, 0);
+    mem->loadRom(romFile1, 1);
     auto * cpu = z80();
     assert(cpu);
     cpu->connectIODevice(&m_pager);
@@ -37,10 +35,10 @@ UnsignedByte * Spectrum128k::displayMemory() const
     assert(memory128());
 
     if (ScreenBuffer::Shadow == m_screenBuffer) {
-        return memory128()->bankPointer(BankNumber::Bank7);
+        return memory128()->pagePointer(7);
     }
 
-    return memory128()->bankPointer(BankNumber::Bank5);
+    return memory128()->pagePointer(5);
 }
 
 Spectrum128k::~Spectrum128k()
@@ -59,21 +57,21 @@ void Spectrum128k::reset()
     BaseSpectrum::reset();
     m_screenBuffer = ScreenBuffer::Normal;
     m_pager.reset();
-    memory128()->pageRom(RomNumber::Rom0);
-    memory128()->pageBank(BankNumber::Bank0);
+    memory128()->pageRom(0);
+    memory128()->pageRam(0);
 }
 
 void Spectrum128k::reloadRoms()
 {
     assert(memory128());
-    memory128()->loadRom(m_romFiles[0], RomNumber::Rom0);
-    memory128()->loadRom(m_romFiles[1], RomNumber::Rom1);
+    memory128()->loadRom(m_romFiles[0], 0);
+    memory128()->loadRom(m_romFiles[1], 1);
 }
 
 std::unique_ptr<Snapshot> Spectrum128k::snapshot() const
 {
     auto snapshot = std::make_unique<Snapshot>(*this);
-    snapshot->pagedBankNumber = memory128()->currentPagedBank();
+    snapshot->pagedBankNumber = memory128()->currentRamPage();
     snapshot->romNumber = memory128()->currentRom();
     snapshot->screenBuffer = screenBuffer();
     snapshot->pagingEnabled = pager()->pagingEnabled();
@@ -84,13 +82,13 @@ bool Spectrum128k::canApplySnapshot(const Snapshot & snapshot)
 {
     return snapshot.model() == model()
         && dynamic_cast<const MemoryType *>(snapshot.memory())
-        && std::holds_alternative<RomNumber128k>(snapshot.romNumber);
+        && 2 > snapshot.romNumber;
 }
 
 void Spectrum128k::applySnapshot(const Snapshot & snapshot)
 {
     assert(snapshot.model() == model());
-    assert(std::holds_alternative<RomNumber128k>(snapshot.romNumber));
+    assert(2 > snapshot.romNumber);
     auto * snapshotMemory = dynamic_cast<const MemoryType *>(snapshot.memory());
     assert(snapshotMemory);
 
@@ -104,12 +102,10 @@ void Spectrum128k::applySnapshot(const Snapshot & snapshot)
     setScreenBuffer(snapshot.screenBuffer);
     pager()->setPagingEnabled(snapshot.pagingEnabled);
     auto * memory = memory128();
-    memory->pageRom(std::get<RomNumber128k>(snapshot.romNumber));
-    memory->pageBank(snapshot.pagedBankNumber);
+    memory->pageRom(snapshot.romNumber);
+    memory->pageRam(snapshot.pagedBankNumber);
 
-    for (std::uint8_t bankNumber = 0; bankNumber < 8; ++bankNumber) {
-        memory->writeToBank(static_cast<MemoryBankNumber128k>(bankNumber),
-                                    snapshotMemory->bankPointer(static_cast<MemoryBankNumber128k>(bankNumber)),
-                                    MemoryType::BankSize);
+    for (int page = 0; page < 8; ++page) {
+        memory->writeToPage(page, snapshotMemory->pagePointer(page), Memory128k::PageSize);
     }
 }

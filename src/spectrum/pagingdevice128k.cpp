@@ -3,8 +3,8 @@
 //
 
 #include "spectrum128k.h"
-#include "spectrum128kpagingdevice.h"
-#include "spectrum128kmemory.h"
+#include "pagingdevice128k.h"
+#include "memory128k.h"
 
 using namespace Spectrum;
 using ::Z80::UnsignedWord;
@@ -28,24 +28,22 @@ namespace
     constexpr const UnsignedByte DisablePagingMask = 1 << DisablePagingBit;
 }
 
-Spectrum128KPagingDevice::~Spectrum128KPagingDevice() = default;
+PagingDevice128k::~PagingDevice128k() = default;
 
-void Spectrum128KPagingDevice::writeByte(UnsignedWord port, UnsignedByte value)
+void PagingDevice128k::writeByte(UnsignedWord port, UnsignedByte value)
 {
     if (!pagingEnabled()) {
         return;
     }
 
-    auto * memory = dynamic_cast<Spectrum128kMemory *>(spectrum().memory());
+    auto * memory = dynamic_cast<Memory128k *>(spectrum().memory());
     assert(memory);
 
     // ram bank to page is in bits 0-2
-    auto ramBank = static_cast<Spectrum128kMemory::BankNumber>(value & RamBankMask);
-    memory->pageBank(ramBank);
+    memory->pageRam(value & RamBankMask);
 
     // rom number is in bit 4
-    auto rom = static_cast<Spectrum128kMemory::RomNumber>((value & RomNumberMask) >> RomNumberBit);
-    memory->pageRom(rom);
+    memory->pageRom((value & RomNumberMask) >> RomNumberBit);
 
     auto screenBuffer = (value & ScreenBufferMask) ? Spectrum128k::ScreenBuffer::Shadow : Spectrum128k::ScreenBuffer::Normal;
     spectrum().setScreenBuffer(screenBuffer);

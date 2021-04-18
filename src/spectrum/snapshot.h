@@ -13,11 +13,6 @@
 
 namespace Spectrum
 {
-    namespace Io
-    {
-        class SnapshotWriter;
-    }
-
     /**
      * A representation of the state of a Spectrum at a point in time.
      *
@@ -69,12 +64,12 @@ namespace Spectrum
         /**
          * For 128k models, the paged-in memory bank.
          */
-        MemoryBankNumber128k pagedBankNumber;
+        std::uint8_t pagedBankNumber;
 
         /**
          * For 128k models, the paged-in ROM.
          */
-        std::variant<RomNumber128k, RomNumberPlus2a> romNumber;
+        std::uint8_t romNumber;
 
         /**
          * For 128K models, which screen buffer is currently in use.
@@ -234,6 +229,14 @@ namespace Spectrum
     };
 
 #if (!defined(NDEBUG))
+    /**
+     * Debug helper to write the state of a Snapshot to an output stream.
+     *
+     * @param out The stream to write to.
+     * @param snap The snapshot to write.
+     *
+     * @return The output stream.
+     */
     std::ostream & operator<<(std::ostream & out, const Snapshot & snap);
 #endif
 }

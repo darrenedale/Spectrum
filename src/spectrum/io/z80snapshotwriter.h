@@ -120,7 +120,7 @@ namespace Spectrum::Io
          *
          * @return
          */
-        static bool writeMemoryPage(std::ostream & out, const ::Z80::UnsignedByte * memory, MemoryBankNumber128k pageNumber);
+        static bool writeMemoryPage(std::ostream & out, const ::Z80::UnsignedByte * memory, int pageNumber);
 
         /**
          * Helper to compress a memory image.
