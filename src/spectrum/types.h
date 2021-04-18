@@ -48,41 +48,6 @@ namespace Spectrum
     };
 
     /**
-     * Enumeration of the available RAM banks for 128k models.
-     */
-    enum class MemoryBankNumber128k : std::uint8_t
-    {
-        Bank0 = 0,
-        Bank1,
-        Bank2,
-        Bank3,
-        Bank4,
-        Bank5,
-        Bank6,
-        Bank7,
-    };
-
-    /**
-     * Available ROMs for 128k/plus2
-     */
-    enum class RomNumber128k : std::uint8_t
-    {
-        Rom0 = 0,
-        Rom1,
-    };
-
-    /**
-     * Available ROMs for plus2a/plus3
-     */
-    enum class RomNumberPlus2a : std::uint8_t
-    {
-        Rom0 = 0,
-        Rom1,
-        Rom2,
-        Rom3,
-    };
-
-    /**
      * Paging modes for the +2a/+3.
      */
     enum class PagingMode : std::uint8_t
@@ -121,26 +86,6 @@ namespace Spectrum
      * @return
      */
     std::ostream & operator<<(std::ostream & out, Model model);
-
-    /**
-     * Write a human-readable representation of a Spectrum 128K ROM number.
-     *
-     * @param out The stream to write to.
-     * @param rom The rom to write.
-     *
-     * @return
-     */
-    std::ostream & operator<<(std::ostream & out, RomNumber128k rom);
-
-    /**
-     * Write a human-readable representation of a Spectrum +2a/+3 ROM number.
-     *
-     * @param out The stream to write to.
-     * @param rom The rom to write.
-     *
-     * @return
-     */
-    std::ostream & operator<<(std::ostream & out, RomNumberPlus2a rom);
 
     /**
      * Write a human-readable representation of a Spectrum screen buffer type to an output stream.
@@ -184,16 +129,6 @@ namespace std
      * Fetch a human-readable string representation of a Spectrum model type.
      */
     std::string to_string(Spectrum::Model model);
-
-    /**
-     * Fetch a human-readable string representation of a Spectrum 128K ROM.
-     */
-    std::string to_string(Spectrum::RomNumber128k rom);
-
-    /**
-     * Fetch a human-readable string representation of a Spectrum +2a/+3 ROM.
-     */
-    std::string to_string(Spectrum::RomNumberPlus2a rom);
 
     /**
      * Fetch a human-readable string representation of a Spectrum screen buffer type.

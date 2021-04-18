@@ -5,7 +5,8 @@
 #ifndef SPECTRUM_SPECTRUMPLUS2AKMEMORY_H
 #define SPECTRUM_SPECTRUMPLUS2AKMEMORY_H
 
-#include "basespectrum.h"
+#include "types.h"
+#include "pagingmemory.h"
 #include "../z80/types.h"
 
 namespace Spectrum
@@ -13,52 +14,62 @@ namespace Spectrum
     /**
      * Models the memory of a Spectrum+2a/+3.
      *
-     * The memory consists of the standard Z80 16-bit address space and the standard Spectrum 16K of ROM mapped to the
-     * first 16K of that space, followed by 48K of addressable RAM. The ROM space can be occupied by one of four ROMs,
-     * which can be paged in and out using standard Z80 OUT instructions (see SpectrumPlus2aPagingDevice). The RAM space
-     * is made up of a combination of three out of eight available banks of 16K each. The first 32K of RAM (0x4000 to
-     * 0xcfff) if static, made up of banks 5 and 2 (in that order). The final 16K of RAM can use any of the 8 RAM banks,
-     * including banks 2 and 5 (in which case the bank will appear both in the static section and the paged section).
+     * The memory consists of the standard Z80 16-bit address space and the standard Spectrum 16K of ROM mapped to the first 16K of that space, followed by 48K
+     * of addressable RAM. The ROM space can be occupied by one of four ROMs, which can be paged in and out using standard Z80 OUT instructions (see
+     * SpectrumPlus2aPagingDevice). The RAM space is made up of a combination of three out of eight available banks of 16K each. The first 32K of RAM (0x4000 to
+     * 0xcfff) if static, made up of banks 5 and 2 (in that order). The final 16K of RAM can use any of the 8 RAM banks, including banks 2 and 5 (in which case
+     * the bank will appear both in the static section and the paged section).
+     *
+     * In addition, this memory model implements a special paging mode, in which case one of four fixed configurations of the memory pages is mapped into the
+     * four 16kb chunks of the 64kb address space. Again, this is controlled by standard Z80 OUT instructions.
      */
     class SpectrumPlus2aMemory
-    : public Memory<BaseSpectrum::ByteType>
+    : public PagingMemory<4, 8>
     {
     public:
         /**
-         * The size of a RAM bank and a ROM.
+         * Initialise a new instance of the Spectrum +2a memory model.
          */
-        static constexpr const int BankSize = 0x4000;
-
-        /**
-         * Enumeration of the available ROMs.
-         */
-        using RomNumber = RomNumberPlus2a;
-
-        /**
-         * Enumeration of the available RAM banks.
-         */
-        using BankNumber = MemoryBankNumber128k;
-
         SpectrumPlus2aMemory();
+
+        /**
+         * Copy construction is disabled.
+         */
         SpectrumPlus2aMemory(const SpectrumPlus2aMemory &) = delete;
+
+        /**
+         * Move construction is disabled.
+         */
         SpectrumPlus2aMemory(SpectrumPlus2aMemory &&) = delete;
+
+        /**
+         * Copy assignment is disabled.
+         */
         void operator=(const SpectrumPlus2aMemory &) = delete;
+
+        /**
+         * Move assignment is disabled.
+         */
         void operator=(SpectrumPlus2aMemory &&) = delete;
+
+        /**
+         * Destructor.
+         */
         ~SpectrumPlus2aMemory() override;
 
         /**
-         * Clear the memory.
+         * Create a clone of the memory.
          *
-         * All banks and all ROMs are cleared.
+         * This is guaranteed not to fail unless the required 160kb or so of memory can't be allocated on the host machine.
+         *
+         * @return An identical copy of this memory object.
          */
-        void clear() override;
-
         [[nodiscard]] std::unique_ptr<Memory> clone() const override;
 
         /**
          * Fetch the current paging mode.
          *
-         * @return
+         * @return The current paging mode, Normal or Special.
          */
         [[nodiscard]] inline PagingMode pagingMode() const
         {
@@ -68,7 +79,7 @@ namespace Spectrum
         /**
          * Set the current paging mode.
          *
-         * @param mode
+         * @param mode The paging mode to set.
          */
         inline void setPagingMode(PagingMode mode)
         {
@@ -76,36 +87,11 @@ namespace Spectrum
         }
 
         /**
-         * Determine the currently paged-in ROM.
-         *
-         * This is only relevant if the paging mode is Normal. In Special paging mode, the ROM is not used.
-         *
-         * @return
-         */
-        [[nodiscard]] inline RomNumber currentRom() const
-        {
-            return m_romNumber;
-        }
-
-        /**
-         * Determine the currently paged-in RAM bank.
-         *
-         * This is only relevant if the paging mode is Normal. In Special paging mode, the paged-in banks are determined
-         * by the special paging mode configuration.
-         *
-         * @return
-         */
-        [[nodiscard]] inline BankNumber currentPagedBank() const
-        {
-            return m_pagedBank;
-        }
-
-        /**
          * Determine the currently special paging configuration.
          *
-         * This is only relevant if the paging mode is Special..
+         * This is only relevant if the paging mode is Special, but it will always return one of the special paging configurations.
          *
-         * @return
+         * @return The special paging configuration in use (if the memory is in special paging mode).
          */
         [[nodiscard]] inline SpecialPagingConfiguration specialPagingConfiguration() const
         {
@@ -113,191 +99,37 @@ namespace Spectrum
         }
 
         /**
-         * Page in the specified ROM.
+         * Set the special paging configuration.
          *
-         * The specified ROM will be paged in when the paging mode is Normal. While the paging mode is Special the
-         * configured special paging setup will be in effect.
+         * The configuration set will be used if the memory is in, or is later put into, special paging mode.
          *
-         * @param rom
-         */
-        inline void pageRom(RomNumber rom)
-        {
-            m_romNumber = rom;
-        }
-
-        /**
-         * Page in the specified RAM bank.
-         *
-         * The specified bank will be paged in when the paging mode is Normal. While the paging mode is Special the
-         * configured special paging setup will be in effect.
-         *
-         * @param bank
-         */
-        inline void pageBank(BankNumber bank)
-        {
-            m_pagedBank = bank;
-        }
-
-        /**
-         *
-         * @param config
+         * @param config The configuration to set.
          */
         inline void setSpecialPagingConfiguration(SpecialPagingConfiguration config)
         {
             m_specialPagingConfiguration = config;
         }
 
-        /**
-         * Load the content of a file into the specified ROM.
-         *
-         * @param fileName
-         * @return
-         */
-        bool loadRom(const std::string & fileName, RomNumber = RomNumber::Rom0);
-
-        /**
-         * Fetch a const pointer to the fist byte in the specified bank of RAM.
-         *
-         * @return
-         */
-        [[nodiscard]] const Byte * bankPointer(BankNumber bank) const
-        {
-            return m_ramBanks[static_cast<int>(bank)].data();
-        }
-
-        /**
-         * Fetch a pointer to the fist byte in the specified bank of RAM.
-         *
-         * @return
-         */
-        Byte * bankPointer(BankNumber bank)
-        {
-            return m_ramBanks[static_cast<int>(bank)].data();
-        }
-
-        /**
-         * Fetch a const pointer to the fist byte in the currently paged-in bank of RAM.
-         *
-         * @return
-         */
-        [[nodiscard]] inline const Byte * currentPagedBankPointer() const
-        {
-            return bankPointer(currentPagedBank());
-        }
-
-        /**
-         * Fetch a pointer to the fist byte in the currently paged-in bank of RAM.
-         *
-         * @return
-         */
-        inline Byte * currentPagedBankPointer()
-        {
-            return bankPointer(currentPagedBank());
-        }
-
-        /**
-         * Fetch a const pointer to the fist byte in the specified ROM.
-         *
-         * @return
-         */
-        [[nodiscard]] const Byte * romPointer(RomNumber rom) const
-        {
-            return m_roms[static_cast<int>(rom)].data();
-        }
-
-        /**
-         * Fetch a pointer to the fist byte in the specified ROM.
-         *
-         * @return
-         */
-        Byte * romPointer(RomNumber rom)
-        {
-            return m_roms[static_cast<int>(rom)].data();
-        }
-
-        /**
-        * Fetch a const pointer to the fist byte in the currently paged-in ROM.
-        *
-        * @return
-        */
-        [[nodiscard]] inline const Byte * currentRomPointer() const
-        {
-            return romPointer(currentRom());
-        }
-
-        /**
-         * Fetch a pointer to the fist byte in the currently paged-in ROM.
-         *
-         * @return
-         */
-        inline Byte * currentRomPointer()
-        {
-            return romPointer(currentRom());
-        }
-
-        /**
-         * Write directly into a specified memory bank.
-         *
-         * Useful when reading snapshots, for example.
-         *
-         * @param bank The bank to write to
-         * @param data The data to write
-         * @param size The number of bytes to write. Defaults to a full bank.
-         * @param offset The offset into the bank at which to start writing. Defaults to the first byte in the bank.
-         */
-        void writeToBank(BankNumber bank, const Byte * data, ::Z80::UnsignedWord size = BankSize, ::Z80::UnsignedWord offset = 0);
-
-        /**
-         * Read directly from a specified memory bank.
-         *
-         * Useful when writing snapshots, for example.
-         *
-         * @param bank The bank to read from
-         * @param data The buffer into which to read the data. Must be big enough to hold size bytes.
-         * @param size The number of bytes to read. Defaults to a full bank.
-         * @param offset The offset into the bank at which to start reading. Defaults to the first byte in the bank.
-         */
-        void readFromBank(BankNumber, Byte *, ::Z80::UnsignedWord size = BankSize, ::Z80::UnsignedWord offset = 0);
-
     protected:
         /**
          * Map an emulated memory address to a physical address inside one of the ROMs/RAM banks.
          *
-         * @param address
+         * Reimplemented to support special paging mode.
+         *
+         * @param address The address to map.
+         *
          * @return
          */
         [[nodiscard]] Byte * mapAddress(Address address) const override;
 
     private:
-        using BankStorage = std::array<Byte, BankSize>;
-
         /**
          * The current paging mode.
          */
         PagingMode m_pagingMode;
 
         /**
-         * The currently paged-in ROM.
-         */
-        RomNumber m_romNumber;
-
-        /**
-         * Storage for the ROMs.
-         */
-        std::array<BankStorage, 4> m_roms;
-
-        /**
-         * The currently paged-in RAM bank.
-         */
-        BankNumber m_pagedBank;
-
-        /**
-         * Storage for the RAM banks.
-         */
-        std::array<BankStorage, 8> m_ramBanks;
-
-        /**
-         * Which configuration is in use for Special pagign mode.
+         * Which configuration is in use for Special paging mode.
          */
         SpecialPagingConfiguration m_specialPagingConfiguration;
     };

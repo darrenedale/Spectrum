@@ -38,8 +38,8 @@ Snapshot::Snapshot(Registers registers, BaseSpectrum::MemoryType * memory)
   iff2(false),
   im(InterruptMode::IM0),
   border(Colour::White),
-  pagedBankNumber(MemoryBankNumber128k::Bank0),
-  romNumber(RomNumber128k::Rom0),
+  pagedBankNumber(0),
+  romNumber(0),
   screenBuffer(ScreenBuffer128k::Normal),
   pagingEnabled(true),
   pagingMode(PagingMode::Normal),
@@ -189,15 +189,7 @@ std::ostream & Spectrum::operator<<(std::ostream & out, const Snapshot & snap)
         auto * memory = dynamic_cast<const Spectrum16k::MemoryType *>(snap.memory());
         out << "  16K checksum: 0x" << std::setw(8) << Util::crc32(memory->pointerTo(0x4000), 0x4000) << '\n';
     } else {
-        out << "  ROM: " << std::dec;
-
-        if (Model::SpectrumPlus2a == snap.model()) {
-            out << static_cast<std::uint16_t>(std::get<RomNumberPlus2a>(snap.romNumber));
-        } else {
-            out << static_cast<std::uint16_t>(std::get<RomNumber128k>(snap.romNumber));
-        }
-
-        out << '\n'
+        out << "  ROM: " << std::dec << static_cast<std::uint16_t>(snap.romNumber) << '\n'
             << "  Paging enabled: " << (snap.pagingEnabled ? "yes" : "no") << '\n'
             << "  Current page: " << static_cast<std::uint16_t>(snap.pagedBankNumber) << '\n';
 
@@ -212,7 +204,7 @@ std::ostream & Spectrum::operator<<(std::ostream & out, const Snapshot & snap)
 
             for (std::uint8_t page = 0; page < 8; ++page) {
                 out << "  Page " << std::dec << static_cast<std::uint16_t>(page) << " checksum: 0x" << std::setw(8)
-                    << Util::crc32(memory->bankPointer(static_cast<MemoryBankNumber128k>(page)), SpectrumPlus2a::MemoryType::BankSize) << '\n';
+                    << Util::crc32(memory->pagePointer(page), SpectrumPlus2a::MemoryType::PageSize) << '\n';
             }
 
         } else {
@@ -220,7 +212,7 @@ std::ostream & Spectrum::operator<<(std::ostream & out, const Snapshot & snap)
 
             for (std::uint8_t page = 0; page < 8; ++page) {
                 out << "  Page " << std::dec << static_cast<std::uint16_t>(page) << " checksum: 0x" << std::setw(8)
-                    << Util::crc32(memory->bankPointer(static_cast<MemoryBankNumber128k>(page)), SpectrumPlus2a::MemoryType::BankSize) << '\n';
+                    << Util::crc32(memory->pagePointer(page), SpectrumPlus2a::MemoryType::PageSize) << '\n';
             }
         }
     }

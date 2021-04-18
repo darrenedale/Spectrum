@@ -76,14 +76,12 @@ void SpectrumPlus2aPagingDevice::writePort7ffd(::Z80::UnsignedByte value)
     assert(memory);
 
     // ram bank to page is in bits 0-2
-    auto ramBank = static_cast<SpectrumPlus2aMemory::BankNumber>(value & RamBankMask);
-    memory->pageBank(ramBank);
+//    auto ramBank = static_cast<SpectrumPlus2aMemory::BankNumber>(value & RamBankMask);
+    memory->pageRam(value & RamBankMask);
 
     // rom number low bit is in bit 4; high bit is retained from current ROM
-    auto rom = static_cast<SpectrumPlus2aMemory::RomNumber>(
-            ((value & RomNumberLowMask) >> RomNumberLowBit)
-            | (static_cast<std::uint8_t>(memory->currentRom()) & 0x02)
-        );
+    auto rom = ((value & RomNumberLowMask) >> RomNumberLowBit)
+            | (static_cast<std::uint8_t>(memory->currentRom()) & 0x02);
     memory->pageRom(rom);
 
     auto screenBuffer = (value & ScreenBufferMask) ? SpectrumPlus2a::ScreenBuffer::Shadow : SpectrumPlus2a::ScreenBuffer::Normal;

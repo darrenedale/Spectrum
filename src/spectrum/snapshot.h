@@ -69,12 +69,12 @@ namespace Spectrum
         /**
          * For 128k models, the paged-in memory bank.
          */
-        MemoryBankNumber128k pagedBankNumber;
+        std::uint8_t pagedBankNumber;
 
         /**
          * For 128k models, the paged-in ROM.
          */
-        std::variant<RomNumber128k, RomNumberPlus2a> romNumber;
+        std::uint8_t romNumber;
 
         /**
          * For 128K models, which screen buffer is currently in use.

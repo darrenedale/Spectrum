@@ -133,6 +133,7 @@ bool Z80SnapshotWriter::writeTo(std::ostream & out) const
             return write128Plus2(out);
 
         case Model::SpectrumPlus2a:
+        case Model::SpectrumPlus3:
             return writePlus2aPlus3(out);
     }
 
@@ -228,9 +229,9 @@ bool Z80SnapshotWriter::write48k(std::ostream & out) const
         return false;
     }
 
-    if (!writeMemoryPage(out, snapshot().memory()->pointerTo(0x8000), MemoryBankNumber128k::Bank1) ||
-        !writeMemoryPage(out, snapshot().memory()->pointerTo(0xc000), MemoryBankNumber128k::Bank2) ||
-        !writeMemoryPage(out, snapshot().memory()->pointerTo(0x4000), MemoryBankNumber128k::Bank5)
+    if (!writeMemoryPage(out, snapshot().memory()->pointerTo(0x8000), 1) ||
+        !writeMemoryPage(out, snapshot().memory()->pointerTo(0xc000), 2) ||
+        !writeMemoryPage(out, snapshot().memory()->pointerTo(0x4000), 5)
     ) {
         std::cerr << "failed writing memory to .z80 file\n";
         return false;
@@ -249,9 +250,9 @@ bool Z80SnapshotWriter::write16k(std::ostream & out) const
     std::array<::Z80::UnsignedByte, 0x4000> emptyPage = {};
     emptyPage.fill(0xff);
 
-    if (!writeMemoryPage(out, snapshot().memory()->pointerTo(0x4000), MemoryBankNumber128k::Bank5) ||
-        !writeMemoryPage(out, emptyPage.data(), MemoryBankNumber128k::Bank1) ||
-        !writeMemoryPage(out, emptyPage.data(), MemoryBankNumber128k::Bank2)
+    if (!writeMemoryPage(out, snapshot().memory()->pointerTo(0x4000), 5) ||
+        !writeMemoryPage(out, emptyPage.data(), 1) ||
+        !writeMemoryPage(out, emptyPage.data(), 2)
     ) {
         std::cerr << "failed writing memory to .z80 file\n";
         return false;
@@ -270,11 +271,9 @@ bool Z80SnapshotWriter::write128Plus2(std::ostream & out) const
     const auto * memory = dynamic_cast<const Spectrum128kMemory *>(snapshot().memory());
     assert(memory);
 
-    for (int bank = 0; bank < 8; ++bank) {
-        auto bankNumber = static_cast<MemoryBankNumber128k>(bank);
-
-        if (!writeMemoryPage(out, memory->bankPointer(bankNumber), bankNumber)) {
-            std::cerr << "failed writing memory page #" << bank << " to .z80 file\n";
+    for (int page = 0; page < 8; ++page) {
+        if (!writeMemoryPage(out, memory->pagePointer(page), page)) {
+            std::cerr << "failed writing memory page #" << page << " to .z80 file\n";
             return false;
         }
     }
@@ -292,11 +291,9 @@ bool Z80SnapshotWriter::writePlus2aPlus3(std::ostream & out) const
     const auto * memory = dynamic_cast<const SpectrumPlus2aMemory *>(snapshot().memory());
     assert(memory);
 
-    for (int bank = 0; bank < 8; ++bank) {
-        auto bankNumber = static_cast<MemoryBankNumber128k>(bank);
-
-        if (!writeMemoryPage(out, memory->bankPointer(bankNumber), bankNumber)) {
-            std::cerr << "failed writing memory page #" << bank << " to .z80 file\n";
+    for (int page = 0; page < 8; ++page) {
+        if (!writeMemoryPage(out, memory->pagePointer(page), page)) {
+            std::cerr << "failed writing memory page #" << page << " to .z80 file\n";
             return false;
         }
     }
@@ -308,14 +305,9 @@ std::uint8_t Z80SnapshotWriter::lastOut0x7ffd() const
 {
     const auto & snap = snapshot();
 
-    // we know that all possible values for the variant can be cast to int types
-    const auto romNumber = std::visit([](auto && romNumber) -> UnsignedByte {
-        return static_cast<UnsignedByte>(romNumber);
-    }, snap.romNumber);
-
     return (static_cast<std::uint8_t>(snap.pagedBankNumber) & 0b00000111) |     // paged bank in bits 0-2
         (snap.screenBuffer == ScreenBuffer128k::Shadow ? 0b00001000 : 0) |      // shadow buffer flag in bit 3
-        ((romNumber & 0x01) << 4) |                                             // rom number (or low bit thereof) in bit 4
+        ((snap.romNumber & 0x01) << 4) |                                        // rom number (or low bit thereof) in bit 4
         (!snap.pagingEnabled ? 0b00100000 : 0);                                 // paging disabled flag in bit 5
 }
 
@@ -328,13 +320,8 @@ std::uint8_t Z80SnapshotWriter::lastOut0x1ffd() const
         return 0x01 | (static_cast<UnsignedByte>(snap.specialPagingConfig) << 1);
     }
 
-    // we know that all possible values for the variant can be cast to int types
-    const auto romNumber = std::visit([](auto && romNumber) -> UnsignedByte {
-        return static_cast<UnsignedByte>(romNumber);
-    }, snap.romNumber);
-
     // for normal paging all we need to store in this flag is the bit that represents the high bit of the ROM number
-    return (romNumber & 0x02) << 1;
+    return (snap.romNumber & 0x02) << 1;
 }
 
 std::vector<::Z80::UnsignedByte> Z80SnapshotWriter::compressMemory(const ::Z80::UnsignedByte * memory, std::uint32_t size)
@@ -386,7 +373,7 @@ std::vector<::Z80::UnsignedByte> Z80SnapshotWriter::compressMemory(const ::Z80::
     return ret;
 }
 
-bool Z80SnapshotWriter::writeMemoryPage(std::ostream & out, const ::Z80::UnsignedByte * memory, Spectrum::MemoryBankNumber128k pageNumber)
+bool Z80SnapshotWriter::writeMemoryPage(std::ostream & out, const ::Z80::UnsignedByte * memory, int pageNumber)
 {
     // NOTE memory pages are ALWAYS 16kb in size
     auto compressed = compressMemory(memory, 0x4000);

@@ -14,6 +14,7 @@ add_executable(
         spectrumplus2.cpp
         spectrumplus2a.cpp
         spectrumplus3.cpp
+        pagingmemory.h
         spectrum128kmemory.cpp
         spectrum128kpagingdevice.cpp
         spectrumplus2memory.h

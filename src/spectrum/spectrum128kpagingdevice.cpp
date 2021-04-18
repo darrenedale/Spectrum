@@ -40,12 +40,10 @@ void Spectrum128KPagingDevice::writeByte(UnsignedWord port, UnsignedByte value)
     assert(memory);
 
     // ram bank to page is in bits 0-2
-    auto ramBank = static_cast<Spectrum128kMemory::BankNumber>(value & RamBankMask);
-    memory->pageBank(ramBank);
+    memory->pageRam(value & RamBankMask);
 
     // rom number is in bit 4
-    auto rom = static_cast<Spectrum128kMemory::RomNumber>((value & RomNumberMask) >> RomNumberBit);
-    memory->pageRom(rom);
+    memory->pageRom((value & RomNumberMask) >> RomNumberBit);
 
     auto screenBuffer = (value & ScreenBufferMask) ? Spectrum128k::ScreenBuffer::Shadow : Spectrum128k::ScreenBuffer::Normal;
     spectrum().setScreenBuffer(screenBuffer);
