@@ -407,11 +407,7 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
                 //  believe disabling paging was very rare in the real world
                 snapshot->pagingEnabled = !(header.lastOut0x7ffd & PagingDisabledFlag);
 
-                if (Model::SpectrumPlus2a == snapshot->model()) {
-                    // ROM number is made up of bit 4 in lastOut0x7ffd and bit 2 in lastOut0x1ffd
-                    snapshot->romNumber = ((header.lastOut0x1ffd & PagedRomMaskPlus2a) >> (PagedRomBitPlus2a - 1)) |  // high bit
-                            ((header.lastOut0x7ffd & PagedRomMask128k) >> PagedRomBit128k);              // low bit
-                } else if (Model::SpectrumPlus3 == snapshot->model()) {
+                if (Model::SpectrumPlus2a == snapshot->model() || Model::SpectrumPlus3 == snapshot->model()) {
                     if (header.lastOut0x1ffd & 0x01) {
                         snapshot->pagingMode = PagingMode::Special;
                         // paging config is in bits 1 and 2
@@ -467,28 +463,13 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
                     }
                     break;
 
-                case Model::Spectrum128k: {
-                        using Memory = Spectrum128k::MemoryType;
-                        // in Z80 files page #0 is represented by 0x03, page #1 by 0x04, etc. up to page#7 by 0x0a
-                        page -= 3;
-                        pageMemory = dynamic_cast<Memory *>(memory.get())->pagePointer(page);
-                    }
-                    break;
-
-                case Model::SpectrumPlus2: {
-                        using Memory = SpectrumPlus2::MemoryType;
-                        // in Z80 files page #0 is represented by 0x03, page #1 by 0x04, etc. up to page#7 by 0x0a
-                        page -= 3;
-                        pageMemory = dynamic_cast<Memory *>(memory.get())->pagePointer(page);
-                    }
-                    break;
-
-                case Model::SpectrumPlus2a: {
-                        using Memory = SpectrumPlus2a::MemoryType;
-                        // in Z80 files page #0 is represented by 0x03, page #1 by 0x04, etc. up to page#7 by 0x0a
-                        page -= 3;
-                        pageMemory = dynamic_cast<Memory *>(memory.get())->pagePointer(page);
-                    }
+                case Model::Spectrum128k:
+                case Model::SpectrumPlus2:
+                case Model::SpectrumPlus2a:
+                case Model::SpectrumPlus3:
+                    // in Z80 files page #0 is represented by 0x03, page #1 by 0x04, etc. up to page#7 by 0x0a
+                    page -= 3;
+                    pageMemory = dynamic_cast<PagedMemoryInterface *>(memory.get())->pagePointer(page);
                     break;
 
                 default:
@@ -502,7 +483,7 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
                 in.read(reinterpret_cast<std::istream::char_type *>(buffer.data()), size);
 
                 if (size != in.gcount()) {
-                    std::cerr << "truncated read (expected " << size << " read " << in.gcount() << ") for bank #" << static_cast<std::uint16_t>(page) << '\n';
+                    std::cerr << "truncated read (expected " << size << " read " << in.gcount() << ") for page #" << static_cast<std::uint16_t>(page) << '\n';
                     return nullptr;
                 }
 

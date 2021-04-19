@@ -199,21 +199,14 @@ std::ostream & Spectrum::operator<<(std::ostream & out, const Snapshot & snap)
             if (PagingMode::Special == snap.pagingMode) {
                 out << "  Special paging mode config: " << snap.specialPagingConfig << '\n';
             }
+        }
 
-            auto * memory = dynamic_cast<const SpectrumPlus2a::MemoryType *>(snap.memory());
+        auto * memory = dynamic_cast<const PagedMemoryInterface *>(snap.memory());
+        assert(memory);
 
-            for (std::uint8_t page = 0; page < 8; ++page) {
-                out << "  Page " << std::dec << static_cast<std::uint16_t>(page) << " checksum: 0x" << std::setw(8)
-                    << Util::crc32(memory->pagePointer(page), SpectrumPlus2a::MemoryType::PageSize) << '\n';
-            }
-
-        } else {
-            auto * memory = dynamic_cast<const Memory128k *>(snap.memory());
-
-            for (std::uint8_t page = 0; page < 8; ++page) {
-                out << "  Page " << std::dec << static_cast<std::uint16_t>(page) << " checksum: 0x" << std::setw(8)
-                    << Util::crc32(memory->pagePointer(page), SpectrumPlus2a::MemoryType::PageSize) << '\n';
-            }
+        for (std::uint8_t page = 0; page < 8; ++page) {
+            out << "  Page " << std::dec << static_cast<std::uint16_t>(page) << " checksum: 0x" << std::setw(8)
+                << Util::crc32(memory->pagePointer(page), SpectrumPlus2a::MemoryType::PageSize) << '\n';
         }
     }
 

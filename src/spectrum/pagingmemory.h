@@ -9,6 +9,7 @@
 #include <cstring>
 #include <iostream>
 #include <fstream>
+#include "pagedmemoryinterface.h"
 #include "../memory.h"
 #include "../z80/types.h"
 
@@ -21,37 +22,35 @@ namespace Spectrum
      * contains one of the RAM pages. The address space between 0x4000 and 0x7fff inclusive always contains page 5; the space between 0x8000 and 0xbfff
      * inclusive always contains page 2. For other paging models, reimplement mapAddress() - see the special paging mode of MemoryPlus2a for an example.
      *
-     * @tparam romCount The number of ROMs available to be paged in. Must be > 0.
-     * @tparam pageCount The number of pages of RAM available. Must be >= 6; defaults to 8.
+     * Implements PagedMemoryInterface.
+     *
+     * @tparam NumRoms The number of ROMs available to be paged in. Must be > 0.
+     * @tparam NumPages The number of pages of RAM available. Must be >= 6; defaults to 8.
      */
-    template<int romCount, int pageCount = 8>
+    template<int NumRoms, int NumPages = 8>
     class PagingMemory
-    : public Memory<::Z80::UnsignedByte>
+    : public Memory<::Z80::UnsignedByte>,
+      public PagedMemoryInterface
     {
         // must have at least one ROM and six pages of RAM - why 6? because page #5 is always mapped to 0x4000 - 0x7fff so that page must be present
-        static_assert(0 < romCount);
-        static_assert(6 < pageCount);
+        static_assert(0 < NumRoms);
+        static_assert(6 < NumPages);
 
     public:
         /**
-         * Convenience constant for the size of a ROM image.
+         * Convenience constant for the size of a ROM.
          */
         static constexpr const int RomSize = 0x4000;
 
         /**
-         * Convenience constant for the size of a page of RAM.
+         * Convenience constant for the number of ROMs available in the memory model.
          */
-        static constexpr const int PageSize = 0x4000;
+        static constexpr const int RomCount = NumRoms;
 
         /**
-         * Convenienc constant for the number of ROMs available in the memory model.
+         * Convenience constant for the number of pages of RAM available in the memory model.
          */
-        static constexpr const int RomCount = romCount;
-
-        /**
-         * Convenienc constant for the number of pages of RAM available in the memory model.
-         */
-        static constexpr const int PageCount = pageCount;
+        static constexpr const int PageCount = NumPages;
 
         /**
          * Convenience alias for the internal storage type.
@@ -64,13 +63,6 @@ namespace Spectrum
          * TODO consider making a strong type for this.
          */
         using RomNumber = int;
-
-        /**
-         * Convenience alias for a RAM page number.
-         *
-         * TODO consider making a strong type for this.
-         */
-        using PageNumber = int;
 
         /**
          * Initialise a new PagingMemory object.
@@ -111,6 +103,26 @@ namespace Spectrum
         ~PagingMemory() override = default;
 
         [[nodiscard]] std::unique_ptr<Memory> clone() const override = 0;
+
+        /**
+         * Fetch the number of ROMs the memory has available.
+         *
+         * @return
+         */
+        constexpr RomNumber romCount() const
+        {
+            return RomCount;
+        }
+
+        /**
+         * Fetch the number of RAM pages the memory has available.
+         *
+         * @return
+         */
+        constexpr PageNumber pageCount() const override
+        {
+            return PageCount;
+        }
 
         /**
          * Clear the memory.
@@ -186,7 +198,7 @@ namespace Spectrum
          *
          * @return
          */
-        [[nodiscard]] const Byte * pagePointer(PageNumber page) const
+        [[nodiscard]] const Byte * pagePointer(PageNumber page) const override
         {
             assert(0 <= page && page < PageCount);
             return m_ramPages[page].data();
@@ -197,7 +209,7 @@ namespace Spectrum
          *
          * @return
          */
-        Byte * pagePointer(PageNumber page)
+        Byte * pagePointer(PageNumber page) override
         {
             assert(0 <= page && page < PageCount);
             return m_ramPages[page].data();
@@ -300,7 +312,7 @@ namespace Spectrum
          * @param size The number of bytes to read. Defaults to a full page. Must not extend beyond the size of a page.
          * @param offset The offset into the page at which to start reading. Defaults to the first byte in the page.
          */
-        void readFromPage(PageNumber page, Byte * buffer, ::Z80::UnsignedWord size = PageSize, ::Z80::UnsignedWord offset = 0) const
+        void readFromPage(PageNumber page, Byte * buffer, ::Z80::UnsignedWord size = PageSize, ::Z80::UnsignedWord offset = 0) const override
         {
             assert(0 <= page && page < PageCount);
             assert(offset + size <= PageSize);
@@ -317,7 +329,7 @@ namespace Spectrum
          * @param size The number of bytes to write. Defaults to a full page. Must not extend beyond the size of a page.
          * @param offset The offset into the page at which to start writing. Defaults to the first byte in the page.
          */
-        void writeToPage(PageNumber page, const Byte * data, ::Z80::UnsignedWord size = PageSize, ::Z80::UnsignedWord offset = 0)
+        void writeToPage(PageNumber page, const Byte * data, ::Z80::UnsignedWord size = PageSize, ::Z80::UnsignedWord offset = 0) override
         {
             assert(0 <= page && page < PageCount);
             assert(offset + size <= PageSize);

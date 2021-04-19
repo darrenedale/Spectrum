@@ -130,11 +130,9 @@ bool Z80SnapshotWriter::writeTo(std::ostream & out) const
 
         case Model::Spectrum128k:
         case Model::SpectrumPlus2:
-            return write128Plus2(out);
-
         case Model::SpectrumPlus2a:
         case Model::SpectrumPlus3:
-            return writePlus2aPlus3(out);
+            return write128kModel(out);
     }
 
     // unreachable code
@@ -261,37 +259,18 @@ bool Z80SnapshotWriter::write16k(std::ostream & out) const
     return true;
 }
 
-bool Z80SnapshotWriter::write128Plus2(std::ostream & out) const
+bool Z80SnapshotWriter::write128kModel(std::ostream & out) const
 {
     if (!writeHeader(out)) {
         std::cerr << "failed writing .z80 header\n";
         return false;
     }
 
-    const auto * memory = dynamic_cast<const Memory128k *>(snapshot().memory());
+    const auto * memory = dynamic_cast<const PagedMemoryInterface *>(snapshot().memory());
     assert(memory);
+    auto pages = memory->pageCount();
 
-    for (int page = 0; page < 8; ++page) {
-        if (!writeMemoryPage(out, memory->pagePointer(page), page)) {
-            std::cerr << "failed writing memory page #" << page << " to .z80 file\n";
-            return false;
-        }
-    }
-
-    return true;
-}
-
-bool Z80SnapshotWriter::writePlus2aPlus3(std::ostream & out) const
-{
-    if (!writeHeader(out)) {
-        std::cerr << "failed writing .z80 header\n";
-        return false;
-    }
-
-    const auto * memory = dynamic_cast<const MemoryPlus2a *>(snapshot().memory());
-    assert(memory);
-
-    for (int page = 0; page < 8; ++page) {
+    for (int page = 0; page < pages; ++page) {
         if (!writeMemoryPage(out, memory->pagePointer(page), page)) {
             std::cerr << "failed writing memory page #" << page << " to .z80 file\n";
             return false;

@@ -7,9 +7,12 @@
 
 #include <cstdint>
 #include <string>
+#include "../z80/types.h"
 
 namespace Spectrum
 {
+    using Byte = ::Z80::UnsignedByte;
+
     /**
      * Enumeration of Spectrum colours.
      */

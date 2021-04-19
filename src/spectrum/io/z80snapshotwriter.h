@@ -94,22 +94,13 @@ namespace Spectrum::Io
         bool write48k(std::ostream & out) const;
 
         /**
-         * Helper to write a snapshot taken from a Spectrum 128K or Plus2 model.
+         * Helper to write a snapshot taken from a 128K Spectrum model (128/+2/+2a/+3).
          *
          * @param out The stream to write to.
          *
          * @return
          */
-        bool write128Plus2(std::ostream & out) const;
-
-        /**
-         * Helper to write a snapshot taken from a Plus2a or Plus3 model.
-         *
-         * @param out The stream to write to.
-         *
-         * @return
-         */
-        bool writePlus2aPlus3(std::ostream & out) const;
+        bool write128kModel(std::ostream & out) const;
 
         /**
          * Helper to write a memory page to an output stream.
