@@ -9,6 +9,7 @@
 #include "disassembler.h"
 #include "../opcodes.h"
 #include "../z80.h"
+#include "../../util/debug.h"
 
 using namespace Z80::Assembly;
 
@@ -2475,7 +2476,7 @@ Mnemonic Disassembler::disassembleOnePlain(const ::Z80::UnsignedByte * machineCo
             };
     }
 
-    std::cerr << "disassembly of opcode 0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(*machineCode) << " not yet implemented\n" << std::setfill('0') << std::dec;
+    Util::debug << "disassembly of opcode 0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(*machineCode) << " not yet implemented\n" << std::setfill('0') << std::dec;
     return {
         Instruction::NOP,
         {},
@@ -4985,8 +4986,8 @@ Mnemonic Disassembler::disassembleOneCb(const ::Z80::UnsignedByte * machineCode)
                     OpcodeSize,
             };
     }
-    
-    std::cerr << "disassembly of opcode 0xcb 0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(*machineCode) << " not yet implemented\n" << std::setfill('0') << std::dec;
+
+    Util::debug << "disassembly of opcode 0xcb 0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(*machineCode) << " not yet implemented\n" << std::setfill('0') << std::dec;
     return {
             Instruction::NOP,
             {},
@@ -5841,7 +5842,7 @@ Mnemonic Disassembler::disassembleOneEd(const ::Z80::UnsignedByte * machineCode)
             };
     }
 
-    std::cerr << "disassembly of opcode 0xed 0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(*machineCode) << " not yet implemented\n" << std::setfill('0') << std::dec;
+    Util::debug << "disassembly of opcode 0xed 0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(*machineCode) << " not yet implemented\n" << std::setfill('0') << std::dec;
     return {
             Instruction::NOP,
             {},
@@ -6355,7 +6356,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(Register16 reg, const ::Z80::Unsigne
         }
     }
 
-    std::cerr << "disassembly of opcode " << (Register16::IX == reg ? "0xdd " : "0xfd ") << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(*machineCode) << " not yet implemented\n" << std::setfill('0') << std::dec;
+    Util::debug << "disassembly of opcode " << (Register16::IX == reg ? "0xdd " : "0xfd ") << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(*machineCode) << " not yet implemented\n" << std::setfill('0') << std::dec;
     return {
             Instruction::NOP,
             {},
@@ -9119,7 +9120,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
 
     }
 
-    std::cerr << "disassembly of opcode " << (Register16::IX == reg ? "0xdd " : "0xfd ") << "0xcb " << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(*machineCode) << " not yet implemented\n" << std::setfill('0') << std::dec;
+    Util::debug << "disassembly of opcode " << (Register16::IX == reg ? "0xdd " : "0xfd ") << "0xcb " << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(*machineCode) << " not yet implemented\n" << std::setfill('0') << std::dec;
     return {
             Instruction::NOP,
             {},

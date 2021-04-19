@@ -21,6 +21,7 @@
 #include "invalidopcode.h"
 #include "invalidinterruptmode.h"
 #include "opcodes.h"
+#include "../util/debug.h"
 
 #if !(defined(NDEBUG))
 #include "assembly/disassembler.h"
@@ -968,7 +969,7 @@ void Z80::Z80::reset()
 void Z80::Z80::pokeHostWord(MemoryType::Address addr, UnsignedWord value)
 {
 	if (0 > addr || memorySize() <= addr + 1) {
-	    std::cerr << "Attempt to write outside addressable range (word 0x"
+        Util::debug << "Attempt to write outside addressable range (word 0x"
 	        << std::hex << std::setfill('0') << std::setw(4) << value << " to 0x"
 	        << std::setw(8) << addr << ")\n";
 
@@ -1003,7 +1004,7 @@ void Z80::Z80::pokeHostWord(MemoryType::Address addr, UnsignedWord value)
 void Z80::Z80::pokeZ80Word(MemoryType::Address addr, UnsignedWord value)
 {
 	if (0 > addr || memorySize() <= addr + 1) {
-        std::cerr << "Attempt to write outside addressable range (Z80 word 0x"
+        Util::debug << "Attempt to write outside addressable range (Z80 word 0x"
                   << std::hex << std::setfill('0') << std::setw(4) << value << " to 0x"
                   << std::setw(8) << addr << ")\n";
 #if (!defined(NDEBUG))
@@ -1021,7 +1022,7 @@ void Z80::Z80::pokeZ80Word(MemoryType::Address addr, UnsignedWord value)
 void Z80::Z80::pokeUnsigned(MemoryType::Address addr, UnsignedByte value)
 {
     if (addr < 0 || addr > memorySize()) {
-        std::cerr << "Attempt to write outside addressable range (byte 0x"
+        Util::debug << "Attempt to write outside addressable range (byte 0x"
                   << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(value) << " to 0x"
                   << std::setw(8) << addr << ")\n";
 #if (!defined(NDEBUG))
@@ -1038,7 +1039,7 @@ UnsignedWord Z80::Z80::peekUnsignedHostWord(MemoryType::Address addr) const
 {
     // TODO make an assertion instead
     if (0 > addr || memorySize() <= addr + 1) {
-        std::cerr << "Attempt to read outside addressable range (word from 0x"
+        Util::debug << "Attempt to read outside addressable range (word from 0x"
                   << std::hex << std::setfill('0') << std::setw(8) << addr << ")\n";
 #if (!defined(NDEBUG))
         dumpState(std::cerr);
@@ -1058,7 +1059,7 @@ UnsignedWord Z80::Z80::peekUnsignedZ80Word(MemoryType::Address addr) const
 {
     // TODO make an assertion instead
     if (0 > addr || memorySize() <= addr + 1) {
-        std::cerr << "Attempt to read outside addressable range (Z80 word from 0x"
+        Util::debug << "Attempt to read outside addressable range (Z80 word from 0x"
                   << std::hex << std::setfill('0') << std::setw(8) << addr << ")\n";
 #if (!defined(NDEBUG))
         dumpState(std::cerr);
@@ -1170,7 +1171,7 @@ int Z80::Z80::handleInterrupt()
 
     switch (m_interruptMode) {
         case InterruptMode::IM0:
-            std::cerr << "IM0 is not currently handled correctly.\n";
+            Util::debug << "IM0 is not currently handled correctly.\n";
             // TODO if the instruction is a call or RST, push PC onto stack
             if (false/* is_call_or_rst */) {
                 Z80__PUSH__REG16(m_registers.pc);
@@ -2239,7 +2240,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Z80__PLAIN__PREFIX__CB:				// 0xcb
-			std::cerr << "executePlainInstruction() called with opcode 0xcb. such an opcode should be handled by executeCbInstruction()" << "\n";
+            Util::debug << "executePlainInstruction() called with opcode 0xcb. such an opcode should be handled by executeCbInstruction()" << "\n";
 			break;
 
 		case Z80__PLAIN__CALL__Z__NN:				// 0xcc
@@ -2358,7 +2359,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Z80__PLAIN__PREFIX__DD:				// 0xdd
-			std::cerr << "executePlainInstruction() called with opcode 0xdd. such an opcode should be handled by executeDdInstruction()" << "\n";
+            Util::debug << "executePlainInstruction() called with opcode 0xdd. such an opcode should be handled by executeDdInstruction()" << "\n";
 			break;
 
 		case Z80__PLAIN__SBC__A__N:					// 0xde
@@ -2466,7 +2467,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
 		case Z80__PLAIN__PREFIX__ED:				// 0xed
 			/* should never happen */
-			std::cerr << "executePlainInstruction() called with opcode 0xed. such an opcode should be handled by executeEdInstruction()" << "\n";
+            Util::debug << "executePlainInstruction() called with opcode 0xed. such an opcode should be handled by executeEdInstruction()" << "\n";
 			break;
 
 		case Z80__PLAIN__XOR__N:						// 0xee
@@ -2575,7 +2576,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Z80__PLAIN__PREFIX__FD:				// 0xfd
-			std::cerr << "executePlainInstruction() called with opcode 0xfd. such an opcode should be handled by executeFdInstruction()" << "\n";
+            Util::debug << "executePlainInstruction() called with opcode 0xfd. such an opcode should be handled by executeFdInstruction()" << "\n";
 			break;
 
 		case Z80__PLAIN__CP__N:						// 0xfe
@@ -2588,7 +2589,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		default:
-			std::cerr << "unexpected opcode: 0x" << std::hex << (*instruction) << "\n";
+            Util::debug << "unexpected opcode: 0x" << std::hex << (*instruction) << "\n";
             throw InvalidOpcode({*instruction}, m_registers.pc);
 	}
 
@@ -3630,7 +3631,7 @@ Z80::InstructionCost Z80::Z80::executeCbInstruction(const UnsignedByte * instruc
 			break;
 
 		default:
-            std::cerr << "unexpected opcode: 0xcb 0x" << std::hex << (*instruction) << "\n";
+            Util::debug << "unexpected opcode: 0xcb 0x" << std::hex << (*instruction) << "\n";
             throw InvalidOpcode({0xcb, *instruction}, m_registers.pc);
 	}
 
@@ -3975,7 +3976,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 
 		case Z80__ED__IN__INDIRECT_C:           // 0xed 0x70
             {
-                std::cout << "opcode 0xed 0x70 IN F,(C) - just setting flags\n";
+                Util::debug << "opcode 0xed 0x70 IN F,(C) - just setting flags\n";
                 UnsignedByte tmpInByte;
                 Z80__IN__REG8__INDIRECT_REG16(tmpInByte, m_registers.bc);
             }
@@ -4496,7 +4497,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		default:
-            std::cerr << "unexpected opcode: 0xed 0x" << std::hex << (*instruction) << "\n";
+            Util::debug << "unexpected opcode: 0xed 0x" << std::hex << (*instruction) << "\n";
             throw InvalidOpcode({0xed, *instruction}, m_registers.pc);
 	}
 
@@ -5080,7 +5081,7 @@ Z80::InstructionCost Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, cons
 #if (!defined(NDEBUG))
             // this is like a NOP - the second 0xdd or 0xfd supersedes the first and consumes 1 byte and 4 t-states. The
             // PC is subsequently incremented and the second 0xdd or 0xfd becomes the first byte of the next instruction
-            std::cout << "Encountered redundant double-extended 0x"
+            Util::debug << "Encountered redundant double-extended 0x"
                 << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(*instruction) << '\n'
                 << std::dec << std::setfill(' ');
 #endif
@@ -5088,8 +5089,8 @@ Z80::InstructionCost Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, cons
 
 	    default:
             {
-                UnsignedByte prefix = (&reg == &m_registers.ix ? 0xdd : 0xfd); 
-                std::cerr << "unexpected opcode: 0x" << std::hex << prefix << " 0x" << (*instruction) << "\n";
+                UnsignedByte prefix = (&reg == &m_registers.ix ? 0xdd : 0xfd);
+                Util::debug << "unexpected opcode: 0x" << std::hex << prefix << " 0x" << (*instruction) << "\n";
                 throw InvalidOpcode({prefix, *instruction}, m_registers.pc);
             }
     }

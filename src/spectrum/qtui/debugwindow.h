@@ -4,10 +4,9 @@
 #include <cstdint>
 #include <iostream>
 #include <iomanip>
-
 #include <QMainWindow>
 #include <QAction>
-
+#include "../../util/debug.h"
 #include "hexspinbox.h"
 #include "registerswidget.h"
 #include "shadowregisterswidget.h"
@@ -67,13 +66,13 @@ namespace Spectrum::QtUi
             auto * breakpoint = new MemoryChangedBreakpoint<ValueType>(address);
 
             if (!addBreakpoint(breakpoint)) {
-                std::cerr << "breakpoint monitoring 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << " for " << (sizeof(ValueType) * 8) << "-bit changes already set\n";
+                Util::debug << "breakpoint monitoring 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << " for " << (sizeof(ValueType) * 8) << "-bit changes already set\n";
                 delete breakpoint;
                 return;
             }
 
             breakpoint->addObserver(&m_memoryBreakpointObserver);
-            std::cout << "setting breakpoint monitoring 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << " for " << (sizeof(ValueType) * 8) << "-bit changes\n";
+            Util::debug << "setting breakpoint monitoring 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << " for " << (sizeof(ValueType) * 8) << "-bit changes\n";
             showStatusMessage(
                     tr("Breakpoint set monitoring 0x%1 for %2-bit changes.").arg(address, 4, 16, QLatin1Char('0')).arg(
                             sizeof(ValueType) * 8));

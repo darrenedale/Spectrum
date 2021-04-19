@@ -2,11 +2,10 @@
 // Created by darren on 23/03/2021.
 //
 
-#include <iostream>
-#include <iomanip>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include "shadowregisterswidget.h"
+#include "../../util/debug.h"
 
 using namespace Spectrum::QtUi;
 
@@ -83,7 +82,7 @@ void ShadowRegistersWidget::setRegister(Register16 reg, UnsignedWord value)
             break;
 
         default:
-            std::cerr << "Only registers AF', BC', DE', HL' are present in this widget.\n";
+            Util::debug << "Only registers AF', BC', DE', HL' are present in this widget.\n";
             break;
     }
 }
@@ -104,7 +103,7 @@ UnsignedWord ShadowRegistersWidget::registerValue(Register16 reg)
             return m_hlShadow.value();
 
         default:
-            std::cerr << "Only registers AF', BC', DE', HL' are present in this widget.\n";
+            Util::debug << "Only registers AF', BC', DE', HL' are present in this widget.\n";
             return 0;
     }
 }

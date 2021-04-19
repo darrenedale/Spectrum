@@ -9,8 +9,8 @@
 #include <QToolTip>
 #include <QScrollBar>
 #include <QPainter>
-
 #include "disassemblywidget.h"
+#include "../../util/debug.h"
 
 using namespace Spectrum::QtUi;
 
@@ -84,7 +84,7 @@ namespace
             }
 
             if (line >= m_mnemonics.size()) {
-                std::cerr << "address 0x" << std::hex << std::setfill('0') << std::setw(4) << address << " not found in disassembly\n" << std::dec << std::setfill(' ');
+                Util::debug << "address 0x" << std::hex << std::setfill('0') << std::setw(4) << address << " not found in disassembly\n" << std::dec << std::setfill(' ');
                 return {};
             }
 

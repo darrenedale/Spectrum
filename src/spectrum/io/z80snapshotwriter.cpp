@@ -6,6 +6,7 @@
 #include "z80snapshotwriter.h"
 #include "../memory128k.h"
 #include "../memoryplus2a.h"
+#include "../../util/debug.h"
 
 using namespace Spectrum::Io;
 using ::Z80::UnsignedWord;
@@ -223,7 +224,7 @@ bool Z80SnapshotWriter::writeHeader(std::ostream & out) const
 bool Z80SnapshotWriter::write48k(std::ostream & out) const
 {
     if (!writeHeader(out)) {
-        std::cerr << "failed writing .z80 header\n";
+        Util::debug << "failed writing .z80 header\n";
         return false;
     }
 
@@ -231,7 +232,7 @@ bool Z80SnapshotWriter::write48k(std::ostream & out) const
         !writeMemoryPage(out, snapshot().memory()->pointerTo(0xc000), 2) ||
         !writeMemoryPage(out, snapshot().memory()->pointerTo(0x4000), 5)
     ) {
-        std::cerr << "failed writing memory to .z80 file\n";
+        Util::debug << "failed writing memory to .z80 file\n";
         return false;
     }
 
@@ -241,7 +242,7 @@ bool Z80SnapshotWriter::write48k(std::ostream & out) const
 bool Z80SnapshotWriter::write16k(std::ostream & out) const
 {
     if (!writeHeader(out)) {
-        std::cerr << "failed writing .z80 header\n";
+        Util::debug << "failed writing .z80 header\n";
         return false;
     }
 
@@ -252,7 +253,7 @@ bool Z80SnapshotWriter::write16k(std::ostream & out) const
         !writeMemoryPage(out, emptyPage.data(), 1) ||
         !writeMemoryPage(out, emptyPage.data(), 2)
     ) {
-        std::cerr << "failed writing memory to .z80 file\n";
+        Util::debug << "failed writing memory to .z80 file\n";
         return false;
     }
 
@@ -262,7 +263,7 @@ bool Z80SnapshotWriter::write16k(std::ostream & out) const
 bool Z80SnapshotWriter::write128kModel(std::ostream & out) const
 {
     if (!writeHeader(out)) {
-        std::cerr << "failed writing .z80 header\n";
+        Util::debug << "failed writing .z80 header\n";
         return false;
     }
 
@@ -272,7 +273,7 @@ bool Z80SnapshotWriter::write128kModel(std::ostream & out) const
 
     for (int page = 0; page < pages; ++page) {
         if (!writeMemoryPage(out, memory->pagePointer(page), page)) {
-            std::cerr << "failed writing memory page #" << page << " to .z80 file\n";
+            Util::debug << "failed writing memory page #" << page << " to .z80 file\n";
             return false;
         }
     }
@@ -352,7 +353,7 @@ std::vector<::Z80::UnsignedByte> Z80SnapshotWriter::compressMemory(const ::Z80::
     return ret;
 }
 
-bool Z80SnapshotWriter::writeMemoryPage(std::ostream & out, const ::Z80::UnsignedByte * memory, int pageNumber)
+bool Z80SnapshotWriter::writeMemoryPage(std::ostream & out, const ::Z80::UnsignedByte * memory, PagedMemoryInterface::PageNumber pageNumber)
 {
     // NOTE memory pages are ALWAYS 16kb in size
     auto compressed = compressMemory(memory, 0x4000);

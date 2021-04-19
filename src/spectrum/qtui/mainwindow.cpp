@@ -46,6 +46,7 @@
 #include "../io/snasnapshotwriter.h"
 #include "../io/spsnapshotwriter.h"
 #include "../io/pokfilereader.h"
+#include "../../util/debug.h"
 
 using namespace Spectrum::QtUi;
 using namespace Spectrum::Io;
@@ -245,24 +246,24 @@ void MainWindow::stopThread()
     m_spectrumThread.stop();
 
 #if (!defined(NDEBUG))
-    std::cout << "Stopping SpectrumThread @ " << static_cast<void *>(&m_spectrumThread) << ' ';
+    Util::debug << "Stopping SpectrumThread @ " << static_cast<void *>(&m_spectrumThread) << ' ';
 
     if (!m_spectrumThread.wait(250)) {
         int waitFor = ThreadStopWaitThreshold;
 
         while (0 < waitFor && !m_spectrumThread.wait(100)) {
-            std::cout << '.';
+            Util::debug << '.';
             waitFor -= 100;
         }
     }
 
-    std::cout << '\n';
+    Util::debug << '\n';
 #else
     m_spectrumThread.wait(ThreadStopWaitThreshold);
 #endif
 
     if (!m_spectrumThread.isFinished()) {
-        std::cerr << "forcibly terminating SpectrumThread @" << std::hex
+        Util::debug << "forcibly terminating SpectrumThread @" << std::hex
               << static_cast<void *>(&m_spectrumThread) << "\n";
         m_spectrumThread.terminate();
     }
@@ -618,7 +619,7 @@ void MainWindow::saveScreenshot(const QString & fileName)
         std::ofstream outFile(fileName.toStdString());
 
         if (!outFile.is_open()) {
-            std::cerr << "Could not open file '" << fileName.toStdString() << "' for writing\n";
+            Util::debug << "Could not open file '" << fileName.toStdString() << "' for writing\n";
             return;
         }
 
@@ -678,13 +679,13 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
     }
 
     if (!reader) {
-        std::cerr << "unrecognised format '" << format.toStdString() << "' from filename '" << fileName.toStdString() << "'\n";
+        Util::debug << "unrecognised format '" << format.toStdString() << "' from filename '" << fileName.toStdString() << "'\n";
         statusBar()->showMessage(tr("The snapshot format for %1 could not be determined.").arg(fileName), DefaultStatusBarMessageTimeout);
         return false;
     }
 
     if (!reader->isOpen()) {
-        std::cerr << "Snapshot file '" << fileName.toStdString() << "' could not be opened.\n";
+        Util::debug << "Snapshot file '" << fileName.toStdString() << "' could not be opened.\n";
         statusBar()->showMessage(tr("The snapshot file %1 could not be opened.").arg(fileName), DefaultStatusBarMessageTimeout);
         return false;
     }
@@ -772,12 +773,12 @@ void MainWindow::saveSnapshot(const QString & fileName, QString format)
     }
 
     if (!writer) {
-        std::cerr << "unrecognised format '" << format.toStdString() << "' from filename '" << fileName.toStdString() << "'\n";
+        Util::debug << "unrecognised format '" << format.toStdString() << "' from filename '" << fileName.toStdString() << "'\n";
         statusBar()->showMessage(tr("Unrecognised snapshot format %1.").arg(format), DefaultStatusBarMessageTimeout);
     }
 
     if (!writer->writeTo(fileName.toStdString())) {
-        std::cerr << "failed to write snapshot to '" << fileName.toStdString() << "'\n";
+        Util::debug << "failed to write snapshot to '" << fileName.toStdString() << "'\n";
         statusBar()->showMessage(tr("Failed to save snapshot to %1.").arg(fileName), DefaultStatusBarMessageTimeout);
     } else {
         statusBar()->showMessage(tr("Snapshot successfully saved to %1.").arg(fileName), DefaultStatusBarMessageTimeout);
@@ -1347,7 +1348,7 @@ void MainWindow::dropEvent(QDropEvent * event)
     if (url.isLocalFile()) {
         loadSnapshot(url.toLocalFile());
     } else {
-        std::cerr << "remote URLs cannot yet be loaded.\n";
+        Util::debug << "remote URLs cannot yet be loaded.\n";
     }
 }
 

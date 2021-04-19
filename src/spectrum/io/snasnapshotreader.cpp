@@ -2,10 +2,9 @@
 // Created by darren on 22/03/2021.
 //
 
-#include <iostream>
-
 #include "snasnapshotreader.h"
 #include "../spectrum48k.h"
+#include "../../util/debug.h"
 
 using namespace Spectrum::Io;
 using ::Z80::UnsignedByte;
@@ -64,7 +63,7 @@ const Spectrum::Snapshot * SnaSnapshotReader::read() const
     in.read(reinterpret_cast<std::istream::char_type *>(&header), sizeof(Header));
     
     if (in.fail()) {
-        std::cerr << "Failed to read SNA header from input stream.\n";
+        Util::debug << "Failed to read SNA header from input stream.\n";
         return nullptr;
     }
 

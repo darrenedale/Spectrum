@@ -13,6 +13,7 @@
 #include <QSettings>
 
 #include "../spectrum48k.h"
+#include "../../util/debug.h"
 #include "thread.h"
 #include "registerpairwidget.h"
 #include "programcounterbreakpoint.h"
@@ -34,8 +35,7 @@ namespace
 
 DebugWindow::DebugWindow(QWidget * parent )
 : DebugWindow(nullptr, parent)
-{
-}
+{}
 
 DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
 : QMainWindow(parent),
@@ -211,7 +211,7 @@ void DebugWindow::connectWidgets()
         auto addr = m_pointers.registerValue(Register16::SP);
 
         if (addr > 0xffff - 2) {
-            std::cerr << "Can't set a breakpoint at address on top of stack - stack is currently < 2 bytes in size\n";
+            Util::debug << "Can't set a breakpoint at address on top of stack - stack is currently < 2 bytes in size\n";
             showStatusMessage("Can't set breakpoint - the top of the stack does not contain an address.", DefaultTransientMessageTimeout);
             return;
         }
@@ -377,7 +377,7 @@ void DebugWindow::threadSpectrumChanged()
 void DebugWindow::setProgramCounterBreakpointTriggered(UnsignedWord addr)
 {
     if (0 > addr || 0xffff < addr) {
-        std::cerr << "invalid breakpoint address: " << std::hex << std::setfill('0') << std::setw(4) << addr << std::dec << std::setfill(' ') << "\n";
+        Util::debug << "invalid breakpoint address: " << std::hex << std::setfill('0') << std::setw(4) << addr << std::dec << std::setfill(' ') << "\n";
         return;
     }
 
@@ -389,13 +389,13 @@ void DebugWindow::breakAtProgramCounter(UnsignedWord address)
     auto * breakpoint = new ProgramCounterBreakpoint(address);
 
     if (!addBreakpoint(breakpoint)) {
-        std::cerr << "breakpoint already set: 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << "\n";
+        Util::debug << "breakpoint already set: 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << "\n";
         delete breakpoint;
         return;
     }
 
     breakpoint->addObserver(&m_pcObserver);
-    std::cout << "setting breakpoint at 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << "\n";
+    Util::debug << "setting breakpoint at 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << "\n";
     showStatusMessage(tr("Breakpoint set at PC = 0x%1.").arg(address, 4, 16, QLatin1Char('0')), DefaultTransientMessageTimeout);
 }
 
@@ -404,7 +404,7 @@ void DebugWindow::breakIfStackPointerBelow(UnsignedWord address)
     auto * breakpoint = new StackPointerBelowBreakpoint(address);
 
     if (!addBreakpoint(breakpoint)) {
-        std::cerr << "stack pointer breakpoint already set at 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << "\n";
+        Util::debug << "stack pointer breakpoint already set at 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << "\n";
         delete breakpoint;
         return;
     }
@@ -510,7 +510,7 @@ void DebugWindow::locateStackPointerInDisassembly()
 
 void DebugWindow::programCounterBreakpointTriggered(UnsignedWord address)
 {
-    std::cout << "PC breakpoint hit, navigating to memory location\n";
+    Util::debug << "PC breakpoint hit, navigating to memory location\n";
     showStatusMessage(tr("Breakpoint hit: PC = 0x%1.").arg(address, 4, 16, QLatin1Char('0')));
     show();
     activateWindow();
@@ -522,7 +522,7 @@ void DebugWindow::programCounterBreakpointTriggered(UnsignedWord address)
 
 void DebugWindow::memoryChangeBreakpointTriggered(UnsignedWord address)
 {
-    std::cout << "Memory monitor breakpoint hit, navigating to memory location\n";
+    Util::debug << "Memory monitor breakpoint hit, navigating to memory location\n";
     showStatusMessage(tr("Monitored memory location modified: 0x%1.").arg(address, 4, 16, QLatin1Char('0')));
     show();
     activateWindow();
@@ -532,7 +532,7 @@ void DebugWindow::memoryChangeBreakpointTriggered(UnsignedWord address)
 
 void DebugWindow::stackPointerBelowBreakpointTriggered(::Z80::UnsignedWord address)
 {
-    std::cout << "Stack pointer breakpoint hit, navigating to memory location\n";
+    Util::debug << "Stack pointer breakpoint hit, navigating to memory location\n";
     showStatusMessage(tr("Stack pointer is below 0x%1.").arg(address, 4, 16, QLatin1Char('0')));
     show();
     activateWindow();

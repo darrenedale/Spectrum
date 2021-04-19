@@ -2,10 +2,10 @@
 // Created by darren on 17/03/2021.
 //
 
-#include <iostream>
 #include <sstream>
-
 #include "mnemonic.h"
+#include "../../util/debug.h"
+
 
 using namespace Z80::Assembly;
 
@@ -307,7 +307,7 @@ std::string std::to_string(const Instruction & instruction)
             return "OTDR";
     }
 
-    std::cerr << "unhandled instruction enumerator\n";
+    Util::debug << "unhandled instruction enumerator\n";
     abort();
 }
 
