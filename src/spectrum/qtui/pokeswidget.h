@@ -52,7 +52,7 @@ namespace Spectrum::QtUi
 
         [[nodiscard]] int pokeCount() const
         {
-            return m_pokes.size();
+            return static_cast<int>(m_pokes.size());
         }
 
         void removePoke(int);
