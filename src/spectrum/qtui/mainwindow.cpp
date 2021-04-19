@@ -35,6 +35,7 @@
 #include "../spectrumplus3.h"
 #include "../kempstonjoystick.h"
 #include "../interfacetwojoystick.h"
+#include "../cursorjoystick.h"
 #include "../kempstonmouse.h"
 #include "../snapshot.h"
 #include "../io/snasnapshotreader.h"
@@ -118,6 +119,7 @@ MainWindow::MainWindow(QWidget * parent)
   m_joystickNone(tr("None")),
   m_joystickKempston(tr("Kempston")),
   m_joystickInterface2(tr("ZX Interface Two")),
+  m_joystickCursor(tr("Cursor")),
   m_kempstonMouse(tr("Kempston mouse")),
   m_reset(QIcon::fromTheme(QStringLiteral("start-over")), tr("Reset")),
   m_debug(tr("Debug")),
@@ -175,18 +177,16 @@ MainWindow::MainWindow(QWidget * parent)
     displayColourMode->addAction(&m_monochromeDisplay);
     displayColourMode->addAction(&m_bwDisplay);
 
-    m_joystickKempston.setCheckable(true);
-    m_joystickInterface2.setCheckable(true);
-    m_joystickNone.setCheckable(true);
-    m_joystickKempston.setChecked(true);
+    auto * joystickInterface = new QActionGroup(this);
+
+    for (auto * action : {&m_joystickKempston, &m_joystickInterface2, &m_joystickCursor, &m_joystickNone, }) {
+        action->setCheckable(true);
+        action->setChecked(false);
+        joystickInterface->addAction(action);
+    }
 
     m_kempstonMouse.setCheckable(true);
     m_kempstonMouse.setChecked(false);
-
-    auto * joystickInterface = new QActionGroup(this);
-    joystickInterface->addAction(&m_joystickKempston);
-    joystickInterface->addAction(&m_joystickInterface2);
-    joystickInterface->addAction(&m_joystickNone);
 
     m_debug.setShortcuts({tr("Ctrl+D"), Qt::Key::Key_F12,});
     m_debug.setCheckable(true);
@@ -325,6 +325,7 @@ void MainWindow::createMenuBar()
     subMenu = menu->addMenu(tr("Joysticks"));
     subMenu->addAction(&m_joystickKempston);
     subMenu->addAction(&m_joystickInterface2);
+    subMenu->addAction(&m_joystickCursor);
     subMenu->addAction(&m_joystickNone);
     menu->addAction(&m_kempstonMouse);
     menu->addSeparator();
@@ -412,6 +413,7 @@ void MainWindow::connectSignals()
 
 	connect(&m_joystickKempston, &QAction::triggered, this, &MainWindow::useKempstonJoystickTriggered);
 	connect(&m_joystickInterface2, &QAction::triggered, this, &MainWindow::useInterfaceTwoJoystickTriggered);
+	connect(&m_joystickCursor, &QAction::triggered, this, &MainWindow::useCursorJoystickTriggered);
 	connect(&m_joystickNone, &QAction::triggered, this, &MainWindow::noJoystickTriggered);
 
 	connect(&m_kempstonMouse, &QAction::triggered, this, &MainWindow::kempstonMouseToggled);
@@ -1493,6 +1495,13 @@ void MainWindow::useInterfaceTwoJoystickTriggered()
 {
     m_spectrum->setJoystickInterface(nullptr);
     m_joystick = std::make_unique<InterfaceTwoJoystick>();
+    m_spectrum->setJoystickInterface(m_joystick.get());
+}
+
+void MainWindow::useCursorJoystickTriggered()
+{
+    m_spectrum->setJoystickInterface(nullptr);
+    m_joystick = std::make_unique<CursorJoystick>();
     m_spectrum->setJoystickInterface(m_joystick.get());
 }
 

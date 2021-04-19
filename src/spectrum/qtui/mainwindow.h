@@ -130,6 +130,7 @@ namespace Spectrum::QtUi
         void modelPlus3Triggered();
         void useKempstonJoystickTriggered();
         void useInterfaceTwoJoystickTriggered();
+        void useCursorJoystickTriggered();
         void noJoystickTriggered();
         void kempstonMouseToggled(bool);
         void loadPokesTriggered();
@@ -173,6 +174,7 @@ namespace Spectrum::QtUi
         QAction m_joystickNone;
         QAction m_joystickKempston;
         QAction m_joystickInterface2;
+        QAction m_joystickCursor;
 
         QAction m_kempstonMouse;
 

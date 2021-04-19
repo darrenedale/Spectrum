@@ -27,6 +27,7 @@ add_executable(
         joystickinterface.cpp
         interfacetwojoystick.cpp
         kempstonjoystick.cpp
+        cursorjoystick.cpp
         mouseinterface.cpp
         kempstonmouse.cpp
         displaydevice.h
