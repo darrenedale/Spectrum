@@ -1186,6 +1186,8 @@ void MainWindow::closeEvent(QCloseEvent * ev)
             joystickType = QStringLiteral("kempston");
         } else if (m_joystickInterface2.isChecked()) {
             joystickType = QStringLiteral("zxinterfacetwo");
+        } else if (m_joystickCursor.isChecked()) {
+            joystickType = QStringLiteral("cursor");
         } else if (m_joystickNone.isChecked()) {
             joystickType = QStringLiteral("none");
         }
@@ -1260,6 +1262,9 @@ void MainWindow::showEvent(QShowEvent * ev)
         } else if (QStringLiteral("zxinterfacetwo") == joystick) {
             m_joystickInterface2.setChecked(true);
             useInterfaceTwoJoystickTriggered();
+        } else if (QStringLiteral("cursor") == joystick) {
+            m_joystickCursor.setChecked(true);
+            useCursorJoystickTriggered();
         } else {
             m_joystickNone.setChecked(true);
             noJoystickTriggered();
@@ -1281,6 +1286,8 @@ void MainWindow::showEvent(QShowEvent * ev)
             setModel(Model::SpectrumPlus2);
         } else if(QStringLiteral("+2a") == model) {
             setModel(Model::SpectrumPlus2a);
+        } else if(QStringLiteral("+3") == model) {
+            setModel(Model::SpectrumPlus3);
         }
     }
 
