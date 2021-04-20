@@ -74,6 +74,7 @@ add_executable(
         qtui/keyboardmonitorwidget.cpp
         qtui/imagewidget.cpp
         qtui/hexspinbox.cpp
+        qtui/gamecontrollerhandler.cpp
         ../computer.h
         ../cpu.cpp
         ../simplememory.h
