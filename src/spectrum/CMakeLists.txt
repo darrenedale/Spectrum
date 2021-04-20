@@ -25,10 +25,11 @@ add_executable(
         z80.cpp
         keyboard.cpp
         joystickinterface.cpp
-        interfacetwojoystick.cpp
         kempstonjoystick.cpp
+        interfacetwojoystick.cpp
         cursorjoystick.cpp
         mouseinterface.cpp
+        fullerjoystick.cpp
         kempstonmouse.cpp
         displaydevice.h
         snapshot.cpp
