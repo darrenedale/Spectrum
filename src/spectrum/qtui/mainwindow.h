@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <QMainWindow>
+#include <QMenu>
 #include <QAction>
 #include <QSlider>
 #include <QSpinBox>
@@ -14,6 +15,7 @@
 #include "../mouseinterface.h"
 #include "../joystickinterface.h"
 #include "../keyboard.h"
+#include "gamecontrollerhandler.h"
 #include "thread.h"
 
 namespace Spectrum
@@ -62,6 +64,13 @@ namespace Spectrum::QtUi
         // NOTE can't be const because the thread must be paused
         void saveSnapshot(const QString & fileName, QString format = {});
         void saveSnapshotToSlot(int slotIndex, QString format = {});
+
+        /**
+         * Rescan the game controllers connected to the host.
+         *
+         * The controllers menu is re-populated. This is called automatically if a controller is disconnected or a new controller is connected.
+         */
+        void rescanGameControllers();
 
         inline BaseSpectrum & spectrum()
         {
@@ -174,6 +183,9 @@ namespace Spectrum::QtUi
         QAction m_joystickKempston;
         QAction m_joystickInterface2;
 
+        QMenu m_gameControllersMenu;
+        QActionGroup m_gameControllersGroup;
+
         QAction m_kempstonMouse;
 
         QAction m_debug;
@@ -191,6 +203,7 @@ namespace Spectrum::QtUi
 
         QTimer m_displayRefreshTimer;
         std::unique_ptr<JoystickInterface> m_joystick;
+        GameControllerHandler m_gameControllerHandler;
         std::unique_ptr<MouseInterface> m_mouse;
 	};
 }

@@ -3,7 +3,6 @@
 #include <fstream>
 
 #include <QMenuBar>
-#include <QMenu>
 #include <QToolBar>
 #include <QStatusBar>
 #include <QAction>
@@ -90,6 +89,230 @@ namespace
 
     // ms to wait for the thread to stop before forcibly terminating it
     constexpr const int ThreadStopWaitThreshold = 3000;
+
+    std::vector<::Spectrum::Keyboard::Key> mapToSpectrumKeys(Qt::Key key)
+    {
+        // TODO configurable mapping
+        // TODO mapping single keys to key combinations (e.g. to enter extended mode, graphics mode, ...)
+        switch (key) {
+            case Qt::Key::Key_Backspace:
+                return {::Spectrum::Keyboard::Key::CapsShift, Keyboard::Key::Num0};
+
+            case Qt::Key::Key_Colon:
+                return {Keyboard::Key::SymbolShift, Keyboard::Key::Z};
+
+            case Qt::Key::Key_Semicolon:
+                return {Keyboard::Key::SymbolShift, Keyboard::Key::O};
+
+            case Qt::Key::Key_Apostrophe:
+                return {Keyboard::Key::SymbolShift, Keyboard::Key::Num7};
+
+            case Qt::Key::Key_Period:
+                return {Keyboard::Key::SymbolShift, Keyboard::Key::M};
+
+            case Qt::Key::Key_Comma:
+                return {Keyboard::Key::SymbolShift, Keyboard::Key::N};
+
+            case Qt::Key::Key_Underscore:
+                return {Keyboard::Key::SymbolShift, Keyboard::Key::Num0};
+
+            case Qt::Key::Key_Minus:
+                return {Keyboard::Key::SymbolShift, Keyboard::Key::J};
+
+            case Qt::Key::Key_Plus:
+                return {Keyboard::Key::SymbolShift, Keyboard::Key::K};
+
+            case Qt::Key::Key_Equal:
+                return {Keyboard::Key::SymbolShift, Keyboard::Key::L};
+
+            case Qt::Key::Key_Greater:
+                return {Keyboard::Key::SymbolShift, Keyboard::Key::T};
+
+            case Qt::Key::Key_Less:
+                return {Keyboard::Key::SymbolShift, Keyboard::Key::R};
+
+            case Qt::Key::Key_Slash:
+                return {Keyboard::Key::SymbolShift, Keyboard::Key::V};
+
+            case Qt::Key::Key_Question:
+                return {Keyboard::Key::SymbolShift, Keyboard::Key::C};
+
+            case Qt::Key::Key_CapsLock:
+                return {Keyboard::Key::CapsShift, Keyboard::Key::Num2};
+
+            case Qt::Key::Key_Left:
+                return {Keyboard::Key::CapsShift, Keyboard::Key::Num5};
+
+            case Qt::Key::Key_Right:
+                return {Keyboard::Key::CapsShift, Keyboard::Key::Num8};
+
+            case Qt::Key::Key_Up:
+                return {Keyboard::Key::CapsShift, Keyboard::Key::Num7};
+
+            case Qt::Key::Key_Down:
+                return {Keyboard::Key::CapsShift, Keyboard::Key::Num6};
+
+            case Qt::Key::Key_Shift:
+                return {Keyboard::Key::CapsShift};
+
+            case Qt::Key::Key_Alt:
+            case Qt::Key::Key_AltGr:
+                return {Keyboard::Key::SymbolShift};
+
+            case Qt::Key::Key_Enter:
+            case Qt::Key::Key_Return:
+                return {Keyboard::Key::Enter};
+
+            case Qt::Key::Key_Space:
+                return {Keyboard::Key::Space};
+
+                // TODO the shifted number keys assume a UK or US layout keyboard
+            case Qt::Key::Key_1:
+            case Qt::Key::Key_Exclam:
+                return {Keyboard::Key::Num1};
+
+            case Qt::Key::Key_2:
+            case Qt::Key::Key_At:
+            case Qt::Key::Key_QuoteDbl:
+                return {Keyboard::Key::Num2};
+
+            case Qt::Key::Key_3:
+            case Qt::Key::Key_sterling:
+            case Qt::Key::Key_NumberSign:
+                return {Keyboard::Key::Num3};
+
+            case Qt::Key::Key_4:
+            case Qt::Key::Key_Dollar:
+                return {Keyboard::Key::Num4};
+
+            case Qt::Key::Key_5:
+            case Qt::Key::Key_Percent:
+                return {Keyboard::Key::Num5};
+
+            case Qt::Key::Key_6:
+            case Qt::Key::Key_AsciiCircum:
+                return {Keyboard::Key::Num6};
+
+            case Qt::Key::Key_7:
+            case Qt::Key::Key_Ampersand:
+                return {Keyboard::Key::Num7};
+
+            case Qt::Key::Key_8:
+            case Qt::Key::Key_Asterisk:
+                return {Keyboard::Key::Num8};
+
+            case Qt::Key::Key_9:
+            case Qt::Key::Key_ParenLeft:
+                return {Keyboard::Key::Num9};
+
+            case Qt::Key::Key_0:
+            case Qt::Key::Key_ParenRight:
+                return {Keyboard::Key::Num0};
+
+            case Qt::Key::Key_Q:
+                return {Keyboard::Key::Q};
+
+            case Qt::Key::Key_W:
+                return {Keyboard::Key::W};
+
+            case Qt::Key::Key_E:
+                return {Keyboard::Key::E};
+
+            case Qt::Key::Key_R:
+                return {Keyboard::Key::R};
+
+            case Qt::Key::Key_T:
+                return {Keyboard::Key::T};
+
+            case Qt::Key::Key_Y:
+                return {Keyboard::Key::Y};
+
+            case Qt::Key::Key_U:
+                return {Keyboard::Key::U};
+
+            case Qt::Key::Key_I:
+                return {Keyboard::Key::I};
+
+            case Qt::Key::Key_O:
+                return {Keyboard::Key::O};
+
+            case Qt::Key::Key_P:
+                return {Keyboard::Key::P};
+
+            case Qt::Key::Key_A:
+                return {Keyboard::Key::A};
+
+            case Qt::Key::Key_S:
+                return {Keyboard::Key::S};
+
+            case Qt::Key::Key_D:
+                return {Keyboard::Key::D};
+
+            case Qt::Key::Key_F:
+                return {Keyboard::Key::F};
+
+            case Qt::Key::Key_G:
+                return {Keyboard::Key::G};
+
+            case Qt::Key::Key_H:
+                return {Keyboard::Key::H};
+
+            case Qt::Key::Key_J:
+                return {Keyboard::Key::J};
+
+            case Qt::Key::Key_K:
+                return {Keyboard::Key::K};
+
+            case Qt::Key::Key_L:
+                return {Keyboard::Key::L};
+
+            case Qt::Key::Key_Z:
+                return {Keyboard::Key::Z};
+
+            case Qt::Key::Key_X:
+                return {Keyboard::Key::X};
+
+            case Qt::Key::Key_C:
+                return {Keyboard::Key::C};
+
+            case Qt::Key::Key_V:
+                return {Keyboard::Key::V};
+
+            case Qt::Key::Key_B:
+                return {Keyboard::Key::B};
+
+            case Qt::Key::Key_N:
+                return {Keyboard::Key::N};
+
+            case Qt::Key::Key_M:
+                return {Keyboard::Key::M};
+
+            default:
+                return {};
+        }
+    }
+
+    JoystickMapping mapToSpectrumJoystick(Qt::Key key)
+    {
+        switch (key) {
+            case Qt::Key::Key_Up:
+                return JoystickMapping::Up;
+
+            case Qt::Key::Key_Down:
+                return JoystickMapping::Down;
+
+            case Qt::Key::Key_Left:
+                return JoystickMapping::Left;
+
+            case Qt::Key::Key_Right:
+                return JoystickMapping::Right;
+
+            case Qt::Key::Key_Control:
+                return JoystickMapping::Button1;
+        }
+
+        return JoystickMapping::None;
+    }
 }
 
 /**
@@ -117,6 +340,8 @@ MainWindow::MainWindow(QWidget * parent)
   m_bwDisplay(tr("Black and White")),
   m_joystickNone(tr("None")),
   m_joystickKempston(tr("Kempston")),
+  m_gameControllersMenu(tr("Game Controller")),
+  m_gameControllersGroup(nullptr),
   m_joystickInterface2(tr("ZX Interface Two")),
   m_kempstonMouse(tr("Kempston mouse")),
   m_reset(QIcon::fromTheme(QStringLiteral("start-over")), tr("Reset")),
@@ -128,6 +353,7 @@ MainWindow::MainWindow(QWidget * parent)
   m_debugWindow(&m_spectrumThread),
   m_displayRefreshTimer(nullptr),
   m_joystick(std::make_unique<Spectrum::KempstonJoystick>()),
+  m_gameControllerHandler(m_joystick.get()),
   m_mouse(nullptr)
 {
     setWindowTitle(QStringLiteral("Spectrum"));
@@ -179,6 +405,13 @@ MainWindow::MainWindow(QWidget * parent)
     m_joystickInterface2.setCheckable(true);
     m_joystickNone.setCheckable(true);
     m_joystickKempston.setChecked(true);
+    m_joystickKempston.setToolTip(tr("Emulate a Kempston joystick interface."));
+    m_joystickInterface2.setToolTip(tr("Emulate a ZX Interface 2 joystick interface."));
+    m_joystickNone.setToolTip(tr("Don't emulate any joystick interface."));
+    m_gameControllersMenu.setToolTip(tr("Choose which game controller to attach to the emulated Spectrum joystick interface."));
+
+    rescanGameControllers();
+    connect(QGamepadManager::instance(), &QGamepadManager::connectedGamepadsChanged, this, &MainWindow::rescanGameControllers);
 
     m_kempstonMouse.setCheckable(true);
     m_kempstonMouse.setChecked(false);
@@ -317,15 +550,20 @@ void MainWindow::createMenuBar()
     menu->addAction(&m_reset);
     menu->addSeparator();
     subMenu = menu->addMenu(tr("Model"));
+    subMenu->setToolTip(tr("Choose which Spectrum model to emulate."));
 
     for (auto * action : {&m_model16, &m_model48, &m_model128, &m_modelPlus2, &m_modelPlus2a, &m_modelPlus3, }) {
         subMenu->addAction(action);
     }
 
-    subMenu = menu->addMenu(tr("Joysticks"));
+    subMenu = menu->addMenu(tr("Joystick Interface"));
+    subMenu->setToolTip(tr("Choose which emulated joystick interface to attach to the Spectrum."));
     subMenu->addAction(&m_joystickKempston);
     subMenu->addAction(&m_joystickInterface2);
     subMenu->addAction(&m_joystickNone);
+
+    menu->addMenu(&m_gameControllersMenu);
+
     menu->addAction(&m_kempstonMouse);
     menu->addSeparator();
     menu->addAction(m_pokesWidget.loadPokesAction());
@@ -790,231 +1028,39 @@ void MainWindow::saveSnapshot(const QString & fileName, QString format)
     }
 }
 
-namespace
+void MainWindow::rescanGameControllers()
 {
-    std::vector<::Spectrum::Keyboard::Key> mapToSpectrumKeys(Qt::Key key)
-    {
-        // TODO configurable mapping
-        // TODO mapping single keys to key combinations (e.g. to enter extended mode, graphics mode, ...)
-        switch (key) {
-            case Qt::Key::Key_Backspace:
-                return {::Spectrum::Keyboard::Key::CapsShift, Keyboard::Key::Num0};
+    // keep this so that we can restore selection after the rescan
+    auto * currentController = m_gameControllerHandler.gameController();
 
-            case Qt::Key::Key_Colon:
-                return {Keyboard::Key::SymbolShift, Keyboard::Key::Z};
+    // all member actions are owned by the menu so this triggers deletion of the actions
+    m_gameControllersMenu.clear();
 
-            case Qt::Key::Key_Semicolon:
-                return {Keyboard::Key::SymbolShift, Keyboard::Key::O};
+    // NOTE actions that are part of a group are removed from the group automatically when they are deleted so removing them from the menu also removes them
+    // from the group
 
-            case Qt::Key::Key_Apostrophe:
-                return {Keyboard::Key::SymbolShift, Keyboard::Key::Num7};
+    for (const auto gamepadId : QGamepadManager::instance()->connectedGamepads()) {
+        QGamepad gamepad(gamepadId);
+        Util::debug << "found connected gameController \"" << gamepad.name().toStdString() << "\" [" << gamepadId << "]\n";
 
-            case Qt::Key::Key_Period:
-                return {Keyboard::Key::SymbolShift, Keyboard::Key::M};
+        auto * action = m_gameControllersMenu.addAction(gamepad.name(), [this, gamepadId]() {
+            m_gameControllerHandler.setGameController(gamepadId);
+        });
 
-            case Qt::Key::Key_Comma:
-                return {Keyboard::Key::SymbolShift, Keyboard::Key::N};
-
-            case Qt::Key::Key_Underscore:
-                return {Keyboard::Key::SymbolShift, Keyboard::Key::Num0};
-
-            case Qt::Key::Key_Minus:
-                return {Keyboard::Key::SymbolShift, Keyboard::Key::J};
-
-            case Qt::Key::Key_Plus:
-                return {Keyboard::Key::SymbolShift, Keyboard::Key::K};
-
-            case Qt::Key::Key_Equal:
-                return {Keyboard::Key::SymbolShift, Keyboard::Key::L};
-
-            case Qt::Key::Key_Greater:
-                return {Keyboard::Key::SymbolShift, Keyboard::Key::T};
-
-            case Qt::Key::Key_Less:
-                return {Keyboard::Key::SymbolShift, Keyboard::Key::R};
-
-            case Qt::Key::Key_Slash:
-                return {Keyboard::Key::SymbolShift, Keyboard::Key::V};
-
-            case Qt::Key::Key_Question:
-                return {Keyboard::Key::SymbolShift, Keyboard::Key::C};
-
-            case Qt::Key::Key_CapsLock:
-                return {Keyboard::Key::CapsShift, Keyboard::Key::Num2};
-
-            case Qt::Key::Key_Left:
-                return {Keyboard::Key::CapsShift, Keyboard::Key::Num5};
-
-            case Qt::Key::Key_Right:
-                return {Keyboard::Key::CapsShift, Keyboard::Key::Num8};
-
-            case Qt::Key::Key_Up:
-                return {Keyboard::Key::CapsShift, Keyboard::Key::Num7};
-
-            case Qt::Key::Key_Down:
-                return {Keyboard::Key::CapsShift, Keyboard::Key::Num6};
-
-            case Qt::Key::Key_Shift:
-                return {Keyboard::Key::CapsShift};
-
-            case Qt::Key::Key_Alt:
-            case Qt::Key::Key_AltGr:
-                return {Keyboard::Key::SymbolShift};
-
-            case Qt::Key::Key_Enter:
-            case Qt::Key::Key_Return:
-                return {Keyboard::Key::Enter};
-
-            case Qt::Key::Key_Space:
-                return {Keyboard::Key::Space};
-
-            // TODO the shifted number keys assume a UK or US layout keyboard
-            case Qt::Key::Key_1:
-            case Qt::Key::Key_Exclam:
-                return {Keyboard::Key::Num1};
-
-            case Qt::Key::Key_2:
-            case Qt::Key::Key_At:
-            case Qt::Key::Key_QuoteDbl:
-                return {Keyboard::Key::Num2};
-
-            case Qt::Key::Key_3:
-            case Qt::Key::Key_sterling:
-            case Qt::Key::Key_NumberSign:
-                return {Keyboard::Key::Num3};
-
-            case Qt::Key::Key_4:
-            case Qt::Key::Key_Dollar:
-                return {Keyboard::Key::Num4};
-
-            case Qt::Key::Key_5:
-            case Qt::Key::Key_Percent:
-                return {Keyboard::Key::Num5};
-
-            case Qt::Key::Key_6:
-            case Qt::Key::Key_AsciiCircum:
-                return {Keyboard::Key::Num6};
-
-            case Qt::Key::Key_7:
-            case Qt::Key::Key_Ampersand:
-                return {Keyboard::Key::Num7};
-
-            case Qt::Key::Key_8:
-            case Qt::Key::Key_Asterisk:
-                return {Keyboard::Key::Num8};
-
-            case Qt::Key::Key_9:
-            case Qt::Key::Key_ParenLeft:
-                return {Keyboard::Key::Num9};
-
-            case Qt::Key::Key_0:
-            case Qt::Key::Key_ParenRight:
-                return {Keyboard::Key::Num0};
-
-            case Qt::Key::Key_Q:
-                return {Keyboard::Key::Q};
-
-            case Qt::Key::Key_W:
-                return {Keyboard::Key::W};
-
-            case Qt::Key::Key_E:
-                return {Keyboard::Key::E};
-
-            case Qt::Key::Key_R:
-                return {Keyboard::Key::R};
-
-            case Qt::Key::Key_T:
-                return {Keyboard::Key::T};
-
-            case Qt::Key::Key_Y:
-                return {Keyboard::Key::Y};
-
-            case Qt::Key::Key_U:
-                return {Keyboard::Key::U};
-
-            case Qt::Key::Key_I:
-                return {Keyboard::Key::I};
-
-            case Qt::Key::Key_O:
-                return {Keyboard::Key::O};
-
-            case Qt::Key::Key_P:
-                return {Keyboard::Key::P};
-
-            case Qt::Key::Key_A:
-                return {Keyboard::Key::A};
-
-            case Qt::Key::Key_S:
-                return {Keyboard::Key::S};
-
-            case Qt::Key::Key_D:
-                return {Keyboard::Key::D};
-
-            case Qt::Key::Key_F:
-                return {Keyboard::Key::F};
-
-            case Qt::Key::Key_G:
-                return {Keyboard::Key::G};
-
-            case Qt::Key::Key_H:
-                return {Keyboard::Key::H};
-
-            case Qt::Key::Key_J:
-                return {Keyboard::Key::J};
-
-            case Qt::Key::Key_K:
-                return {Keyboard::Key::K};
-
-            case Qt::Key::Key_L:
-                return {Keyboard::Key::L};
-
-            case Qt::Key::Key_Z:
-                return {Keyboard::Key::Z};
-
-            case Qt::Key::Key_X:
-                return {Keyboard::Key::X};
-
-            case Qt::Key::Key_C:
-                return {Keyboard::Key::C};
-
-            case Qt::Key::Key_V:
-                return {Keyboard::Key::V};
-
-            case Qt::Key::Key_B:
-                return {Keyboard::Key::B};
-
-            case Qt::Key::Key_N:
-                return {Keyboard::Key::N};
-
-            case Qt::Key::Key_M:
-                return {Keyboard::Key::M};
-
-            default:
-                return {};
-        }
+        m_gameControllersGroup.addAction(action);
+        action->setData(gamepad.name());
+        action->setCheckable(true);
+        action->setChecked(currentController && gamepadId == currentController->deviceId());
     }
 
-    JoystickMapping mapToSpectrumJoystick(Qt::Key key)
-    {
-        switch (key) {
-            case Qt::Key::Key_Up:
-                return JoystickMapping::Up;
+    // add the keyboard-mapped controller
+    auto * action = m_gameControllersMenu.addAction(tr("Keyboard"), [this]() {
+        m_gameControllerHandler.setGameController(nullptr);
+    });
 
-            case Qt::Key::Key_Down:
-                return JoystickMapping::Down;
-
-            case Qt::Key::Key_Left:
-                return JoystickMapping::Left;
-
-            case Qt::Key::Key_Right:
-                return JoystickMapping::Right;
-
-            case Qt::Key::Key_Control:
-                return JoystickMapping::Button1;
-        }
-
-        return JoystickMapping::None;
-    }
+    m_gameControllersGroup.addAction(action);
+    action->setCheckable(true);
+    action->setChecked(!currentController);
 }
 
 bool MainWindow::eventFilter(QObject * target, QEvent * event)
@@ -1060,8 +1106,9 @@ bool MainWindow::eventFilter(QObject * target, QEvent * event)
                     m_spectrum->setExecutionSpeedConstrained(false);
                     updateStatusBarSpeedWidget();
                     return true;
-                } else if (auto joystickMapping = mapToSpectrumJoystick(qtKey); m_joystick && JoystickMapping::None !=
-                                                                                joystickMapping) {
+                } else if (auto joystickMapping = mapToSpectrumJoystick(qtKey); !m_gameControllerHandler.gameController() && m_joystick && JoystickMapping::None != joystickMapping) {
+                    // if there's a joystick interface connected to the emulated spectrum and it's a keyboard-mapped joystick and the keypress matches a key
+                    // mapped to the joystick, the joystick swallows the keypress event
                     switch (joystickMapping) {
                         case JoystickMapping::Up:
                             m_joystick->setJoystick1Up(true);
@@ -1098,7 +1145,6 @@ bool MainWindow::eventFilter(QObject * target, QEvent * event)
                 }
             }
             break;
-
 
             case QEvent::Type::KeyRelease: {
                 auto qtKey = static_cast<Qt::Key>(dynamic_cast<QKeyEvent *>(event)->key());
@@ -1188,8 +1234,26 @@ void MainWindow::closeEvent(QCloseEvent * ev)
             joystickType = QStringLiteral("none");
         }
 
-        settings.setValue(QStringLiteral("joystick1"), joystickType);
+        settings.setValue(QStringLiteral("joystick1Interface"), joystickType);
     }
+
+    {
+        QString controller;
+
+        for (auto * const action : m_gameControllersGroup.actions()) {
+            if (action->isChecked()) {
+                controller = action->data().toString();
+                break;
+            }
+        }
+
+        if (controller.isEmpty()) {
+            settings.remove(QStringLiteral("joystick1Controller"));
+        } else {
+            settings.setValue(QStringLiteral("joystick1Controller"), controller);
+        }
+    }
+
 
     {
         QString model;
@@ -1250,7 +1314,7 @@ void MainWindow::showEvent(QShowEvent * ev)
     m_emulationSpeedSlider.setValue(speed);
 
     {
-        auto joystick = settings.value(QStringLiteral("joystick1")).toString();
+        auto joystick = settings.value(QStringLiteral("joystick1Interface")).toString();
 
         if (QStringLiteral("kempston") == joystick) {
             m_joystickKempston.setChecked(true);
@@ -1261,6 +1325,32 @@ void MainWindow::showEvent(QShowEvent * ev)
         } else {
             m_joystickNone.setChecked(true);
             noJoystickTriggered();
+        }
+    }
+
+    {
+        auto controller = settings.value(QStringLiteral("joystick1Controller")).toString();
+        bool found = false;
+        QAction * keyboardControllerAction = nullptr;
+
+        for (auto * const action : m_gameControllersGroup.actions()) {
+            auto actionController = action->data().toString();
+
+            if (actionController == controller) {
+                action->setChecked(true);
+                action->trigger();
+                found = true;
+                break;
+            }
+
+            if (actionController.isEmpty()) {
+                keyboardControllerAction = action;
+            }
+        }
+
+        // default to the keyboard controller if the settings contain a controller that's not currently available
+        if (!found && keyboardControllerAction) {
+            keyboardControllerAction->setChecked(true);
         }
     }
 
@@ -1485,20 +1575,25 @@ void MainWindow::modelPlus3Triggered()
 void MainWindow::useKempstonJoystickTriggered()
 {
     m_spectrum->setJoystickInterface(nullptr);
+    m_gameControllerHandler.setJoystick(nullptr);
     m_joystick = std::make_unique<KempstonJoystick>();
+    m_gameControllerHandler.setJoystick(m_joystick.get());
     m_spectrum->setJoystickInterface(m_joystick.get());
 }
 
 void MainWindow::useInterfaceTwoJoystickTriggered()
 {
     m_spectrum->setJoystickInterface(nullptr);
+    m_gameControllerHandler.setJoystick(nullptr);
     m_joystick = std::make_unique<InterfaceTwoJoystick>();
+    m_gameControllerHandler.setJoystick(m_joystick.get());
     m_spectrum->setJoystickInterface(m_joystick.get());
 }
 
 void MainWindow::noJoystickTriggered()
 {
     m_spectrum->setJoystickInterface(nullptr);
+    m_gameControllerHandler.setJoystick(nullptr);
     m_joystick.reset();
 }
 
@@ -1626,7 +1721,6 @@ bool MainWindow::loadSnapshotFromSlot(int slotIndex)
         return false;
     }
 
-    // TODO work out format from discovered file name
     if (!loadSnapshot(slotDir.absoluteFilePath(fileName), QStringLiteral("z80"))) {
         statusBar()->showMessage(tr("Snapshot in slot %1 could not be loaded.").arg(slotIndex));
         return false;
