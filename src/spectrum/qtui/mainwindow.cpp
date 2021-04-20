@@ -95,7 +95,6 @@ namespace
     std::vector<::Spectrum::Keyboard::Key> mapToSpectrumKeys(Qt::Key key)
     {
         // TODO configurable mapping
-        // TODO mapping single keys to key combinations (e.g. to enter extended mode, graphics mode, ...)
         switch (key) {
             case Qt::Key::Key_Backspace:
                 return {::Spectrum::Keyboard::Key::CapsShift, Keyboard::Key::Num0};
@@ -1079,10 +1078,9 @@ bool MainWindow::eventFilter(QObject * target, QEvent * event)
         switch (event->type()) {
             case QEvent::Type::MouseMove:
                 if (m_mouse) {
-                    auto coordinates = dynamic_cast<QMouseEvent *>(event)->pos();
-                    // TODO scale down for display size
-                    m_mouse->setX(coordinates.x());
-                    m_mouse->setY(coordinates.y());
+                    auto pos = m_displayWidget.mapToSpectrum(dynamic_cast<QMouseEvent *>(event)->pos());
+                    m_mouse->setX(pos.x());
+                    m_mouse->setY(pos.y());
                 }
                 break;
                 

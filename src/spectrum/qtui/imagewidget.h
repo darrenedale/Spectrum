@@ -54,6 +54,15 @@ namespace Spectrum
         }
 
     protected:
+        /**
+         * Fetch the rectangle into which to render the image.
+         *
+         * This will be The same as the widget rect unless the aspect ratio is being preserved.
+         *
+         * @return The render rectangle.
+         */
+        QRect renderRect() const;
+
         void resizeEvent(QResizeEvent *) override;
         void paintEvent(QPaintEvent *) override;
 

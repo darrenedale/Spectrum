@@ -18,6 +18,8 @@ ImageWidget::ImageWidget(QImage image, QWidget * parent )
 {
 }
 
+ImageWidget::~ImageWidget() = default;
+
 void ImageWidget::setImage(QImage image)
 {
 	m_image = std::move(image);
@@ -33,6 +35,18 @@ void ImageWidget::resizeEvent(QResizeEvent * ev)
 void ImageWidget::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
+    painter.drawImage(renderRect(), m_image);
+    painter.end();
+}
+
+void ImageWidget::setKeepAspectRatio(bool keep)
+{
+    m_keepAspectRatio = keep;
+    update();
+}
+
+QRect ImageWidget::renderRect() const
+{
     int x = 0;
     int y = 0;
     int w = width();
@@ -55,14 +69,5 @@ void ImageWidget::paintEvent(QPaintEvent *)
         }
     }
 
-    painter.drawImage(QRect(x, y, w, h), m_image);
-    painter.end();
+    return {x, y, w, h};
 }
-
-void ImageWidget::setKeepAspectRatio(bool keep)
-{
-    m_keepAspectRatio = keep;
-    update();
-}
-
-ImageWidget::~ImageWidget() = default;

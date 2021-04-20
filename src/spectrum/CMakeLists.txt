@@ -74,6 +74,7 @@ add_executable(
         qtui/threadpauser.h
         qtui/keyboardmonitorwidget.cpp
         qtui/imagewidget.cpp
+        qtui/spectrumdisplayimagewidget.cpp
         qtui/hexspinbox.cpp
         qtui/gamecontrollerhandler.cpp
         ../computer.h

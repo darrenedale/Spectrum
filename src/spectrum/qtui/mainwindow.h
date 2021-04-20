@@ -10,7 +10,7 @@
 #include <QTimer>
 #include "qimagedisplaydevice.h"
 #include "debugwindow.h"
-#include "imagewidget.h"
+#include "spectrumdisplayimagewidget.h"
 #include "pokeswidget.h"
 #include "../mouseinterface.h"
 #include "../joystickinterface.h"
@@ -162,7 +162,7 @@ namespace Spectrum::QtUi
         Thread m_spectrumThread;
         Keyboard m_keyboard;
         QImageDisplayDevice m_display;
-        ImageWidget m_displayWidget;
+        SpectrumDisplayImageWidget m_displayWidget;
         PokesWidget m_pokesWidget;
         QAction m_load;
         QAction m_save;

@@ -11,8 +11,6 @@ using namespace Spectrum::QtUi;
 
 namespace
 {
-    constexpr const std::size_t BorderSize = 32;
-
     constexpr const QRgb colourMap[16] = {
             qRgb(0x00, 0x00, 0x00),
             qRgb(0x00, 0x00, 0xcd),
@@ -158,16 +156,6 @@ void QImageDisplayDevice::setBorder(Colour colour, bool bright)
     painter.fillRect(Width + BorderSize, BorderSize, BorderSize, Height, fill);
     painter.fillRect(0, Height + BorderSize, Width + BorderSize + BorderSize, BorderSize, fill);
     painter.end();
-}
-
-constexpr int QImageDisplayDevice::fullWidth()
-{
-    return Width + BorderSize + BorderSize;
-}
-
-constexpr int QImageDisplayDevice::fullHeight()
-{
-    return Height + BorderSize + BorderSize;
 }
 
 Spectrum::Colour QImageDisplayDevice::border() const
