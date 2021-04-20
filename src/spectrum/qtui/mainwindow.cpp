@@ -58,7 +58,7 @@ namespace fs = std::filesystem;
 
 namespace
 {
-    constexpr const int DisplayRefreshRate = 100;   // how many times a second to redraw the screen
+    constexpr const int DisplayRefreshRate = 50;   // how many times a second to redraw the screen
     constexpr const int DefaultStatusBarMessageTimeout = 5000;
 
     enum class JoystickMapping : std::uint8_t
@@ -731,7 +731,7 @@ void MainWindow::refreshSpectrumDisplay()
 
     if (m_spectrumThread.isPaused()) {
         QPainter painter(&image);
-        QColor fillColour(0x88, 0x88, 0x88, 0x88);
+        QColor fillColour(0x66, 0x66, 0x66, 0x66);
         auto width = image.width() / 5;
         auto height = image.height() / 2;
         auto x = image.width() / 4;
