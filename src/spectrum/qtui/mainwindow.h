@@ -177,6 +177,7 @@ namespace Spectrum::QtUi
         QAction m_modelPlus3;
 
         QAction m_saveScreenshot;
+        QActionGroup m_frameSkipGroup;
         QAction m_colourDisplay;
         QAction m_monochromeDisplay;
         QAction m_bwDisplay;

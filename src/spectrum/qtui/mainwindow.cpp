@@ -336,6 +336,7 @@ MainWindow::MainWindow(QWidget * parent)
   m_modelPlus2a(tr("Spectrum +2a")),
   m_modelPlus3(tr("Spectrum +3")),
   m_saveScreenshot(QIcon::fromTheme(QStringLiteral("image")), tr("Screenshot")),
+  m_frameSkipGroup(nullptr),
   m_colourDisplay(tr("Colour")),
   m_monochromeDisplay(tr("Monochrome")),
   m_bwDisplay(tr("Black and White")),
@@ -576,6 +577,40 @@ void MainWindow::createMenuBar()
 
     menu = tempMenuBar->addMenu(tr("Display"));
     menu->addAction(&m_saveScreenshot);
+    menu->addSeparator();
+
+    subMenu = menu->addMenu(tr("Frame Skip"));
+
+    {
+        auto * action = subMenu->addAction(tr("Don't skip, render every frame"), [this]() {
+            m_display.setFrameSkip(0);
+        });
+
+        action->setData(0);
+        action->setCheckable(true);
+        action->setChecked(true);
+        m_frameSkipGroup.addAction(action);
+        subMenu->addSeparator();
+
+        std::array<const char *, 4> labels = {
+                "Skip every other frame (25fps)",
+                "Skip every third frame (~33fps)",
+                "Skip every fourth frame (37.5fps)",
+                "Skip every fifth frame (40fps)",
+        };
+
+        for (auto skip = 0; skip < 4; ++skip) {
+            action = subMenu->addAction(tr(labels[skip]), [this, skip = skip + 1]() {
+                m_display.setFrameSkip(skip);
+            });
+
+            action->setData(skip + 1);
+            action->setCheckable(true);
+            action->setChecked(false);
+            m_frameSkipGroup.addAction(action);
+        }
+    }
+
     menu->addSeparator();
 
     menu->addAction(&m_colourDisplay);
@@ -1302,6 +1337,15 @@ void MainWindow::closeEvent(QCloseEvent * ev)
         settings.setValue(QStringLiteral("model"), model);
     }
 
+    settings.remove(QStringLiteral("frameSkip"));
+
+    for (const auto * action : m_frameSkipGroup.actions()) {
+        if (action->isChecked()) {
+            settings.setValue(QStringLiteral("frameSkip"), action->data());
+            break;
+        }
+    }
+
     settings.endGroup();
     m_debugWindow.close();
     QWidget::closeEvent(ev);
@@ -1397,6 +1441,32 @@ void MainWindow::showEvent(QShowEvent * ev)
             setModel(Model::SpectrumPlus2a);
         } else if(QStringLiteral("+3") == model) {
             setModel(Model::SpectrumPlus3);
+        }
+    }
+
+    if (const auto frameSkipSetting = settings.value(QStringLiteral("frameSkip")); frameSkipSetting.canConvert<int>()) {
+        auto frameSkip = frameSkipSetting.value<int>();
+        bool found = false;
+        QAction * keyboardControllerAction = nullptr;
+
+        for (auto * const action : m_frameSkipGroup.actions()) {
+            auto actionFrameSkip = action->data().value<int>();
+
+            if (actionFrameSkip == frameSkip) {
+                action->setChecked(true);
+                action->trigger();
+                found = true;
+                break;
+            }
+        }
+
+        // default to the keyboard controller if the settings contain a controller that's not currently available
+        if (!found) {
+            assert (!m_frameSkipGroup.actions().isEmpty());
+
+            // the first action in the group is the "don't skip any frames" option
+            m_frameSkipGroup.actions().first()->setChecked(true);
+            m_frameSkipGroup.actions().first()->trigger();
         }
     }
 

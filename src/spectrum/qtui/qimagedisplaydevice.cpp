@@ -1,16 +1,18 @@
 #include <cmath>
 #include <iostream>
-
+#include <chrono>
 #include <QImage>
 #include <QRgb>
 #include <QPainter>
-
 #include "qimagedisplaydevice.h"
+#include "../../util/debug.h"
 
 using namespace Spectrum::QtUi;
 
 namespace
 {
+    constexpr const int DefaultRefreshRate = 50;
+
     constexpr const QRgb colourMap[16] = {
             qRgb(0x00, 0x00, 0x00),
             qRgb(0x00, 0x00, 0xcd),
@@ -52,19 +54,32 @@ namespace
     };
 }
 
-QImageDisplayDevice::QImageDisplayDevice()
+QImageDisplayDevice::QImageDisplayDevice(int frameSkip)
 : m_image(fullWidth(), fullHeight(), QImage::Format_ARGB32),
   m_border(Colour::White),
   m_frameCounter(0),
+  m_frameSkip(frameSkip + 1),
   m_colourMode(ColourMode::Colour),
   m_bwForeground(DefaultBlackAndWhiteForeground),
   m_bwBackground(DefaultBlackAndWhiteBackground)
 {
+    assert (m_frameSkip > 0);
 }
 
 void QImageDisplayDevice::redrawDisplay(const uint8_t * displayMemory)
 {
+    using namespace std::chrono_literals;
+
     ++m_frameCounter;
+
+    // m_frameSkip will be 1 (its lowest possible value) if frame skipping is disabled
+    if (1 == m_frameSkip || m_frameCounter % m_frameSkip) {
+        renderFrame(displayMemory);
+    }
+}
+
+void QImageDisplayDevice::renderFrame(const uint8_t * displayMemory)
+{
     bool flashInvert = m_frameCounter & 0x10;
     auto * data = reinterpret_cast<QRgb *>(image().bits());
 

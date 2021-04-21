@@ -12,7 +12,7 @@ namespace Spectrum::QtUi
     /**
      * A Spectrum display device that renders the Spectrum display file to a QImage.
      *
-     * This doesn't place anything on the screen, it simply plugs into an emulated spectrum as a DisplayDevice, and renders the Spectrum display memmory to a
+     * This doesn't place anything on the screen, it simply plugs into an emulated spectrum as a DisplayDevice, and renders the Spectrum display memory to a
      * QImage when the Spectrum asks it to.
      */
 	class QImageDisplayDevice
@@ -26,8 +26,14 @@ namespace Spectrum::QtUi
 
         /**
 	     * Initialise a new display device.
+         *
+         * If frameSkip is provided, the device will render this many many frames before skipping one, unless it's 0 in which case every frame will be rendered.
+         * In most cases there is little value in setting this since modern hardware can easily handle rendering every Spectrum frame. However, it can be used
+         * to achieve a performance gain if emulation is slow.
+         *
+         * @param frameSkip The number of frames to render before skipping one. Must be >= 0. 0 (the default) means every frame will be rendered.
 	     */
-        QImageDisplayDevice();
+        explicit QImageDisplayDevice(int frameSkip = 0);
 
         /**
          * Fetch a read-write reference to the image that is having the Spectrum display rendered to it.
@@ -62,11 +68,25 @@ namespace Spectrum::QtUi
         void setBorder(Colour, bool = false) override;
 
         /**
-         * Render the Spectrum display file to the image.
+         * Request the display to be redrawn.
+         *
+         * The display will be redrawn if the frame rate is unlimited, or it's limited but we've reached the time point for the next frame.
          *
          * @param displayMemory A pointer to the Spectrum display file.
          */
         void redrawDisplay(const uint8_t * displayMemory) override;
+
+        /**
+         * Actually render a frame.
+         *
+         * The rendering occurs regardless of any frame rate limiting.
+         *
+         * This is public so that, for example, the UI can present the user with an option to refresh the display while paused or in debug mode after a step,
+         * etc.
+         *
+         * @param displayMemory
+         */
+        void renderFrame(const uint8_t * displayMemory);
 
         /**
          * Set the device to render the display in black and white.
@@ -106,6 +126,36 @@ namespace Spectrum::QtUi
         }
 
         /**
+         * Set the number of frames that are rendered before one is skipped.
+         *
+         * In other words, one in every (n + 1) frames is skipped.
+         *
+         * This can improve performance if the emulation is slow, but is unlikely to be necessary on any common hardware these days. Set it to 0 to render
+         * every frame the Spectrum generates.
+         *
+         * @param frameSkip The number of frames to skip. Must be >= 0.
+         */
+        void setFrameSkip(int frameSkip)
+        {
+            assert (0 <= frameSkip);
+            m_frameSkip = frameSkip + 1;
+        }
+
+        /**
+         * Fetch the number of frames that are rendered before one is skipped.
+         *
+         * In other words, one in every (n + 1) frames is skipped.
+         *
+         * If this is 0, then no frames are skipped.
+         *
+         * @return The number of frames.
+         */
+        [[nodiscard]] int frameSkip() const
+        {
+            return m_frameSkip - 1;
+        }
+
+        /**
          * The full width of the image used to render the Spectrum display.
          *
          * This is equivalent to a single image pixel for each Spectrum screen pixel, plus 32 pixels each for the left and right borders.
@@ -141,6 +191,8 @@ namespace Spectrum::QtUi
         static constexpr const QRgb DefaultBlackAndWhiteBackground = 0xffcdcdcd;
 
 	private:
+	    using clock = std::chrono::steady_clock;
+
 	    /**
 	     * Enumerates the available colour rendering modes.
 	     */
@@ -168,6 +220,13 @@ namespace Spectrum::QtUi
 	     * Spectrum display.
 	     */
 	    std::uint8_t m_frameCounter;
+
+	    /**
+	     * How many frames to render before skipping one.
+	     *
+	     * What is actually stored is frameSkip + 1 so that we don't need to continually add one to it when checking whether the frame should be rendered.
+	     */
+	    std::uint8_t m_frameSkip;
 
 	    /**
 	     * The current colour mode.
