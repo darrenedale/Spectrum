@@ -1087,20 +1087,10 @@ bool MainWindow::eventFilter(QObject * target, QEvent * event)
             case QEvent::Type::MouseButtonPress:
             case QEvent::Type::MouseButtonRelease:
                 if (m_mouse) {
-                    auto pressed = event->type() == QEvent::Type::MouseButtonPress;
                     auto buttons = dynamic_cast<QMouseEvent *>(event)->buttons();
-
-                    if (buttons & Qt::MouseButton::LeftButton) {
-                        m_mouse->setButton1Pressed(pressed);
-                    }
-
-                    if (buttons & Qt::MouseButton::RightButton) {
-                        m_mouse->setButton2Pressed(pressed);
-                    }
-
-                    if (buttons & Qt::MouseButton::MiddleButton) {
-                        m_mouse->setButton3Pressed(pressed);
-                    }
+                    m_mouse->setButton1Pressed(buttons & Qt::MouseButton::LeftButton);
+                    m_mouse->setButton2Pressed(buttons & Qt::MouseButton::RightButton);
+                    m_mouse->setButton3Pressed(buttons & Qt::MouseButton::MiddleButton);
                 }
                 break;
                 
@@ -1262,6 +1252,19 @@ void MainWindow::closeEvent(QCloseEvent * ev)
         }
     }
 
+    {
+        QString mouseType;
+
+        if (m_kempstonMouse.isChecked()) {
+            mouseType = QStringLiteral("kempston");
+        }
+
+        if (mouseType.isEmpty()) {
+            settings.remove(QStringLiteral("mouseInterface"));
+        } else {
+            settings.setValue(QStringLiteral("mouseInterface"), mouseType);
+        }
+    }
 
     {
         QString model;
@@ -1362,6 +1365,18 @@ void MainWindow::showEvent(QShowEvent * ev)
         // default to the keyboard controller if the settings contain a controller that's not currently available
         if (!found && keyboardControllerAction) {
             keyboardControllerAction->setChecked(true);
+        }
+    }
+
+    {
+        auto mouseType = settings.value(QStringLiteral("mouseInterface")).toString();
+
+        if (QStringLiteral("kempston") == mouseType) {
+            m_kempstonMouse.setChecked(true);
+            kempstonMouseToggled(true);
+        } else {
+            m_kempstonMouse.setChecked(false);
+            kempstonMouseToggled(false);
         }
     }
 
@@ -1765,6 +1780,7 @@ void MainWindow::attachSpectrumDevices()
 {
     m_spectrum->setJoystickInterface(m_joystick.get());
     m_spectrum->setKeyboard(&m_keyboard);
+    m_spectrum->setMouseInterface(m_mouse.get());
     m_spectrum->addDisplayDevice(&m_display);
 }
 
@@ -1772,5 +1788,6 @@ void MainWindow::detachSpectrumDevices()
 {
     m_spectrum->setJoystickInterface(nullptr);
     m_spectrum->setKeyboard(nullptr);
+    m_spectrum->setMouseInterface(nullptr);
     m_spectrum->removeDisplayDevice(&m_display);
 }

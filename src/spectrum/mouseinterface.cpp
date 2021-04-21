@@ -3,7 +3,6 @@
 //
 
 #include "mouseinterface.h"
-#include "../util/debug.h"
 
 using namespace Spectrum;
 
@@ -16,17 +15,11 @@ namespace
 
 void MouseInterface::setX(int x)
 {
-#if (!defined(NDEBUG))
-    Util::debug << "setting mouse X to " << x << '\n';
-#endif
     m_x = x;
 }
 
 void MouseInterface::setY(int y)
 {
-#if (!defined(NDEBUG))
-    Util::debug << "setting mouse Y to " << y << '\n';
-#endif
     m_y = y;
 }
 
