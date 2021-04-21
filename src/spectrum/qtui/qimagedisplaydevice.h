@@ -2,9 +2,7 @@
 #define QSPECTRUMDISPLAY_H
 
 #include <cstdint>
-
 #include <QRgb>
-
 #include "../displaydevice.h"
 
 namespace Spectrum::QtUi

@@ -106,8 +106,13 @@ namespace Spectrum::QtUi
 
 	protected:
 	    static QString guessSnapshotFormat(const QString & fileName);
+
+	    void loadSettings();
+	    void saveSettings();
+
         void showEvent(QShowEvent *) override;
 	    void closeEvent(QCloseEvent *) override;
+
 	    void keyPressEvent(QKeyEvent *) override;
 	    void keyReleaseEvent(QKeyEvent *) override;
 	    void dragEnterEvent(QDragEnterEvent *) override;

@@ -463,6 +463,8 @@ MainWindow::MainWindow(QWidget * parent)
 	connect(&m_spectrumThread, &Thread::paused, this, &MainWindow::threadPaused);
 	connect(&m_spectrumThread, &Thread::resumed, this, &MainWindow::threadResumed);
 
+	loadSettings();
+
     setAcceptDrops(true);
     connectSignals();
 	m_spectrumThread.start();
@@ -472,6 +474,7 @@ MainWindow::MainWindow(QWidget * parent)
 
 MainWindow::~MainWindow()
 {
+    saveSettings();
     m_spectrum->setJoystickInterface(nullptr);
     m_spectrum->setKeyboard(nullptr);
     m_spectrum->removeDisplayDevice(&m_display);
@@ -733,6 +736,7 @@ void MainWindow::connectSignals()
 
 void MainWindow::refreshSpectrumDisplay()
 {
+    // NOTE Qt COW makes this almost cost-free unless we actually render an overlay
     auto image = m_display.image();
 
     if (m_debug.isChecked()) {
@@ -1010,7 +1014,7 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
     m_spectrum->applySnapshot(*snapshot);
 
     setWindowTitle(QStringLiteral("%1 | %2").arg(QString::fromStdString(std::to_string(m_spectrum->model())), QFileInfo(fileName).fileName()));
-    m_display.redrawDisplay(m_spectrum->displayMemory());
+    m_display.renderFrame(m_spectrum->displayMemory());
     m_displayWidget.setImage(m_display.image());
 
     if ("sna" == format) {
@@ -1242,7 +1246,126 @@ bool MainWindow::eventFilter(QObject * target, QEvent * event)
     return false;
 }
 
-void MainWindow::closeEvent(QCloseEvent * ev)
+void MainWindow::loadSettings()
+{
+    QSettings settings;
+    bool ok;
+    settings.beginGroup("mainwindow");
+    m_lastSnapshotLoadDir = settings.value(QStringLiteral("lastSnapshotLoadDir")).toString();
+    m_lastScreenshotDir = settings.value(QStringLiteral("lastScreenshotDir")).toString();
+    m_lastPokeLoadDir = settings.value(QStringLiteral("lastPokeLoadDir")).toString();
+    auto speed = settings.value(QStringLiteral("emulationSpeed"), 100).toInt(&ok);
+
+    if (!ok) {
+        speed = 100;
+    }
+
+    m_emulationSpeedSlider.setValue(speed);
+
+    {
+        auto joystick = settings.value(QStringLiteral("joystick1Interface")).toString();
+
+        if (QStringLiteral("kempston") == joystick) {
+            m_joystickKempston.setChecked(true);
+            useKempstonJoystickTriggered();
+        } else if (QStringLiteral("zxinterfacetwo") == joystick) {
+            m_joystickInterface2.setChecked(true);
+            useInterfaceTwoJoystickTriggered();
+        } else if (QStringLiteral("cursor") == joystick) {
+            m_joystickCursor.setChecked(true);
+            useCursorJoystickTriggered();
+        } else {
+            m_joystickNone.setChecked(true);
+            noJoystickTriggered();
+        }
+    }
+
+    {
+        auto controller = settings.value(QStringLiteral("joystick1Controller")).toString();
+        bool found = false;
+        QAction * keyboardControllerAction = nullptr;
+
+        for (auto * const action : m_gameControllersGroup.actions()) {
+            auto actionController = action->data().toString();
+
+            if (actionController == controller) {
+                action->setChecked(true);
+                action->trigger();
+                found = true;
+                break;
+            }
+
+            if (actionController.isEmpty()) {
+                keyboardControllerAction = action;
+            }
+        }
+
+        // default to the keyboard controller if the settings contain a controller that's not currently available
+        if (!found && keyboardControllerAction) {
+            keyboardControllerAction->setChecked(true);
+        }
+    }
+
+    {
+        auto mouseType = settings.value(QStringLiteral("mouseInterface")).toString();
+
+        if (QStringLiteral("kempston") == mouseType) {
+            m_kempstonMouse.setChecked(true);
+            kempstonMouseToggled(true);
+        } else {
+            m_kempstonMouse.setChecked(false);
+            kempstonMouseToggled(false);
+        }
+    }
+
+    {
+        auto model = settings.value(QStringLiteral("model")).toString();
+
+        if (QStringLiteral("16k") == model) {
+            setModel(Model::Spectrum16k);
+        } else if(QStringLiteral("48k") == model) {
+            setModel(Model::Spectrum48k);
+        } else if(QStringLiteral("128k") == model) {
+            setModel(Model::Spectrum128k);
+        } else if(QStringLiteral("+2") == model) {
+            setModel(Model::SpectrumPlus2);
+        } else if(QStringLiteral("+2a") == model) {
+            setModel(Model::SpectrumPlus2a);
+        } else if(QStringLiteral("+3") == model) {
+            setModel(Model::SpectrumPlus3);
+        }
+    }
+
+    if (const auto frameSkipSetting = settings.value(QStringLiteral("frameSkip")); frameSkipSetting.canConvert<int>()) {
+        auto frameSkip = frameSkipSetting.value<int>();
+        bool found = false;
+        QAction * keyboardControllerAction = nullptr;
+
+        for (auto * const action : m_frameSkipGroup.actions()) {
+            auto actionFrameSkip = action->data().value<int>();
+
+            if (actionFrameSkip == frameSkip) {
+                action->setChecked(true);
+                action->trigger();
+                found = true;
+                break;
+            }
+        }
+
+        // default to the keyboard controller if the settings contain a controller that's not currently available
+        if (!found) {
+            assert (!m_frameSkipGroup.actions().isEmpty());
+
+            // the first action in the group is the "don't skip any frames" option
+            m_frameSkipGroup.actions().first()->setChecked(true);
+            m_frameSkipGroup.actions().first()->trigger();
+        }
+    }
+
+    settings.endGroup();
+}
+
+void MainWindow::saveSettings()
 {
     QSettings settings;
     settings.beginGroup(QStringLiteral("mainwindow"));
@@ -1347,131 +1470,28 @@ void MainWindow::closeEvent(QCloseEvent * ev)
     }
 
     settings.endGroup();
-    m_debugWindow.close();
-    QWidget::closeEvent(ev);
 }
 
 void MainWindow::showEvent(QShowEvent * ev)
 {
     QSettings settings;
-    bool ok;
     settings.beginGroup("mainwindow");
     setGeometry({settings.value(QStringLiteral("position")).toPoint(), settings.value(QStringLiteral("size")).toSize()});
-    m_lastSnapshotLoadDir = settings.value(QStringLiteral("lastSnapshotLoadDir")).toString();
-    m_lastScreenshotDir = settings.value(QStringLiteral("lastScreenshotDir")).toString();
-    m_lastPokeLoadDir = settings.value(QStringLiteral("lastPokeLoadDir")).toString();
-    auto speed = settings.value(QStringLiteral("emulationSpeed"), 100).toInt(&ok);
-
-    if (!ok) {
-        speed = 100;
-    }
-
-    m_emulationSpeedSlider.setValue(speed);
-
-    {
-        auto joystick = settings.value(QStringLiteral("joystick1Interface")).toString();
-
-        if (QStringLiteral("kempston") == joystick) {
-            m_joystickKempston.setChecked(true);
-            useKempstonJoystickTriggered();
-        } else if (QStringLiteral("zxinterfacetwo") == joystick) {
-            m_joystickInterface2.setChecked(true);
-            useInterfaceTwoJoystickTriggered();
-        } else if (QStringLiteral("cursor") == joystick) {
-            m_joystickCursor.setChecked(true);
-            useCursorJoystickTriggered();
-        } else {
-            m_joystickNone.setChecked(true);
-            noJoystickTriggered();
-        }
-    }
-
-    {
-        auto controller = settings.value(QStringLiteral("joystick1Controller")).toString();
-        bool found = false;
-        QAction * keyboardControllerAction = nullptr;
-
-        for (auto * const action : m_gameControllersGroup.actions()) {
-            auto actionController = action->data().toString();
-
-            if (actionController == controller) {
-                action->setChecked(true);
-                action->trigger();
-                found = true;
-                break;
-            }
-
-            if (actionController.isEmpty()) {
-                keyboardControllerAction = action;
-            }
-        }
-
-        // default to the keyboard controller if the settings contain a controller that's not currently available
-        if (!found && keyboardControllerAction) {
-            keyboardControllerAction->setChecked(true);
-        }
-    }
-
-    {
-        auto mouseType = settings.value(QStringLiteral("mouseInterface")).toString();
-
-        if (QStringLiteral("kempston") == mouseType) {
-            m_kempstonMouse.setChecked(true);
-            kempstonMouseToggled(true);
-        } else {
-            m_kempstonMouse.setChecked(false);
-            kempstonMouseToggled(false);
-        }
-    }
-
-    // TODO probably need to move this to the constructor otherwise a show event will reset any existing, running
-    //  spectrum
-    {
-        auto model = settings.value(QStringLiteral("model")).toString();
-
-        if (QStringLiteral("16k") == model) {
-            setModel(Model::Spectrum16k);
-        } else if(QStringLiteral("48k") == model) {
-            setModel(Model::Spectrum48k);
-        } else if(QStringLiteral("128k") == model) {
-            setModel(Model::Spectrum128k);
-        } else if(QStringLiteral("+2") == model) {
-            setModel(Model::SpectrumPlus2);
-        } else if(QStringLiteral("+2a") == model) {
-            setModel(Model::SpectrumPlus2a);
-        } else if(QStringLiteral("+3") == model) {
-            setModel(Model::SpectrumPlus3);
-        }
-    }
-
-    if (const auto frameSkipSetting = settings.value(QStringLiteral("frameSkip")); frameSkipSetting.canConvert<int>()) {
-        auto frameSkip = frameSkipSetting.value<int>();
-        bool found = false;
-        QAction * keyboardControllerAction = nullptr;
-
-        for (auto * const action : m_frameSkipGroup.actions()) {
-            auto actionFrameSkip = action->data().value<int>();
-
-            if (actionFrameSkip == frameSkip) {
-                action->setChecked(true);
-                action->trigger();
-                found = true;
-                break;
-            }
-        }
-
-        // default to the keyboard controller if the settings contain a controller that's not currently available
-        if (!found) {
-            assert (!m_frameSkipGroup.actions().isEmpty());
-
-            // the first action in the group is the "don't skip any frames" option
-            m_frameSkipGroup.actions().first()->setChecked(true);
-            m_frameSkipGroup.actions().first()->trigger();
-        }
-    }
-
     restoreState(settings.value(QStringLiteral("windowState")).toByteArray());
     settings.endGroup();
+    QMainWindow::showEvent(ev);
+}
+
+void MainWindow::closeEvent(QCloseEvent * ev)
+{
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("mainwindow"));
+    settings.setValue(QStringLiteral("position"), pos());
+    settings.setValue(QStringLiteral("size"), size());
+    settings.setValue(QStringLiteral("windowState"), saveState());
+    settings.endGroup();
+    m_debugWindow.close();
+    QMainWindow::closeEvent(ev);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent * event)

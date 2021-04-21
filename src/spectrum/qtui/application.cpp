@@ -12,7 +12,7 @@ Application * Application::m_instance = nullptr;
 
 Application::Application(int & argc, char ** argv)
 : QApplication(argc, argv),
-  m_mainWindow()
+  m_mainWindow(nullptr)
 {
     assert(!m_instance);
     m_instance = this;
@@ -22,7 +22,9 @@ Application::Application(int & argc, char ** argv)
     setOrganizationDomain(QStringLiteral("net.equituk"));
     setOrganizationName(QStringLiteral("Equit"));
 
-    m_mainWindow.show();
+    // we must initialise this after the application name etc. have been set because the main window constructor depends on some of these properties
+    m_mainWindow = std::make_unique<MainWindow>();
+    m_mainWindow->show();
 }
 
 void Application::showMessage(const QString & message, int timeout)
