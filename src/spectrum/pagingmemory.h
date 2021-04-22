@@ -5,10 +5,11 @@
 #ifndef SPECTRUM_PAGINGMEMORY_H
 #define SPECTRUM_PAGINGMEMORY_H
 
-#include <cassert>
-#include <cstring>
+#include <array>
 #include <iostream>
 #include <fstream>
+#include <cassert>
+#include <cstring>
 #include "pagedmemoryinterface.h"
 #include "../memory.h"
 #include "../z80/types.h"

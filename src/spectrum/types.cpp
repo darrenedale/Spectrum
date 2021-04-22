@@ -3,7 +3,7 @@
 //
 
 #include <cassert>
-#include "types.h"
+#include "./types.h"
 
 using Spectrum::Model;
 using Spectrum::Colour;

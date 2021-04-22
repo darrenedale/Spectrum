@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <string>
+#include <iostream>
 #include "../z80/types.h"
 
 namespace Spectrum
