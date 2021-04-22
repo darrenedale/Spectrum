@@ -21,6 +21,10 @@ namespace Spectrum::QtUi
         void operator=(const AboutWidget &) = delete;
         void operator=(AboutWidget &&) = delete;
         ~AboutWidget() override;
+
+    protected:
+        void showEvent(QShowEvent *) override;
+        void closeEvent(QCloseEvent *) override;
     };
 }
 

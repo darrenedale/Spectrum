@@ -49,6 +49,7 @@ add_executable(
         qtui/application.cpp
         qtui/mainwindow.cpp
         qtui/aboutwidget.cpp
+        qtui/helpwidget.cpp
         qtui/pokeswidget.cpp
         qtui/pokeswidgetitem.cpp
         qtui/thread.cpp
@@ -78,6 +79,7 @@ add_executable(
         qtui/spectrumdisplayimagewidget.cpp
         qtui/hexspinbox.cpp
         qtui/gamecontrollerhandler.cpp
+        qtui/resources.qrc
         ../computer.h
         ../cpu.cpp
         ../simplememory.h

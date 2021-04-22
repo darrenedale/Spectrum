@@ -2,46 +2,40 @@
 // Created by darren on 22/04/2021.
 //
 
-#include "aboutwidget.h"
-#include "application.h"
 #include <QLabel>
+#include <QScrollArea>
 #include <QPushButton>
 #include <QVBoxLayout>
-#include <QHBoxLayout>
+#include <QFile>
 #include <QSettings>
+#include "application.h"
+#include "helpwidget.h"
 
 using namespace Spectrum::QtUi;
 
-AboutWidget::AboutWidget(QWidget * parent)
+HelpWidget::HelpWidget(QWidget * parent)
 : QWidget(parent)
 {
-    auto * app = Application::instance();
-    assert(app);
-
     {
         auto metrics = fontMetrics();
-        setMinimumWidth(metrics.horizontalAdvance(QLatin1Char('W')) * 30);
+        setMinimumWidth(metrics.horizontalAdvance(QLatin1Char('W')) * 50);
     }
 
     auto * mainLayout = new QVBoxLayout();
 
     auto * label = new QLabel(Application::applicationDisplayName());
-    label->setAlignment(Qt::AlignmentFlag::AlignCenter);
+    label->setTextFormat(Qt::TextFormat::MarkdownText);
+    label->setWordWrap(true);
 
     {
-        auto font = this->font();
-        font.setPointSizeF(font.pointSizeF() * 1.2);
-        font.setBold(true);
-        label->setFont(font);
+        QFile helpText(":/help/help-text");
+        helpText.open(QIODevice::OpenModeFlag::ReadOnly);
+        label->setText(QString::fromUtf8(helpText.readAll()).arg(Application::instance()->property("version").toString()));
     }
 
-    mainLayout->addWidget(label);
-
-    label = new QLabel(tr("Version %1 by %2").arg(app->property("version").toString(), app->property("author").toString()));
-    label->setAlignment(Qt::AlignmentFlag::AlignCenter);
-    mainLayout->addWidget(label);
-
-    mainLayout->addStretch(10);
+    auto * scroll = new QScrollArea();
+    scroll->setWidget(label);
+    mainLayout->addWidget(scroll);
 
     auto * layout = new QHBoxLayout();
     auto * button = new QPushButton(tr("Close"));
@@ -55,12 +49,12 @@ AboutWidget::AboutWidget(QWidget * parent)
     setLayout(mainLayout);
 }
 
-AboutWidget::~AboutWidget() = default;
+HelpWidget::~HelpWidget() = default;
 
-void AboutWidget::showEvent(QShowEvent * ev)
+void HelpWidget::showEvent(QShowEvent * ev)
 {
     QSettings settings;
-    settings.beginGroup(QStringLiteral("aboutWindow"));
+    settings.beginGroup(QStringLiteral("helpWindow"));
 
     if (const auto size = settings.value(QStringLiteral("size")); size.canConvert<QSize>()) {
         auto geom = geometry();
@@ -72,11 +66,12 @@ void AboutWidget::showEvent(QShowEvent * ev)
     QWidget::showEvent(ev);
 }
 
-void AboutWidget::closeEvent(QCloseEvent * ev)
+void HelpWidget::closeEvent(QCloseEvent * ev)
 {
     QSettings settings;
-    settings.beginGroup(QStringLiteral("aboutWindow"));
+    settings.beginGroup(QStringLiteral("helpWindow"));
     settings.setValue(QStringLiteral("size"), size());
     settings.endGroup();
     QWidget::closeEvent(ev);
 }
+

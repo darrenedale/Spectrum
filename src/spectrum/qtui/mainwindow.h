@@ -11,6 +11,7 @@
 #include "qimagedisplaydevice.h"
 #include "debugwindow.h"
 #include "aboutwidget.h"
+#include "helpwidget.h"
 #include "spectrumdisplayimagewidget.h"
 #include "pokeswidget.h"
 #include "../mouseinterface.h"
@@ -207,6 +208,7 @@ namespace Spectrum::QtUi
         QSpinBox m_emulationSpeedSpin;
         DebugWindow m_debugWindow;
         std::unique_ptr<AboutWidget> m_aboutWidget;
+        std::unique_ptr<HelpWidget> m_helpWidget;
 
         // status bar widgets
         QLabel m_statusBarPause;

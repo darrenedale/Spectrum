@@ -357,6 +357,7 @@ MainWindow::MainWindow(QWidget * parent)
   m_emulationSpeedSpin(nullptr),
   m_debugWindow(&m_spectrumThread),
   m_aboutWidget(nullptr),
+  m_helpWidget(nullptr),
   m_displayRefreshTimer(nullptr),
   m_joystick(std::make_unique<Spectrum::KempstonJoystick>()),
   m_gameControllerHandler(m_joystick.get()),
@@ -629,18 +630,33 @@ void MainWindow::createMenuBar()
     menu->addAction(&m_refreshScreen);
 
     menu = tempMenuBar->addMenu(tr("Help"));
+
     auto * action = menu->addAction(tr("About"));
     connect(action, &QAction::triggered, [this]() {
         if (!m_aboutWidget) {
-            Util::debug << "creating new about window\n";
             m_aboutWidget = std::make_unique<AboutWidget>();
             assert(m_aboutWidget);
             m_aboutWidget->setWindowFlags(Qt::WindowType::Dialog);
+            m_aboutWidget->setWindowTitle(tr("About %1").arg(Application::applicationDisplayName()));
         }
 
         m_aboutWidget->show();
         m_aboutWidget->raise();
         m_aboutWidget->activateWindow();
+    });
+
+    action = menu->addAction(tr("Help"));
+    connect(action, &QAction::triggered, [this]() {
+        if (!m_helpWidget) {
+            m_helpWidget = std::make_unique<HelpWidget>();
+            assert(m_helpWidget);
+            m_helpWidget->setWindowFlags(Qt::WindowType::Dialog);
+            m_helpWidget->setWindowTitle(tr("%1 Help").arg(Application::applicationDisplayName()));
+        }
+
+        m_helpWidget->show();
+        m_helpWidget->raise();
+        m_helpWidget->activateWindow();
     });
 }
 
