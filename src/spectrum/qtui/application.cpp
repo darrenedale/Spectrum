@@ -21,6 +21,8 @@ Application::Application(int & argc, char ** argv)
     setApplicationName(QStringLiteral("Spectrum"));
     setOrganizationDomain(QStringLiteral("net.equituk"));
     setOrganizationName(QStringLiteral("Equit"));
+    setProperty("version", QStringLiteral("0.5"));
+    setProperty("author", QStringLiteral("Darren Edale"));
 
     // we must initialise this after the application name etc. have been set because the main window constructor depends on some of these properties
     m_mainWindow = std::make_unique<MainWindow>();

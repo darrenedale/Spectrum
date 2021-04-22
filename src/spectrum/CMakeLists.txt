@@ -48,6 +48,7 @@ add_executable(
         io/pokfilereader.cpp
         qtui/application.cpp
         qtui/mainwindow.cpp
+        qtui/aboutwidget.cpp
         qtui/pokeswidget.cpp
         qtui/pokeswidgetitem.cpp
         qtui/thread.cpp

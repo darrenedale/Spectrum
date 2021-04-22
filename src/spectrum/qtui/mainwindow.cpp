@@ -25,6 +25,7 @@
 
 #include "application.h"
 #include "mainwindow.h"
+#include "aboutwidget.h"
 #include "threadpauser.h"
 #include "../spectrum16k.h"
 #include "../spectrum48k.h"
@@ -355,6 +356,7 @@ MainWindow::MainWindow(QWidget * parent)
   m_emulationSpeedSlider(Qt::Horizontal),
   m_emulationSpeedSpin(nullptr),
   m_debugWindow(&m_spectrumThread),
+  m_aboutWidget(nullptr),
   m_displayRefreshTimer(nullptr),
   m_joystick(std::make_unique<Spectrum::KempstonJoystick>()),
   m_gameControllerHandler(m_joystick.get()),
@@ -625,6 +627,21 @@ void MainWindow::createMenuBar()
     menu->addAction(&m_debugStep);
     menu->addSeparator();
     menu->addAction(&m_refreshScreen);
+
+    menu = tempMenuBar->addMenu(tr("Help"));
+    auto * action = menu->addAction(tr("About"));
+    connect(action, &QAction::triggered, [this]() {
+        if (!m_aboutWidget) {
+            Util::debug << "creating new about window\n";
+            m_aboutWidget = std::make_unique<AboutWidget>();
+            assert(m_aboutWidget);
+            m_aboutWidget->setWindowFlags(Qt::WindowType::Dialog);
+        }
+
+        m_aboutWidget->show();
+        m_aboutWidget->raise();
+        m_aboutWidget->activateWindow();
+    });
 }
 
 void MainWindow::createToolBars()
@@ -1484,6 +1501,10 @@ void MainWindow::showEvent(QShowEvent * ev)
 
 void MainWindow::closeEvent(QCloseEvent * ev)
 {
+    if (m_aboutWidget) {
+        m_aboutWidget->close();
+    }
+
     QSettings settings;
     settings.beginGroup(QStringLiteral("mainwindow"));
     settings.setValue(QStringLiteral("position"), pos());

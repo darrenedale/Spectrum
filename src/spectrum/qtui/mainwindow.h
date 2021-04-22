@@ -10,6 +10,7 @@
 #include <QTimer>
 #include "qimagedisplaydevice.h"
 #include "debugwindow.h"
+#include "aboutwidget.h"
 #include "spectrumdisplayimagewidget.h"
 #include "pokeswidget.h"
 #include "../mouseinterface.h"
@@ -205,6 +206,7 @@ namespace Spectrum::QtUi
         QSlider m_emulationSpeedSlider;
         QSpinBox m_emulationSpeedSpin;
         DebugWindow m_debugWindow;
+        std::unique_ptr<AboutWidget> m_aboutWidget;
 
         // status bar widgets
         QLabel m_statusBarPause;
@@ -215,6 +217,7 @@ namespace Spectrum::QtUi
         std::unique_ptr<JoystickInterface> m_joystick;
         GameControllerHandler m_gameControllerHandler;
         std::unique_ptr<MouseInterface> m_mouse;
+
 	};
 }
 
