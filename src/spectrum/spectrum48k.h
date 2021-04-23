@@ -6,8 +6,8 @@
 #define SPECTRUM_SPECTRUM48K_H
 
 #include <string>
-
 #include "basespectrum.h"
+#include "memory.h"
 
 namespace Spectrum
 {
@@ -24,7 +24,7 @@ namespace Spectrum
     : public BaseSpectrum
     {
     public:
-        using MemoryType = SimpleMemory<::Z80::UnsignedByte>;
+        using MemoryType = Spectrum::Memory;
         static constexpr const int DisplayMemoryOffset = 0x4000;
         static constexpr const int DisplayMemorySize = 6912;
 

@@ -6,11 +6,13 @@
 #define SPECTRUM_PAGINGMEMORY_H
 
 #include <array>
+#include <vector>
 #include <iostream>
 #include <fstream>
 #include <cassert>
 #include <cstring>
-#include "pagedmemoryinterface.h"
+#include "pagingmemoryinterface.h"
+#include "../mappablememoryinterface.h"
 #include "../memory.h"
 #include "../z80/types.h"
 
@@ -23,15 +25,16 @@ namespace Spectrum
      * contains one of the RAM pages. The address space between 0x4000 and 0x7fff inclusive always contains page 5; the space between 0x8000 and 0xbfff
      * inclusive always contains page 2. For other paging models, reimplement mapAddress() - see the special paging mode of MemoryPlus2a for an example.
      *
-     * Implements PagedMemoryInterface.
+     * Implements PagedMemoryInterface (for generality) and MappableMemoryInterface (for arbitrary mapping of memory by external devices, e.g. ZX Interface 1).
      *
      * @tparam NumRoms The number of ROMs available to be paged in. Must be > 0.
      * @tparam NumPages The number of pages of RAM available. Must be >= 6; defaults to 8.
      */
     template<int NumRoms, int NumPages = 8>
     class PagingMemory
-    : public Memory<::Z80::UnsignedByte>,
-      public PagedMemoryInterface
+    : public ::Memory<::Z80::UnsignedByte>,
+      public PagingMemoryInterface,
+      public MappableMemoryInterface<::Z80::UnsignedByte>
     {
         // must have at least one ROM and six pages of RAM - why 6? because page #5 is always mapped to 0x4000 - 0x7fff so that page must be present
         static_assert(0 < NumRoms);
@@ -337,6 +340,70 @@ namespace Spectrum
             std::memcpy(m_ramPages[page].data() + offset, data, size);
         }
 
+        /**
+         * Map an arbitrary block of memory into the address space starting at a given address.
+         *
+         * It is legitimate to map the same block to several different addresses, map different blocks to the same address, map overlapping blocks or even to
+         * map the same block to the same address multiple times. Conflicts between mappings are resolved by assuming the latest mapping takes precedence. If
+         * a block is mapped to the same address multiple times it must be unmapped the same number of times as it is mapped to become fully unmapped.
+         *
+         * The fist byte of the block of storage will appear at address, the second byte at address + 1 and so on up to address + size - 1.
+         *
+         * @param startAddress Where to map the storage. It must be within the addressable range of the memory.
+         * @param storage The block of storage to map. It must not be nullptr, and must contain at least size bytes.
+         * @param size The size of the block to map. It must not extend beyond the addressable range of the memory.
+         */
+        void mapMemory(Address startAddress, unsigned char * storage, Size size) override
+        {
+            assert(storage);
+            assert(startAddress < addressableSize());
+            assert(startAddress + size <= addressableSize());
+
+            m_mappedMemory.emplace_back(MappedMemoryBlock{
+                    .address = startAddress,
+                    .size = size,
+                    .storage = storage,
+            });
+        }
+
+        /**
+         * Unmap a block of memory from a given address.
+         *
+         * If a block has been mapped to the same address multiple times, unmapping will remove
+         * the most recent mapping of that block to the address. Previous mappings of the block to the same address will remain in place. If the block is mapped
+         * to other addresses, these mappings will also remain in place, as will any other blocks that are currently mapped to the same address.
+         *
+         * It is an error to attempt to unmap a block that is not mapped. (It follows that it is also an error to attempt to unmap a nullptr block.)
+         * Check isMapped() if your code is not sure.
+         *
+         * @param startAddress The address of the mapping to remove. It must be within the addressable range of the memory.
+         * @param storage The block of storage to unmap.
+         */
+        void unmapMemory(Address startAddress, const Byte * storage)
+        {
+            const auto pos =std::find_if(m_mappedMemory.crbegin(), m_mappedMemory.crend(), [startAddress, storage](const MappedMemoryBlock & block) -> bool {
+                return block.address == startAddress && block.storage == storage;
+            });
+
+            assert(pos != m_mappedMemory.crend());
+            m_mappedMemory.erase(pos.base());
+        }
+
+        /**
+         * Check whether a given block of memory is mapped into a given address.
+         *
+         * @param startAddress The address to check.
+         * @param storage The block of storage to check.
+         *
+         * @return
+         */
+        bool isMapped(Address startAddress, const Byte * storage)
+        {
+            return storage && startAddress < addressableSize() && m_mappedMemory.cend() != std::find_if(m_mappedMemory.cbegin(), m_mappedMemory.cend(), [startAddress, storage](const MappedMemoryBlock & block) -> bool {
+                return block.address == startAddress && block.storage == storage;
+            });
+        }
+
     protected:
         /**
          * The (emulated) address of the first byte of ROM.
@@ -381,7 +448,8 @@ namespace Spectrum
         /**
          * Map an emulated memory address to a physical address inside one of the ROMs/RAM banks.
          *
-         * The default implementation follows the paging scheme outlined in the class docs above.
+         * The default implementation follows the paging scheme outlined in the class docs above. If any arbitrary mappings have been made (e.g. ZX Interface 1
+         * ROM), these take precedence, and if multiple mappings overlap the address, the most recent mapping takes precedence.
          *
          * @param address The emulated address to map. Must not exceed the address space.
          *
@@ -390,7 +458,20 @@ namespace Spectrum
         [[nodiscard]] Byte * mapAddress(Address address) const override
         {
             assert(address <= 0xffff);
-            
+
+            // check if the requested address is in a mapped memory block
+            if (!m_mappedMemory.empty()) {
+                // search mapped blocks in reverse - most recently mapped blocks take precedence
+                const auto & pos =std::find_if(m_mappedMemory.crbegin(), m_mappedMemory.crend(), [address](const MappedMemoryBlock & block) -> bool {
+                    return block.address <= address && block.address + block.size > address;
+                });
+
+                if (pos != m_mappedMemory.crend()) {
+                    return pos->storage + address - pos->address;
+                }
+            }
+
+            // otherwise, map it according to the current paging state
             if (address <= RomTop) {
                 return const_cast<Byte *>(currentRomPointer() + address);
             }
@@ -413,6 +494,20 @@ namespace Spectrum
 
     protected:
         /**
+         * Helper data structure to track a mapped block of memory.
+         */
+        struct MappedMemoryBlock {
+            Address address;
+            Size size;
+            Byte * storage;
+        };
+
+        /**
+         * Type alias for the storage of the mapped memory block index.
+         */
+        using MappedMemory = std::vector<MappedMemoryBlock>;
+
+        /**
          * The currently paged-in ROM.
          */
         RomNumber m_romNumber;
@@ -431,6 +526,11 @@ namespace Spectrum
          * Storage for the RAM pages.
          */
         std::array<PageStorage, PageCount> m_ramPages;
+
+        /**
+         * Index of mapped memory.
+         */
+        MappedMemory m_mappedMemory;
     };
 }
 

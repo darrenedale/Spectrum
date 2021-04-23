@@ -1112,7 +1112,7 @@ Z80::InstructionCost Z80::Z80::execute(const UnsignedByte * instruction, bool do
 			break;
 	}
 
-	// doPc is set to false by the instruction execution method if a jump was taken or the PC was otherwise directly
+    // doPc is set to false by the instruction execution method if a jump was taken or the PC was otherwise directly
 	// affected by the instruction
 	if (doPc) {
         m_registers.pc += cost.size;
@@ -1125,27 +1125,28 @@ Z80::InstructionCost Z80::Z80::execute(const UnsignedByte * instruction, bool do
     // expensive debug code to monitor changes to the stack pointer. only enable when specifically building to examine
     // stack changes
 //    if (historyEntry.registersBefore.sp != historyEntry.registersAfter.sp) {
-//        std::cout << std::hex << std::setfill('0');
-//        std::cout << "\nStack changed by instruction at 0x" << std::setw(4) << historyEntry.registersBefore.pc << "\n";
+//        Util::debug << std::hex << std::setfill('0');
+//        Util::debug << "\nStack changed by instruction at 0x" << std::setw(4) << historyEntry.registersBefore.pc << "\n";
 //        auto mnemonic = Assembly::Disassembler::disassembleOne(instruction);
-//        std::cout << "  Instruction: " << std::to_string(mnemonic) << "\n";
-//        std::cout << "  Machine code:";
+//        Util::debug << "  Instruction: " << std::to_string(mnemonic) << "\n";
+//        Util::debug << "  Machine code:";
 //
 //        for (int idx = 0; idx < mnemonic.size; ++idx) {
-//            std::cout << " 0x" << std::setw(2) << static_cast<std::uint16_t>(instruction[idx]);
+//            Util::debug << " 0x" << std::setw(2) << static_cast<std::uint16_t>(instruction[idx]);
 //        }
 //
-//        std::cout << "\n  SP before: 0x" << std::setw(4) << historyEntry.registersBefore.sp << '\n';
-//        std::cout << "\n  SP after : 0x" << std::setw(4) << historyEntry.registersAfter.sp << '\n';
+//        Util::debug << "\n  SP before: 0x" << std::setw(4) << historyEntry.registersBefore.sp << '\n';
+//        Util::debug << "\n  SP after : 0x" << std::setw(4) << historyEntry.registersAfter.sp << '\n';
 //
 //        if (0xfffe < historyEntry.registersAfter.sp) {
-//            std::cout << "  Stack is now empty\n";
+//            Util::debug << "  Stack is now empty\n";
 //        } else {
-//            std::cout << "\n  Top of stack: 0x" << std::setw(4) << peekUnsignedHostWord(historyEntry.registersAfter.sp);
-//            std::cout << "   [0x" << std::setw(2) << static_cast<std::uint16_t>(peekUnsigned(historyEntry.registersAfter.sp));
-//            std::cout << " 0x" << std::setw(2) << static_cast<std::uint16_t>(peekUnsigned(historyEntry.registersAfter.sp + 1)) << "]\n";
+//            Util::debug << "\n  Top of stack: 0x" << std::setw(4) << peekUnsignedHostWord(historyEntry.registersAfter.sp);
+//            Util::debug << "   [0x" << std::setw(2) << static_cast<std::uint16_t>(peekUnsigned(historyEntry.registersAfter.sp));
+//            Util::debug << " 0x" << std::setw(2) << static_cast<std::uint16_t>(peekUnsigned(historyEntry.registersAfter.sp + 1)) << "]\n";
 //        }
-//        std::cout << '\n';
+//
+//        Util::debug << '\n';
 //    }
 #endif
 
@@ -1156,10 +1157,16 @@ void Z80::Z80::handleNmi()
 {
     m_iff2 = m_iff1;
     m_iff1 = false;
+
+    if (m_halted) {
+        m_halted = false;
+        ++m_registers.pc;
+    }
+
     Z80__PUSH__REG16(m_registers.pc);
     m_registers.pc = 0x0066;
-    m_halted = false;
-    // TODO R register?
+    ++m_registers.r;
+    m_tStates += 5;
 }
 
 int Z80::Z80::handleInterrupt()
@@ -1167,7 +1174,13 @@ int Z80::Z80::handleInterrupt()
     int tStates = 0;
     m_iff1 = m_iff2 = false;
     // TODO R register?
-    m_halted = false;
+
+    if (m_halted) {
+        // HALTing the CPU (either via HALT instruction or by some device signalling the HALT pin) freezes the PC. In either case, once we resume we need the
+        // PC to move on to the next instruction (otherwise it would simply re-execute the HALT)
+        ++m_registers.pc;
+        m_halted = false;
+    }
 
     switch (m_interruptMode) {
         case InterruptMode::IM0:
@@ -1209,6 +1222,9 @@ int Z80::Z80::handleInterrupt()
 
 int Z80::Z80::fetchExecuteCycle()
 {
+#if (!defined(NDEBUG))
+    static bool haltAndDiWarningShown = false;
+#endif
     // a buffer in which to store the machine code instruction and operand data - we need this because in Spectrum
     // models from the 128k onwards the memory can be paged in, so we can't assume that we can just read the memory
     // pointer for the PC and keep adding offsets to it to retrieve bytes - when memory banks are paged in, the actual
@@ -1217,6 +1233,9 @@ int Z80::Z80::fetchExecuteCycle()
 	static UnsignedByte machineCode[4];
 
 	int tStates = 0;
+    // the Z80 defers a pending interrupt by one instruction after EI to allow for a RET to be executed - EI instruction handling code sets this to ensure the
+    // interrupt is delayed
+    m_delayInterruptOneInstruction = false;
 
 	if (m_halted) {
         // execute NOPs while halted
@@ -1242,15 +1261,22 @@ int Z80::Z80::fetchExecuteCycle()
     }
 
     if (m_iff1 && m_interruptRequested) {
-        // the Z80 defers a pending interrupt by one instruction after EI to allow for a RET to be executed
-        if (m_delayInterruptOneInstruction) {
-            m_delayInterruptOneInstruction = false;
-        } else {
+        if (!m_delayInterruptOneInstruction) {
             // process maskable interrupt
             tStates += handleInterrupt();
             m_interruptRequested = false;
         }
     }
+
+#if (!defined(NDEBUG))
+    if (m_halted && !m_iff1) {
+        if (!haltAndDiWarningShown) {
+            Util::debug << "CPU is halted and interrupts are disabled - the CPU cannot be resumed\n";
+        }
+    } else {
+        haltAndDiWarningShown = false;
+    }
+#endif
 
     m_tStates += tStates;
 	return tStates;
@@ -1863,6 +1889,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
 		case Z80__PLAIN__HALT:						// 0x76
             m_halted = true;
+            Z80_DONT_UPDATE_PC;
 			break;
 
 		case Z80__PLAIN__LD__INDIRECT_HL__A:		// 0x77

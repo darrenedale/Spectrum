@@ -356,21 +356,6 @@ namespace Spectrum
         explicit BaseSpectrum(MemoryType * memory = nullptr);
 
         /**
-         * Initialise a new Spectrum with a given memory size.
-         *
-         * The spectrum will allocate its own Memory object and will delete it when the Spectrum is destroyed. The memory
-         * size should only be either 32k (Spectrum16K) or 64k (Spectrum48k). The memory created will be a single linear map
-         * of the Z80 address space starting at 0x0000.
-         *
-         * No ROM is loaded into the 0x0000 - 0x3fff address space. Effectively, the Spectrum will have no code to run
-         * unless you specifically provide it with some.
-         *
-         * @param romFile
-         * @param memory
-         */
-        explicit BaseSpectrum(MemoryType::Size memorySize);
-
-        /**
          * Ask the spectrum to reload its ROM files.
          */
         virtual void reloadRoms() = 0;

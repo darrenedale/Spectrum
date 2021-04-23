@@ -8,7 +8,7 @@
 using namespace Spectrum;
 
 Spectrum16k::Spectrum16k(const std::string & romFile)
-: BaseSpectrum(0x8000)
+: BaseSpectrum(new Memory(0x8000))
 {
     (void) loadRom(romFile);
 }

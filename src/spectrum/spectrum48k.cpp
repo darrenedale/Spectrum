@@ -6,7 +6,7 @@
 using namespace Spectrum;
 
 Spectrum48k::Spectrum48k(const std::string & romFile)
-: BaseSpectrum(0x10000)
+: BaseSpectrum(new Spectrum::Memory())
 {
     (void) loadRom(romFile);
 }

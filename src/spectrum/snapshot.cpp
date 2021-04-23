@@ -201,7 +201,7 @@ std::ostream & Spectrum::operator<<(std::ostream & out, const Snapshot & snap)
             }
         }
 
-        auto * memory = dynamic_cast<const PagedMemoryInterface *>(snap.memory());
+        auto * memory = dynamic_cast<const PagingMemoryInterface *>(snap.memory());
         assert(memory);
 
         for (std::uint8_t page = 0; page < 8; ++page) {

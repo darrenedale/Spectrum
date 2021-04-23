@@ -33,22 +33,6 @@ namespace Spectrum
         z80->reset();
     }
 
-    BaseSpectrum::BaseSpectrum(typename MemoryType::Size memorySize)
-    : Computer(0x10000, memorySize),
-      m_executionSpeed(1.0),
-      m_interruptTStateCounter(0),
-      m_displayDevices(),
-      m_constrainExecutionSpeed(true),
-      m_keyboard(nullptr),
-      m_joystick(nullptr)
-    {
-        auto * z80 = new Z80(memory());
-        z80->setClockSpeed(DefaultClockSpeed);
-        addCpu(z80);
-        memory()->clear();
-        z80->reset();
-    }
-
     BaseSpectrum::~BaseSpectrum()
     {
         // NOTE our constructors always ensure base class owns Memory object and therefore destroys it
@@ -99,7 +83,7 @@ namespace Spectrum
 
             // check interrupt counter against threshold and raise INT in CPU if required
             if (m_interruptTStateCounter > interruptThreshold) {
-                z80()->interrupt();
+                z80()->interrupt(0xff);     // NOTE spectrum leaves 0xff on the bus when generating the interrupt
                 refreshDisplays();
                 m_interruptTStateCounter %= interruptThreshold;
 

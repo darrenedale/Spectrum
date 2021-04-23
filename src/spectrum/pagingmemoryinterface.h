@@ -2,8 +2,8 @@
 // Created by darren on 19/04/2021.
 //
 
-#ifndef SPECTRUM_PAGEDMEMORYINTERFACE_H
-#define SPECTRUM_PAGEDMEMORYINTERFACE_H
+#ifndef SPECTRUM_PAGINGMEMORYINTERFACE_H
+#define SPECTRUM_PAGINGMEMORYINTERFACE_H
 
 #include "types.h"
 
@@ -16,7 +16,7 @@ namespace Spectrum
      *
      * TODO consider templating this for page size to make it generic.
      */
-    class PagedMemoryInterface
+    class PagingMemoryInterface
     {
     public:
         /**
@@ -74,4 +74,4 @@ namespace Spectrum
     };
 }
 
-#endif //SPECTRUM_PAGEDMEMORYINTERFACE_H
+#endif //SPECTRUM_PAGINGMEMORYINTERFACE_H
