@@ -870,7 +870,7 @@ void MainWindow::setModel(Spectrum::Model model)
         Application::instance()->showMessage(error, DefaultStatusBarMessageTimeout);
         return;
     }
-    
+
     detachSpectrumDevices();
     bool paused = m_spectrumThread.isPaused();
     m_displayRefreshTimer.stop();

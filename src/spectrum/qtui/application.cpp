@@ -5,6 +5,7 @@
 #include <cassert>
 #include <QStatusBar>
 #include "application.h"
+#include "notification.h"
 
 using namespace Spectrum::QtUi;
 
@@ -29,5 +30,6 @@ Application::Application(int & argc, char ** argv)
 
 void Application::showMessage(const QString & message, int timeout)
 {
-    mainWindow().statusBar()->showMessage(message, timeout);
+    Notification::showNotification(message, timeout);
+//    mainWindow().statusBar()->showMessage(message, timeout);
 }
