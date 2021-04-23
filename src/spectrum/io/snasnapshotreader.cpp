@@ -92,7 +92,7 @@ const Spectrum::Snapshot * SnaSnapshotReader::read() const
     snapshot->im = static_cast<InterruptMode>(header.im & 0x07);
     snapshot->border = static_cast<Colour>(header.border & 0x03);
 
-    auto memory = std::make_unique<SimpleMemory<Spectrum48k::ByteType>>(0x10000);
+    auto memory = std::make_unique<Spectrum48k::MemoryType>();
     in.read(reinterpret_cast<std::istream::char_type *>(memory->pointerTo(0) + MemoryImageOffset), 0xc000);
     snapshot->setMemory(std::move(memory));
     setSnapshot(std::move(snapshot));

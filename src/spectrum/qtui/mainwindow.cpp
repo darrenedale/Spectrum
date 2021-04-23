@@ -1035,11 +1035,7 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
         }
 
         if (!canApply) {
-            statusBar()->showMessage(
-                    tr("The snapshot file %1 cannot be loaded.")
-                            .arg(fileName, QString::fromStdString(std::to_string(snapshot->model()))),
-                    DefaultStatusBarMessageTimeout
-            );
+            statusBar()->showMessage(tr("The snapshot file %1 cannot be loaded.").arg(fileName), DefaultStatusBarMessageTimeout);
             return false;
         }
     }
