@@ -6366,14 +6366,19 @@ Mnemonic Disassembler::disassembleOneDdOrFd(Register16 reg, const ::Z80::Unsigne
 
 Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::UnsignedByte * machineCode)
 {
-    static constexpr const int OpcodeSize = 3;
+    static constexpr const int OpcodeSize = 4;
+
+    // NOTE these opcodes are of the form 0xdd 0xcb DD II or 0xfd 0xcb DD II where II is the 8-bit opcode and DD is the
+    // 8-bit 2s-complement offset to use with IX or IY
+    auto opcode = *(machineCode + 1);
+    auto offset = *(machineCode);
     
-    switch (*machineCode) {
+    switch (opcode) {
         case Z80__DD_OR_FD__CB__RLC__INDIRECT_IX_d_OR_IY_d__B:                       // 0x00
             return {
                 Instruction::RLC,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize,
@@ -6383,7 +6388,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RLC,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize,
@@ -6393,7 +6398,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RLC,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize,
@@ -6403,7 +6408,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RLC,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize,
@@ -6413,7 +6418,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RLC,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize,
@@ -6423,7 +6428,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RLC,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize,
@@ -6433,7 +6438,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                     Instruction::RLC,
                     {
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -6442,7 +6447,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RLC,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize,
@@ -6452,7 +6457,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RRC,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize,
@@ -6462,7 +6467,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RRC,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize,
@@ -6472,7 +6477,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RRC,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize,
@@ -6482,7 +6487,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RRC,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize,
@@ -6492,7 +6497,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RRC,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize,
@@ -6502,7 +6507,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RRC,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize,
@@ -6512,7 +6517,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                     Instruction::RRC,
                     {
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -6521,7 +6526,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RRC,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize,
@@ -6532,7 +6537,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RL,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize,
@@ -6542,7 +6547,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RL,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize,
@@ -6552,7 +6557,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RL,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize,
@@ -6562,7 +6567,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RL,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize,
@@ -6572,7 +6577,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RL,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize,
@@ -6582,7 +6587,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RL,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize,
@@ -6592,7 +6597,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RL,
                     {
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -6601,7 +6606,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RL,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize,
@@ -6612,7 +6617,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RR,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize,
@@ -6622,7 +6627,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RR,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize,
@@ -6632,7 +6637,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RR,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize,
@@ -6642,7 +6647,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RR,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize,
@@ -6652,7 +6657,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RR,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize,
@@ -6662,7 +6667,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RR,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize,
@@ -6672,7 +6677,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                     Instruction::RR,
                     {
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -6681,7 +6686,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::RR,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize,
@@ -6692,7 +6697,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SLA,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize,
@@ -6702,7 +6707,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SLA,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize,
@@ -6712,7 +6717,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SLA,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize,
@@ -6722,7 +6727,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SLA,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize,
@@ -6732,7 +6737,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SLA,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize,
@@ -6742,7 +6747,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SLA,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize,
@@ -6752,7 +6757,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                     Instruction::SLA,
                     {
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -6761,7 +6766,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SLA,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize,
@@ -6772,7 +6777,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SRA,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize,
@@ -6782,7 +6787,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SRA,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize,
@@ -6792,7 +6797,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SRA,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize,
@@ -6802,7 +6807,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SRA,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize,
@@ -6812,7 +6817,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SRA,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize,
@@ -6822,7 +6827,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SRA,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize,
@@ -6832,7 +6837,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                     Instruction::SRA,
                     {
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -6841,7 +6846,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SRA,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize,
@@ -6852,7 +6857,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SLL,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize,
@@ -6862,7 +6867,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SLL,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize,
@@ -6872,7 +6877,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SLL,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize,
@@ -6882,7 +6887,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SLL,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize,
@@ -6892,7 +6897,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SLL,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize,
@@ -6902,7 +6907,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SLL,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize,
@@ -6912,7 +6917,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                     Instruction::SLL,
                     {
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -6921,7 +6926,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SLL,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize,
@@ -6932,7 +6937,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SRL,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize,
@@ -6942,7 +6947,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SRL,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize,
@@ -6952,7 +6957,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SRL,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize,
@@ -6962,7 +6967,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SRL,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize,
@@ -6972,7 +6977,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SRL,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize,
@@ -6982,7 +6987,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SRL,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize,
@@ -6992,7 +6997,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                     Instruction::SRL,
                     {
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -7001,7 +7006,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
             return {
                 Instruction::SRL,
                 {
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize,
@@ -7012,7 +7017,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 0, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize
@@ -7023,7 +7028,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 0, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize
@@ -7034,7 +7039,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 0, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize
@@ -7045,7 +7050,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 0, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize
@@ -7056,7 +7061,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 0, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize
@@ -7067,7 +7072,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 0, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize
@@ -7078,7 +7083,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                     Instruction::BIT,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 0, },
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -7088,7 +7093,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 0, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize
@@ -7100,7 +7105,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 1, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize
@@ -7111,7 +7116,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 1, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize
@@ -7122,7 +7127,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 1, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize
@@ -7133,7 +7138,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 1, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize
@@ -7144,7 +7149,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 1, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize
@@ -7155,7 +7160,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 1, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize
@@ -7166,7 +7171,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                     Instruction::BIT,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 1, },
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -7176,7 +7181,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 1, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize
@@ -7188,7 +7193,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 2, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize
@@ -7199,7 +7204,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 2, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize
@@ -7210,7 +7215,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 2, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize
@@ -7221,7 +7226,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 2, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize
@@ -7232,7 +7237,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 2, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize
@@ -7243,7 +7248,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 2, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize
@@ -7254,7 +7259,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                     Instruction::BIT,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 2, },
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -7264,7 +7269,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 2, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize
@@ -7276,7 +7281,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 3, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize
@@ -7287,7 +7292,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 3, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize
@@ -7298,7 +7303,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 3, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize
@@ -7309,7 +7314,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 3, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize
@@ -7320,7 +7325,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 3, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize
@@ -7331,7 +7336,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 3, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize
@@ -7342,7 +7347,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                     Instruction::BIT,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 3, },
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -7352,7 +7357,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = OpcodeSize },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 3,
@@ -7364,7 +7369,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 4, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize
@@ -7375,7 +7380,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 4, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize
@@ -7386,7 +7391,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 4, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize
@@ -7397,7 +7402,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 4, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize
@@ -7408,7 +7413,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 4, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize
@@ -7419,7 +7424,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 4, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize
@@ -7430,7 +7435,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                     Instruction::BIT,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 4, },
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -7440,7 +7445,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 4, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize
@@ -7452,7 +7457,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 5, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize
@@ -7463,7 +7468,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 5, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize
@@ -7474,7 +7479,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 5, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize
@@ -7485,7 +7490,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 5, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize
@@ -7496,7 +7501,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 5, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize
@@ -7507,7 +7512,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 5, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize
@@ -7518,7 +7523,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                     Instruction::BIT,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 5, },
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -7528,7 +7533,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 5, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize
@@ -7540,7 +7545,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 6, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize
@@ -7551,7 +7556,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 6, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize
@@ -7562,7 +7567,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 6, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize
@@ -7573,7 +7578,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 6, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize
@@ -7584,7 +7589,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 6, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize
@@ -7595,7 +7600,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 6, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize
@@ -7606,7 +7611,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                     Instruction::BIT,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 6, },
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -7616,7 +7621,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 6, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize
@@ -7628,7 +7633,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 7, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize
@@ -7639,7 +7644,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 7, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize
@@ -7650,7 +7655,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 7, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize
@@ -7661,7 +7666,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 7, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize
@@ -7672,7 +7677,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 7, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize
@@ -7683,7 +7688,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 7, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize
@@ -7694,7 +7699,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                     Instruction::BIT,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 7, },
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -7704,7 +7709,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::BIT,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 7, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize
@@ -7716,7 +7721,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 0, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize
@@ -7727,7 +7732,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 0, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize
@@ -7738,7 +7743,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 0, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize
@@ -7749,7 +7754,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 0, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize
@@ -7760,7 +7765,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 0, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize
@@ -7771,7 +7776,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 0, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize
@@ -7782,7 +7787,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                     Instruction::RES,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 0, },
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -7792,7 +7797,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 0, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize
@@ -7804,7 +7809,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 1, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize
@@ -7815,7 +7820,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 1, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize
@@ -7826,7 +7831,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 1, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize
@@ -7837,7 +7842,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 1, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize
@@ -7848,7 +7853,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 1, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize
@@ -7859,7 +7864,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 1, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize
@@ -7870,7 +7875,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                     Instruction::RES,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 1, },
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -7880,7 +7885,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 1, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize
@@ -7892,7 +7897,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 2, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize
@@ -7903,7 +7908,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 2, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize
@@ -7914,7 +7919,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 2, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize
@@ -7925,7 +7930,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 2, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize
@@ -7936,7 +7941,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 2, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize
@@ -7947,7 +7952,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 2, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize
@@ -7958,7 +7963,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                     Instruction::RES,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 2, },
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -7968,7 +7973,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 2, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize
@@ -7980,7 +7985,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 3, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize
@@ -7991,7 +7996,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 3, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize
@@ -8002,7 +8007,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 3, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize
@@ -8013,7 +8018,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 3, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize
@@ -8024,7 +8029,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 3, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize
@@ -8035,7 +8040,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 3, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize
@@ -8046,7 +8051,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                     Instruction::RES,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 3, },
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -8056,7 +8061,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 3, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize
@@ -8068,7 +8073,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 4, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize
@@ -8079,7 +8084,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 4, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize
@@ -8090,7 +8095,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 4, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize
@@ -8101,7 +8106,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 4, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize
@@ -8112,7 +8117,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 4, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize
@@ -8123,7 +8128,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 4, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize
@@ -8134,7 +8139,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                     Instruction::RES,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 4, },
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -8144,7 +8149,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 4, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize
@@ -8156,7 +8161,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 5, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize
@@ -8167,7 +8172,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 5, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize
@@ -8178,7 +8183,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 5, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize
@@ -8189,7 +8194,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 5, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize
@@ -8200,7 +8205,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 5, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize
@@ -8211,7 +8216,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 5, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize
@@ -8222,7 +8227,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                     Instruction::RES,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 5, },
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -8232,7 +8237,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 5, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize
@@ -8244,7 +8249,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 6, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize
@@ -8255,7 +8260,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 6, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize
@@ -8266,7 +8271,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 6, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize
@@ -8277,7 +8282,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 6, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize
@@ -8288,7 +8293,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 6, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize
@@ -8299,7 +8304,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 6, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize
@@ -8310,7 +8315,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                     Instruction::RES,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 6, },
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -8320,7 +8325,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 6, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize
@@ -8332,7 +8337,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 7, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize
@@ -8343,7 +8348,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 7, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize
@@ -8354,7 +8359,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 7, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize
@@ -8365,7 +8370,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 7, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize
@@ -8376,7 +8381,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 7, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize
@@ -8387,7 +8392,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 7, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize
@@ -8398,7 +8403,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                     Instruction::RES,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 7, },
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -8408,7 +8413,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::RES,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 7, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize
@@ -8420,7 +8425,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 0, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize
@@ -8431,7 +8436,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 0, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize
@@ -8442,7 +8447,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 0, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize
@@ -8453,7 +8458,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 0, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize
@@ -8464,7 +8469,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 0, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize
@@ -8475,7 +8480,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 0, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize
@@ -8486,7 +8491,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                     Instruction::SET,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 0, },
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -8496,7 +8501,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 0, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize
@@ -8508,7 +8513,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 1, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize
@@ -8519,7 +8524,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 1, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize
@@ -8530,7 +8535,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 1, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize
@@ -8541,7 +8546,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 1, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize
@@ -8552,7 +8557,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 1, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize
@@ -8563,7 +8568,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 1, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize
@@ -8574,7 +8579,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                     Instruction::SET,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 1, },
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -8584,7 +8589,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 1, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize
@@ -8596,7 +8601,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 2, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize
@@ -8607,7 +8612,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 2, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize
@@ -8618,7 +8623,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 2, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize
@@ -8629,7 +8634,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 2, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize
@@ -8640,7 +8645,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 2, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize
@@ -8651,7 +8656,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 2, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize
@@ -8662,7 +8667,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                     Instruction::SET,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 2, },
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -8672,7 +8677,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 2, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize
@@ -8684,7 +8689,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 3, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize
@@ -8695,7 +8700,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 3, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize
@@ -8706,7 +8711,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 3, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize
@@ -8717,7 +8722,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 3, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize
@@ -8728,7 +8733,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 3, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize
@@ -8739,7 +8744,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 3, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize
@@ -8750,7 +8755,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                     Instruction::SET,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 3, },
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -8760,7 +8765,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 3, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize
@@ -8772,7 +8777,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 4, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize
@@ -8783,7 +8788,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 4, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize
@@ -8794,7 +8799,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 4, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize
@@ -8805,7 +8810,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 4, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize
@@ -8816,7 +8821,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 4, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize
@@ -8827,7 +8832,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 4, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize
@@ -8838,7 +8843,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                     Instruction::SET,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 4, },
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -8848,7 +8853,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 4, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize
@@ -8860,7 +8865,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 5, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize
@@ -8871,7 +8876,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 5, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize
@@ -8882,7 +8887,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 5, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize
@@ -8893,7 +8898,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 5, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize
@@ -8904,7 +8909,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 5, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize
@@ -8915,7 +8920,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 5, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize
@@ -8926,7 +8931,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                     Instruction::SET,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 5, },
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -8936,7 +8941,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 5, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize
@@ -8948,7 +8953,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 6, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize
@@ -8959,7 +8964,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 6, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize
@@ -8970,7 +8975,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 6, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize
@@ -8981,7 +8986,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 6, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize
@@ -8992,7 +8997,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 6, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize
@@ -9003,7 +9008,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 6, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize
@@ -9014,7 +9019,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                     Instruction::SET,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 6, },
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -9024,7 +9029,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 6, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize
@@ -9036,7 +9041,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 7, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::B,},
                 },
                 OpcodeSize
@@ -9047,7 +9052,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 7, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::C,},
                 },
                 OpcodeSize
@@ -9058,7 +9063,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 7, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::D,},
                 },
                 OpcodeSize
@@ -9069,7 +9074,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 7, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::E,},
                 },
                 OpcodeSize
@@ -9080,7 +9085,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 7, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::H,},
                 },
                 OpcodeSize
@@ -9091,7 +9096,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 7, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::L,},
                 },
                 OpcodeSize
@@ -9102,7 +9107,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                     Instruction::SET,
                     {
                             {.mode = AddressingMode::Bit, .unsignedByte = 7, },
-                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                            {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     },
                     OpcodeSize,
             };
@@ -9112,7 +9117,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(Register16 reg, const ::Z80::Uns
                 Instruction::SET,
                 {
                     {.mode = AddressingMode::Bit, .unsignedByte = 7, },
-                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(*(machineCode + 1)), }, },
+                    {.mode = AddressingMode::Indexed, .indexedAddress = {.register16 = reg, .offset = static_cast<SignedByte>(offset), }, },
                     {.mode = AddressingMode::Register8, .register8 = Register8::A,},
                 },
                 OpcodeSize
