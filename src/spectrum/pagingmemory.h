@@ -463,7 +463,7 @@ namespace Spectrum
             // check if the requested address is in a mapped memory block
             if (!m_mappedMemory.empty()) {
                 // search mapped blocks in reverse - most recently mapped blocks take precedence
-                const auto & pos =std::find_if(m_mappedMemory.crbegin(), m_mappedMemory.crend(), [address](const MappedMemoryBlock & block) -> bool {
+                const auto pos = std::find_if(m_mappedMemory.crbegin(), m_mappedMemory.crend(), [address](const MappedMemoryBlock & block) -> bool {
                     return block.address <= address && block.address + block.size > address;
                 });
 
