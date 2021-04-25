@@ -2,8 +2,8 @@
 // Created by darren on 23/04/2021.
 //
 
-#ifndef SPECTRUM_NOTIFICATION_H
-#define SPECTRUM_NOTIFICATION_H
+#ifndef SPECTRUM_QTUI_NOTIFICATION_H
+#define SPECTRUM_QTUI_NOTIFICATION_H
 
 #include <memory>
 #include <QtGlobal>
@@ -13,6 +13,14 @@ class QDBusInterface;
 
 namespace Spectrum::QtUi
 {
+    /**
+     * Cross-platform encapsulation of a desktop notification.
+     *
+     * To use, create a notification with a message and optional title, and call show. Or just call the static showNotification() method. Notifications will
+     * attempt to use the platform's desktop notifications framework to show the message. If this fails, it will fall back to a dialogue box.
+     *
+     * TODO support actions
+     */
     class Notification
     {
     public:
@@ -151,15 +159,21 @@ namespace Spectrum::QtUi
         }
 
     private:
+        /**
+         * The notification message.
+         */
         QString m_message;
-        QString m_title;
-        int m_timeout;
 
-#if (defined(Q_OS_LINUX))
-        static std::unique_ptr<QDBusInterface> m_interface;
-        static QDBusInterface & dbusInterface();
-#endif
+        /**
+         * The notification title.
+         */
+        QString m_title;
+
+        /**
+         * The notification timeout.
+         */
+        int m_timeout;
     };
 }
 
-#endif //SPECTRUM_NOTIFICATION_H
+#endif //SPECTRUM_QTUI_NOTIFICATION_H

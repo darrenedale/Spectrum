@@ -5,6 +5,8 @@
 #ifndef SPECTRUM_EMULATOR_APPLICATION_H
 #define SPECTRUM_EMULATOR_APPLICATION_H
 
+#define spectrumApp (::Spectrum::QtUi::Application::instance())
+
 #include <memory>
 #include <QApplication>
 #include "mainwindow.h"
@@ -16,6 +18,18 @@ namespace Spectrum::QtUi
         Q_OBJECT
 
     public:
+        /**
+         * Types of theme.
+         *
+         * The application object will attempt to determine whether the current style is a light or dark theme based on the standard window background colour.
+         */
+        enum class ThemeType
+        {
+            Unknown = 0,
+            Light,
+            Dark,
+        };
+
         /**
          * Create a new instance of the emulator application.
          *
@@ -65,6 +79,27 @@ namespace Spectrum::QtUi
         {
             return m_instance;
         }
+
+        /**
+         * Try to determine whether the current theme is dark or light in nature.
+         *
+         * The lightness of underlying colour for the general window background brush is used to determine this. Use it to determine which types of icon to use,
+         * for example, when there are different options for dark and light themes.
+         *
+         * @return The type of theme.
+         */
+        [[nodiscard]] ThemeType themeType() const;
+
+        /**
+         * Fetch a named icon.
+         *
+         * The icon will be suitable for the current theme type.
+         *
+         * @param name The icon to fetch.
+         *
+         * @return The icon. This will be a null icon if the provided name does not name a valid icon.
+         */
+        [[nodiscard]] QIcon icon(const QString & name) const;
 
     private:
         /**

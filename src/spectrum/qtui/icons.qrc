@@ -1,0 +1,34 @@
+<RCC>
+<qresource prefix="/icons/dark">
+    <file alias="app">../icons/app-dark.svg</file>
+    <file alias="ok">../icons/ok-dark.svg</file>
+    <file alias="step">../icons/step-dark.svg</file>
+    <file alias="resume">../icons/resume-dark.svg</file>
+    <file alias="pause">../icons/pause-dark.svg</file>
+    <file alias="reset">../icons/reset-dark.svg</file>
+    <file alias="refresh">../icons/refresh-dark.svg</file>
+    <file alias="open">../icons/open-dark.svg</file>
+    <file alias="save">../icons/save-dark.svg</file>
+    <file alias="quit">../icons/quit-dark.svg</file>
+    <file alias="screenshot">../icons/screenshot-dark.svg</file>
+    <file alias="clear">../icons/clear-dark.svg</file>
+    <file alias="remove">../icons/remove-dark.svg</file>
+    <file alias="breakpoint">../icons/breakpoint-dark.svg</file>
+</qresource>
+<qresource prefix="/icons/light">
+    <file alias="app">../icons/app-light.svg</file>
+    <file alias="ok">../icons/ok-light.svg</file>
+    <file alias="step">../icons/step-light.svg</file>
+    <file alias="resume">../icons/resume-light.svg</file>
+    <file alias="pause">../icons/pause-light.svg</file>
+    <file alias="reset">../icons/reset-light.svg</file>
+    <file alias="refresh">../icons/refresh-light.svg</file>
+    <file alias="open">../icons/open-light.svg</file>
+    <file alias="save">../icons/save-light.svg</file>
+    <file alias="quit">../icons/quit-light.svg</file>
+    <file alias="screenshot">../icons/screenshot-light.svg</file>
+    <file alias="clear">../icons/clear-light.svg</file>
+    <file alias="remove">../icons/remove-light.svg</file>
+    <file alias="breakpoint">../icons/breakpoint-light.svg</file>
+</qresource>
+</RCC>

@@ -11,7 +11,6 @@
 #include <QSpinBox>
 #include <QDockWidget>
 #include <QFileDialog>
-#include <QMessageBox>
 #include <QEvent>
 #include <QKeyEvent>
 #include <QMimeData>
@@ -26,6 +25,7 @@
 #include "application.h"
 #include "mainwindow.h"
 #include "threadpauser.h"
+#include "dialogue.h"
 #include "../spectrum16k.h"
 #include "../spectrum48k.h"
 #include "../spectrum128k.h"
@@ -326,16 +326,16 @@ MainWindow::MainWindow(QWidget * parent)
   m_display(),
   m_displayWidget(),
   m_pokesWidget(),
-  m_load(QIcon::fromTheme(QStringLiteral("document-open")), tr("Load snapshot")),
-  m_save(QIcon::fromTheme(QStringLiteral("document-save")), tr("Save snapshot")),
-  m_pauseResume(QIcon::fromTheme(QStringLiteral("media-playback-start")), tr("Start/Pause")),
+  m_load(QIcon::fromTheme(QStringLiteral("document-open"), spectrumApp->icon(QStringLiteral("open"))), tr("Load snapshot")),
+  m_save(QIcon::fromTheme(QStringLiteral("document-save"), spectrumApp->icon(QStringLiteral("save"))), tr("Save snapshot")),
+  m_pauseResume(QIcon::fromTheme(QStringLiteral("media-playback-start"), spectrumApp->icon(QStringLiteral("resume"))), tr("Start/Pause")),
   m_model16(tr("Spectrum 16k")),
   m_model48(tr("Spectrum 48k")),
   m_model128(tr("Spectrum 128k")),
   m_modelPlus2(tr("Spectrum +2")),
   m_modelPlus2a(tr("Spectrum +2a")),
   m_modelPlus3(tr("Spectrum +3")),
-  m_saveScreenshot(QIcon::fromTheme(QStringLiteral("image")), tr("Screenshot")),
+  m_saveScreenshot(QIcon::fromTheme(QStringLiteral("image"), spectrumApp->icon(QStringLiteral("screenshot"))), tr("Screenshot")),
   m_frameSkipGroup(nullptr),
   m_colourDisplay(tr("Colour")),
   m_monochromeDisplay(tr("Monochrome")),
@@ -348,10 +348,10 @@ MainWindow::MainWindow(QWidget * parent)
   m_gameControllersMenu(tr("Game Controller")),
   m_gameControllersGroup(nullptr),
   m_kempstonMouse(tr("Kempston mouse")),
-  m_reset(QIcon::fromTheme(QStringLiteral("start-over")), tr("Reset")),
+  m_reset(QIcon::fromTheme(QStringLiteral("start-over"), spectrumApp->icon(QStringLiteral("reset"))), tr("Reset")),
   m_debug(tr("Debug")),
-  m_debugStep(QIcon::fromTheme(QStringLiteral("debug-step-instruction")), tr("Step")),
-  m_refreshScreen(QIcon::fromTheme("view-refresh"), tr("Refresh screen")),
+  m_debugStep(QIcon::fromTheme(QStringLiteral("debug-step-instruction"), spectrumApp->icon(QStringLiteral("step"))), tr("Step")),
+  m_refreshScreen(QIcon::fromTheme(QStringLiteral("view-refresh"), spectrumApp->icon(QStringLiteral("refresh"))), tr("Refresh screen")),
   m_emulationSpeedSlider(Qt::Horizontal),
   m_emulationSpeedSpin(nullptr),
   m_debugWindow(&m_spectrumThread),
@@ -502,7 +502,7 @@ void MainWindow::stopThread()
     m_spectrumThread.wait(ThreadStopWaitThreshold);
 #endif
 
-    if (!m_spectrumThread.isFinished()) {
+    if (m_spectrumThread.isRunning()) {
         Util::debug << "forcibly terminating SpectrumThread @" << std::hex
               << static_cast<void *>(&m_spectrumThread) << "\n";
         m_spectrumThread.terminate();
@@ -548,7 +548,7 @@ void MainWindow::createMenuBar()
     }
 
     menu->addSeparator();
-    menu->addAction(QIcon::fromTheme("application-exit"), tr("Quit"), [this]() {
+    menu->addAction(QIcon::fromTheme(QStringLiteral("application-exit"), spectrumApp->icon(QStringLiteral("quit"))), tr("Quit"), [this]() {
         close();
     });
 
@@ -943,7 +943,7 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
         format = guessSnapshotFormat(fileName);
 
         if (format.isEmpty()) {
-            statusBar()->showMessage(tr("The snapshot format for %1 could not be determined.").arg(fileName), DefaultStatusBarMessageTimeout);
+            Application::instance()->showMessage(tr("The snapshot format for %1 could not be determined.").arg(fileName), DefaultStatusBarMessageTimeout);
         }
     }
 
@@ -964,31 +964,36 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
 
     if (!reader) {
         Util::debug << "unrecognised format '" << format.toStdString() << "' from filename '" << fileName.toStdString() << "'\n";
-        statusBar()->showMessage(tr("The snapshot format for %1 could not be determined.").arg(fileName), DefaultStatusBarMessageTimeout);
+        Application::instance()->showMessage(tr("The snapshot format for %1 could not be determined.").arg(fileName), DefaultStatusBarMessageTimeout);
         return false;
     }
 
     if (!reader->isOpen()) {
         Util::debug << "Snapshot file '" << fileName.toStdString() << "' could not be opened.\n";
-        statusBar()->showMessage(tr("The snapshot file %1 could not be opened.").arg(fileName), DefaultStatusBarMessageTimeout);
+        Application::instance()->showMessage(tr("The snapshot file %1 could not be opened.").arg(fileName), DefaultStatusBarMessageTimeout);
         return false;
     }
 
     const auto * snapshot = reader->read();
 
     if (!snapshot) {
-        statusBar()->showMessage(tr("The snapshot file %1 is not valid.").arg(fileName), DefaultStatusBarMessageTimeout);
+        Application::instance()->showMessage(tr("The snapshot file %1 is not valid.").arg(fileName), DefaultStatusBarMessageTimeout);
         return false;
     }
 
     if (bool canApply = m_spectrum->canApplySnapshot(*snapshot); !canApply) {
         if (snapshot->model() != m_spectrum->model()) {
-            if (QMessageBox::StandardButton::Yes != QMessageBox::question(
-                    this,
-                    tr("Incompatible Spectrum Model"),
-                    tr("The loaded snapshot requires a %1.\n\nDo you want to change the emulated Spectrum model and load the snapshot?")
-                            .arg(QString::fromStdString(std::to_string(snapshot->model())))
-            )) {
+            auto dlg = Dialogue(
+                    tr("You are currently running a %1 but this snapshot requires a %2.\n\nWould you like to switch models (this will reset the Spectrum)?")
+                            .arg(QString::fromStdString(std::to_string(m_spectrum->model())), QString::fromStdString(std::to_string(snapshot->model()))),
+                    tr("A different Spectrum model is required")
+                );
+
+            dlg.setIcon(QIcon::fromTheme(QStringLiteral("start-over"), spectrumApp->icon(QStringLiteral("restart"))));
+            dlg.addButton(tr("Keep %1").arg(QString::fromStdString(std::to_string(m_spectrum->model()))), QDialogButtonBox::ButtonRole::RejectRole);
+            dlg.addButton(tr("Switch to %1").arg(QString::fromStdString(std::to_string(snapshot->model()))), QDialogButtonBox::ButtonRole::AcceptRole);
+
+            if (QDialog::Accepted != dlg.exec()) {
                 statusBar()->showMessage(
                         tr("The snapshot file %1 is not compatible with the running Spectrum (it requires a %2).")
                                 .arg(fileName, QString::fromStdString(std::to_string(snapshot->model()))),
@@ -1002,7 +1007,7 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
         }
 
         if (!canApply) {
-            statusBar()->showMessage(
+            Application::instance()->showMessage(
                     tr("The snapshot file %1 cannot be loaded.")
                             .arg(fileName, QString::fromStdString(std::to_string(snapshot->model()))),
                     DefaultStatusBarMessageTimeout
@@ -1034,7 +1039,7 @@ void MainWindow::saveSnapshot(const QString & fileName, QString format)
         format = guessSnapshotFormat(fileName);
 
         if (format.isEmpty()) {
-            statusBar()->showMessage(tr("The snapshot format to use could not be determined from the filename %1.").arg(fileName), DefaultStatusBarMessageTimeout);
+            Application::instance()->showMessage(tr("The snapshot format to use could not be determined from the filename %1.").arg(fileName), DefaultStatusBarMessageTimeout);
             return;
         }
     }
@@ -1058,12 +1063,12 @@ void MainWindow::saveSnapshot(const QString & fileName, QString format)
 
     if (!writer) {
         Util::debug << "unrecognised format '" << format.toStdString() << "' from filename '" << fileName.toStdString() << "'\n";
-        statusBar()->showMessage(tr("Unrecognised snapshot format %1.").arg(format), DefaultStatusBarMessageTimeout);
+        Application::instance()->showMessage(tr("Unrecognised snapshot format %1.").arg(format), DefaultStatusBarMessageTimeout);
     }
 
     if (!writer->writeTo(fileName.toStdString())) {
         Util::debug << "failed to write snapshot to '" << fileName.toStdString() << "'\n";
-        statusBar()->showMessage(tr("Failed to save snapshot to %1.").arg(fileName), DefaultStatusBarMessageTimeout);
+        Application::instance()->showMessage(tr("Failed to save snapshot to %1.").arg(fileName), DefaultStatusBarMessageTimeout);
     } else {
         statusBar()->showMessage(tr("Snapshot successfully saved to %1.").arg(fileName), DefaultStatusBarMessageTimeout);
     }
@@ -1802,7 +1807,7 @@ void MainWindow::threadPaused()
 {
     m_displayRefreshTimer.stop();
     refreshSpectrumDisplay();
-    m_pauseResume.setIcon(QIcon::fromTheme(QStringLiteral("media-playback-start")));
+    m_pauseResume.setIcon(QIcon::fromTheme(QStringLiteral("media-playback-start"), spectrumApp->icon(QStringLiteral("resume"))));
     m_pauseResume.setText(tr("Resume"));
     m_statusBarPause.setText(tr("Paused"));
 
@@ -1813,7 +1818,7 @@ void MainWindow::threadPaused()
 void MainWindow::threadResumed()
 {
     m_displayRefreshTimer.start();
-    m_pauseResume.setIcon(QIcon::fromTheme(QStringLiteral("media-playback-pause")));
+    m_pauseResume.setIcon(QIcon::fromTheme(QStringLiteral("media-playback-pause"), spectrumApp->icon(QStringLiteral("pause"))));
     m_pauseResume.setText(tr("Pause"));
     m_statusBarPause.setText(tr("Running"));
 
@@ -1837,7 +1842,7 @@ void MainWindow::saveSnapshotToSlot(int slotIndex, QString format)
     auto slotDir = QDir(QStandardPaths::writableLocation(QStandardPaths::StandardLocation::AppDataLocation));
 
     if (!slotDir.mkpath(QStringLiteral("slots"))) {
-        statusBar()->showMessage(tr("The save slots directory does not exist and could not be created."), DefaultStatusBarMessageTimeout);
+        Application::instance()->showMessage(tr("The save slots directory does not exist and could not be created."), DefaultStatusBarMessageTimeout);
         return;
     }
 
@@ -1853,12 +1858,12 @@ bool MainWindow::loadSnapshotFromSlot(int slotIndex)
     auto fileName = QStringLiteral("%1.z80").arg(slotIndex);
 
     if (!slotDir.exists(fileName)) {
-        statusBar()->showMessage(tr("Slot %1 is empty").arg(slotIndex));
+        Application::instance()->showMessage(tr("Slot %1 is empty").arg(slotIndex));
         return false;
     }
 
     if (!loadSnapshot(slotDir.absoluteFilePath(fileName), QStringLiteral("z80"))) {
-        statusBar()->showMessage(tr("Snapshot in slot %1 could not be loaded.").arg(slotIndex));
+        Application::instance()->showMessage(tr("Snapshot in slot %1 could not be loaded.").arg(slotIndex));
         return false;
     }
 

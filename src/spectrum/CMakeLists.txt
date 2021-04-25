@@ -76,8 +76,10 @@ add_executable(
         qtui/imagewidget.cpp
         qtui/spectrumdisplayimagewidget.cpp
         qtui/hexspinbox.cpp
+        qtui/dialogue.cpp
         qtui/gamecontrollerhandler.cpp
         qtui/notification.cpp
+        qtui/icons.qrc
         ../computer.h
         ../cpu.cpp
         ../simplememory.h

@@ -30,8 +30,8 @@ namespace
 PokesWidget::PokesWidget(QWidget * parent)
 : QWidget(parent),
   m_layout(),
-  m_loadPokes(QIcon::fromTheme("document-open"), tr("Load pokes")),
-  m_clearPokes(QIcon::fromTheme("edit-clear-list"), tr("Clear pokes")),
+  m_loadPokes(QIcon::fromTheme(QStringLiteral("document-open"), spectrumApp->icon(QStringLiteral("open"))), tr("Load pokes")),
+  m_clearPokes(QIcon::fromTheme(QStringLiteral("edit-clear-list"), spectrumApp->icon(QStringLiteral("clear"))), tr("Clear pokes")),
   m_toolBar(),
   m_pokes(),
   m_actionIconSize()
