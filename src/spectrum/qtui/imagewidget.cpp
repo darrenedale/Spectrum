@@ -13,8 +13,9 @@ ImageWidget::ImageWidget(QWidget * parent)
 }
 
 ImageWidget::ImageWidget(QImage image, QWidget * parent )
-:	QWidget(parent),
-	m_image(std::move(image))
+: QWidget(parent),
+  m_image(std::move(image)),
+  m_keepAspectRatio(true)
 {
 }
 
