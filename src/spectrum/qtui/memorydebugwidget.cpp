@@ -15,7 +15,7 @@ MemoryDebugWidget::MemoryDebugWidget(Spectrum::BaseSpectrum::MemoryType * memory
   m_memoryLocation(),
   m_setBreakpoint()
 {
-    m_setBreakpoint.setIcon(QIcon::fromTheme(QStringLiteral("process-stop"), spectrumApp->icon(QStringLiteral("breakpoint"))));
+    m_setBreakpoint.setIcon(QIcon::fromTheme(QStringLiteral("process-stop"), Application::icon(QStringLiteral("breakpoint"))));
 
     auto * widgetLayout = new QVBoxLayout();
     widgetLayout->addWidget(&m_memory);

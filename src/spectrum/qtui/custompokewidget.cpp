@@ -17,7 +17,7 @@ CustomPokeWidget::CustomPokeWidget(::Z80::UnsignedWord address, Z80::UnsignedByt
 {
     m_address.setValue(address);
     m_value.setValue(value);
-    m_poke.setIcon(QIcon::fromTheme("dialog-ok-apply", Application::instance()->icon("ok")));
+    m_poke.setIcon(QIcon::fromTheme("dialog-ok-apply", Application::icon("ok")));
 
     auto * layout = new QHBoxLayout();
     layout->addWidget(new QLabel(tr("Address")), 1);

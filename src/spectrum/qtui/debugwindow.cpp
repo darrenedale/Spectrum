@@ -47,9 +47,9 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
   m_pointers(),
   m_interrupts(),
   m_memoryWidget(thread->spectrum()),
-  m_step(QIcon::fromTheme(QStringLiteral("debug-step-instruction"), spectrumApp->icon(QStringLiteral("step"))), tr("Step")),
-  m_pauseResume(QIcon::fromTheme(QStringLiteral("media-playback-start"), spectrumApp->icon(QStringLiteral("resume"))), tr("Resume")),
-  m_refresh(QIcon::fromTheme(QStringLiteral("view-refresh"), spectrumApp->icon(QStringLiteral("refresh"))), tr("Refresh")),
+  m_step(QIcon::fromTheme(QStringLiteral("debug-step-instruction"), Application::icon(QStringLiteral("step"))), tr("Step")),
+  m_pauseResume(QIcon::fromTheme(QStringLiteral("media-playback-start"), Application::icon(QStringLiteral("resume"))), tr("Resume")),
+  m_refresh(QIcon::fromTheme(QStringLiteral("view-refresh"), Application::icon(QStringLiteral("refresh"))), tr("Refresh")),
   m_status(),
   m_navigateToPc(tr("Navigate to PC")),
   m_breakpointAtPc(tr("Set breakpoint here")),
@@ -331,7 +331,7 @@ void DebugWindow::stepTriggered()
 
 void DebugWindow::threadPaused()
 {
-    m_pauseResume.setIcon(QIcon::fromTheme(QStringLiteral("media-playback-start"), spectrumApp->icon(QStringLiteral("resume"))));
+    m_pauseResume.setIcon(QIcon::fromTheme(QStringLiteral("media-playback-start"), Application::icon(QStringLiteral("resume"))));
     m_pauseResume.setText(tr("Resume"));
     m_registers.setEnabled(true);
     m_pointers.setEnabled(true);
@@ -348,7 +348,7 @@ void DebugWindow::threadPaused()
 
 void DebugWindow::threadResumed()
 {
-    m_pauseResume.setIcon(QIcon::fromTheme(QStringLiteral("media-playback-pause"), spectrumApp->icon(QStringLiteral("pause"))));
+    m_pauseResume.setIcon(QIcon::fromTheme(QStringLiteral("media-playback-pause"), Application::icon(QStringLiteral("pause"))));
     m_pauseResume.setText(tr("Pause"));
     m_registers.setEnabled(false);
     m_pointers.setEnabled(false);

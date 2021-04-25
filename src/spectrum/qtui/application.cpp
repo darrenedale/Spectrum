@@ -36,10 +36,9 @@ Application::Application(int & argc, char ** argv)
 void Application::showMessage(const QString & message, int timeout)
 {
     Notification::showNotification(message, timeout);
-//    mainWindow().statusBar()->showMessage(message, timeout);
 }
 
-Application::ThemeType Application::themeType() const
+Application::ThemeType Application::themeType()
 {
     if (128 <= palette().window().color().lightness()) {
         return ThemeType::Light;
@@ -48,9 +47,13 @@ Application::ThemeType Application::themeType() const
     return ThemeType::Dark;
 }
 
-QIcon Application::icon(const QString & name) const
+QIcon Application::icon(const QString & name, ThemeType type)
 {
-    switch (themeType()) {
+    if (ThemeType::Unknown == type) {
+        type = themeType();
+    }
+
+    switch (type) {
         case ThemeType::Dark:
             return QIcon(QStringLiteral(":/icons/dark/") % name);
 

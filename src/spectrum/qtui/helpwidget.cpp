@@ -28,7 +28,7 @@ HelpWidget::HelpWidget(QWidget * parent)
     label->setWordWrap(true);
 
     {
-        QFile helpText(":/help/help-text");
+        QFile helpText(":/help/en/help");
         helpText.open(QIODevice::OpenModeFlag::ReadOnly);
         label->setText(QString::fromUtf8(helpText.readAll()).arg(Application::instance()->property("version").toString()));
     }

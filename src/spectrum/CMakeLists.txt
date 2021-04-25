@@ -83,7 +83,7 @@ add_executable(
         qtui/gamecontrollerhandler.cpp
         qtui/notification.cpp
         qtui/icons.qrc
-        qtui/resources.qrc
+        qtui/help.qrc
         ../computer.h
         ../cpu.cpp
         ../simplememory.h

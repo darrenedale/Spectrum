@@ -30,8 +30,8 @@ namespace
 PokesWidget::PokesWidget(QWidget * parent)
 : QWidget(parent),
   m_layout(),
-  m_loadPokes(QIcon::fromTheme(QStringLiteral("document-open"), spectrumApp->icon(QStringLiteral("open"))), tr("Load pokes")),
-  m_clearPokes(QIcon::fromTheme(QStringLiteral("edit-clear-list"), spectrumApp->icon(QStringLiteral("clear"))), tr("Clear pokes")),
+  m_loadPokes(QIcon::fromTheme(QStringLiteral("document-open"), Application::icon(QStringLiteral("open"))), tr("Load pokes")),
+  m_clearPokes(QIcon::fromTheme(QStringLiteral("edit-clear-list"), Application::icon(QStringLiteral("clear"))), tr("Clear pokes")),
   m_toolBar(),
   m_pokes(),
   m_actionIconSize()
@@ -77,7 +77,7 @@ void PokesWidget::loadPokes(const QString & fileName)
     PokFileReader reader(fileName.toStdString());
 
     if (!reader.isValid()) {
-        Application::instance()->showMessage(tr("Poke file %1 could not be opened.").arg(fileName));
+        Application::showMessage(tr("Poke file %1 could not be opened.").arg(fileName));
         return;
     }
 
@@ -87,7 +87,7 @@ void PokesWidget::loadPokes(const QString & fileName)
         auto poke = reader.nextPoke();
 
         if (!poke) {
-            Application::instance()->showMessage(tr("Error reading pokes from %1.").arg(fileName));
+            Application::showMessage(tr("Error reading pokes from %1.").arg(fileName));
             return;
         }
 
@@ -98,7 +98,7 @@ void PokesWidget::loadPokes(const QString & fileName)
         addPoke(poke);
     }
 
-    Application::instance()->showMessage(tr("Read %1 pokes from %2.").arg(pokes.size()).arg(fileName));
+    Application::showMessage(tr("Read %1 pokes from %2.").arg(pokes.size()).arg(fileName));
 }
 
 void PokesWidget::setActionIconSize(const QSize & size)

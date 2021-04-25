@@ -68,7 +68,7 @@ namespace Spectrum::QtUi
          * @param message The message to show.
          * @param timeout How long the message should be displayed for.
          */
-        void showMessage(const QString & message, int timeout = 5000);
+        static void showMessage(const QString & message, int timeout = 5000);
 
         /**
          * Fetch the Application singleton instance.
@@ -88,7 +88,7 @@ namespace Spectrum::QtUi
          *
          * @return The type of theme.
          */
-        [[nodiscard]] ThemeType themeType() const;
+        [[nodiscard]] static ThemeType themeType() ;
 
         /**
          * Fetch a named icon.
@@ -96,10 +96,11 @@ namespace Spectrum::QtUi
          * The icon will be suitable for the current theme type.
          *
          * @param name The icon to fetch.
+         * @param type The theme type for the icon. Default is Unknown, which will use the current system theme type.
          *
          * @return The icon. This will be a null icon if the provided name does not name a valid icon.
          */
-        [[nodiscard]] QIcon icon(const QString & name) const;
+        [[nodiscard]] static QIcon icon(const QString & name, ThemeType type = ThemeType::Unknown) ;
 
     private:
         /**

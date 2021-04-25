@@ -17,15 +17,21 @@ AboutWidget::AboutWidget(QWidget * parent)
 {
     auto * app = Application::instance();
     assert(app);
-
-    {
-        auto metrics = fontMetrics();
-        setMinimumWidth(metrics.horizontalAdvance(QLatin1Char('W')) * 30);
-    }
+    auto unitWidth = fontMetrics().horizontalAdvance(QLatin1Char('W'));
+    setMinimumWidth(unitWidth * 30);
 
     auto * mainLayout = new QVBoxLayout();
+    mainLayout->setSpacing(unitWidth);
 
-    auto * label = new QLabel(Application::applicationDisplayName());
+    auto * layout = new QHBoxLayout();
+    layout->setSpacing(unitWidth);
+    layout->addStretch(10);
+
+    auto * label = new QLabel();
+    label->setPixmap(Application::icon("app").pixmap(64));
+    layout->addWidget(label, 0);
+
+    label = new QLabel(Application::applicationDisplayName());
     label->setAlignment(Qt::AlignmentFlag::AlignCenter);
 
     {
@@ -35,7 +41,9 @@ AboutWidget::AboutWidget(QWidget * parent)
         label->setFont(font);
     }
 
-    mainLayout->addWidget(label);
+    layout->addWidget(label, 0);
+    layout->addStretch(10);
+    mainLayout->addLayout(layout);
 
     label = new QLabel(tr("Version %1 by %2").arg(app->property("version").toString(), app->property("author").toString()));
     label->setAlignment(Qt::AlignmentFlag::AlignCenter);
@@ -43,7 +51,9 @@ AboutWidget::AboutWidget(QWidget * parent)
 
     mainLayout->addStretch(10);
 
-    auto * layout = new QHBoxLayout();
+    layout = new QHBoxLayout();
+    layout->setSpacing(unitWidth);
+
     auto * button = new QPushButton(tr("Close"));
     layout->addStretch(10);
     layout->addWidget(button, 1);

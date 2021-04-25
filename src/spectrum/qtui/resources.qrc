@@ -1,5 +1,0 @@
-<RCC>
-<qresource prefix="/help" >
-    <file alias="help-text">help.md</file>
-</qresource>
-</RCC>
