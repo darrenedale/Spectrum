@@ -59,10 +59,10 @@ namespace Interpreter
             Minus = M
         };
 
-        inline Operand(const QString & op)
-                : m_string(op.trimmed().toUpper()),
-                  m_type(OperandType::InvalidOperand),
-                  m_number(0)
+        inline explicit Operand(const QString & op)
+        : m_string(op.trimmed().toUpper()),
+            m_type(OperandType::InvalidOperand),
+            m_number(0)
         {
             parse();
         }

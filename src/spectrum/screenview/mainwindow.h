@@ -23,7 +23,7 @@ namespace ScreenView
     : public QMainWindow
     {
     public:
-        MainWindow(QWidget * = nullptr);
+        explicit MainWindow(QWidget * = nullptr);
         ~MainWindow() override;
 
         void loadScreen(const QString & fileName);
