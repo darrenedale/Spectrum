@@ -1,4 +1,4 @@
-find_package(Qt5 COMPONENTS Core Gui Widgets Gamepad)
+find_package(Qt5 COMPONENTS Core Gui Widgets Gamepad DBus)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -79,7 +79,10 @@ add_executable(
         qtui/imagewidget.cpp
         qtui/spectrumdisplayimagewidget.cpp
         qtui/hexspinbox.cpp
+        qtui/dialogue.cpp
         qtui/gamecontrollerhandler.cpp
+        qtui/notification.cpp
+        qtui/icons.qrc
         qtui/resources.qrc
         ../computer.h
         ../cpu.cpp
@@ -99,7 +102,7 @@ add_executable(
         ../util/debug.h
 )
 
-target_link_libraries(spectrum Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Gamepad)
+target_link_libraries(spectrum Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Gamepad Qt5::DBus)
 
 set_target_properties(
         spectrum

@@ -4,7 +4,7 @@
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-
+#include "application.h"
 #include "memorydebugwidget.h"
 
 using namespace Spectrum::QtUi;
@@ -15,7 +15,7 @@ MemoryDebugWidget::MemoryDebugWidget(Spectrum::BaseSpectrum::MemoryType * memory
   m_memoryLocation(),
   m_setBreakpoint()
 {
-    m_setBreakpoint.setIcon(QIcon::fromTheme(QStringLiteral("process-stop")));
+    m_setBreakpoint.setIcon(QIcon::fromTheme(QStringLiteral("process-stop"), spectrumApp->icon(QStringLiteral("breakpoint"))));
 
     auto * widgetLayout = new QVBoxLayout();
     widgetLayout->addWidget(&m_memory);

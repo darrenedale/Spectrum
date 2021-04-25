@@ -4,7 +4,10 @@
 
 #include <cassert>
 #include <QStatusBar>
+#include <QIcon>
+#include <QStringBuilder>
 #include "application.h"
+#include "notification.h"
 
 using namespace Spectrum::QtUi;
 
@@ -17,6 +20,7 @@ Application::Application(int & argc, char ** argv)
     assert(!m_instance);
     m_instance = this;
 
+    setWindowIcon(icon(QStringLiteral("app")));
     setApplicationDisplayName(QStringLiteral("Spectrum"));
     setApplicationName(QStringLiteral("Spectrum"));
     setOrganizationDomain(QStringLiteral("net.equituk"));
@@ -31,5 +35,27 @@ Application::Application(int & argc, char ** argv)
 
 void Application::showMessage(const QString & message, int timeout)
 {
-    mainWindow().statusBar()->showMessage(message, timeout);
+    Notification::showNotification(message, timeout);
+//    mainWindow().statusBar()->showMessage(message, timeout);
+}
+
+Application::ThemeType Application::themeType() const
+{
+    if (128 <= palette().window().color().lightness()) {
+        return ThemeType::Light;
+    }
+
+    return ThemeType::Dark;
+}
+
+QIcon Application::icon(const QString & name) const
+{
+    switch (themeType()) {
+        case ThemeType::Dark:
+            return QIcon(QStringLiteral(":/icons/dark/") % name);
+
+        case ThemeType::Light:
+        default:
+            return QIcon(QStringLiteral(":/icons/light/") % name);
+    }
 }

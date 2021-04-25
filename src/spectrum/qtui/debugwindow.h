@@ -28,7 +28,7 @@ namespace Spectrum::QtUi
 	class Thread;
 
 	class DebugWindow
-	:	public QMainWindow
+	: public QMainWindow
 	{
 		Q_OBJECT
 

@@ -12,6 +12,7 @@
 #include <cassert>
 #include <cstring>
 #include "pagingmemoryinterface.h"
+#include <array>
 #include "../mappablememoryinterface.h"
 #include "../memory.h"
 #include "../z80/types.h"

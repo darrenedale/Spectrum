@@ -4,12 +4,12 @@
 
 #include <QHBoxLayout>
 #include <QLabel>
-
+#include "application.h"
 #include "custompokewidget.h"
 
 using namespace Spectrum::QtUi;
 
-CustomPokeWidget::CustomPokeWidget(Z80::UnsignedWord address, Z80::UnsignedByte value, QWidget * parent)
+CustomPokeWidget::CustomPokeWidget(::Z80::UnsignedWord address, Z80::UnsignedByte value, QWidget * parent)
 : QWidget(parent),
   m_address(4),
   m_value(2),
@@ -17,7 +17,7 @@ CustomPokeWidget::CustomPokeWidget(Z80::UnsignedWord address, Z80::UnsignedByte 
 {
     m_address.setValue(address);
     m_value.setValue(value);
-    m_poke.setIcon(QIcon::fromTheme("dialog-ok-apply"));
+    m_poke.setIcon(QIcon::fromTheme("dialog-ok-apply", Application::instance()->icon("ok")));
 
     auto * layout = new QHBoxLayout();
     layout->addWidget(new QLabel(tr("Address")), 1);
@@ -32,12 +32,12 @@ CustomPokeWidget::CustomPokeWidget(Z80::UnsignedWord address, Z80::UnsignedByte 
     });
 }
 
-CustomPokeWidget::CustomPokeWidget(Z80::UnsignedWord address, QWidget * parent)
+CustomPokeWidget::CustomPokeWidget(::Z80::UnsignedWord address, QWidget * parent)
 : CustomPokeWidget(address, 0x00, parent)
 {
 }
 
-CustomPokeWidget::CustomPokeWidget(Z80::UnsignedByte value, QWidget * parent)
+CustomPokeWidget::CustomPokeWidget(::Z80::UnsignedByte value, QWidget * parent)
 : CustomPokeWidget(0x0000, value, parent)
 {
 }

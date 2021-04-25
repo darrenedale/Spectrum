@@ -8,7 +8,6 @@
 #include <QVBoxLayout>
 #include <QFileDialog>
 #include <QStandardPaths>
-
 #include "mainwindow.h"
 #include "../qtui/qimagedisplaydevice.h"
 

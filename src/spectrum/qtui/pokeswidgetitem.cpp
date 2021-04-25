@@ -5,6 +5,7 @@
 #include <utility>
 #include <QHBoxLayout>
 #include <QLabel>
+#include "application.h"
 #include "pokeswidgetitem.h"
 
 using namespace Spectrum::QtUi;
@@ -23,13 +24,13 @@ PokesWidgetItem::PokesWidgetItem(const QString & name, QString  uuid, QWidget * 
     m_onOff.setAutoRaise(true);
     m_onOff.setCheckable(true);
     m_onOff.setChecked(false);
-    m_onOff.setIcon(QIcon::fromTheme("dialog-ok-apply"));
+    m_onOff.setIcon(QIcon::fromTheme(QStringLiteral("dialog-ok-apply"), spectrumApp->icon(QStringLiteral("ok"))));
     m_onOff.setText(tr("Off"));
     m_onOff.setToolTip(tr("Switch the poke '%1' on/off.").arg(name));
     layout->addWidget(&m_onOff);
 
     m_remove.setAutoRaise(true);
-    m_remove.setIcon(QIcon::fromTheme("list-remove"));
+    m_remove.setIcon(QIcon::fromTheme(QStringLiteral("list-remove"), spectrumApp->icon(QStringLiteral("remove"))));
     m_remove.setText(tr("Remove"));
     m_remove.setToolTip(tr("Remove the poke '%1' from this list.").arg(name));
     layout->addWidget(&m_remove);

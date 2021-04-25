@@ -110,10 +110,6 @@ void PagingDevicePlus2a::writePort1ffd(::Z80::UnsignedByte value)
                 | (static_cast<std::uint8_t>(memory->currentRom()) & 0x01)
             );
 
-#if (!defined(NDEBUG))
-        std::cout << "Received OUT 0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(value) << " on port 0x1ffd\n";
-        std::cout << "ROM: " << rom << '\n';
-#endif
         memory->pageRom(rom);
         
         if (value & DiskMotorMask) {
