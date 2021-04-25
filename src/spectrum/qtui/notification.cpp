@@ -77,7 +77,7 @@ void Notification::show(std::optional<int> timeout) const
 void Notification::show(std::optional<int> timeout) const
 {
     Util::debug << "Desktop notifications for Windows are not yet implemented.\n";
-    showFallbackMessage(message(), title());
+    showFallbackNotification(message(), title());
 }
 
 #elif (defined(Q_OS_MACOS))
@@ -85,7 +85,7 @@ void Notification::show(std::optional<int> timeout) const
 void Notification::show(std::optional<int> timeout) const
 {
     Util::debug << "Desktop notifications for MacOS are not yet implemented.\n";
-    showFallbackMessage(message(), title());
+    showFallbackNotification(message(), title());
 }
 
 #else
@@ -93,7 +93,7 @@ void Notification::show(std::optional<int> timeout) const
 void Notification::show(std::optional<int> timeout) const
 {
     Util::debug << "Desktop notifications are not available for this platform.\n";
-    showFallbackMessage(message(), title());
+    showFallbackNotification(message(), title());
 }
 
 #endif

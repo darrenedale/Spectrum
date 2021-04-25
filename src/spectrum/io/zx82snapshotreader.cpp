@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <iostream>
 #include <iomanip>
+#include <array>
 #include "zx82snapshotreader.h"
 #include "../spectrum48k.h"
 #include "../../util/endian.h"

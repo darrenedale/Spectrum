@@ -1,7 +1,6 @@
 #include <filesystem>
 #include <iostream>
 #include <fstream>
-
 #include <QMenuBar>
 #include <QToolBar>
 #include <QStatusBar>
@@ -21,7 +20,6 @@
 #include <QStandardPaths>
 #include <QStringBuilder>
 #include <memory>
-
 #include "application.h"
 #include "mainwindow.h"
 #include "threadpauser.h"
@@ -354,7 +352,7 @@ MainWindow::MainWindow(QWidget * parent)
   m_refreshScreen(QIcon::fromTheme(QStringLiteral("view-refresh"), spectrumApp->icon(QStringLiteral("refresh"))), tr("Refresh screen")),
   m_emulationSpeedSlider(Qt::Horizontal),
   m_emulationSpeedSpin(nullptr),
-  m_debugWindow(&m_spectrumThread),
+  m_debugWindow(&m_spectrumThread, this),
   m_displayRefreshTimer(nullptr),
   m_joystick(std::make_unique<Spectrum::KempstonJoystick>()),
   m_gameControllerHandler(m_joystick.get()),
@@ -365,7 +363,6 @@ MainWindow::MainWindow(QWidget * parent)
 
     m_spectrum->setExecutionSpeedConstrained(true);
 
-    m_debugWindow.setWindowFlag(Qt::WindowType::Window);
     m_displayWidget.keepAspectRatio();
     m_displayWidget.setFocusPolicy(Qt::FocusPolicy::ClickFocus);
     m_displayWidget.setFocus();
@@ -989,7 +986,7 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
                     tr("A different Spectrum model is required")
                 );
 
-            dlg.setIcon(QIcon::fromTheme(QStringLiteral("start-over"), spectrumApp->icon(QStringLiteral("restart"))));
+            dlg.setIcon(QIcon::fromTheme(QStringLiteral("start-over"), spectrumApp->icon(QStringLiteral("reset"))));
             dlg.addButton(tr("Keep %1").arg(QString::fromStdString(std::to_string(m_spectrum->model()))), QDialogButtonBox::ButtonRole::RejectRole);
             dlg.addButton(tr("Switch to %1").arg(QString::fromStdString(std::to_string(snapshot->model()))), QDialogButtonBox::ButtonRole::AcceptRole);
 

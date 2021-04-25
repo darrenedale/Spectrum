@@ -65,7 +65,7 @@ public:
 
     [[nodiscard]] inline int memorySize() const
     {
-        return m_memory->addressableSize();
+        return static_cast<int>(m_memory->addressableSize());
     }
 
     inline void setClockSpeed(unsigned long long hz)

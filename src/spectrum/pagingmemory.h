@@ -9,6 +9,7 @@
 #include <cstring>
 #include <iostream>
 #include <fstream>
+#include <array>
 #include "pagedmemoryinterface.h"
 #include "../memory.h"
 #include "../z80/types.h"
