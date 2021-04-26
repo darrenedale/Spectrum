@@ -6,6 +6,7 @@
 #include <QAbstractButton>
 #include "dialogue.h"
 #include "../../util/debug.h"
+#include "widgetupdatesuspender.h"
 
 using namespace Spectrum::QtUi;
 
@@ -119,8 +120,9 @@ void Dialogue::setIcon(const QIcon & icon)
 
 void Dialogue::rebuildLayout()
 {
-    auto enabled = updatesEnabled();
-    setUpdatesEnabled(false);
+    // don't update the widget until we've re-built the layout
+    WidgetUpdateSuspender suspender(*this);
+
     m_title.setParent(nullptr);
     m_message.setParent(nullptr);
     m_iconLabel.setParent(nullptr);
@@ -157,9 +159,4 @@ void Dialogue::rebuildLayout()
     }
 
     layout->setColumnStretch(col, 10);
-
-    if (enabled) {
-        setUpdatesEnabled(true);
-        update();
-    }
 }
