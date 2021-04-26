@@ -32,7 +32,6 @@ PokesWidget::PokesWidget(QWidget * parent)
   m_layout(),
   m_loadPokes(QIcon::fromTheme(QStringLiteral("document-open"), Application::icon(QStringLiteral("open"))), tr("Load pokes")),
   m_clearPokes(QIcon::fromTheme(QStringLiteral("edit-clear-list"), Application::icon(QStringLiteral("clear"))), tr("Clear pokes")),
-  m_toolBar(),
   m_pokes(),
   m_actionIconSize()
 {
@@ -41,6 +40,7 @@ PokesWidget::PokesWidget(QWidget * parent)
     m_actionIconSize.setHeight(iconSize);
 
     m_toolBar.setIconSize(m_actionIconSize);
+    m_toolBar.addStretch(10);
     m_toolBar.addAction(&m_loadPokes);
     m_toolBar.addAction(&m_clearPokes);
     m_layout.addWidget(&m_toolBar);
@@ -104,6 +104,7 @@ void PokesWidget::loadPokes(const QString & fileName)
 void PokesWidget::setActionIconSize(const QSize & size)
 {
     m_actionIconSize = size;
+
     m_toolBar.setIconSize(size);
     auto count = m_layout.count() - 1;
 

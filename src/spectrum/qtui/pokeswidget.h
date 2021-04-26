@@ -8,10 +8,11 @@
 #include <unordered_map>
 #include <QWidget>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QAction>
-#include <QToolBar>
 #include <QString>
 #include "../pokedefinition.h"
+#include "actionbar.h"
 
 namespace Spectrum
 {
@@ -90,7 +91,7 @@ namespace Spectrum::QtUi
         QVBoxLayout m_layout;
         QAction m_loadPokes;
         QAction m_clearPokes;
-        QToolBar m_toolBar;
+        ActionBar m_toolBar;
         QString m_lastPokeLoadDir;
         QSize m_actionIconSize;
     };
