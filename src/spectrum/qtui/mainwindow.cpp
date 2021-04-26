@@ -94,6 +94,7 @@ namespace
     std::vector<::Spectrum::Keyboard::Key> mapToSpectrumKeys(Qt::Key key)
     {
         // TODO configurable mapping
+        // only interested in keys mapped to Spectrum keyboard
         switch (key) {
             case Qt::Key::Key_Backspace:
                 return {::Spectrum::Keyboard::Key::CapsShift, Keyboard::Key::Num0};
@@ -294,6 +295,7 @@ namespace
 
     JoystickMapping mapToSpectrumJoystick(Qt::Key key)
     {
+        // only interested in keys mapped to joystick actions
         switch (key) {
             case Qt::Key::Key_Up:
                 return JoystickMapping::Up;
