@@ -140,7 +140,7 @@ namespace
             }
 
             // work out the new height of the view
-            setFixedHeight((m_mnemonics.size() * m_lineHeight) + (2 * Margin));
+            setFixedHeight(static_cast<int>((m_mnemonics.size() * m_lineHeight) + (2 * Margin)));
         }
 
     protected:
