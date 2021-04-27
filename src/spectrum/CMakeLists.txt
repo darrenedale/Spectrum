@@ -46,6 +46,7 @@ add_executable(
         io/z80snapshotwriter.cpp
         io/snasnapshotwriter.cpp
         io/spsnapshotwriter.cpp
+        io/zx82snapshotwriter.cpp
         io/pokfilereader.cpp
         qtui/application.cpp
         qtui/mainwindow.cpp

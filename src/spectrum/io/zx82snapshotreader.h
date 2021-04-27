@@ -17,7 +17,7 @@ namespace Spectrum::Io
      * - https://hwiegman.home.xs4all.nl/fileformats/spectrum/Spectrum%20FAQ%20-%20File%20Formats.htm
      * - http://aminet.net/package/misc/emu/Speculator (See Docs/Spec97.guide)
      */
-    class ZX82SnapshotReader
+    class Zx82SnapshotReader
     : public SnapshotReader
     {
     public:

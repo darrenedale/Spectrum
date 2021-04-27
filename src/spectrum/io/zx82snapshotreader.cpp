@@ -100,7 +100,7 @@ namespace
     using Util::swapByteOrder;
 }
 
-const Spectrum::Snapshot * ZX82SnapshotReader::read() const
+const Spectrum::Snapshot * Zx82SnapshotReader::read() const
 {
     if (!isOpen()) {
         Util::debug << "Input stream is not open.\n";
@@ -206,10 +206,12 @@ const Spectrum::Snapshot * ZX82SnapshotReader::read() const
     return this->snapshot();
 }
 
-bool ZX82SnapshotReader::decompress(UnsignedByte * dest, UnsignedByte * source, std::size_t size)
+bool Zx82SnapshotReader::decompress(UnsignedByte * dest, UnsignedByte * source, std::size_t size)
 {
     // see Amiga ROM Kernel Reference Manual: Devices Third Edition, Appendix A - IFF Specification for RLE algorithm
+    auto * sourceStart = source;
     auto * sourceEnd = source + size;
+    auto * destStart = dest;
     auto * destEnd = dest + 49152;
 
     while (source < sourceEnd) {
@@ -222,14 +224,20 @@ bool ZX82SnapshotReader::decompress(UnsignedByte * dest, UnsignedByte * source, 
         if (len & 0x80) {
             // replicate the next byte len + 1 times
             len = (~len) + 2;
+            Util::debug << "replicating " << static_cast<std::uint16_t>(len) << " times byte in input file at offset << " << (source - sourceStart) << '\n';
 
             if (source >= sourceEnd) {
-                Util::debug << "invalid compressed image: reading the source byte to replicate " << static_cast<std::uint16_t>(len) << " times would overflow buffer\n";
+                Util::debug << "invalid compressed image: reading the source byte to replicate " << static_cast<std::uint16_t>(len) << " times would overflow read buffer\n";
                 return false;
             }
 
+            Util::debug << "replicating byte 0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(*source) << '\n' << std::dec << std::setfill(' ');
+
             if (dest + len > destEnd) {
-                Util::debug << "invalid compressed data: decompressing " << static_cast<std::uint16_t>(len) << " bytes would overflow 48K RAM\n";
+                Util::debug << "invalid compressed data: decompressing "
+                << static_cast<std::uint16_t>(len) << " bytes into memory starting at 0x"
+                << std::hex << std::setfill('0') << std::setw(4) << (dest - destStart)
+                << " from offset " << std::dec << std::setfill(' ') << (source - sourceStart) << " in snapshot file would overflow 48K RAM\n";
                 return false;
             }
 
@@ -242,14 +250,21 @@ bool ZX82SnapshotReader::decompress(UnsignedByte * dest, UnsignedByte * source, 
         } else {
             // copy the next len + 1 bytes literally
             len += 1;
+            Util::debug << "reading " << static_cast<std::uint16_t>(len) << " literal bytes from input file starting at offset " << (source - sourceStart) << '\n';
 
             if (source + len > sourceEnd) {
-                Util::debug << "invalid compressed image: reading " << static_cast<std::uint16_t>(len) << " source bytes would overflow buffer\n";
+                Util::debug << "invalid compressed image: reading "
+                << static_cast<std::uint16_t>(len) << " literal bytes into memory starting at 0x"
+                << std::hex << std::setfill('0') << std::setw(4) << (dest - destStart)
+                << " from offset " << std::dec << std::setfill(' ') << (source - sourceStart) << " in snapshot file would overflow read buffer\n";
                 return false;
             }
 
             if (dest + len > destEnd) {
-                Util::debug << "invalid compressed data: decompressing " << static_cast<std::uint16_t>(len) << " bytes would overflow 48K RAM\n";
+                Util::debug << "invalid compressed data: reading "
+                << static_cast<std::uint16_t>(len) << " literal bytes into memory starting at 0x"
+                << std::hex << std::setfill('0') << std::setw(4) << (dest - destStart)
+                << " from offset " << std::dec << std::setfill(' ') << (source - sourceStart) << " in snapshot file would overflow 48K RAM\n";
                 return false;
             }
 

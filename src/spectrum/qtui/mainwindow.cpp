@@ -45,6 +45,7 @@
 #include "../io/z80snapshotwriter.h"
 #include "../io/snasnapshotwriter.h"
 #include "../io/spsnapshotwriter.h"
+#include "../io/zx82snapshotwriter.h"
 #include "../io/pokfilereader.h"
 #include "../../util/debug.h"
 
@@ -989,9 +990,9 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
     } else if ("sp" == format) {
         reader = std::make_unique<SpSnapshotReader>(fileName.toStdString());
     } else if ("zx82" == format) {
-        reader = std::make_unique<ZX82SnapshotReader>(fileName.toStdString());
+        reader = std::make_unique<Zx82SnapshotReader>(fileName.toStdString());
     } else if ("zx" == format) {
-        reader = std::make_unique<ZXSnapshotReader>(fileName.toStdString());
+        reader = std::make_unique<ZxSnapshotReader>(fileName.toStdString());
     }
 
     if (!reader) {
@@ -1092,6 +1093,9 @@ void MainWindow::saveSnapshot(const QString & fileName, QString format)
     } else if ("sp" == format) {
         snapshot = m_spectrum->snapshot();
         writer = std::make_unique<SpSnapshotWriter>(*snapshot);
+    } else if ("zx82" == format) {
+        snapshot = m_spectrum->snapshot();
+        writer = std::make_unique<Zx82SnapshotWriter>(*snapshot);
     }
 
     if (!writer) {
@@ -1641,12 +1645,13 @@ void MainWindow::loadSnapshotTriggered()
     ThreadPauser pauser(m_spectrumThread);
 
     if(filters.isEmpty()) {
-        filters << tr("All supported snapshot files (*.sna *.z80 *.sp *.zx)");
-        filters << tr("SNA Snapshots (*.sna)");
+        filters << tr("All supported snapshot files (*.z80 *.sna *.sp *.zx82 *.zx)");
         filters << tr("Z80 Snapshots (*.z80)");
+        filters << tr("SNA Snapshots (*.sna)");
         filters << tr("SP Snapshots (*.sp)");
         filters << tr("ZX82 Snapshots (*.zx82)");
         filters << tr("ZX Snapshots (*.zx)");
+        filters << tr("All files (*)");
     }
 
     QString fileName = QFileDialog::getOpenFileName(this, tr("Load snapshot"), m_lastSnapshotLoadDir, filters.join(";;"), &lastFilter);
@@ -1677,9 +1682,10 @@ void MainWindow::saveSnapshotTriggered()
     ThreadPauser pauser(m_spectrumThread);
 
     if(filters.isEmpty()) {
-        filters << tr("SNA Snapshots (*.sna)");
         filters << tr("Z80 Snapshots (*.z80)");
+        filters << tr("SNA Snapshots (*.sna)");
         filters << tr("SP Snapshots (*.sp)");
+        filters << tr("ZX82 Snapshots (*.zx82)");
     }
 
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save snapshot"), m_lastSnapshotLoadDir, filters.join(";;"), &lastFilter);

@@ -15,7 +15,7 @@ namespace Spectrum::Io
      * References:
      * - http://spectrum-zx.chat.ru/faq/fileform.html
      */
-    class ZXSnapshotReader
+    class ZxSnapshotReader
     : public SnapshotReader
     {
     public:

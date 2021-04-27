@@ -102,7 +102,7 @@ namespace
     using Util::swapByteOrder;
 }
 
-const Snapshot * ZXSnapshotReader::read() const
+const Snapshot * ZxSnapshotReader::read() const
 {
     if (!isOpen()) {
         Util::debug << "Input stream is not open.\n";
