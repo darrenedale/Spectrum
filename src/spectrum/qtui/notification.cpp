@@ -14,7 +14,9 @@ namespace
 {
     void showFallbackNotification(const QString& message, const QString& title = {})
     {
-        Dialogue(message, title).exec();
+        Dialogue dlg(message, title);
+        dlg.setIcon(Application::icon("app"));
+        dlg.exec();
     }
 }
 
@@ -74,9 +76,40 @@ void Notification::show(std::optional<int> timeout) const
 
 #elif (defined(Q_OS_WIN))
 
+#include <QStringBuilder>
+
+// NOTE this won't currently build - C++/WinRT won't currently build with C++20.
+//#include <winrt/Windows.UI.Notifications.h>
+//#include <winrt/Windows.Data.Xml.Dom.h>
+//
+//namespace Notifications = winrt::Windows::UI::Notifications;
+//using Notifications::ToastNotification;
+//using Notifications::ToastNotificationManager;
+//using winrt::Windows::Data::Xml::Dom::XmlDocument;
+//
+//namespace
+//{
+//    XmlDocument notificationXml(const QString & message, const QString & title)
+//    {
+//        static const auto prefix = QStringLiteral(R"(<toast activationType="foreground"><visual><binding template="ToastGeneric">)");
+//        static const auto postfix = QStringLiteral("</binding></visual></toast>");
+//        QString content;
+//
+//        if (!title.isEmpty()) {
+//            content = content % R"(<text hint-maxLines="1">)" % title % "</text>";
+//        }
+//
+//        content = content % "<text>" % message % "</text>";
+//        XmlDocument doc;
+//        doc.LoadXml(static_cast<QString>(prefix % content % postfix).toStdWString());
+//        return doc;
+//    }
+//}
+
 void Notification::show(std::optional<int> timeout) const
 {
-    Util::debug << "Desktop notifications for Windows are not yet implemented.\n";
+//    ToastNotification toast(notificationXml(message(),title()));
+//    ToastNotificationManager::CreateToastNotifier(Application::applicationName().toStdWString()).Show(toast);
     showFallbackNotification(message(), title());
 }
 
