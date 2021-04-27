@@ -899,7 +899,7 @@ void MainWindow::setModel(Spectrum::Model model)
 
     if (!newSpectrum) {
         assert(!error.isEmpty());
-        Application::showMessage(error, DefaultStatusBarMessageTimeout);
+        Application::showNotification(error, DefaultStatusBarMessageTimeout);
         return;
     }
 
@@ -975,7 +975,7 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
         format = guessSnapshotFormat(fileName);
 
         if (format.isEmpty()) {
-            Application::showMessage(tr("The snapshot format for %1 could not be determined.").arg(fileName), DefaultStatusBarMessageTimeout);
+            Application::showNotification(tr("The snapshot format for %1 could not be determined.").arg(fileName), DefaultStatusBarMessageTimeout);
         }
     }
 
@@ -996,20 +996,20 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
 
     if (!reader) {
         Util::debug << "unrecognised format '" << format.toStdString() << "' from filename '" << fileName.toStdString() << "'\n";
-        Application::showMessage(tr("The snapshot format for %1 could not be determined.").arg(fileName), DefaultStatusBarMessageTimeout);
+        Application::showNotification(tr("The snapshot format for %1 could not be determined.").arg(fileName), DefaultStatusBarMessageTimeout);
         return false;
     }
 
     if (!reader->isOpen()) {
         Util::debug << "Snapshot file '" << fileName.toStdString() << "' could not be opened.\n";
-        Application::showMessage(tr("The snapshot file %1 could not be opened.").arg(fileName), DefaultStatusBarMessageTimeout);
+        Application::showNotification(tr("The snapshot file %1 could not be opened.").arg(fileName), DefaultStatusBarMessageTimeout);
         return false;
     }
 
     const auto * snapshot = reader->read();
 
     if (!snapshot) {
-        Application::showMessage(tr("The snapshot file %1 is not valid.").arg(fileName), DefaultStatusBarMessageTimeout);
+        Application::showNotification(tr("The snapshot file %1 is not valid.").arg(fileName), DefaultStatusBarMessageTimeout);
         return false;
     }
 
@@ -1039,7 +1039,7 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
         }
 
         if (!canApply) {
-            Application::showMessage(
+            Application::showNotification(
                     tr("The snapshot file %1 cannot be loaded.")
                             .arg(fileName, QString::fromStdString(std::to_string(snapshot->model()))),
                     DefaultStatusBarMessageTimeout
@@ -1071,7 +1071,8 @@ void MainWindow::saveSnapshot(const QString & fileName, QString format)
         format = guessSnapshotFormat(fileName);
 
         if (format.isEmpty()) {
-            Application::showMessage(tr("The snapshot format to use could not be determined from the filename %1.").arg(fileName), DefaultStatusBarMessageTimeout);
+            Application::showNotification(tr("The snapshot format to use could not be determined from the filename %1.").arg(fileName),
+                                          DefaultStatusBarMessageTimeout);
             return;
         }
     }
@@ -1095,12 +1096,12 @@ void MainWindow::saveSnapshot(const QString & fileName, QString format)
 
     if (!writer) {
         Util::debug << "unrecognised format '" << format.toStdString() << "' from filename '" << fileName.toStdString() << "'\n";
-        Application::showMessage(tr("Unrecognised snapshot format %1.").arg(format), DefaultStatusBarMessageTimeout);
+        Application::showNotification(tr("Unrecognised snapshot format %1.").arg(format), DefaultStatusBarMessageTimeout);
     }
 
     if (!writer->writeTo(fileName.toStdString())) {
         Util::debug << "failed to write snapshot to '" << fileName.toStdString() << "'\n";
-        Application::showMessage(tr("Failed to save snapshot to %1.").arg(fileName), DefaultStatusBarMessageTimeout);
+        Application::showNotification(tr("Failed to save snapshot to %1.").arg(fileName), DefaultStatusBarMessageTimeout);
     } else {
         statusBar()->showMessage(tr("Snapshot successfully saved to %1.").arg(fileName), DefaultStatusBarMessageTimeout);
     }
@@ -1878,7 +1879,7 @@ void MainWindow::saveSnapshotToSlot(int slotIndex, QString format)
     auto slotDir = QDir(QStandardPaths::writableLocation(QStandardPaths::StandardLocation::AppDataLocation));
 
     if (!slotDir.mkpath(QStringLiteral("slots"))) {
-        Application::showMessage(tr("The save slots directory does not exist and could not be created."), DefaultStatusBarMessageTimeout);
+        Application::showNotification(tr("The save slots directory does not exist and could not be created."), DefaultStatusBarMessageTimeout);
         return;
     }
 
@@ -1894,12 +1895,12 @@ bool MainWindow::loadSnapshotFromSlot(int slotIndex)
     auto fileName = QStringLiteral("%1.z80").arg(slotIndex);
 
     if (!slotDir.exists(fileName)) {
-        Application::showMessage(tr("Slot %1 is empty").arg(slotIndex));
+        Application::showNotification(tr("Slot %1 is empty").arg(slotIndex));
         return false;
     }
 
     if (!loadSnapshot(slotDir.absoluteFilePath(fileName), QStringLiteral("z80"))) {
-        Application::showMessage(tr("Snapshot in slot %1 could not be loaded.").arg(slotIndex));
+        Application::showNotification(tr("Snapshot in slot %1 could not be loaded.").arg(slotIndex));
         return false;
     }
 

@@ -63,12 +63,12 @@ namespace Spectrum::QtUi
         /**
          * Show an application-wide notification.
          *
-         * Currently these go to the status bar of the main window, but the will be moved at some point to a desktop notification.
+         * Shows a desktop notification. If desktop notifications are not available, shows a dialogue box.
          *
          * @param message The message to show.
          * @param timeout How long the message should be displayed for.
          */
-        static void showMessage(const QString & message, int timeout = 5000);
+        static void showNotification(const QString & message, int timeout = 5000);
 
         /**
          * Fetch the Application singleton instance.

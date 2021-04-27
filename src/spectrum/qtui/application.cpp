@@ -19,9 +19,14 @@ Application::Application(int & argc, char ** argv)
 {
     assert(!m_instance);
     m_instance = this;
-
     setWindowIcon(icon(QStringLiteral("app")));
+
+    #if (defined(NDEBUG))
     setApplicationDisplayName(QStringLiteral("Spectrum"));
+#else
+    setApplicationDisplayName(QStringLiteral("Spectrum [Debug Build]"));
+#endif
+
     setApplicationName(QStringLiteral("Spectrum"));
     setOrganizationDomain(QStringLiteral("net.equituk"));
     setOrganizationName(QStringLiteral("Equit"));
@@ -33,7 +38,7 @@ Application::Application(int & argc, char ** argv)
     m_mainWindow->show();
 }
 
-void Application::showMessage(const QString & message, int timeout)
+void Application::showNotification(const QString & message, int timeout)
 {
     Notification::showNotification(message, timeout);
 }

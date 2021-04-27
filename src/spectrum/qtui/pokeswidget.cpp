@@ -77,7 +77,7 @@ void PokesWidget::loadPokes(const QString & fileName)
     PokFileReader reader(fileName.toStdString());
 
     if (!reader.isValid()) {
-        Application::showMessage(tr("Poke file %1 could not be opened.").arg(fileName));
+        Application::showNotification(tr("Poke file %1 could not be opened.").arg(fileName));
         return;
     }
 
@@ -87,7 +87,7 @@ void PokesWidget::loadPokes(const QString & fileName)
         auto poke = reader.nextPoke();
 
         if (!poke) {
-            Application::showMessage(tr("Error reading pokes from %1.").arg(fileName));
+            Application::showNotification(tr("Error reading pokes from %1.").arg(fileName));
             return;
         }
 
@@ -98,7 +98,7 @@ void PokesWidget::loadPokes(const QString & fileName)
         addPoke(poke);
     }
 
-    Application::showMessage(tr("Read %1 pokes from %2.").arg(pokes.size()).arg(fileName));
+    Application::showNotification(tr("Read %1 pokes from %2.").arg(pokes.size()).arg(fileName));
 }
 
 void PokesWidget::setActionIconSize(const QSize & size)
