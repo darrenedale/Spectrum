@@ -1,13 +1,9 @@
 //
-// Created by darren on 22/03/2021.
+// Created by darren on 27/04/2021.
 //
 
-#include <cstring>
-#include <bit>
-#include "zxsnapshotreader.h"
-#include "../spectrum48k.h"
+#include "zxsnapshotwriter.h"
 #include "../../util/debug.h"
-#include "../../util/endian.h"
 
 using namespace Spectrum::Io;
 
@@ -58,10 +54,8 @@ namespace
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
     // several members are required for format compatibility but are unused
-    struct ZxFileContent
+    struct Header
     {
-        UnsignedByte memory[49284];     // starting from 16252 (0x3f7c - part way through character data in ROM...)
-        UnsignedByte unused1[132];      // apparently always all 0x00
         Settings settings;
         UnsignedByte interruptStatus;   // 0 = DI, 1 = EI
         UnsignedByte unused2[2];        // apparently always 0x00 0x03 - could this be border colour? last OUT to ULA?
@@ -87,9 +81,9 @@ namespace
         UnsignedByte unused8;           // apparently always 0x00
         UnsignedByte fShadow;
         std::uint16_t unused9;          // apparently always 0x0000
-        std::uint16_t pc;               // in BE format
+        std::uint16_t pc;               // apparently always 0x0000
         std::uint16_t unused10;         // apparently always 0x0000
-        std::uint16_t sp;               // in BE format
+        std::uint16_t sp;               // apparently always 0x0000
         std::uint16_t soundMode;        // 0 = simple, 1 = pitch, 2 = ROMOnly ...
         std::uint16_t halt;             // 0 = running, 1 = halted ...
         std::uint16_t interruptMode;    // 0xffff = IM0, 0 = IM1, 1 = IM2
@@ -102,88 +96,119 @@ namespace
     using Util::swapByteOrder;
 }
 
-const Snapshot * ZxSnapshotReader::read() const
+bool ZxSnapshotWriter::writeTo(std::ostream & out) const
 {
-    if (!isOpen()) {
-        Util::debug << "Input stream is not open.\n";
-        return nullptr;
+    const auto & snap = snapshot();
+
+    if (Model::Spectrum48k != snap.model()) {
+        Util::debug << "Only Spectrum 48k snapshots are currently supported by the ZX82 file writer\n";
+        return false;
     }
 
-    auto & in = inputStream();
-    ZxFileContent content; // NOLINT(cppcoreguidelines-pro-type-member-init) no need to init because it's effectively
-                           // used as a memory buffer and is not utilised unless confirmed fully-populated
-    in.read(reinterpret_cast<std::istream::char_type *>(&content), sizeof(ZxFileContent));
+    const auto * memory = snap.memory();
 
-    if (in.fail() || sizeof(ZxFileContent) != in.gcount()) {
-        Util::debug << "Failed to read from input stream.\n";
-        return nullptr;
+    if (!memory) {
+        Util::debug << "Snapshot is incomplete (no memory)\n";
+        return false;
     }
 
-    auto snapshot = std::make_unique<Snapshot>(Model::Spectrum48k);
-    auto & registers = snapshot->registers();
-    registers.a = content.a;
-    registers.f = content.f;
-    registers.aShadow = content.aShadow;
-    registers.fShadow = content.fShadow;
-    registers.i = content.i;
-    registers.r = content.r;
-    snapshot->iff1 = (1 == content.interruptStatus);
-    snapshot->iff2 = snapshot->iff1;
-
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "Simplify"
-#pragma ide diagnostic ignored "UnreachableCode"
-    // NOTE one of these two branches will be diagnosed as unnecessary, depending on the byte order of the host, but the
-    // code is required for cross-platform compatibility
-    if (std::endian::native == std::endian::big) {
-        registers.bc = content.bc;
-        registers.de = content.de;
-        registers.hl = content.hl;
-        registers.ix = content.ix;
-        registers.iy = content.iy;
-        registers.bcShadow = content.bcShadow;
-        registers.deShadow = content.deShadow;
-        registers.hlShadow = content.hlShadow;
-
-        registers.pc = content.pc;
-        registers.sp = content.sp;
-    } else {
-        registers.bc = swapByteOrder(content.bc);
-        registers.de = swapByteOrder(content.de);
-        registers.hl = swapByteOrder(content.hl);
-        registers.ix = swapByteOrder(content.ix);
-        registers.iy = swapByteOrder(content.iy);
-        registers.bcShadow = swapByteOrder(content.bcShadow);
-        registers.deShadow = swapByteOrder(content.deShadow);
-        registers.hlShadow = swapByteOrder(content.hlShadow);
-
-        registers.pc = swapByteOrder(content.pc);
-        registers.sp = swapByteOrder(content.sp);
+    out.write(reinterpret_cast<const std::ostream::char_type *>(memory->pointerTo(MemoryImageOffset)), 0x10000 - MemoryImageOffset);
+    
+    if (out.bad()) {
+        Util::debug << "Error writing memory image to snapshot stream.\n";
+        return false;
     }
-#pragma clang diagnostic pop
 
-    switch (content.interruptMode) {
-        case 0xffff:
-            snapshot->im = InterruptMode::IM0;
+    {
+        std::array<std::ostream::char_type, 132> unused132 = {};
+        unused132.fill(0x00);
+        out.write(unused132.data(), unused132.size());
+    }
+
+    if (out.bad()) {
+        Util::debug << "Error writing 132 bytes of 0-padding to snapshot stream.\n";
+        return false;
+    }
+
+    const auto & registers = snap.registers();
+
+    Header header = {
+        .settings =  {
+            .setting1 = 0x000a,
+            .setting2 = 0x000a,
+            .setting3 = 0x0004,
+            .setting4 = 0x0001,
+            .setting5 = 0x0001,
+        },
+        .interruptStatus = (snap.iff1 ? static_cast<UnsignedByte>(0x01) : static_cast<UnsignedByte>(0x00)),
+        .unused2 = {0x00, 0x03},
+        .colourMode = 0x01,
+        .unused3 = 0,           // apparently always 0x00000000
+        .bc = registers.bc,
+        .bcShadow = registers.bcShadow,
+        .de = registers.de,
+        .deShadow = registers.deShadow,
+        .hl = registers.hl,
+        .hlShadow = registers.hlShadow,
+        .ix = registers.ix,
+        .iy = registers.iy,
+        .i = registers.i,
+        .r = registers.r,
+        .unused4 = 0,
+        .unused5 = 0,
+        .a = registers.a,
+        .unused6 = 0,
+        .f = registers.f,
+        .unused7 = 0,
+        .aShadow = registers.aShadow,
+        .unused8 = 0,
+        .fShadow = registers.fShadow,
+        .unused9 = 0,
+        .pc = registers.pc,
+        .unused10 = 0,
+        .sp = registers.sp,
+        .soundMode = 0,
+        .halt = 0,
+        // NOTE interrupt mode is set in switch below
+        .unused11 = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, },
+    };
+
+    //    49474    2      word   IntMode   (-1=IM0/0=IM1/1=IM2)
+    switch (snap.im) {
+        case InterruptMode::IM0:
+            header.interruptMode = -1;
             break;
 
-        case 0:
-            snapshot->im = InterruptMode::IM1;
+        case InterruptMode::IM1:
+            header.interruptMode = 0;
             break;
 
-        case 1:
-            snapshot->im = InterruptMode::IM2;
+        case InterruptMode::IM2:
+            header.interruptMode = 1;
             break;
-
-        default:
-            Util::debug << "Invalid interrupt mode in .ZX input stream.\n";
-            return nullptr;
     }
 
-    auto memory = std::make_unique<Spectrum48k::MemoryType>(0x10000);
-    // we know that 48K memory is a contiguous block of 64k bytes
-    std::memcpy(memory->pointerTo(MemoryImageOffset), content.memory, sizeof(content.memory));
-    snapshot->setMemory(std::move(memory));
-    setSnapshot(std::move(snapshot));
-    return this->snapshot();
+    if (std::endian::native != std::endian::big) {
+        header.bc = swapByteOrder(header.bc);
+        header.de = swapByteOrder(header.de);
+        header.hl = swapByteOrder(header.hl);
+        header.ix = swapByteOrder(header.ix);
+        header.iy = swapByteOrder(header.iy);
+        header.pc = swapByteOrder(header.pc);
+        header.sp = swapByteOrder(header.sp);
+        header.bcShadow = swapByteOrder(header.bcShadow);
+        header.deShadow = swapByteOrder(header.deShadow);
+        header.hlShadow = swapByteOrder(header.hlShadow);
+
+        header.settings.setting1 = swapByteOrder(header.settings.setting1);
+        header.settings.setting2 = swapByteOrder(header.settings.setting2);
+        header.settings.setting3 = swapByteOrder(header.settings.setting3);
+        header.settings.setting4 = swapByteOrder(header.settings.setting4);
+        header.settings.setting5 = swapByteOrder(header.settings.setting5);
+
+        header.interruptMode = swapByteOrder(header.interruptMode);
+    }
+
+    out.write(reinterpret_cast<const std::ostream::char_type *>(&header), sizeof(Header));
+    return !out.bad() && !out.fail();
 }

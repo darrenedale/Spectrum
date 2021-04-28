@@ -2,8 +2,8 @@
 // Created by darren on 22/03/2021.
 //
 
-#ifndef SPECTRUM_ZXSNAPSHOTREADER_H
-#define SPECTRUM_ZXSNAPSHOTREADER_H
+#ifndef SPECTRUM_IO_ZXSNAPSHOTREADER_H
+#define SPECTRUM_IO_ZXSNAPSHOTREADER_H
 
 #include "snapshotreader.h"
 
@@ -36,4 +36,4 @@ namespace Spectrum::Io
     };
 }
 
-#endif //SPECTRUM_ZXSNAPSHOTREADER_H
+#endif //SPECTRUM_IO_ZXSNAPSHOTREADER_H

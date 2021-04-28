@@ -46,6 +46,7 @@
 #include "../io/snasnapshotwriter.h"
 #include "../io/spsnapshotwriter.h"
 #include "../io/zx82snapshotwriter.h"
+#include "../io/zxsnapshotwriter.h"
 #include "../io/pokfilereader.h"
 #include "../../util/debug.h"
 
@@ -168,7 +169,7 @@ namespace
             case Qt::Key::Key_Space:
                 return {Keyboard::Key::Space};
 
-                // TODO the shifted number keys assume a UK or US layout keyboard
+            // TODO the shifted number keys assume a UK or US layout keyboard
             case Qt::Key::Key_1:
             case Qt::Key::Key_Exclam:
                 return {Keyboard::Key::Num1};
@@ -1096,6 +1097,9 @@ void MainWindow::saveSnapshot(const QString & fileName, QString format)
     } else if ("zx82" == format) {
         snapshot = m_spectrum->snapshot();
         writer = std::make_unique<Zx82SnapshotWriter>(*snapshot);
+    } else if ("zx" == format) {
+        snapshot = m_spectrum->snapshot();
+        writer = std::make_unique<ZxSnapshotWriter>(*snapshot);
     }
 
     if (!writer) {
@@ -1686,6 +1690,7 @@ void MainWindow::saveSnapshotTriggered()
         filters << tr("SNA Snapshots (*.sna)");
         filters << tr("SP Snapshots (*.sp)");
         filters << tr("ZX82 Snapshots (*.zx82)");
+        filters << tr("ZX Snapshots (*.zx)");
     }
 
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save snapshot"), m_lastSnapshotLoadDir, filters.join(";;"), &lastFilter);
