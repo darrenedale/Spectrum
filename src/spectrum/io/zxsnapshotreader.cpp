@@ -30,11 +30,12 @@ namespace
     };
 #pragma clang diagnostic pop
 
-    // from http://spectrum-zx.chat.ru/faq/fileform.html
+    // Updated from http://spectrum-zx.chat.ru/faq/fileform.html
     //    Offset   Size   Description
     //    ------------------------------------------------------------------------
-    //    0        49284  bytes  RAM dump 16252..65535
-    //    49284    132    bytes  unused, make 0
+    //    0        132    bytes  132 bytes of 0 padding
+    //    132      49152  bytes  RAM dump 0x4000..0xffff
+    //    49284    132    bytes  132 bytes of 0 padding
     //    49416    10     word   10,10,4,1,1 (different settings)
     //    49426    1      byte   InterruptStatus (0=DI/1=EI)
     //    49427    2      byte   0,3
@@ -60,7 +61,8 @@ namespace
     // several members are required for format compatibility but are unused
     struct ZxFileContent
     {
-        UnsignedByte memory[49284];     // starting from 16252 (0x3f7c - part way through character data in ROM...)
+        UnsignedByte unused0[132];      // apparently always all 0x00
+        UnsignedByte memory[0xc000];
         UnsignedByte unused1[132];      // apparently always all 0x00
         Settings settings;
         UnsignedByte interruptStatus;   // 0 = DI, 1 = EI
@@ -97,7 +99,7 @@ namespace
     };
 #pragma clang diagnostic pop
 
-    constexpr const std::uint16_t MemoryImageOffset = 16252;
+    constexpr const std::uint16_t MemoryImageOffset = 0x4000;
 
     using Util::swapByteOrder;
 }

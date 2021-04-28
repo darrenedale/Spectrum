@@ -26,11 +26,12 @@ namespace
     };
 #pragma clang diagnostic pop
 
-    // from http://spectrum-zx.chat.ru/faq/fileform.html
+    // Updated from http://spectrum-zx.chat.ru/faq/fileform.html
     //    Offset   Size   Description
     //    ------------------------------------------------------------------------
-    //    0        49284  bytes  RAM dump 16252..65535
-    //    49284    132    bytes  unused, make 0
+    //    0        132    bytes  132 bytes of 0 padding
+    //    132      49152  bytes  RAM dump 0x4000..0xffff
+    //    49284    132    bytes  132 bytes of 0 padding
     //    49416    10     word   10,10,4,1,1 (different settings)
     //    49426    1      byte   InterruptStatus (0=DI/1=EI)
     //    49427    2      byte   0,3
@@ -91,7 +92,7 @@ namespace
     };
 #pragma clang diagnostic pop
 
-    constexpr const std::uint16_t MemoryImageOffset = 16252;
+    constexpr const std::uint16_t MemoryImageOffset = 0x4000;
 
     using Util::swapByteOrder;
 }
@@ -112,6 +113,15 @@ bool ZxSnapshotWriter::writeTo(std::ostream & out) const
         return false;
     }
 
+    std::array<std::ostream::char_type, 132> padding132Bytes = {};
+    padding132Bytes.fill(0x00);
+    out.write(padding132Bytes.data(), padding132Bytes.size());
+
+    if (out.bad()) {
+        Util::debug << "Error writing 132 bytes of 0-padding to snapshot stream.\n";
+        return false;
+    }
+
     out.write(reinterpret_cast<const std::ostream::char_type *>(memory->pointerTo(MemoryImageOffset)), 0x10000 - MemoryImageOffset);
     
     if (out.bad()) {
@@ -119,11 +129,7 @@ bool ZxSnapshotWriter::writeTo(std::ostream & out) const
         return false;
     }
 
-    {
-        std::array<std::ostream::char_type, 132> unused132 = {};
-        unused132.fill(0x00);
-        out.write(unused132.data(), unused132.size());
-    }
+    out.write(padding132Bytes.data(), padding132Bytes.size());
 
     if (out.bad()) {
         Util::debug << "Error writing 132 bytes of 0-padding to snapshot stream.\n";

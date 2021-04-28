@@ -517,6 +517,7 @@ void MainWindow::createMenuBar()
 {
     auto * tempMenuBar = menuBar();
     auto * menu = tempMenuBar->addMenu(tr("File"));
+    menu->setToolTipsVisible(true);
     menu->addAction(&m_reset);
     menu->addSeparator();
     menu->addAction(&m_load);
@@ -623,6 +624,21 @@ void MainWindow::createMenuBar()
     menu->addAction(&m_colourDisplay);
     menu->addAction(&m_monochromeDisplay);
     menu->addAction(&m_bwDisplay);
+
+    menu->addSeparator();
+    subMenu = menu->addMenu(tr("Border"));
+    subMenu->setToolTip(tr("Some snapshot formats don't save the border colour, so you can use this to set the correct colour when you've loaded such a snapshot."));
+    subMenu->setToolTipsVisible(true);
+    using ColourInt = std::underlying_type<Colour>::type;
+    auto * borderColourGroup = new QActionGroup(this);
+
+    for (auto colour = static_cast<ColourInt>(Colour::Black); colour <= static_cast<ColourInt>(Colour::White); ++colour) {
+        auto * action = subMenu->addAction(QString::fromStdString(std::to_string(static_cast<Colour>(colour))), [this, colour = static_cast<Colour>(colour)]() {
+            m_display.setBorder(colour);
+        });
+
+        borderColourGroup->addAction(action);
+    }
 
     menu = tempMenuBar->addMenu(tr("Debugger"));
     menu->addAction(&m_debug);
@@ -955,15 +971,26 @@ QString MainWindow::guessSnapshotFormat(const QString & fileName)
     }
 
     QFile in(fileName);
+    auto fileSize = in.size();
 
     if (in.open(QIODevice::OpenModeFlag::ReadOnly)) {
         auto signature = in.read(4);
 
         if ("ZX82" == signature) {
+            // ZX82 can have compressed memory so has no fixed size
             return QStringLiteral("zx82");
-        } else if (signature.startsWith("SP")) {
+        } else if (signature.startsWith("SP") && 49190 == fileSize) {
             return QStringLiteral("sp");
         }
+    }
+
+    switch (fileSize) {
+        case 49179:
+            return QStringLiteral("sna");
+
+        // NOTE this is the KGB .zx format, not the QL .zx format
+        case 49486:
+            return QStringLiteral("zx");
     }
 
     return {};

@@ -78,7 +78,7 @@ std::string std::to_string(Colour colour)
             return "Yellow"s;
 
         case Colour::White:
-            return "Black"s;
+            return "White"s;
     }
 
     // unreachable code - someone has added a colour and hasn't updated the function or has type punned an invalid
