@@ -22,10 +22,10 @@ namespace Spectrum::Io
           m_in(new std::ifstream(inFile, std::ios::binary | std::ios::in))
         {}
 
-        TapeReader(const SnapshotReader & other) = delete;
-        TapeReader(SnapshotReader && other) noexcept;
-        TapeReader & operator=(const SnapshotReader & other) = delete;
-        TapeReader & operator=(SnapshotReader && other) noexcept;
+        TapeReader(const TapeReader & other) = delete;
+        TapeReader(TapeReader && other) noexcept;
+        TapeReader & operator=(const TapeReader & other) = delete;
+        TapeReader & operator=(TapeReader && other) noexcept;
 
         virtual ~TapeReader();
 

@@ -64,7 +64,7 @@ protected:
      * @param address
      * @return
      */
-    virtual inline Byte * mapAddress(Address address) const
+    virtual inline Byte * mapAddress(Address address) const override
     {
         return const_cast<Byte *>(m_storage.data()) + address;
     }
