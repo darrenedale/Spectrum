@@ -4,6 +4,7 @@
 
 #include <cstring>
 #include <bit>
+#include <filesystem>
 #include "zxsnapshotreader.h"
 #include "../spectrum48k.h"
 #include "../../util/debug.h"
@@ -188,4 +189,58 @@ const Snapshot * ZxSnapshotReader::read() const
     snapshot->setMemory(std::move(memory));
     setSnapshot(std::move(snapshot));
     return this->snapshot();
+}
+
+bool ZxSnapshotReader::couldBeSnapshot(std::istream & in)
+{
+    if (!in) {
+        Util::debug << "stream is not open.\n";
+        return false;
+    }
+
+    // byte 49426 must be 0 for DI, 1 for EI
+    in.seekg(49426, std::ios_base::beg);
+    std::istream::char_type byteValue;
+    in.get(byteValue);
+
+    if (in.fail() || 0 != byteValue || 1 != byteValue) {
+        return false;
+    }
+
+    // byte 49429 must be 0 for B/W, 1 for colour
+    in.seekg(49429, std::ios_base::beg);
+
+    if (in.fail() || 0 != byteValue || 1 != byteValue) {
+        return false;
+    }
+
+    // BE word at 49474 must be -1 for IM0, 0 for IM1, 1 for IM2
+    in.seekg(49474, std::ios_base::beg);
+    std::int16_t wordValue;
+    in.read(reinterpret_cast<std::istream::char_type *>(&wordValue), sizeof(wordValue));
+
+    if (in.fail()) {
+        return false;
+    }
+
+    if (std::endian::native != std::endian::big) {
+        wordValue = swapByteOrder(wordValue);
+    }
+
+    if (-1 > wordValue || 1 < wordValue) {
+        return false;
+    }
+
+    return true;
+}
+
+bool ZxSnapshotReader::couldBeSnapshot(const std::string & fileName)
+{
+    if (49486 != std::filesystem::file_size(fileName)) {
+        Util::debug << ".zx snapshots are always 49486 bytes in size.\n";
+        return false;
+    }
+
+    auto in = std::ifstream(fileName);
+    return couldBeSnapshot(in);
 }

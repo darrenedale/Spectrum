@@ -2,6 +2,7 @@
 // Created by darren on 22/03/2021.
 //
 
+#include <filesystem>
 #include "snasnapshotreader.h"
 #include "../spectrum48k.h"
 #include "../../util/debug.h"
@@ -97,4 +98,41 @@ const Spectrum::Snapshot * SnaSnapshotReader::read() const
     snapshot->setMemory(std::move(memory));
     setSnapshot(std::move(snapshot));
     return this->snapshot();
+}
+
+bool SnaSnapshotReader::couldBeSnapshot(std::istream & in)
+{
+    if (!in) {
+        Util::debug << "stream is not open.\n";
+        return false;
+    }
+
+    // byte 25 in file is interrupt mode, must be 1, 2 or 3
+    in.seekg(25, std::ios_base::beg);
+    auto byteValue = in.get();
+
+    if (in.fail() || 1 > byteValue || 3 < byteValue) {
+        return false;
+    }
+
+    // byte 26 in file is border colour, must be 0 .. 7
+    in.seekg(26, std::ios_base::beg);
+    byteValue = in.get();
+
+    if (in.fail() || 0 > byteValue || 7 < byteValue) {
+        return false;
+    }
+
+    return true;
+}
+
+bool SnaSnapshotReader::couldBeSnapshot(const std::string & fileName)
+{
+    if (49179 != std::filesystem::file_size(fileName)) {
+        Util::debug << ".zx snapshots are always 49179 bytes in size.\n";
+        return false;
+    }
+
+    auto in = std::ifstream(fileName);
+    return couldBeSnapshot(in);
 }

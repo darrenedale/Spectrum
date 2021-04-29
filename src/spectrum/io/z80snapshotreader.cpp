@@ -4,6 +4,7 @@
 
 #include <iterator>
 #include <cstring>
+#include <filesystem>
 #include "z80snapshotreader.h"
 #include "../spectrum48k.h"
 #include "../spectrum128k.h"
@@ -528,4 +529,97 @@ std::optional<std::size_t> Z80SnapshotReader::compressedSize(UnsignedByte * memo
     }
 
     return (end - memory);
+}
+
+bool Z80SnapshotReader::couldBeSnapshot(std::istream & in)
+{
+    if (!in) {
+        Util::debug << "stream is not open.\n";
+        return false;
+    }
+
+    // bytes 6 and 7 contain PC. this will be 0x0000 for a v2 or v3 format file
+    in.seekg(6, std::ios_base::beg);
+    std::uint16_t wordValue;
+    in.read(reinterpret_cast<std::istream::char_type *>(&wordValue), sizeof(wordValue));
+
+    if (in.fail()) {
+        Util::debug << "failed to read stream\n";
+        return false;
+    }
+
+    if (0 != wordValue) {
+        // if the PC in the stream is non-0 it's a v1 format file and the only thing we can check is the file size if the memory image is not compressed. since
+        // we're dealing with a stream here we can't reliably get the size, so we just say yes
+        return true;
+    }
+
+    // the size of the extended header is at byte 30 - it must be 23, 54 or 55, other header sizes are either invalid or not supported
+    in.seekg(30, std::ios_base::beg);
+    in.read(reinterpret_cast<std::istream::char_type *>(&wordValue), sizeof(wordValue));
+
+    if (in.fail()) {
+        Util::debug << "failed to read stream\n";
+        return false;
+    }
+
+    switch (z80ToHostByteOrder(wordValue)) {
+        case 23:
+        case 54:
+        case 55:
+            break;
+
+        default:
+            return false;
+    }
+
+    // bytes at 60, 61 and 62 are flag bytes, and should all be either 0xff or 0x00
+    std::uint8_t flagBytes[3];
+    in.read(reinterpret_cast<std::istream::char_type *>(flagBytes), sizeof(flagBytes));
+
+    if (in.fail()) {
+        Util::debug << "failed to read stream\n";
+        return false;
+    }
+
+    return std::all_of(std::cbegin(flagBytes), std::cend(flagBytes), [](auto flagByte) -> bool {
+        return 0 == flagByte || 0xff == flagByte;
+    });
+}
+
+bool Z80SnapshotReader::couldBeSnapshot(const std::string & fileName)
+{
+    auto in = std::ifstream(fileName);
+
+    // bytes 6 and 7 contain PC. this will be 0x0000 for a v2 or v3 format file
+    in.seekg(6, std::ios_base::beg);
+    std::uint16_t wordValue;
+    in.read(reinterpret_cast<std::istream::char_type *>(&wordValue), sizeof(wordValue));
+
+    if (in.fail()) {
+        Util::debug << "failed to read stream\n";
+        return false;
+    }
+
+    if (0 != wordValue) {
+        // if the PC in the stream is non-0 it's a v1 format file and the only thing we can check is the file size if the memory image is not compressed
+        in.seekg(12, std::ios_base::beg);
+        std::ifstream::char_type byteValue;
+        in.read(&byteValue, 1);
+
+        if (in.fail()) {
+            Util::debug << "failed to read stream\n";
+            return false;
+        }
+
+        if (byteValue & CompressedMemoryFlag) {
+            // memory is compressed, there's nothing in the file content or its size that can be checked to rule it out as a .z80 file
+            return true;
+        }
+
+        // original .z80 files with uncompressed memory images are always 49182 bytes in size (30 byte header plus 48k RAM image)
+        return 49182 == std::filesystem::file_size(fileName);
+    }
+
+    return couldBeSnapshot(in);
 }

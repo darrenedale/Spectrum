@@ -48,6 +48,8 @@ add_executable(
         io/spsnapshotwriter.cpp
         io/zx82snapshotwriter.cpp
         io/zxsnapshotwriter.cpp
+        io/snapshotformatmatcher.h
+        io/snapshotformatguesser.h
         io/pokfilereader.cpp
         qtui/application.cpp
         qtui/mainwindow.cpp

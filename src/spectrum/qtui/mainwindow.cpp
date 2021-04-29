@@ -47,6 +47,8 @@
 #include "../io/spsnapshotwriter.h"
 #include "../io/zx82snapshotwriter.h"
 #include "../io/zxsnapshotwriter.h"
+#include "../io/snapshotformatguesser.h"
+#include "../io/snapshotreaderfactory.h"
 #include "../io/pokfilereader.h"
 #include "../../util/debug.h"
 
@@ -316,6 +318,24 @@ namespace
         }
 
         return JoystickMapping::None;
+    }
+
+    /**
+     * If the file has an extension that looks like it might be a snapshot format, extract it.
+     *
+     * This is just a simple RX match, it doesn't actually check whether the matched extension is a recognised snapshot format string.
+     *
+     * @param fileName The filename to examine.
+     *
+     * @return The format string. Will be a null QString if the file has no suitable extension.
+     */
+    QString snapshotFormatFromExtension(const QString & fileName)
+    {
+        if (auto matches = QRegularExpression("^.*\\.([a-zA-Z0-9_-]+)$").match(fileName); matches.hasMatch()) {
+            return matches.captured(1).toLower();
+        }
+
+        return {};
     }
 }
 
@@ -966,40 +986,30 @@ void MainWindow::saveScreenshot(const QString & fileName)
 
 QString MainWindow::guessSnapshotFormat(const QString & fileName)
 {
-    if (auto matches = QRegularExpression("^.*\\.([a-zA-Z0-9_-]+)$").match(fileName); matches.hasMatch()) {
-        return matches.captured(1).toLower();
+    // NOTE we have to put the Z80 reader at the bottom of the list because it will accept any file where either of bytes 6 and 7 is non-0 and where bit 5 of
+    // byte 12 is set. This is because any such file could be a v1 .z80 snapshot with a compressed memory image. Since snapshots in other formats are likely to
+    // match these criteria, putting the Z80 reader at a higher priority would result in the Z80 reader being chosen incorrectly
+    auto format = SnapshotFormatGuesser<
+            SnaSnapshotReader,
+            SpSnapshotReader,
+            Zx82SnapshotReader,
+            ZxSnapshotReader,
+            Z80SnapshotReader
+            >::guessFormat(fileName.toStdString());
+
+    if (format) {
+        return QString::fromStdString(*format);
     }
 
-    QFile in(fileName);
-    auto fileSize = in.size();
-
-    if (in.open(QIODevice::OpenModeFlag::ReadOnly)) {
-        auto signature = in.read(4);
-
-        if ("ZX82" == signature) {
-            // ZX82 can have compressed memory so has no fixed size
-            return QStringLiteral("zx82");
-        } else if (signature.startsWith("SP") && 49190 == fileSize) {
-            return QStringLiteral("sp");
-        }
-    }
-
-    switch (fileSize) {
-        case 49179:
-            return QStringLiteral("sna");
-
-        // NOTE this is the KGB .zx format, not the QL .zx format
-        case 49486:
-            return QStringLiteral("zx");
-    }
-
-    return {};
+    return snapshotFormatFromExtension(fileName);
 }
 
 bool MainWindow::loadSnapshot(const QString & fileName, QString format)
 {
     ThreadPauser pauser(m_spectrumThread);
 
+    // NOTE we use a guesser then generate the reader from the format string, rather than using the reader factory directly with the file name, so that we are
+    // able to force the format to use
     if (format.isEmpty()) {
         format = guessSnapshotFormat(fileName);
 
@@ -1008,23 +1018,16 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
         }
     }
 
-    // TODO use a factory to get a reader for a format
-    std::unique_ptr<SnapshotReader> reader;
-
-    if ("sna" == format) {
-        reader = std::make_unique<SnaSnapshotReader>(fileName.toStdString());
-    } else if ("z80" == format) {
-        reader = std::make_unique<Z80SnapshotReader>(fileName.toStdString());
-    } else if ("sp" == format) {
-        reader = std::make_unique<SpSnapshotReader>(fileName.toStdString());
-    } else if ("zx82" == format) {
-        reader = std::make_unique<Zx82SnapshotReader>(fileName.toStdString());
-    } else if ("zx" == format) {
-        reader = std::make_unique<ZxSnapshotReader>(fileName.toStdString());
-    }
+    auto reader = SnapshotReaderFactory<
+            SnaSnapshotReader,
+            SpSnapshotReader,
+            Zx82SnapshotReader,
+            ZxSnapshotReader,
+            Z80SnapshotReader
+            >::readerForFormat(format.toStdString(), fileName.toStdString());
 
     if (!reader) {
-        Util::debug << "unrecognised format '" << format.toStdString() << "' from filename '" << fileName.toStdString() << "'\n";
+        Util::debug << "unrecognised format '" << format.toStdString() << "'\n";
         Application::showNotification(tr("The snapshot format for %1 could not be determined.").arg(fileName), DefaultStatusBarMessageTimeout);
         return false;
     }
@@ -1097,7 +1100,7 @@ void MainWindow::saveSnapshot(const QString & fileName, QString format)
     ThreadPauser pauser(m_spectrumThread);
 
     if (format.isEmpty()) {
-        format = guessSnapshotFormat(fileName);
+        format = snapshotFormatFromExtension(fileName);
 
         if (format.isEmpty()) {
             Application::showNotification(tr("The snapshot format to use could not be determined from the filename %1.").arg(fileName),

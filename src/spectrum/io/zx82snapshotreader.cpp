@@ -273,3 +273,17 @@ bool Zx82SnapshotReader::decompress(UnsignedByte * dest, UnsignedByte * source, 
 
     return true;
 }
+
+bool Zx82SnapshotReader::couldBeSnapshot(std::istream & in)
+{
+    static auto signature = *reinterpret_cast<const std::uint32_t *>("ZX82");
+
+    if (!in) {
+        Util::debug << "stream is not open.\n";
+        return false;
+    }
+
+    std::uint32_t streamSignature;
+    in.read(reinterpret_cast<std::istream::char_type *>(&streamSignature), sizeof(streamSignature));
+    return !in.fail() && streamSignature == signature;
+}
