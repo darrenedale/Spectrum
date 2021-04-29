@@ -250,7 +250,6 @@ Zx82SnapshotWriter::CompressedMemory Zx82SnapshotWriter::compressMemory(const Z8
 
         switch (currentRunType) {
             case RunType::Literal:
-                Util::debug << "writing literal sequence of " << (runEnd - memory) << " bytes (signal byte at " << (ret.size() + sizeof(Header)) << ")\n";
                 ret.push_back(runEnd - memory - 1);
 
                 // dump all the source bytes to the compressed buffer
@@ -261,7 +260,6 @@ Zx82SnapshotWriter::CompressedMemory Zx82SnapshotWriter::compressMemory(const Z8
                 break;
 
             case RunType::Replicate:
-                Util::debug << "writing replica sequence of " << (runEnd - memory) << " bytes (signal byte at " << (ret.size() + sizeof(Header)) << ")\n";
                 ret.push_back(~static_cast<std::uint8_t>(runEnd - memory - 2));
                 // dump just the replicated byte to the compressed buffer
                 ret.push_back(*memory);

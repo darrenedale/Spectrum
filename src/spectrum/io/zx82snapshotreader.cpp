@@ -224,14 +224,11 @@ bool Zx82SnapshotReader::decompress(UnsignedByte * dest, UnsignedByte * source, 
         if (len & 0x80) {
             // replicate the next byte len + 1 times
             len = (~len) + 2;
-            Util::debug << "replicating " << static_cast<std::uint16_t>(len) << " times byte in input file at offset << " << (source - sourceStart) << '\n';
 
             if (source >= sourceEnd) {
                 Util::debug << "invalid compressed image: reading the source byte to replicate " << static_cast<std::uint16_t>(len) << " times would overflow read buffer\n";
                 return false;
             }
-
-            Util::debug << "replicating byte 0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(*source) << '\n' << std::dec << std::setfill(' ');
 
             if (dest + len > destEnd) {
                 Util::debug << "invalid compressed data: decompressing "
@@ -250,7 +247,6 @@ bool Zx82SnapshotReader::decompress(UnsignedByte * dest, UnsignedByte * source, 
         } else {
             // copy the next len + 1 bytes literally
             len += 1;
-            Util::debug << "reading " << static_cast<std::uint16_t>(len) << " literal bytes from input file starting at offset " << (source - sourceStart) << '\n';
 
             if (source + len > sourceEnd) {
                 Util::debug << "invalid compressed image: reading "
