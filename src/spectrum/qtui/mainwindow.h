@@ -51,11 +51,12 @@ namespace Spectrum::QtUi
          * Load a snapshot from a give file.
          *
          * If the format is provided, the file is expected to be in that format. Otherwise the format will be determined
-         * from the file name extension. The following formats are supported:
+         * from the file size and content, or its filename extension. The following formats are supported:
          * "z80" - files in Z80 format (https://worldofspectrum.org/faq/reference/z80format.htm)
          * "sna" - files in SNA format (https://worldofspectrum.org/faq/reference/formats.htm#File)
          * "sp"  - files in SP format (http://spectrum-zx.chat.ru/faq/fileform.html)
          * "zx"  - files in ZX format (http://spectrum-zx.chat.ru/faq/fileform.html)
+         * "zx82"  - files in ZX82 format (http://spectrum-zx.chat.ru/faq/fileform.html)
          *
          * @param fileName
          * @param format

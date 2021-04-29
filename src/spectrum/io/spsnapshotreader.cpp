@@ -189,3 +189,17 @@ const Spectrum::Snapshot * SpSnapshotReader::read() const
     setSnapshot(std::move(snapshot));
     return this->snapshot();
 }
+
+bool SpSnapshotReader::couldBeSnapshot(std::istream & in)
+{
+    static auto signature = *reinterpret_cast<const std::uint16_t *>("SP");
+
+    if (!in) {
+        Util::debug << "stream is not open.\n";
+        return false;
+    }
+
+    std::uint16_t streamSignature;
+    in.read(reinterpret_cast<std::istream::char_type *>(&streamSignature), sizeof(streamSignature));
+    return !in.fail() && streamSignature == signature;
+}

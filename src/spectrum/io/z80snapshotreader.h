@@ -37,6 +37,41 @@ namespace Spectrum::Io
          */
         const Snapshot * read() const override;
 
+
+        /**
+         * Fetch the unique name for the format read by this class.
+         *
+         * This is a relatively arbitrary internal name that is distinct from the names of other formats.
+         *
+         * @return
+         */
+        static const std::string & formatName()
+        {
+            static std::string name("z80");
+            return name;
+        }
+
+        /**
+         * Check whether an input stream looks like it could be a Z80 snapshot.
+         *
+         * This is not intended as a validation, it is just intended as a means of guessing the format of a potential snapshot input stream. It is assumed the
+         * stream is positioned at the start of the potential snapshot.
+         *
+         * @param in The stream to check.
+         *
+         * @return true if the stream looks like it contains a Z80 snapshot, false otherwise.
+         */
+        static bool couldBeSnapshot(std::istream & in);
+
+        /**
+         * Check whether a file looks like it could be a Z80 snapshot.
+         *
+         * @param in The path to the file to check.
+         *
+         * @return true if the stream looks like it contains a Z80 snapshot, false otherwise.
+         */
+        static bool couldBeSnapshot(const std::string & fileName);
+
     protected:
         /**
          * Decompress a block of compressed memory.

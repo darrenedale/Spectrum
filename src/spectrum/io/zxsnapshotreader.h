@@ -33,6 +33,39 @@ namespace Spectrum::Io
          * @return A Snapshot, or nullptr if the read failed.
          */
         const Snapshot * read() const override;
+
+        /**
+         * Fetch the unique name for the format read by this class.
+         *
+         * This is a relatively arbitrary internal name that is distinct from the names of other formats.
+         *
+         * @return
+         */
+        static const std::string & formatName()
+        {
+            static std::string name("zx");
+            return name;
+        }
+
+        /**
+         * Check whether an input stream looks like it contains a valid ZX snapshot.
+         *
+         * It is assumed the stream is positioned at the start of the potential snapshot.
+         *
+         * @param in The stream to check.
+         *
+         * @return true if the stream looks like it contains a ZX snapshot, false otherwise.
+         */
+        static bool couldBeSnapshot(std::istream & in);
+
+        /**
+         * Check whether a file looks like it contains a valid ZX snapshot.
+         *
+         * @param in The path to the file to check.
+         *
+         * @return true if the stream looks like it contains a ZX snapshot, false otherwise.
+         */
+        static bool couldBeSnapshot(const std::string & fileName);
     };
 }
 
