@@ -90,7 +90,7 @@ namespace Spectrum::Io
          *
          * The base implementation just checks that the writer has a snapshot. Derived classes may implement additional logic.
          *
-         * @return
+         * @return true if the writer is valid, false otherwise.
          */
         [[nodiscard]] virtual bool isValid() const
         {

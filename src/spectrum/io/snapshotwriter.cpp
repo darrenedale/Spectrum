@@ -14,6 +14,7 @@ SnapshotWriter::SnapshotWriter(const SnapshotWriter & other)
 SnapshotWriter & SnapshotWriter::operator=(const SnapshotWriter & other)
 {
     m_snapshot = std::make_unique<Snapshot>(*(other.m_snapshot));
+    return *this;
 }
 
 void SnapshotWriter::writeHostWord(std::ostream & out, ::Z80::UnsignedWord word)
