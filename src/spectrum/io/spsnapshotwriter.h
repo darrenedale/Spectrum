@@ -11,6 +11,8 @@ namespace Spectrum::Io
 {
     /**
      * Write a Spectrum snapshot in .sp format.
+     *
+     * Satisfies the SnapshotWriterClass concept.
      */
     class SpSnapshotWriter
     : public SnapshotWriter
@@ -20,6 +22,19 @@ namespace Spectrum::Io
          * Import the base class constructors.
          */
         using SnapshotWriter::SnapshotWriter;
+
+        /**
+         * Fetch the name for the format written by this writer.
+         *
+         * Note that we could theoretically make this constexpr - it's in the C++20 standard but is not supported yet in most compilers.
+         *
+         * @return The string "sp".
+         */
+        static const std::string & formatName()
+        {
+            static std::string name("sp");
+            return name;
+        }
 
         /**
          * Write the current snapshot to the provided stream.

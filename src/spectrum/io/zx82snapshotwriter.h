@@ -17,6 +17,8 @@ namespace Spectrum::Io
      * compress the memory image of the Spectrum 48K using the ByteRun1 scheme. The default behaviour for a writer is to use compression. Call
      * enableCompression(false) to turn off compression before writing snapshots.
      *
+     * Satisfies the SnapshotWriterClass concept.
+     *
      * References:
      * - https://hwiegman.home.xs4all.nl/fileformats/spectrum/Spectrum%20FAQ%20-%20File%20Formats.htm
      * - http://aminet.net/package/misc/emu/Speculator (See Docs/Spec97.guide)
@@ -29,6 +31,19 @@ namespace Spectrum::Io
          * Import the base class constructors.
          */
         using SnapshotWriter::SnapshotWriter;
+
+        /**
+         * Fetch the name for the format written by this writer.
+         *
+         * Note that we could theoretically make this constexpr - it's in the C++20 standard but is not supported yet in most compilers.
+         *
+         * @return The string "zx82".
+         */
+        static const std::string & formatName()
+        {
+            static std::string name("zx82");
+            return name;
+        }
 
         /**
          * Set whether to enable compression of the memory image in the written snapshot file.
