@@ -2,8 +2,8 @@
 // Created by darren on 15/03/2021.
 //
 
-#ifndef SPECTRUM_SNAPSHOTWRITER_H
-#define SPECTRUM_SNAPSHOTWRITER_H
+#ifndef SPECTRUM_IO_SNAPSHOTWRITER_H
+#define SPECTRUM_IO_SNAPSHOTWRITER_H
 
 #include <ostream>
 #include <fstream>
@@ -14,66 +14,100 @@ namespace Spectrum::Io
     /**
      * Base class for serialisation of Spectrum snapshots.
      *
-     * TODO consider keeping the snapshot as a std::unique_ptr for consistency in the interface and to enable default
-     *  construction of writers.
+     * In order to participate in resolution in SnapshotWriterFactory, derived classes must satisfy the SnapshotWriterClass concept also.
      */
     class SnapshotWriter
     {
     public:
         /**
+         * Initialise a snapshot writer optionally with a snapshot to write.
+         *
+         * If no snapshot is provided, the writer won't be usable (see isValid()) until setSnapshot() is called to provide one.
+         *
+         * @param snapshot The snapshot to write. The default is nullptr.
+         */
+        explicit SnapshotWriter(std::unique_ptr<Snapshot> snapshot = nullptr) noexcept
+        : m_snapshot(std::move(snapshot))
+        {}
+
+        /**
          * Initialise a snapshot writer with a copy of a snapshot to write.
          *
-         * @param snapshot
+         * @param snapshot The snapshot to write. It will be copied.
          */
         explicit SnapshotWriter(const Snapshot & snapshot)
-        : m_snapshot(snapshot)
+        : m_snapshot(std::make_unique<Snapshot>(snapshot))
         {}
 
         /**
          * Initialise a snapshot writer by moving the snapshot to write.
          *
-         * @param snapshot
+         * @param snapshot The snapshot to write.
          */
-        explicit SnapshotWriter(Snapshot && snapshot)
-        : m_snapshot(std::move(snapshot))
+        explicit SnapshotWriter(Snapshot && snapshot) noexcept
+        : m_snapshot(std::make_unique<Snapshot>(std::move(snapshot)))
         {}
 
         /**
          * Copy constructor.
          *
-         * @param other
+         * @param other The writer to copy into this.
          */
-        SnapshotWriter(const SnapshotWriter & other) = default;
+        SnapshotWriter(const SnapshotWriter & other);
 
         /**
          * Move constructor.
          *
-         * @param other
+         * @param other The writer to move into this.
          */
-        SnapshotWriter(SnapshotWriter && other) = default;
+        SnapshotWriter(SnapshotWriter && other) noexcept = default;
 
         /**
          * Copy assignment.
          *
-         * @param other The writer to copy into this.
+         * @param other The writer to copy-assign to this.
          *
          * @return
          */
-        SnapshotWriter & operator=(const SnapshotWriter & other) = default;
+        SnapshotWriter & operator=(const SnapshotWriter & other);
 
         /**
          * Move assignment.
          *
-         * @param other The writer to move into this.
+         * @param other The writer to move-assign to this.
          *
          * @return
          */
-        SnapshotWriter & operator=(SnapshotWriter && other) = default;
+        SnapshotWriter & operator=(SnapshotWriter && other) noexcept = default;
 
         /**
          * Destructor.
          */
         virtual ~SnapshotWriter() = default;
+
+        /**
+         * Check whether the writer is valid and can be used to write.
+         *
+         * The base implementation just checks that the writer has a snapshot. Derived classes may implement additional logic.
+         *
+         * @return
+         */
+        [[nodiscard]] virtual bool isValid() const
+        {
+            return static_cast<bool>(m_snapshot);
+        }
+
+        /**
+         * Set the snapshot to write.
+         *
+         * The provided snapshot is moved into the writer.
+         *
+         * @param snapshot The snapshot to write.
+         */
+        void setSnapshot(std::unique_ptr<Snapshot> snapshot) noexcept
+        {
+            m_snapshot = std::move(snapshot);
+        }
 
         /**
          * Set the snapshot to write.
@@ -84,7 +118,7 @@ namespace Spectrum::Io
          */
         void setSnapshot(const Snapshot & snapshot)
         {
-            m_snapshot = snapshot;
+            m_snapshot = std::make_unique<Snapshot>(snapshot);
         }
 
         /**
@@ -94,29 +128,35 @@ namespace Spectrum::Io
          *
          * @param snapshot The snapshot to write.
          */
-        void setSnapshot(Snapshot && snapshot)
+        void setSnapshot(Snapshot && snapshot) noexcept
         {
-            m_snapshot = std::move(snapshot);
+            m_snapshot = std::make_unique<Snapshot>(std::move(snapshot));
         }
 
         /**
          * Fetch a read-write reference to the snapshot to write.
          *
+         * Do not call unless you are certain that the writer contains a snapshot. Call isValid() first if you are unsure.
+         *
          * @return The snapshot.
          */
-        Snapshot & snapshot()
+        Snapshot & snapshot() noexcept
         {
-            return m_snapshot;
+            assert(m_snapshot);
+            return *m_snapshot;
         }
 
         /**
          * Fetch a read-only reference to the snapshot to write.
          *
+         * Do not call unless you are certain that the writer contains a snapshot. Call isValid() first if you are unsure.
+         *
          * @return The snapshot.
          */
-        [[nodiscard]] const Snapshot & snapshot() const
+        [[nodiscard]] const Snapshot & snapshot() const noexcept
         {
-            return m_snapshot;
+            assert(m_snapshot);
+            return *m_snapshot;
         }
 
         /**
@@ -127,6 +167,8 @@ namespace Spectrum::Io
          * is if the actual attempt to write to the stream is the cause of the failure. Put another way, subclasses
          * should only start writing to the stream when they know they have a valid snapshot that it is at least
          * possible to write.
+         *
+         * Do not call unless you are certain that the writer is valid. Call isValid() first if you are unsure.
          *
          * @param out The stream to write to.
          *
@@ -139,6 +181,8 @@ namespace Spectrum::Io
          *
          * The default implementation simply opens an output stream with the provided file name and passes the stream to
          * the std::ostream overload. This should suffice for most writers.
+         *
+         * Do not call unless you are certain that the writer is valid. Call isValid() first if you are unsure.
          *
          * @param fileName The full path to the file to write.
          *
@@ -178,8 +222,8 @@ namespace Spectrum::Io
         /**
          * The snapshot to write.
          */
-        Snapshot m_snapshot;
+        std::unique_ptr<Snapshot> m_snapshot;
     };
 }
 
-#endif //SPECTRUM_SNAPSHOTWRITER_H
+#endif //SPECTRUM_IO_SNAPSHOTWRITER_H

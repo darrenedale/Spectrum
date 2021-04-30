@@ -26,6 +26,8 @@ namespace Spectrum::Io
      * This is a quirk of the .sna format - it doesn't store the PC in the snapshot, it expects the PC to be on the top
      * of the Spectrum stack, and expects a RETN instruction to be executed to when the snapshot is restored to a
      * Spectrum.
+     *
+     * Satisfies the SnapshotWriterClass concept.
      */
     class SnaSnapshotWriter
     : public SnapshotWriter
@@ -35,6 +37,19 @@ namespace Spectrum::Io
          * Import the base class constructor.
          */
         using SnapshotWriter::SnapshotWriter;
+
+        /**
+         * Fetch the name for the format written by this writer.
+         *
+         * Note that we could theoretically make this constexpr - it's in the C++20 standard but is not supported yet in most compilers.
+         *
+         * @return The string "sna".
+         */
+        static const std::string & formatName()
+        {
+            static std::string name("sna");
+            return name;
+        }
 
         /**
          * Write the snapshot in .sna format to the provided stream.

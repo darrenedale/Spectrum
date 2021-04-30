@@ -49,6 +49,7 @@
 #include "../io/zxsnapshotwriter.h"
 #include "../io/snapshotformatguesser.h"
 #include "../io/snapshotreaderfactory.h"
+#include "../io/snapshotwriterfactory.h"
 #include "../io/pokfilereader.h"
 #include "../../util/debug.h"
 
@@ -1086,7 +1087,7 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
     m_display.renderFrame(m_spectrum->displayMemory());
     m_displayWidget.setImage(m_display.image());
 
-    if ("sna" == format) {
+    if (QStringLiteral("sna") == format) {
         // RETN instruction is required to resume execution of the .SNA
         m_spectrum->z80()->execute(reinterpret_cast<const Z80::UnsignedByte *>("\xed\x45"), true);
     }
@@ -1109,33 +1110,25 @@ void MainWindow::saveSnapshot(const QString & fileName, QString format)
         }
     }
 
-    // snapshot must remain valid while the writer is alive
-    std::unique_ptr<Snapshot> snapshot;
-    std::unique_ptr<SnapshotWriter> writer;
-
-    if ("sna" == format) {
-        // push the current PC onto the stack
-        m_spectrum->z80()->execute(reinterpret_cast<const Z80::UnsignedByte *>("\xcd\x00\x00"), false);
-        snapshot = m_spectrum->snapshot();
-        writer = std::make_unique<SnaSnapshotWriter>(*snapshot);
-    } else if ("z80" == format) {
-        snapshot = m_spectrum->snapshot();
-        writer = std::make_unique<Z80SnapshotWriter>(*snapshot);
-    } else if ("sp" == format) {
-        snapshot = m_spectrum->snapshot();
-        writer = std::make_unique<SpSnapshotWriter>(*snapshot);
-    } else if ("zx82" == format) {
-        snapshot = m_spectrum->snapshot();
-        writer = std::make_unique<Zx82SnapshotWriter>(*snapshot);
-    } else if ("zx" == format) {
-        snapshot = m_spectrum->snapshot();
-        writer = std::make_unique<ZxSnapshotWriter>(*snapshot);
-    }
+    std::unique_ptr<SnapshotWriter> writer = SnapshotWriterFactory<
+            Z80SnapshotWriter,
+            SnaSnapshotWriter,
+            SpSnapshotWriter,
+            Zx82SnapshotWriter,
+            ZxSnapshotWriter
+            >::writerForFormat(format.toStdString());
 
     if (!writer) {
         Util::debug << "unrecognised format '" << format.toStdString() << "' from filename '" << fileName.toStdString() << "'\n";
         Application::showNotification(tr("Unrecognised snapshot format %1.").arg(format), DefaultStatusBarMessageTimeout);
     }
+
+    if (QStringLiteral("sna") == format) {
+        // push the current PC onto the stack
+        m_spectrum->z80()->execute(reinterpret_cast<const Z80::UnsignedByte *>("\xcd\x00\x00"), false);
+    }
+
+    writer->setSnapshot(m_spectrum->snapshot());
 
     if (!writer->writeTo(fileName.toStdString())) {
         Util::debug << "failed to write snapshot to '" << fileName.toStdString() << "'\n";
