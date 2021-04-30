@@ -60,6 +60,22 @@ void SnapshotReader::setStream(std::istream & in)
     m_borrowedStream = true;
 }
 
+void SnapshotReader::setStream(std::istream * in)
+{
+    disposeStream();
+    m_in = in;
+    m_snapshot.reset();
+    m_borrowedStream = true;
+}
+
+void SnapshotReader::setStream(std::unique_ptr<std::istream> in)
+{
+    disposeStream();
+    m_in = in.release();
+    m_borrowedStream = false;
+    m_snapshot.reset();
+}
+
 std::istream & SnapshotReader::inputStream() const
 {
     assert(m_in);

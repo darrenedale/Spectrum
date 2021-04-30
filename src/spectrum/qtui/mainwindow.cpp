@@ -1025,13 +1025,15 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
             Zx82SnapshotReader,
             ZxSnapshotReader,
             Z80SnapshotReader
-            >::readerForFormat(format.toStdString(), fileName.toStdString());
+            >::readerForFormat(format.toStdString());
 
     if (!reader) {
         Util::debug << "unrecognised format '" << format.toStdString() << "'\n";
         Application::showNotification(tr("The snapshot format for %1 could not be determined.").arg(fileName), DefaultStatusBarMessageTimeout);
         return false;
     }
+
+    reader->setFileName(fileName.toStdString());
 
     if (!reader->isOpen()) {
         Util::debug << "Snapshot file '" << fileName.toStdString() << "' could not be opened.\n";

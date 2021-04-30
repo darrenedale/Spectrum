@@ -19,6 +19,30 @@ namespace Spectrum::Io
     {
     public:
         /**
+         * Initialise a reader with a pointer to a stream to read.
+         *
+         * The stream is borrowed not owned. The caller is responsible for ensuring the provided stream outlives the reader.
+         *
+         * @param in Pointer to the stream to borrow.
+         */
+        explicit SnapshotReader(std::istream * in = nullptr)
+        : m_borrowedStream(true),
+          m_in(in),
+          m_snapshot(nullptr)
+        {}
+
+        /**
+         * Initialise a reader with a pointer to a stream to read.
+         *
+         * @param in Pointer to the stream. This may be nullptr.
+         */
+        explicit SnapshotReader(std::unique_ptr<std::istream> in)
+        : m_borrowedStream(false),
+          m_in(in.release()),
+          m_snapshot(nullptr)
+        {}
+
+        /**
          * Initialise a reader with a stream to read.
          *
          * The stream is borrowed not owned. The caller is responsible for ensuring the provided stream outlives the
@@ -55,6 +79,18 @@ namespace Spectrum::Io
         virtual ~SnapshotReader();
 
         /**
+         * Check whether the writer is valid and can be used to read.
+         *
+         * The base implementation just checks that the reader has an input stream. Derived classes may implement additional logic.
+         *
+         * @return true if the reader is valid, false otherwise.
+         */
+        [[nodiscard]] virtual bool isValid() const
+        {
+            return m_in;
+        }
+
+        /**
          * Set the reader to read the given file.
          *
          * Setting the file invalidates any snapshot previously retrieved from the reader.
@@ -68,12 +104,33 @@ namespace Spectrum::Io
          *
          * Setting the stream invalidates any snapshot previously retrieved from the reader.
          *
-         * The stream is borrowed, not owned. It is the caller's responsibility to ensure the provided stream outlives
-         * the reader that is borrowing it.
+         * The stream is borrowed, not owned. It is the caller's responsibility to ensure the provided stream outlives the reader that is borrowing it.
          *
          * @param in
          */
         void setStream(std::istream & in);
+
+        /**
+         * Set the reader to use the provided stream for reading.
+         *
+         * Setting the stream invalidates any snapshot previously retrieved from the reader.
+         *
+         * The stream is borrowed, not owned. It is the caller's responsibility to ensure the provided stream outlives the reader that is borrowing it.
+         *
+         * @param in
+         */
+        void setStream(std::istream * in);
+
+        /**
+         * Set the reader to use the provided stream for reading.
+         *
+         * Setting the stream invalidates any snapshot previously retrieved from the reader.
+         *
+         * Ownership of the stream is transferred to the reader. The reader will delete the stream when it is destroyed.
+         *
+         * @param in
+         */
+        void setStream(std::unique_ptr<std::istream> in);
 
         /**
          * Attempt to read (another) snapshot from the current stream.

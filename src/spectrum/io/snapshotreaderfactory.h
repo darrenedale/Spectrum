@@ -79,35 +79,14 @@ namespace Spectrum::Io
          *
          * @return
          */
-        static std::unique_ptr<SnapshotReader> readerForFormat(const std::string & format, const std::string & fileName)
+        static std::unique_ptr<SnapshotReader> readerForFormat(const std::string & format)
         {
             if (T::formatName() == format) {
-                return std::make_unique<T>(fileName);
+                return std::make_unique<T>();
             }
 
             if constexpr (0 < sizeof...(Ts)) {
-                return SnapshotReaderFactory<Ts...>::readerForFormat(format, fileName);
-            }
-
-            return nullptr;
-        }
-
-        /**
-         * Attempt to create a reader for a specified snapshot format for the given input stream.
-         *
-         * @param format The snapshot format name.
-         * @param in The the input stream to read.
-         *
-         * @return
-         */
-        static std::unique_ptr<SnapshotReader> readerForFormat(const std::string & format, std::istream & in)
-        {
-            if (T::formatName() == format) {
-                return std::make_unique<T>(in);
-            }
-
-            if constexpr (0 < sizeof...(Ts)) {
-                return SnapshotReaderFactory<Ts...>::readerForFormat(format, in);
+                return SnapshotReaderFactory<Ts...>::readerForFormat(format);
             }
 
             return nullptr;
