@@ -11,25 +11,28 @@
 
 namespace
 {
-    // the default Z80 clock speed for a Spectrum
+    /**
+     * The default Z80 clock speed for a Spectrum.
+     */
     const int DefaultClockSpeed = 3500000;
 }
 
 namespace Spectrum
 {
-    BaseSpectrum::BaseSpectrum(MemoryType * memory)
-    : Computer(memory, true),
+    BaseSpectrum::BaseSpectrum(std::unique_ptr<MemoryType> memory)
+    : Computer(std::move(memory)),
       m_executionSpeed(1.0),
       m_interruptTStateCounter(0),
       m_displayDevices(),
       m_constrainExecutionSpeed(true),
       m_keyboard(nullptr),
-      m_joystick(nullptr)
+      m_joystick(nullptr),
+      m_mouse(nullptr)
     {
-        auto * z80 = new Z80(memory);
+        auto * z80 = new Z80(this->memory());
         z80->setClockSpeed(DefaultClockSpeed);
         addCpu(z80);
-        memory->clear();
+        this->memory()->clear();
         z80->reset();
     }
 

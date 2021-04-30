@@ -5,13 +5,26 @@
 #include <memory>
 #include <cstdint>
 #include <vector>
+#include <type_traits>
 #include <cassert>
-
-#include "simplememory.h"
+#include "memory.h"
 
 class Cpu;
 
-template<class byte_t = std::uint8_t>
+/**
+ * Concept describing types that can be used as computer native byte types.
+ *
+ * @tparam T The type.
+ */
+template<class T>
+concept ComputerByte = std::is_integral_v<T>;
+
+/**
+ * Abstract base class for computers.
+ *
+ * @tparam byte_t The type for the native byte for the computer. Must satisfy the ComputerByte concept.
+ */
+template<ComputerByte byte_t = std::uint8_t>
 class Computer
 {
 public:
@@ -20,36 +33,36 @@ public:
     using MemoryType = Memory<byte_t, address_t, size_t>;
 
     /**
-     * Initialise a new Computer with memory of a given size, which it owns.
-     *
-     * The computer will create its own linear, fully-allocated memory, which it will own and destroy when it is
-     * destroyed.
-     *
-     * @param memSize
-     */
-    explicit Computer(typename MemoryType<>::Size memSize = 0, std::optional<typename MemoryType<>::Size> availableMem = {})
-    : m_memory(new SimpleMemory<ByteType>(memSize, std::move(availableMem))),
-      m_memoryOwned(true)
-    {
-        assert(0 <= memSize);
-    }
-
-    /**
      * Initialise a new Computer with pre-existing memory.
      *
-     * Unless takeOwnership is true, the computer will only borrow the provided memory, it is up to the caller to ensure
-     * that the memory is destroyed at the appropriate time, and that the computer does not retain a pointer to the
-     * memory after it has been destroyed.
+     * The computer will only borrow the provided memory, it is up to the caller to ensure that the memory is destroyed at the appropriate time, and that the
+     * computer does not retain a pointer to the memory after it has been destroyed.
      *
      * The memory provided must not be null and must not be 0 bytes in size.
      *
      * @param memory
      */
-    explicit Computer(MemoryType<> * memory, bool takeOwnership = false)
+    explicit Computer(MemoryType<> * memory)
     : m_memory(memory),
-      m_memoryOwned(takeOwnership)
+      m_memoryOwned(false)
     {
-        assert(memory && 0 < memory->addressableSize());
+        assert(m_memory && 0 < m_memory->addressableSize());
+    }
+
+    /**
+     * Initialise a new Computer with pre-existing memory.
+     *
+     * The computer will take ownership of the provided memory.
+     *
+     * The memory provided must not be null and must not be 0 bytes in size.
+     *
+     * @param memory
+     */
+    explicit Computer(std::unique_ptr<MemoryType<>> memory)
+    : m_memory(memory.release()),
+      m_memoryOwned(true)
+    {
+        assert(m_memory && 0 < m_memory->addressableSize());
     }
 
     /**
@@ -68,10 +81,12 @@ public:
     /**
      * Fetch a CPU from the computer.
      *
+     * Don't call with an index for a CPU that does not exist. If in doubt, check cpus().size() first.
+     *
      * @param idx
      * @return
      */
-    Cpu * cpu( int idx = 0 ) const
+    Cpu * cpu(int idx = 0) const
     {
         assert(0 <= idx && m_cpus.size() > idx);
         return m_cpus[idx];
@@ -95,28 +110,6 @@ public:
     inline std::vector<Cpu *> & cpus()
     {
         return m_cpus;
-    }
-
-    /**
-     * Fetch the computer's memory.
-     *
-     * @return
-     */
-    inline MemoryType<> * memory() const
-    {
-        return m_memory;
-    }
-
-    /**
-     * Fetch the size of the computer's memory.
-     *
-     * TODO consider altering the return type.
-     *
-     * @return
-     */
-    inline int memorySize() const
-    {
-        return m_memory->addressableSize();
     }
 
     /**
@@ -144,9 +137,9 @@ public:
     inline void removeCpu(Cpu * cpu)
     {
         assert(cpu);
-        const auto pos = std::find(m_cpus.begin(), m_cpus.end(), cpu);
+        const auto pos = std::find(m_cpus.cbegin(), m_cpus.cend(), cpu);
 
-        if (pos == m_cpus.end()) {
+        if (pos == m_cpus.cend()) {
             return;
         }
 
@@ -154,10 +147,33 @@ public:
     }
 
     /**
+     * Fetch the computer's memory.
+     *
+     * @return
+     */
+    inline MemoryType<> * memory() const
+    {
+        return m_memory;
+    }
+
+    /**
+     * Fetch the size of the computer's memory.
+     *
+     * TODO consider altering the return type.
+     *
+     * @return The memory size.
+     */
+    inline int memorySize() const
+    {
+        return m_memory->addressableSize();
+    }
+
+    /**
      * Provide the computer with new memory that it borrows.
      *
-     * @param memory
-     * @param size
+     * The memory must not be null and must not be 0 bytes in size.
+     *
+     * @param memory The memory to loan to the computer.
      */
     inline void setMemory(MemoryType<> * memory)
     {
@@ -167,6 +183,7 @@ public:
         }
 
         m_memory = memory;
+        assert(m_memory && 0 < m_memory->addressableSize());
 
         for (auto * cpu : cpus()) {
             cpu->setMemory(m_memory);
@@ -176,17 +193,19 @@ public:
     /**
      * Provide the computer with new memory that it owns.
      *
-     * @param memory
-     * @param size
+     * The memory must not be null and must not be 0 bytes in size.
+     *
+     * @param memory The memory to give to the computer.
      */
-    inline void giveMemory(MemoryType<> * memory)
+    inline void setMemory(std::unique_ptr<MemoryType<>> memory)
     {
         if (m_memoryOwned) {
             delete m_memory;
         }
 
         m_memoryOwned = true;
-        m_memory = memory;
+        m_memory = memory.release();
+        assert(m_memory && 0 < m_memory->addressableSize());
 
         for (auto * cpu : cpus()) {
             cpu->setMemory(m_memory);
@@ -211,12 +230,35 @@ public:
     virtual void run(int instructionCount) = 0;
 
 protected:
+    /**
+     * Check whether the computer owns the memory it is using.
+     *
+     * @return true if the memory is owned by the computer, false if it is just borrowed.
+     */
+    [[nodiscard]] bool ownsMemory() const
+    {
+        return m_memoryOwned;
+    }
+
+    /**
+     * Convenience alias for the CPU storage type.
+     */
     using Cpus = std::vector<Cpu *>;
 
+    /**
+     * The CPUs attached to the computer.
+     */
     Cpus m_cpus;
+
+    /**
+     * The computer's memory.
+     */
     MemoryType<> * m_memory;
 
 private:
+    /**
+     * Flag indicating whether or not the computer owns the memory object.
+     */
     bool m_memoryOwned;
 };
 

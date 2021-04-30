@@ -8,9 +8,9 @@
 using namespace Spectrum;
 
 Spectrum16k::Spectrum16k(const std::string & romFile)
-: BaseSpectrum(new Memory(0x8000))
+: BaseSpectrum(std::make_unique<Memory>(0x8000))
 {
-    (void) loadRom(romFile);
+    loadRom(romFile);
 }
 
 Spectrum16k::Spectrum16k()
@@ -49,7 +49,6 @@ std::unique_ptr<Snapshot> Spectrum16k::snapshot() const
 {
     return std::make_unique<Snapshot>(*this);
 }
-
 
 bool Spectrum16k::canApplySnapshot(const Snapshot & snapshot)
 {

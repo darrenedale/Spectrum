@@ -343,17 +343,16 @@ namespace Spectrum
 
     protected:
         /**
-         * Initialise a new Spectrum borrowing the given memory.
+         * Initialise a new Spectrum that owns the given memory.
          *
-         * The provided memory is borrowed and will not be deleted when te Spectrum is destroyed - it is up to the caller to
-         * ensure that it is destroyed at the appropriate time.
+         * The provided memory is owned and will be deleted when te Spectrum is destroyed.
          *
-         * No ROM is loaded into the 0x0000 - 0x3fff address space. Effectively, the Spectrum will have no code to run
-         * unless you specifically provide it with some.
+         * No ROM is loaded into the 0x0000 - 0x3fff address space. Effectively, the Spectrum will have no code to run unless you specifically provide it with
+         * some.
          *
-         * @param memory
+         * @param memory The memory for the Spectrum.
          */
-        explicit BaseSpectrum(MemoryType * memory = nullptr);
+        explicit BaseSpectrum(std::unique_ptr<MemoryType> memory = nullptr);
 
         /**
          * Ask the spectrum to reload its ROM files.
@@ -377,7 +376,6 @@ namespace Spectrum
         Keyboard * m_keyboard;
         JoystickInterface * m_joystick;
         MouseInterface * m_mouse;
-        std::string m_romFile;
     };
 }
 

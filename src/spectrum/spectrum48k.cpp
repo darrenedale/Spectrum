@@ -6,9 +6,9 @@
 using namespace Spectrum;
 
 Spectrum48k::Spectrum48k(const std::string & romFile)
-: BaseSpectrum(new Spectrum::Memory())
+: BaseSpectrum(std::make_unique<Spectrum::Memory>())
 {
-    (void) loadRom(romFile);
+    loadRom(romFile);
 }
 
 Spectrum48k::Spectrum48k()
