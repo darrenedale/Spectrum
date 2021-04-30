@@ -17,7 +17,7 @@ namespace Spectrum::Io
      */
     template<class T>
     concept SnapshotFormatMatcher =
-            std::is_base_of_v<Spectrum::Io::SnapshotReader, T>
+            std::derived_from<T, Spectrum::Io::SnapshotReader>
             && requires(T, std::istream & in, const std::string & fileName)
             {
                 /**
