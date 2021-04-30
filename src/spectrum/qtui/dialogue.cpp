@@ -4,17 +4,28 @@
 
 #include <QGridLayout>
 #include <QAbstractButton>
+#include <QScreen>
 #include "dialogue.h"
 #include "../../util/debug.h"
 #include "widgetupdatesuspender.h"
 
 using namespace Spectrum::QtUi;
 
+namespace
+{
+    // this is how big the icon is in pixels ...
+    constexpr const int DefaultIconExtent = 40;
+
+    // ... at this pixel density
+    constexpr const double DefaultIconExtentDpi = 96.0;
+}
+
 Dialogue::Dialogue(const QString & message, const QString & title, QWidget * parent)
 : QDialog(parent),
   m_message(message),
   m_title(title),
   m_icon(),
+  m_iconExtent(DefaultIconExtent),
   m_iconLabel(),
   m_controls()
 {
@@ -46,6 +57,21 @@ Dialogue::Dialogue(QWidget * parent)
 {}
 
 Dialogue::~Dialogue() = default;
+
+void Dialogue::showEvent(QShowEvent * ev)
+{
+    // work out the icon size based on the screen pixel density
+    auto iconExtent = static_cast<int>((screen()->logicalDotsPerInchX() / DefaultIconExtentDpi) * DefaultIconExtent);
+    Util::debug << "screen DPI: " << screen()->logicalDotsPerInchX() << '\n';
+    Util::debug << "Icon size: " << iconExtent << '\n';
+
+    if (iconExtent != m_iconExtent) {
+        m_iconExtent = iconExtent;
+        m_iconLabel.setPixmap(m_icon.pixmap(m_iconExtent));
+    }
+
+    QDialog::showEvent(ev);
+}
 
 void Dialogue::setTitle(const QString & title)
 {
@@ -112,7 +138,7 @@ void Dialogue::setIcon(const QIcon & icon)
     m_icon = icon;
 
     if (!m_icon.isNull()) {
-        m_iconLabel.setPixmap(m_icon.pixmap(64));
+        m_iconLabel.setPixmap(m_icon.pixmap(m_iconExtent));
     }
 
     rebuildLayout();

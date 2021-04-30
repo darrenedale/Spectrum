@@ -18,8 +18,6 @@ namespace Spectrum::QtUi
      *
      * Dialogues contain an optional title (which is rendered in 20% larger text, bold), a message and an arbitrary number of control buttons. All of these
      * features can be customised. The primary driver for this class is to ensure dialogues are relatively consistent in appearance.
-     *
-     * TODO determine icon size based on font size
      */
     class Dialogue
     : public QDialog
@@ -184,12 +182,20 @@ namespace Spectrum::QtUi
         void clearButtons();
 
     protected:
+        /**
+         * Event handler for when the widget is shown.
+         *
+         * @param ev The event details.
+         */
+        void showEvent(QShowEvent * ev) override;
+
         void rebuildLayout();
 
     private:
         QLabel m_title;
         QLabel m_message;
         QIcon m_icon;
+        int m_iconExtent;
         QLabel m_iconLabel;
         QDialogButtonBox m_controls;
     };

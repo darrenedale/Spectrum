@@ -14,9 +14,6 @@ namespace Spectrum::QtUi
      *
      * The standard QToolBar is much more flexible, but it can't have (stretchable) spacing added and you can't tell it to right- or bottom-align content. This
      * widget can only have actions (tool buttons) and spacing added. You can flip the orientation between H and V on-the-fly).
-     *
-     * TODO
-     * - support insertion of other widgets
      */
     class ActionBar
     : public QWidget
