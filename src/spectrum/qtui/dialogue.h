@@ -16,8 +16,8 @@ namespace Spectrum::QtUi
     /**
      * A generic dialogue class.
      *
-     * Dialogues contain an optional title (which is rendered in 20% larger text, bold), a message and an arbitrary number of control buttons. All of these
-     * features can be customised. The primary driver for this class is to ensure dialogues are relatively consistent in appearance.
+     * Dialogues contain an optional icon, optional title (which is rendered in 20% larger text, bold), a message and an arbitrary number of control buttons.
+     * All of these features can be customised. The primary driver for this class is to ensure dialogues are relatively consistent in appearance.
      */
     class Dialogue
     : public QDialog
@@ -189,14 +189,42 @@ namespace Spectrum::QtUi
          */
         void showEvent(QShowEvent * ev) override;
 
+        /**
+         * Helper to rebuild the dialogue's layout.
+         *
+         * Used when one of the main property setters is called.
+         */
         void rebuildLayout();
 
     private:
+        /**
+         * The UI widget to display the title.
+         */
         QLabel m_title;
+
+        /**
+         * The UI widget to display the message.
+         */
         QLabel m_message;
+
+        /**
+         * The icon.
+         */
         QIcon m_icon;
+
+        /**
+         * The size of the icon. This is calculated according to the pixel density of the screen on which the dialogue appears. At 96dpi the icon will be 40px.
+         */
         int m_iconExtent;
+
+        /**
+         * The UI widget to display the icon.
+         */
         QLabel m_iconLabel;
+
+        /**
+         * The UI widget for the action buttons for the dialogue.
+         */
         QDialogButtonBox m_controls;
     };
 }

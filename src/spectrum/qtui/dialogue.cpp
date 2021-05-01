@@ -62,8 +62,6 @@ void Dialogue::showEvent(QShowEvent * ev)
 {
     // work out the icon size based on the screen pixel density
     auto iconExtent = static_cast<int>((screen()->logicalDotsPerInchX() / DefaultIconExtentDpi) * DefaultIconExtent);
-    Util::debug << "screen DPI: " << screen()->logicalDotsPerInchX() << '\n';
-    Util::debug << "Icon size: " << iconExtent << '\n';
 
     if (iconExtent != m_iconExtent) {
         m_iconExtent = iconExtent;
@@ -86,7 +84,12 @@ QPushButton * Dialogue::addButton(QDialogButtonBox::StandardButton button)
     }
 
     auto * ret = m_controls.addButton(button);
-    rebuildLayout();
+
+    if (1 == m_controls.buttons().size()) {
+        // the control box was previously hidden so we need to rebuild the layout to display it
+        rebuildLayout();
+    }
+
     return ret;
 }
 
@@ -97,7 +100,12 @@ QPushButton * Dialogue::addButton(const QString & text, QDialogButtonBox::Button
     }
 
     auto * ret = m_controls.addButton(text, role);
-    rebuildLayout();
+
+    if (1 == m_controls.buttons().size()) {
+        // the control box was previously hidden so we need to rebuild the layout to display it
+        rebuildLayout();
+    }
+
     return ret;
 }
 
@@ -129,19 +137,39 @@ void Dialogue::clearButtons()
 
 void Dialogue::removeButton(QAbstractButton * button)
 {
+    if (m_controls.buttons().empty()) {
+        return;
+    }
+
     m_controls.removeButton(button);
-    rebuildLayout();
+
+    if (m_controls.buttons().empty()) {
+        // the control box was previously visible and needs to be hidden so we need to rebuild the layout
+        rebuildLayout();
+    }
 }
 
 void Dialogue::setIcon(const QIcon & icon)
 {
+    auto wasHidden = m_icon.isNull();
+    auto shouldBeHidden = icon.isNull();
+
+    if (wasHidden && shouldBeHidden) {
+        // no change,nothing to do
+        return;
+    }
+
     m_icon = icon;
 
-    if (!m_icon.isNull()) {
+    // if there's no icon to display don't bother updating the label pixmap because we're going to hide it anyway
+    if (!shouldBeHidden) {
         m_iconLabel.setPixmap(m_icon.pixmap(m_iconExtent));
     }
 
-    rebuildLayout();
+    if (shouldBeHidden != wasHidden) {
+        // rebuild the layout if the icon visibility has changed
+        rebuildLayout();
+    }
 }
 
 void Dialogue::rebuildLayout()
