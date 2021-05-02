@@ -28,7 +28,8 @@ namespace Spectrum::Debugger
 
         StringMemoryWatch(BaseSpectrum::MemoryType * memory, ::Z80::UnsignedWord address, StringSize size)
         : MemoryWatch(memory, address),
-          m_size(static_cast<std::uint32_t>(size))
+          m_size(static_cast<std::uint32_t>(size)),
+          m_typeName()
         {}
 
         /**
@@ -40,10 +41,13 @@ namespace Spectrum::Debugger
          */
         [[nodiscard]] std::string typeName() const override
         {
-            // TODO consider caching this in a member, clearing it when size is set, to avoid repeatedly building the string
-            std::ostringstream out;
-            out << "String [" << size() << ']';
-            return out.str();
+            if (m_typeName.empty()) {
+                std::ostringstream out;
+                out << "String [" << size() << ']';
+                m_typeName = out.str();
+            }
+
+            return m_typeName;
         }
 
         /**
@@ -65,7 +69,10 @@ namespace Spectrum::Debugger
          */
         void setSize(StringSize size)
         {
-            m_size = size;
+            if (m_size != size) {
+                m_size = size;
+                m_typeName.clear();
+            }
         }
 
         /**
@@ -109,7 +116,7 @@ namespace Spectrum::Debugger
                 "[IF]"s, "[CLS]"s, "[DRAW]"s, "[CLEAR]"s, "[RETURN]"s, "[COPY]"s,
             };
 
-            // TODO 128 to 143 are block graphics chars
+            // TODO 128 to 143 block graphics chars
             if (96 == ch) {
                 // UK pounds sterling symbol
                 out << '£';
@@ -137,6 +144,13 @@ namespace Spectrum::Debugger
          * The size in bytes of the string being watched.
          */
         StringSize m_size;
+
+        /**
+         * Cache for the type name.
+         *
+         * Emptied when the size is set; set when the type name is requested and it's not currently set.
+         */
+        std::string m_typeName;
     };
 }
 
