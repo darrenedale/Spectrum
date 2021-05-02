@@ -82,6 +82,29 @@ namespace Spectrum::QtUi
         [[nodiscard]] QVariant data(const QModelIndex & idx, int role = Qt::ItemDataRole::DisplayRole) const override;
 
         /**
+         * Set the data for an item.
+         *
+         * Only labels for watches can be edited.
+         *
+         * @param idx The index of the watch to edit. The column must be the Label column.
+         * @param value The value to set for the label.
+         * @param role The data role. Only the Edit role is accepted.
+         *
+         * @return true if the data was set, false otherwise.
+         */
+        bool setData(const QModelIndex & idx, const QVariant & value, int role = Qt::ItemDataRole::EditRole) override;
+
+        /**
+         * Provide the flags for an item.
+         *
+         * All items are read-only and cannot have children, except labels which can be edited.
+         *
+         * @param idx The index of the item whose flags are required.
+         * @return
+         */
+        [[nodiscard]] Qt::ItemFlags flags(const QModelIndex & idx) const override;
+
+        /**
          * Fetch an index for a row and column.
          *
          * Since there is no hierarchy of items, the index simply contains the row and column.
@@ -146,6 +169,15 @@ namespace Spectrum::QtUi
         }
 
         /**
+         * Remove all watches that are watching a given address.
+         *
+         * Only watches whose first watched byte is at the address are removed.
+         *
+         * @param address The address whose watches should be removed.
+         */
+        void removeAllWatches(::Z80::UnsignedWord address);
+
+        /**
          * Clear all watches from the model.
          */
         void clear();
@@ -189,10 +221,12 @@ namespace Spectrum::QtUi
         void update();
 
     private:
+        using Watches = std::vector<std::unique_ptr<MemoryWatch>>;
+
         /**
          * Storage for the watches contained in the model.
          */
-        std::vector<std::unique_ptr<MemoryWatch>> m_watches;
+        Watches m_watches;
     };
 
 }

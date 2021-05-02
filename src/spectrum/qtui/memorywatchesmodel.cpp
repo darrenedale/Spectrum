@@ -19,33 +19,61 @@ MemoryWatchesModel::MemoryWatchesModel(QObject * parent)
   m_watches()
 {}
 
+Qt::ItemFlags MemoryWatchesModel::flags(const QModelIndex & idx) const
+{
+    Qt::ItemFlags flags = Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemNeverHasChildren;
+
+    if (LabelColumn == idx.column()) {
+        flags |= Qt::ItemFlag::ItemIsEditable;
+    }
+
+    return flags;
+}
+
 QVariant MemoryWatchesModel::data(const QModelIndex & idx, int role) const
 {
     if (idx.row() >= rowCount() || idx.column() >= columnCount()) {
         return {};
     }
 
-    if (role != Qt::DisplayRole) {
-        return {};
+    switch (role) {
+        case Qt::DisplayRole:
+            switch (idx.column()) {
+                case AddressColumn:
+                    return QStringLiteral("0x%1").arg(watch(idx)->address(), 4, 16, QLatin1Char('0'));
+
+                case LabelColumn:
+                    return QString::fromStdString(watch(idx)->label());
+
+                case TypeColumn:
+                    return QString::fromStdString(watch(idx)->typeName());
+
+                case ValueColumn:
+                    return QString::fromStdString(watch(idx)->displayValue());
+            }
+            // unreachable code - if we get here columnCount() has been changed without providing the data for the extra column(s)
+            assert(false);
+            break;
+
+        case Qt::ItemDataRole::EditRole:
+            // only the label is currently editable
+            if (LabelColumn == idx.column()) {
+                return QString::fromStdString(watch(idx)->label());
+            }
+
+        default:
+            return {};
+    }
+}
+bool MemoryWatchesModel::setData(const QModelIndex & idx, const QVariant & data, int role)
+{
+    if (role == Qt::ItemDataRole::EditRole && LabelColumn == idx.column()) {
+        assert(watch(idx));
+        watch(idx)->setLabel(data.toString().toStdString());
+        return true;
     }
 
-    switch (idx.column()) {
-        case AddressColumn:
-            return QStringLiteral("0x%1").arg(watch(idx)->address(), 4, 16, QLatin1Char('0'));
-
-        case LabelColumn:
-            return QString::fromStdString(watch(idx)->label());
-
-        case TypeColumn:
-            return QString::fromStdString(watch(idx)->typeName());
-
-        case ValueColumn:
-            return QString::fromStdString(watch(idx)->displayValue());
-    }
-
-    // unreachable code - if we get here columnCount() has been changed without providing the data for the extra column(s)
-    assert(false);
-    return {};
+    return false;
 }
 
 MemoryWatchesModel::MemoryWatch * MemoryWatchesModel::watch(int idx) const
@@ -73,6 +101,17 @@ void MemoryWatchesModel::removeWatch(int row)
     beginRemoveRows({}, row, row);
     m_watches.erase(m_watches.cbegin() + row);
     endRemoveRows();
+}
+
+void MemoryWatchesModel::removeAllWatches(::Z80::UnsignedWord address)
+{
+    for (auto it = m_watches.begin(); it != m_watches.end(); ) {
+        if ((*it)->address() == address) {
+            it = m_watches.erase(it);
+        } else {
+            ++it;
+        }
+    }
 }
 
 void MemoryWatchesModel::clear()

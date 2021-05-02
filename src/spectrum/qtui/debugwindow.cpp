@@ -59,6 +59,7 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
   m_navigateToSp(tr("Navigate to SP")),
   m_breakpointAtStackTop(tr("Set breakpoint at address on top of stack")),
   m_keyboardMonitor(&m_thread->spectrum()),
+  m_watchesModel(),
   m_watches(),
   m_poke(),
   m_cpuObserver((*this)),
@@ -77,18 +78,11 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
     m_pointers.addStackPointerAction(&m_navigateToSp);
     m_pointers.addStackPointerAction(&m_breakpointAtStackTop);
 
-    m_watches.setModel(new MemoryWatchesModel(&m_watches));
-
+    m_watches.setModel(&m_watchesModel);
     m_watches.setHeaderHidden(false);
     m_watches.setItemsExpandable(false);
     m_watches.setRootIsDecorated(false);
     m_watches.setUniformRowHeights(true);
-    auto watch = std::make_unique<IntegerMemoryWatch<std::uint8_t>>(m_thread->spectrum().memory(), 23677);
-    watch->setLabel("X-COORD");
-    qobject_cast<MemoryWatchesModel *>(m_watches.model())->addWatch(std::move(watch));
-    watch = std::make_unique<IntegerMemoryWatch<std::uint8_t>>(m_thread->spectrum().memory(), 23678);
-    watch->setLabel("Y-COORD");
-    qobject_cast<MemoryWatchesModel *>(m_watches.model())->addWatch(std::move(watch));
 
     m_statusClearTimer.setSingleShot(true);
 
@@ -334,7 +328,7 @@ void DebugWindow::updateStateDisplay()
 	m_disassembly.scrollToPc();
 
 	// trigger a refresh of the values of all watches
-    qobject_cast<MemoryWatchesModel *>(m_watches.model())->update();
+    m_watchesModel.update();
 }
 
 void DebugWindow::pauseResumeTriggered()
@@ -402,12 +396,9 @@ void DebugWindow::threadSpectrumChanged()
     m_keyboardMonitor.setSpectrum(&spectrum);
 
     // make sure all watchers are observing the new memory
-    auto * model = qobject_cast<MemoryWatchesModel *>(m_watches.model());
-    assert(model);
-
-    for (int idx = 0; idx < model->rowCount(); ++idx) {
+    for (int idx = m_watchesModel.rowCount() - 1; idx >= 0; --idx) {
         // NOTE all addresses should remain valid because all Spectrum memory has 64k addressable
-        model->watch(idx)->setMemory(spectrum.memory());
+        m_watchesModel.watch(idx)->setMemory(spectrum.memory());
     }
 }
 
@@ -521,6 +512,19 @@ void DebugWindow::memoryContextMenuRequested(const QPoint & pos)
     });
 
     action->setToolTip(tr("Break when the 16-bit value at 0x%1 changes.").arg(*address, 4, 16, QLatin1Char('0')));
+    menu.addSeparator();
+
+    action = menu.addAction(tr("Watch (byte)"), [this, address = *address]() {
+        watchIntegerMemoryAddress<UnsignedByte>(address);
+    });
+
+    action->setToolTip(tr("Watch the 8-bit value in memory at 0x%1.").arg(*address, 4, 16, QLatin1Char('0')));
+
+    action = menu.addAction(tr("Watch (word)"), [this, address = *address]() {
+        watchIntegerMemoryAddress<UnsignedWord>(address);
+    });
+
+    action->setToolTip(tr("Watch the 16-bit value in memory at 0x%1.").arg(*address, 4, 16, QLatin1Char('0')));
 
     menu.exec(m_memoryWidget.mapToGlobal(pos));
 }

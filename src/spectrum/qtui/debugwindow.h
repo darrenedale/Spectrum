@@ -20,8 +20,10 @@
 #include "memorydebugwidget.h"
 #include "keyboardmonitorwidget.h"
 #include "custompokewidget.h"
+#include "memorywatchesmodel.h"
 #include "../debugger/breakpoint.h"
 #include "../debugger/memorychangedbreakpoint.h"
+#include "../debugger/integermemorywatch.h"
 
 class QLineEdit;
 
@@ -66,7 +68,7 @@ namespace Spectrum::QtUi
         template<class ValueType>
         void breakOnMemoryChange(::Z80::UnsignedWord address)
         {
-            auto * breakpoint = new Spectrum::Debugger::MemoryChangedBreakpoint<ValueType>(address);
+            auto * breakpoint = new Debugger::MemoryChangedBreakpoint<ValueType>(address);
 
             if (!addBreakpoint(breakpoint)) {
                 Util::debug << "breakpoint monitoring 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << " for " << (sizeof(ValueType) * 8) << "-bit changes already set\n";
@@ -79,6 +81,19 @@ namespace Spectrum::QtUi
             showStatusMessage(
                     tr("Breakpoint set monitoring 0x%1 for %2-bit changes.").arg(address, 4, 16, QLatin1Char('0')).arg(
                             sizeof(ValueType) * 8));
+        }
+
+        /**
+         * Add a watch for an integer value at a specified memory address.
+         *
+         * @param address The address to watch.
+         */
+        template<Debugger::IntegerMemoryWatchType ValueType>
+        void watchIntegerMemoryAddress(::Z80::UnsignedWord address)
+        {
+            assert(m_thread);
+            assert(m_thread->spectrum().memory());
+            m_watchesModel.addWatch(std::make_unique<Debugger::IntegerMemoryWatch<ValueType>>(m_thread->spectrum().memory(), address));
         }
 
         /**
@@ -207,6 +222,7 @@ namespace Spectrum::QtUi
 
         KeyboardMonitorWidget m_keyboardMonitor;
         CustomPokeWidget m_poke;
+        MemoryWatchesModel m_watchesModel;
         QTreeView m_watches;
 
         InstructionObserver m_cpuObserver;

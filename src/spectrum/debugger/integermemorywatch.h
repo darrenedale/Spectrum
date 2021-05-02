@@ -2,16 +2,16 @@
 // Created by darren on 01/05/2021.
 //
 
-#ifndef SPECTRUM_DEBUGGER_NUMERICMEMORYWATCH_H
-#define SPECTRUM_DEBUGGER_NUMERICMEMORYWATCH_H
+#ifndef SPECTRUM_DEBUGGER_INTEGERMEMORYWATCH_H
+#define SPECTRUM_DEBUGGER_INTEGERMEMORYWATCH_H
 
 #include <bit>
 #include <sstream>
 #include <iomanip>
 #include <string>
+#include "memorywatch.h"
 #include "../../util/endian.h"
 #include "../../util/numeric.h"
-#include "memorywatch.h"
 
 namespace Spectrum::Debugger
 {
@@ -132,8 +132,6 @@ namespace Spectrum::Debugger
             } else {
                 auto value = memory()->template readWord<int_t>(address());
 
-                Util::debug << (8 * sizeof(int_t)) << "-bit value @ " << std::hex << std::showbase << std::setfill('0') << std::setw(4) << address() << " is " << Util::asNumeric(value) << std::dec << std::setfill(' ') << '\n';
-
                 if constexpr (1 != sizeof(int_t)) {
                     // TODO check this logic
                     if ((byteOrder() == std::endian::native) != (byteOrder() == ::Z80::Z80ByteOrder)) {
@@ -155,13 +153,8 @@ namespace Spectrum::Debugger
                     case Base::Octal:
                         out << std::oct << std::showbase << Util::asNumeric(value);
                         break;
-
-                    default:
-                        Util::debug << "invalid base - empty string\n";
-                        break;
                 }
 
-                Util::debug << "Returning \"" << out.str() << "\"\n";
                 return out.str();
             }
         }
@@ -178,7 +171,6 @@ namespace Spectrum::Debugger
         {
             std::array<BaseSpectrum::MemoryType::Byte, sizeof(int_t)> buffer;
             memory()->readBytes(address(), sizeof(int_t), buffer.data());
-
             std::ostringstream out;
 
             switch (base()) {
@@ -217,4 +209,4 @@ namespace Spectrum::Debugger
     };
 }
 
-#endif //SPECTRUM_DEBUGGER_NUMERICMEMORYWATCH_H
+#endif //SPECTRUM_DEBUGGER_INTEGERMEMORYWATCH_H
