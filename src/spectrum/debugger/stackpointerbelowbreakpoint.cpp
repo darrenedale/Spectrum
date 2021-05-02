@@ -6,7 +6,7 @@
 #include <iomanip>
 #include "stackpointerbelowbreakpoint.h"
 
-using namespace Spectrum::QtUi;
+using namespace Spectrum::Debugger;
 
 std::string StackPointerBelowBreakpoint::typeName() const
 {

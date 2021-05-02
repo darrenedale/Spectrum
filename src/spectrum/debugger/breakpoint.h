@@ -2,16 +2,16 @@
 // Created by darren on 12/03/2021.
 //
 
-#ifndef SPECTRUM_QTUI_BREAKPOINT_H
-#define SPECTRUM_QTUI_BREAKPOINT_H
+#ifndef SPECTRUM_DEBUGGER_BREAKPOINT_H
+#define SPECTRUM_DEBUGGER_BREAKPOINT_H
 
 #include <QObject>
 
-#include "thread.h"
+#include "../qtui/thread.h"
 #include "../../z80/types.h"
 #include "../basespectrum.h"
 
-namespace Spectrum::QtUi
+namespace Spectrum::Debugger
 {
     class Breakpoint
     {
@@ -41,4 +41,4 @@ namespace Spectrum::QtUi
     };
 }
 
-#endif //SPECTRUM_QTUI_BREAKPOINT_H
+#endif //SPECTRUM_DEBUGGER_BREAKPOINT_H

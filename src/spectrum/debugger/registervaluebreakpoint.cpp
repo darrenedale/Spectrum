@@ -7,7 +7,7 @@
 #include "registervaluebreakpoint.h"
 #include "../../z80/types.h"
 
-using namespace Spectrum::QtUi;
+using namespace Spectrum::Debugger;
 
 bool RegisterValueBreakpoint::operator==(const Breakpoint & other) const
 {

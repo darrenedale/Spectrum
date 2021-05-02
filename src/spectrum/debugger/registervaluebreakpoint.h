@@ -2,13 +2,13 @@
 // Created by darren on 29/03/2021.
 //
 
-#ifndef SPECTRUM_QTUI_REGISTERVALUEBREAKPOINT_H
-#define SPECTRUM_QTUI_REGISTERVALUEBREAKPOINT_H
+#ifndef SPECTRUM_DEBUGGER_REGISTERVALUEBREAKPOINT_H
+#define SPECTRUM_DEBUGGER_REGISTERVALUEBREAKPOINT_H
 
 #include "registerbreakpoint.h"
 #include "../../z80/types.h"
 
-namespace Spectrum::QtUi
+namespace Spectrum::Debugger
 {
     class RegisterValueBreakpoint
     : public RegisterBreakpoint
@@ -39,4 +39,4 @@ namespace Spectrum::QtUi
     };
 }
 
-#endif //SPECTRUM_QTUI_REGISTERVALUEBREAKPOINT_H
+#endif //SPECTRUM_DEBUGGER_REGISTERVALUEBREAKPOINT_H

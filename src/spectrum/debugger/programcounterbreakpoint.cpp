@@ -7,7 +7,7 @@
 
 #include "programcounterbreakpoint.h"
 
-using namespace Spectrum::QtUi;
+using namespace Spectrum::Debugger;
 
 bool ProgramCounterBreakpoint::check(const BaseSpectrum & spectrum)
 {

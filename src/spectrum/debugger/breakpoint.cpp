@@ -4,7 +4,7 @@
 
 #include "breakpoint.h"
 
-using namespace Spectrum::QtUi;
+using namespace Spectrum::Debugger;
 
 void Breakpoint::notifyObservers()
 {

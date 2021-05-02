@@ -4,7 +4,7 @@
 
 #include "memorychangedbreakpoint.h"
 
-//using namespace Spectrum::QtUi;
+//using namespace Spectrum::Debugger;
 //
 //bool WordChangedBreakpoint::check(const BaseSpectrum & spectrum)
 //{

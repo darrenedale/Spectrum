@@ -2,14 +2,14 @@
 // Created by darren on 29/03/2021.
 //
 
-#ifndef SPECTRUM_QTUI_MEMORYCHANGEDBREAKPOINT_H
-#define SPECTRUM_QTUI_MEMORYCHANGEDBREAKPOINT_H
+#ifndef SPECTRUM_DEBUGGER_MEMORYCHANGEDBREAKPOINT_H
+#define SPECTRUM_DEBUGGER_MEMORYCHANGEDBREAKPOINT_H
 
 #include <sstream>
 #include <iomanip>
 #include "memorybreakpoint.h"
 
-namespace Spectrum::QtUi
+namespace Spectrum::Debugger
 {
     /**
      * Breakpoint that monitors a specific memory location for a change in its value.
@@ -64,4 +64,4 @@ namespace Spectrum::QtUi
     };
 }
 
-#endif //SPECTRUM_QTUI_MEMORYCHANGEDBREAKPOINT_H
+#endif //SPECTRUM_DEBUGGER_MEMORYCHANGEDBREAKPOINT_H
