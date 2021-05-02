@@ -1,4 +1,3 @@
-#include "debugwindow.h"
 
 #include <iostream>
 #include <iomanip>
@@ -9,19 +8,23 @@
 #include <QLabel>
 #include <QToolBar>
 #include <QDockWidget>
+#include <QHeaderView>
 #include <QMenu>
 #include <QSettings>
-
-#include "../spectrum48k.h"
-#include "../../util/debug.h"
+#include "debugwindow.h"
 #include "thread.h"
 #include "application.h"
 #include "registerpairwidget.h"
-#include "programcounterbreakpoint.h"
-#include "stackpointerbelowbreakpoint.h"
-#include "memorychangedbreakpoint.h"
+#include "memorywatchesmodel.h"
+#include "../spectrum48k.h"
+#include "../../util/debug.h"
+#include "../debugger/programcounterbreakpoint.h"
+#include "../debugger/stackpointerbelowbreakpoint.h"
+#include "../debugger/memorychangedbreakpoint.h"
+#include "../debugger/integermemorywatch.h"
 
 using namespace Spectrum::QtUi;
+using namespace Spectrum::Debugger;
 
 using ::Z80::InterruptMode;
 using ::Z80::UnsignedWord;
@@ -56,6 +59,7 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
   m_navigateToSp(tr("Navigate to SP")),
   m_breakpointAtStackTop(tr("Set breakpoint at address on top of stack")),
   m_keyboardMonitor(&m_thread->spectrum()),
+  m_watches(),
   m_poke(),
   m_cpuObserver((*this)),
   m_breakpoints(),
@@ -72,6 +76,19 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
     m_pointers.addProgramCounterAction(&m_breakpointAtPc);
     m_pointers.addStackPointerAction(&m_navigateToSp);
     m_pointers.addStackPointerAction(&m_breakpointAtStackTop);
+
+    m_watches.setModel(new MemoryWatchesModel(&m_watches));
+
+    m_watches.setHeaderHidden(false);
+    m_watches.setItemsExpandable(false);
+    m_watches.setRootIsDecorated(false);
+    m_watches.setUniformRowHeights(true);
+    auto watch = std::make_unique<IntegerMemoryWatch<std::uint8_t>>(m_thread->spectrum().memory(), 23677);
+    watch->setLabel("X-COORD");
+    qobject_cast<MemoryWatchesModel *>(m_watches.model())->addWatch(std::move(watch));
+    watch = std::make_unique<IntegerMemoryWatch<std::uint8_t>>(m_thread->spectrum().memory(), 23678);
+    watch->setLabel("Y-COORD");
+    qobject_cast<MemoryWatchesModel *>(m_watches.model())->addWatch(std::move(watch));
 
     m_statusClearTimer.setSingleShot(true);
 
@@ -127,6 +144,11 @@ void DebugWindow::createDockWidgets()
     auto * dock = new QDockWidget(tr("Keyboard"), this);
     dock->setObjectName(QStringLiteral("keyboard-monitor-dock"));
     dock->setWidget(&m_keyboardMonitor);
+    addDockWidget(Qt::DockWidgetArea::BottomDockWidgetArea, dock);
+
+    dock = new QDockWidget(tr("Watches"), this);
+    dock->setObjectName(QStringLiteral("watches-dock"));
+    dock->setWidget(&m_watches);
     addDockWidget(Qt::DockWidgetArea::BottomDockWidgetArea, dock);
 
     dock = new QDockWidget(tr("Memory"), this);
@@ -310,6 +332,9 @@ void DebugWindow::updateStateDisplay()
 	m_disassembly.updateMnemonics(cpu->pc());
 	m_disassembly.setPc(cpu->pc());
 	m_disassembly.scrollToPc();
+
+	// trigger a refresh of the values of all watches
+    qobject_cast<MemoryWatchesModel *>(m_watches.model())->update();
 }
 
 void DebugWindow::pauseResumeTriggered()
@@ -340,6 +365,7 @@ void DebugWindow::threadPaused()
     m_shadowRegisters.setEnabled(true);
     m_poke.setEnabled(true);
     m_memoryWidget.setEnabled(true);
+    m_watches.setEnabled(true);
     m_keyboardMonitor.setEnabled(true);
     m_step.setEnabled(true);
     updateStateDisplay();
@@ -357,6 +383,7 @@ void DebugWindow::threadResumed()
     m_shadowRegisters.setEnabled(false);
     m_poke.setEnabled(false);
     m_memoryWidget.setEnabled(false);
+    m_watches.setEnabled(false);
     m_keyboardMonitor.setEnabled(false);
     m_step.setEnabled(false);
     disconnect(m_thread, &Thread::stepped, this, &DebugWindow::threadStepped);
@@ -373,6 +400,15 @@ void DebugWindow::threadSpectrumChanged()
     m_memoryWidget.setMemory(m_thread->spectrum().memory());
     m_disassembly.setMemory(m_thread->spectrum().memory());
     m_keyboardMonitor.setSpectrum(&spectrum);
+
+    // make sure all watchers are observing the new memory
+    auto * model = qobject_cast<MemoryWatchesModel *>(m_watches.model());
+    assert(model);
+
+    for (int idx = 0; idx < model->rowCount(); ++idx) {
+        // NOTE all addresses should remain valid because all Spectrum memory has 64k addressable
+        model->watch(idx)->setMemory(spectrum.memory());
+    }
 }
 
 void DebugWindow::setProgramCounterBreakpointTriggered(UnsignedWord addr)

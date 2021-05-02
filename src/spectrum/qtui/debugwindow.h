@@ -6,6 +6,8 @@
 #include <iomanip>
 #include <QMainWindow>
 #include <QAction>
+#include <QTreeView>
+#include <QTableView>
 #include "../../util/debug.h"
 #include "hexspinbox.h"
 #include "registerswidget.h"
@@ -18,13 +20,14 @@
 #include "memorydebugwidget.h"
 #include "keyboardmonitorwidget.h"
 #include "custompokewidget.h"
-#include "breakpoint.h"
-#include "memorychangedbreakpoint.h"
+#include "../debugger/breakpoint.h"
+#include "../debugger/memorychangedbreakpoint.h"
 
 class QLineEdit;
 
 namespace Spectrum::QtUi
 {
+    using Spectrum::Debugger::Breakpoint;
 	class Thread;
 
 	class DebugWindow
@@ -63,7 +66,7 @@ namespace Spectrum::QtUi
         template<class ValueType>
         void breakOnMemoryChange(::Z80::UnsignedWord address)
         {
-            auto * breakpoint = new MemoryChangedBreakpoint<ValueType>(address);
+            auto * breakpoint = new Spectrum::Debugger::MemoryChangedBreakpoint<ValueType>(address);
 
             if (!addBreakpoint(breakpoint)) {
                 Util::debug << "breakpoint monitoring 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << " for " << (sizeof(ValueType) * 8) << "-bit changes already set\n";
@@ -204,6 +207,7 @@ namespace Spectrum::QtUi
 
         KeyboardMonitorWidget m_keyboardMonitor;
         CustomPokeWidget m_poke;
+        QTreeView m_watches;
 
         InstructionObserver m_cpuObserver;
         Breakpoints m_breakpoints;

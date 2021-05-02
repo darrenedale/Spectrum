@@ -54,6 +54,16 @@ add_executable(
         io/snapshotwriterclass.h
         io/snapshotwriterfactory.h
         io/pokfilereader.cpp
+        debugger/breakpoint.cpp
+        debugger/programcounterbreakpoint.cpp
+        debugger/stackpointerbelowbreakpoint.cpp
+        debugger/memorybreakpoint.h
+        debugger/memorychangedbreakpoint.h
+        debugger/registerbreakpoint.h
+        debugger/registervaluebreakpoint.cpp
+        debugger/memorywatch.h
+        debugger/integermemorywatch.h
+        debugger/stringmemorywatch.h
         qtui/application.cpp
         qtui/mainwindow.cpp
         qtui/aboutwidget.cpp
@@ -61,13 +71,6 @@ add_executable(
         qtui/pokeswidget.cpp
         qtui/pokeswidgetitem.cpp
         qtui/thread.cpp
-        qtui/breakpoint.cpp
-        qtui/programcounterbreakpoint.cpp
-        qtui/stackpointerbelowbreakpoint.cpp
-        qtui/memorybreakpoint.h
-        qtui/memorychangedbreakpoint.h
-        qtui/registerbreakpoint.h
-        qtui/registervaluebreakpoint.cpp
         qtui/debugwindow.cpp
         qtui/registerswidget.cpp
         qtui/shadowregisterswidget.cpp
@@ -75,6 +78,7 @@ add_executable(
         qtui/programpointerswidget.cpp
         qtui/memoryview.cpp
         qtui/memorydebugwidget.cpp
+        qtui/memorywatchesmodel.cpp
         qtui/custompokewidget.cpp
         qtui/custompokewidget.h
         qtui/qimagedisplaydevice.cpp
@@ -109,6 +113,7 @@ add_executable(
         ../util/crc32.h
         ../util/endian.h
         ../util/debug.h
+        ../util/numeric.h
 )
 
 target_link_libraries(spectrum Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Gamepad Qt5::DBus)
