@@ -178,10 +178,10 @@ public:
     inline word_t readWord(Address address) const
     {
         static_assert(std::is_integral_v<word_t>, "type to read must be an int type");
-        static Byte buffer[sizeof(word_t)];
+        static std::array<Byte, sizeof(word_t)> buffer;
         assert(address <= addressableSize() - sizeof(word_t));
-        readBytes(address, sizeof(word_t), buffer);
-        return *reinterpret_cast<word_t *>(buffer);
+        readBytes(address, buffer.size(), buffer.data());
+        return *reinterpret_cast<word_t *>(buffer.data());
     }
 
     /**
