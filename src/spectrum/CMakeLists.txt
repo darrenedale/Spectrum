@@ -62,6 +62,7 @@ add_executable(
         debugger/registerbreakpoint.h
         debugger/registervaluebreakpoint.cpp
         debugger/memorywatch.h
+        debugger/integermemorywatchbase.h
         debugger/integermemorywatch.h
         debugger/stringmemorywatch.h
         qtui/application.cpp
@@ -79,6 +80,7 @@ add_executable(
         qtui/memoryview.cpp
         qtui/memorydebugwidget.cpp
         qtui/memorywatchesmodel.cpp
+        qtui/hexspinboxdelegate.cpp
         qtui/custompokewidget.cpp
         qtui/custompokewidget.h
         qtui/qimagedisplaydevice.cpp

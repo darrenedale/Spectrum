@@ -97,6 +97,14 @@ namespace Spectrum::QtUi
         }
 
         /**
+         * Add a watch for a fixed-length string at a specified memory address.
+         *
+         * @param address The address to watch.
+         * @param length The length of the string.
+         */
+        void watchStringMemoryAddress(::Z80::UnsignedWord address, std::optional<int> length = {});
+
+        /**
          * Check whether a breakpoint has been added to the debug window.
          *
          * The check is performed using the == operator for the breakpoint.
@@ -129,6 +137,7 @@ namespace Spectrum::QtUi
 	    void closeEvent(QCloseEvent *) override;
 
         void memoryContextMenuRequested(const QPoint &);
+        void watchesContextMenuRequested(const QPoint &);
 
     private:
 	    class InstructionObserver

@@ -9,7 +9,7 @@
 #include <sstream>
 #include <iomanip>
 #include <string>
-#include "memorywatch.h"
+#include "integermemorywatchbase.h"
 #include "../../util/endian.h"
 #include "../../util/numeric.h"
 
@@ -25,28 +25,13 @@ namespace Spectrum::Debugger
      */
     template<IntegerMemoryWatchType int_t>
     class IntegerMemoryWatch
-    : public MemoryWatch
+    : public IntegerMemoryWatchBase
     {
     public:
-        /**
-         * Enumeration of supported display bases.
-         */
-        enum class Base
-        {
-            Hex = 0,
-            Decimal = 1,
-            Octal = 2,
-        };
-
         /**
          * Convenience alias for the storage type of the watch.
          */
         using ValueType = int_t;
-
-        /**
-         * Convenience alias for the byte order of the watched value.
-         */
-        using ByteOrder = std::endian;
 
         /**
          * Initialise a new integer memory watcher.
@@ -55,10 +40,20 @@ namespace Spectrum::Debugger
          * @param address
          */
         IntegerMemoryWatch(BaseSpectrum::MemoryType * memory, ::Z80::UnsignedWord address)
-        : MemoryWatch(memory, address),
-          m_base(Base::Decimal),
-          m_byteOrder(::Z80::Z80ByteOrder)
+        : IntegerMemoryWatchBase(memory, address)
         {}
+
+        /**
+         * The number of bytes this watch is observing.
+         *
+         * This is the size of the integer type provided as a template argument.
+         *
+         * @return The size in bytes.
+         */
+        [[nodiscard]] constexpr WatchSize size() const override
+        {
+            return sizeof(int_t);
+        }
 
         /**
          * Fetch the name of the watch type.
@@ -81,46 +76,6 @@ namespace Spectrum::Debugger
         }
 
         /**
-         * Fetch the base in which numbers are displayed.
-         *
-         * @return The base.
-         */
-        [[nodiscard]] Base base() const
-        {
-            return m_base;
-        }
-
-        /**
-         * Set the base in which the numbers will be displayed.
-         *
-         * @param base
-         */
-        void setBase(Base base)
-        {
-            m_base = base;
-        }
-
-        /**
-         * Fetch the byte order to use when interpreting the watched memory as an int.
-         *
-         * @return The byte order.
-         */
-        [[nodiscard]] ByteOrder byteOrder() const
-        {
-            return m_byteOrder;
-        }
-
-        /**
-         * Set the byte order to use when interpreting the watched memory as an int.
-         *
-         * @param order The byte order.
-         */
-        void setByteOrder(ByteOrder order)
-        {
-            m_byteOrder = order;
-        }
-
-        /**
          * Fetch the current display value for the watched memory.
          *
          * @return
@@ -133,9 +88,12 @@ namespace Spectrum::Debugger
                 auto value = memory()->template readWord<int_t>(address());
 
                 if constexpr (1 != sizeof(int_t)) {
-                    // TODO check this logic
-                    if ((byteOrder() == std::endian::native) != (byteOrder() == ::Z80::Z80ByteOrder)) {
-                        Util::swapByteOrder(value);
+                    if constexpr (::Z80::HostByteOrder != ::Z80::Z80ByteOrder) {
+                        if (byteOrder() != std::endian::big) {
+                            value = Util::swapByteOrder(value);
+                        }
+                    } else if (byteOrder() == std::endian::big) {
+                        value = Util::swapByteOrder(value);
                     }
                 }
 
@@ -143,7 +101,7 @@ namespace Spectrum::Debugger
 
                 switch (base()) {
                     case Base::Hex:
-                        out << std::hex << std::showbase << std::setfill('0') << std::setw(sizeof(int_t) / 4) << Util::asNumeric(value);
+                        out << std::hex << std::showbase << std::setfill('0') << std::setw(sizeof(int_t) * 2) << Util::asNumeric(value);
                         break;
 
                     case Base::Decimal:
@@ -195,17 +153,6 @@ namespace Spectrum::Debugger
 
             return out.str();
         }
-
-    private:
-        /**
-         * The base in which to display the value.
-         */
-        Base m_base;
-
-        /**
-         * The byte order to use when interpreting the watched memory as an int.
-         */
-        ByteOrder m_byteOrder;
     };
 }
 

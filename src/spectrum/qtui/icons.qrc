@@ -11,6 +11,7 @@
     <file alias="save">../icons/save-dark.svg</file>
     <file alias="quit">../icons/quit-dark.svg</file>
     <file alias="screenshot">../icons/screenshot-dark.svg</file>
+    <file alias="copy">../icons/copy-dark.svg</file>
     <file alias="clear">../icons/clear-dark.svg</file>
     <file alias="remove">../icons/remove-dark.svg</file>
     <file alias="breakpoint">../icons/breakpoint-dark.svg</file>
@@ -27,6 +28,7 @@
     <file alias="save">../icons/save-light.svg</file>
     <file alias="quit">../icons/quit-light.svg</file>
     <file alias="screenshot">../icons/screenshot-light.svg</file>
+    <file alias="copy">../icons/copy-light.svg</file>
     <file alias="clear">../icons/clear-light.svg</file>
     <file alias="remove">../icons/remove-light.svg</file>
     <file alias="breakpoint">../icons/breakpoint-light.svg</file>

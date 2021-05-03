@@ -3,6 +3,8 @@
 //
 
 #include "memorywatchesmodel.h"
+#include "../debugger/stringmemorywatch.h"
+#include "../../util/debug.h"
 
 using namespace Spectrum::QtUi;
 
@@ -23,8 +25,17 @@ Qt::ItemFlags MemoryWatchesModel::flags(const QModelIndex & idx) const
 {
     Qt::ItemFlags flags = Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemNeverHasChildren;
 
-    if (LabelColumn == idx.column()) {
-        flags |= Qt::ItemFlag::ItemIsEditable;
+    switch (idx.column()) {
+        case AddressColumn:
+        case LabelColumn:
+            flags |= Qt::ItemFlag::ItemIsEditable;
+            break;
+
+        case TypeColumn:
+            if(dynamic_cast<Debugger::StringMemoryWatch *>(watch(idx))) {
+                flags |= Qt::ItemFlag::ItemIsEditable;
+            }
+            break;
     }
 
     return flags;
@@ -56,21 +67,81 @@ QVariant MemoryWatchesModel::data(const QModelIndex & idx, int role) const
             break;
 
         case Qt::ItemDataRole::EditRole:
-            // only the label is currently editable
-            if (LabelColumn == idx.column()) {
-                return QString::fromStdString(watch(idx)->label());
+            switch (idx.column()) {
+                case AddressColumn:
+                    return watch(idx)->address();
+
+                case LabelColumn:
+                    return QString::fromStdString(watch(idx)->label());
+
+                case TypeColumn:
+                    // for string watches, enable editing of the string size in the type column
+                    if (auto * strWatch = dynamic_cast<Debugger::StringMemoryWatch *>(watch(idx)); nullptr != strWatch) {
+                        return strWatch->size();
+                    }
+                    break;
             }
+            break;
 
         default:
-            return {};
+            // just to suppress warnings re: uncovered code paths
+            break;
     }
+
+    return {};
 }
+
 bool MemoryWatchesModel::setData(const QModelIndex & idx, const QVariant & data, int role)
 {
-    if (role == Qt::ItemDataRole::EditRole && LabelColumn == idx.column()) {
-        assert(watch(idx));
-        watch(idx)->setLabel(data.toString().toStdString());
-        return true;
+    if (role == Qt::ItemDataRole::EditRole) {
+        // TODO hex spin for address column
+        switch (idx.column()) {
+            case AddressColumn: {
+                assert(watch(idx));
+
+                bool ok;
+                auto address = data.toUInt(&ok);
+
+                if (!ok) {
+                    Util::debug << "invalid data type - must have unsigned integer for the address\n";
+                    return false;
+                }
+
+                if (address + watch(idx)->size() > watch(idx)->memory()->addressableSize()) {
+                    Util::debug << "invalid address - watch would overflow addressable memory\n";
+                    return false;
+                }
+
+                watch(idx)->setAddress(address);
+                return true;
+            }
+
+            case LabelColumn:
+                assert(watch(idx));
+                watch(idx)->setLabel(data.toString().toStdString());
+                return true;
+
+            case TypeColumn: {
+                auto * strWatch = dynamic_cast<Debugger::StringMemoryWatch *>(watch(idx));
+                assert(strWatch);
+
+                bool ok;
+                auto size = data.toInt(&ok);
+
+                if (!ok) {
+                    Util::debug << "incorrect data type\n";
+                    return false;
+                }
+
+                if (1 > size || strWatch->memory()->addressableSize() < strWatch->address() + size) {
+                    Util::debug << "invalid size\n";
+                    return false;
+                }
+
+                strWatch->setSize(size);
+                return true;
+            }
+        }
     }
 
     return false;

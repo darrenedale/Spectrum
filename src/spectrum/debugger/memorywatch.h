@@ -13,6 +13,8 @@ namespace Spectrum::Debugger
     class MemoryWatch
     {
     public:
+        using WatchSize = std::uint32_t;
+
         /**
          * Initialise a new watch for a given address in a given memory object.
          *
@@ -75,6 +77,13 @@ namespace Spectrum::Debugger
             assert(address < memory()->addressableSize());
             m_address = address;
         }
+
+        /**
+         * The size in bytes of the block of memory that the watch is observing.
+         *
+         * @return The number of bytes, starting at address().
+         */
+        virtual WatchSize size() const = 0;
 
         /**
          * The label for the watch.

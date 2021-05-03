@@ -10,18 +10,21 @@
 #include <QDockWidget>
 #include <QHeaderView>
 #include <QMenu>
+#include <QClipboard>
 #include <QSettings>
 #include "debugwindow.h"
 #include "thread.h"
 #include "application.h"
 #include "registerpairwidget.h"
 #include "memorywatchesmodel.h"
+#include "hexspinboxdelegate.h"
 #include "../spectrum48k.h"
 #include "../../util/debug.h"
 #include "../debugger/programcounterbreakpoint.h"
 #include "../debugger/stackpointerbelowbreakpoint.h"
 #include "../debugger/memorychangedbreakpoint.h"
 #include "../debugger/integermemorywatch.h"
+#include "../debugger/stringmemorywatch.h"
 
 using namespace Spectrum::QtUi;
 using namespace Spectrum::Debugger;
@@ -78,11 +81,16 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
     m_pointers.addStackPointerAction(&m_navigateToSp);
     m_pointers.addStackPointerAction(&m_breakpointAtStackTop);
 
+    m_watches.setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
     m_watches.setModel(&m_watchesModel);
+    m_watches.setItemDelegateForColumn(0, new HexSpinBoxDelegate(&m_watches));
     m_watches.setHeaderHidden(false);
     m_watches.setItemsExpandable(false);
     m_watches.setRootIsDecorated(false);
     m_watches.setUniformRowHeights(true);
+    auto font = m_watches.font();
+    font.setPointSizeF(font.pointSizeF() * 0.85);
+    m_watches.setFont(font);
 
     m_statusClearTimer.setSingleShot(true);
 
@@ -238,6 +246,8 @@ void DebugWindow::connectWidgets()
 
     connect(&m_memoryWidget, &QWidget::customContextMenuRequested, this, &DebugWindow::memoryContextMenuRequested);
     connect(&m_memoryWidget, &MemoryDebugWidget::programCounterBreakpointRequested, this, &DebugWindow::setProgramCounterBreakpointTriggered);
+
+    connect(&m_watches, &QWidget::customContextMenuRequested, this, &DebugWindow::watchesContextMenuRequested);
 
     connect(&m_poke, &CustomPokeWidget::pokeClicked, [this](::Z80::UnsignedWord address, ::Z80::UnsignedByte value) -> void {
         m_thread->spectrum().memory()->writeByte(address, value);
@@ -423,7 +433,6 @@ void DebugWindow::breakAtProgramCounter(UnsignedWord address)
     }
 
     breakpoint->addObserver(&m_pcObserver);
-    Util::debug << "setting breakpoint at 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << "\n";
     showStatusMessage(tr("Breakpoint set at PC = 0x%1.").arg(address, 4, 16, QLatin1Char('0')), DefaultTransientMessageTimeout);
 }
 
@@ -526,7 +535,138 @@ void DebugWindow::memoryContextMenuRequested(const QPoint & pos)
 
     action->setToolTip(tr("Watch the 16-bit value in memory at 0x%1.").arg(*address, 4, 16, QLatin1Char('0')));
 
+    action = menu.addAction(tr("Watch (string)"), [this, address = *address]() {
+        watchStringMemoryAddress(address, 10);
+    });
+
+    action->setToolTip(tr("Watch the string value in memory at 0x%1.").arg(*address, 4, 16, QLatin1Char('0')));
+
     menu.exec(m_memoryWidget.mapToGlobal(pos));
+}
+
+void DebugWindow::watchesContextMenuRequested(const QPoint & pos)
+{
+    QMenu menu(this);
+    menu.setToolTipsVisible(true);
+    QAction * action;
+
+    if (auto idx = m_watches.indexAt(pos); idx.isValid()) {
+        auto * watch = m_watchesModel.watch(m_watches.indexAt(pos));
+        const auto title = watch->label().empty()
+                          ? QStringLiteral("%1 @ 0x%2").arg(QString::fromStdString(watch->typeName())).arg(watch->address(), 4, 16, QLatin1Char('0'))
+                          : QString::fromStdString(watch->label());
+        menu.addSection(title);
+
+        if (auto * strWatch = dynamic_cast<StringMemoryWatch *>(watch); strWatch) {
+            auto * subMenu = menu.addMenu(tr("Character set"));
+            subMenu->setToolTip(tr("Change the character set in which to display the string."));
+            subMenu->addAction(tr("Spectrum"), [this, strWatch, &idx]() {
+                strWatch->setCharacterSet(StringMemoryWatch::CharacterSet::Spectrum);
+                m_watchesModel.dataChanged(idx, idx);
+            });
+            subMenu->addAction(tr("ASCII"), [this, strWatch, &idx]() {
+                strWatch->setCharacterSet(StringMemoryWatch::CharacterSet::Ascii);
+                m_watchesModel.dataChanged(idx, idx);
+            });
+        } else if (auto * intWatch = dynamic_cast<IntegerMemoryWatchBase *>(watch); intWatch) {
+            if (1 < intWatch->size()) {
+                // add options to swap byte order
+                auto * subMenu = menu.addMenu(tr("Byte order"));
+                auto * group = new QActionGroup(subMenu);
+                action = subMenu->addAction(tr("Little-endian (Z80)"), [this, intWatch, &idx]() {
+                    intWatch->setByteOrder(IntegerMemoryWatchBase::ByteOrder::little);
+                    m_watchesModel.dataChanged(idx, idx);
+                });
+                action->setCheckable(true);
+                action->setChecked(IntegerMemoryWatchBase::ByteOrder::little == intWatch->byteOrder());
+                group->addAction(action);
+
+                action = subMenu->addAction(tr("Big-endian"), [this, intWatch, &idx]() {
+                    intWatch->setByteOrder(IntegerMemoryWatchBase::ByteOrder::big);
+                    m_watchesModel.dataChanged(idx, idx);
+                });
+                action->setCheckable(true);
+                action->setChecked(IntegerMemoryWatchBase::ByteOrder::big == intWatch->byteOrder());
+                group->addAction(action);
+            }
+
+            auto * subMenu = menu.addMenu(tr("Numeric base"));
+            auto * group = new QActionGroup(subMenu);
+            subMenu->setToolTip(tr("Change the numeric base used to display the watched value."));
+
+            action = subMenu->addAction(tr("Decimal"), [this, intWatch, &idx]() {
+                intWatch->setBase(IntegerMemoryWatchBase::Base::Decimal);
+                m_watchesModel.dataChanged(idx, idx);
+            });
+            action->setCheckable(true);
+            action->setChecked(IntegerMemoryWatchBase::Base::Decimal == intWatch->base());
+            group->addAction(action);
+
+            action = subMenu->addAction(tr("Hexadecimal"), [this, intWatch, &idx]() {
+                intWatch->setBase(IntegerMemoryWatchBase::Base::Hex);
+                m_watchesModel.dataChanged(idx, idx);
+            });
+            action->setCheckable(true);
+            action->setChecked(IntegerMemoryWatchBase::Base::Hex == intWatch->base());
+            group->addAction(action);
+
+            action = subMenu->addAction(tr("Octal"), [this, intWatch, &idx]() {
+                intWatch->setBase(IntegerMemoryWatchBase::Base::Octal);
+                m_watchesModel.dataChanged(idx, idx);
+            });
+            action->setCheckable(true);
+            action->setChecked(IntegerMemoryWatchBase::Base::Octal == intWatch->base());
+            group->addAction(action);
+        }
+
+        action = menu.addAction(
+                QIcon::fromTheme(QStringLiteral("list-clear"), Application::icon(QStringLiteral("remove"))),
+                tr("Remove watch"),
+                [this, watch]() {
+                    m_watchesModel.removeWatch(watch);
+                }
+            );
+        action->setToolTip(tr("Remove the watch %1.").arg(title));
+
+        action = menu.addAction(
+                tr("Locate in memory view"),
+                [this, address = watch->address()]() {
+                    m_memoryWidget.scrollToAddress(address);
+                }
+            );
+        action->setToolTip(tr("Locate the address 0x%1 in the memory view.").arg(watch->address(), 4, 16, QLatin1Char('0')));
+
+        action = menu.addAction(
+                QIcon::fromTheme(QStringLiteral("edit-copy"), Application::icon(QStringLiteral("copy"))),
+                tr("Copy value"),
+                [value = std::move(watch->displayValue())]() {
+                    Application::clipboard()->setText(QString::fromStdString(value));
+                }
+            );
+        action->setToolTip(tr("Copy the current value of the watch to the clipboard."));
+
+        action = menu.addAction(
+                QIcon::fromTheme(QStringLiteral("edit-copy"), Application::icon(QStringLiteral("copy"))),
+                tr("Copy address"),
+                [address = watch->address()]() {
+                    Application::clipboard()->setText(QStringLiteral("%1").arg(address, 4, 16, QLatin1Char('0')));
+                }
+            );
+        action->setToolTip(tr("Copy the (hex) address of the watch to the clipboard."));
+    }
+
+    menu.addSeparator();
+    action = menu.addAction(QIcon::fromTheme(QStringLiteral("edit-clear-list"), Application::icon(QStringLiteral("clear"))), tr("Clear all watches"), [this]() {
+        m_watchesModel.clear();
+    });
+
+    action->setToolTip(tr("Remove all watches from the list."));
+
+    if (0 == m_watchesModel.rowCount()) {
+        action->setEnabled(false);
+    }
+
+    menu.exec(m_watches.mapToGlobal(pos));
 }
 
 void DebugWindow::locateProgramCounterInMemory()
@@ -551,7 +691,6 @@ void DebugWindow::locateStackPointerInDisassembly()
 
 void DebugWindow::programCounterBreakpointTriggered(UnsignedWord address)
 {
-    Util::debug << "PC breakpoint hit, navigating to memory location\n";
     showStatusMessage(tr("Breakpoint hit: PC = 0x%1.").arg(address, 4, 16, QLatin1Char('0')));
     show();
     activateWindow();
@@ -563,7 +702,6 @@ void DebugWindow::programCounterBreakpointTriggered(UnsignedWord address)
 
 void DebugWindow::memoryChangeBreakpointTriggered(UnsignedWord address)
 {
-    Util::debug << "Memory monitor breakpoint hit, navigating to memory location\n";
     showStatusMessage(tr("Monitored memory location modified: 0x%1.").arg(address, 4, 16, QLatin1Char('0')));
     show();
     activateWindow();
@@ -573,13 +711,22 @@ void DebugWindow::memoryChangeBreakpointTriggered(UnsignedWord address)
 
 void DebugWindow::stackPointerBelowBreakpointTriggered(::Z80::UnsignedWord address)
 {
-    Util::debug << "Stack pointer breakpoint hit, navigating to memory location\n";
     showStatusMessage(tr("Stack pointer is below 0x%1.").arg(address, 4, 16, QLatin1Char('0')));
     show();
     activateWindow();
     raise();
     m_memoryWidget.scrollToAddress(address);
     m_disassembly.scrollToPc();
+}
+
+void DebugWindow::watchStringMemoryAddress(::Z80::UnsignedWord address, std::optional<int> length)
+{
+    if (!length) {
+        // TODO get length from user
+    }
+
+    assert(0 < *length && address + *length < m_thread->spectrum().memory()->addressableSize());
+    m_watchesModel.addWatch(std::make_unique<Debugger::StringMemoryWatch>(m_thread->spectrum().memory(), address, static_cast<std::uint32_t>(*length)));
 }
 
 void DebugWindow::InstructionObserver::notify(::Spectrum::Z80 * cpu)

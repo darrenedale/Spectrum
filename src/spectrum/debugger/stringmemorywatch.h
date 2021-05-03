@@ -5,7 +5,9 @@
 #ifndef SPECTRUM_STRINGMEMORYWATCH_H
 #define SPECTRUM_STRINGMEMORYWATCH_H
 
+#include <string>
 #include <sstream>
+#include <cctype>
 #include "memorywatch.h"
 #include "../../z80/types.h"
 
@@ -17,18 +19,24 @@ namespace Spectrum::Debugger
      * Currently, the value is always represented as a string of characters in the Spectrum character set.
      *
      * @tparam Size The number of bytes to watch.
-     *
-     * TODO support switching between ASCII/Spectrum charset?
      */
     class StringMemoryWatch
     : public MemoryWatch
     {
     public:
-        using StringSize = std::uint32_t;
+        /**
+         * Enumeration of supported display charsets.
+         */
+        enum class CharacterSet
+        {
+            Spectrum = 0,
+            Ascii,
+        };
 
-        StringMemoryWatch(BaseSpectrum::MemoryType * memory, ::Z80::UnsignedWord address, StringSize size)
+        StringMemoryWatch(BaseSpectrum::MemoryType * memory, ::Z80::UnsignedWord address, WatchSize size)
         : MemoryWatch(memory, address),
           m_size(static_cast<std::uint32_t>(size)),
+          m_charset(CharacterSet::Spectrum),
           m_typeName()
         {}
 
@@ -57,7 +65,7 @@ namespace Spectrum::Debugger
          *
          * @return The size.
          */
-        [[nodiscard]] StringSize size() const
+        [[nodiscard]] WatchSize size() const override
         {
             return m_size;
         }
@@ -67,12 +75,32 @@ namespace Spectrum::Debugger
          *
          * @param size The string size.
          */
-        void setSize(StringSize size)
+        void setSize(WatchSize size)
         {
             if (m_size != size) {
                 m_size = size;
                 m_typeName.clear();
             }
+        }
+
+        /**
+         * Fetch the character set for display.
+         *
+         * @return The current display character set.
+         */
+        [[nodiscard]] CharacterSet characterSet() const
+        {
+            return m_charset;
+        }
+
+        /**
+         * Set the current display character set.
+         *
+         * @param charset The character set to use.
+         */
+        void setCharacterSet(CharacterSet charset)
+        {
+            m_charset = charset;
         }
 
         /**
@@ -82,12 +110,26 @@ namespace Spectrum::Debugger
          */
         [[nodiscard]] std::string displayValue() const override
         {
-            std::array<::Z80::UnsignedByte, size()> str;
-            memory()->readBytes(address(), str.size(), std.data());
+            std::vector<::Z80::UnsignedByte> str(size());
+            memory()->readBytes(address(), str.size(), str.data());
             std::ostringstream out;
 
-            for (const auto & byte : str) {
-                appendSpectrumChar(out, byte);
+            switch (characterSet()) {
+                case CharacterSet::Spectrum:
+                    for (const auto & byte : str) {
+                        appendSpectrumChar(out, byte);
+                    }
+                    break;
+
+                case CharacterSet::Ascii:
+                    for (const auto & byte : str) {
+                        if (std::isprint(byte)) {
+                            out << byte;
+                        } else {
+                            out << "�"; // U+FFFD Replacement Character (0xef 0xbf 0xbd in UTF-8)
+                        }
+                    }
+                    break;
             }
 
             return out.str();
@@ -100,8 +142,10 @@ namespace Spectrum::Debugger
          * @param out The output stream to write to.
          * @param ch The character index.
          */
-        static void appendSpectrumChar(std::ostream & out, ::z80::UnsignedByte ch)
+        static void appendSpectrumChar(std::ostream & out, ::Z80::UnsignedByte ch)
         {
+            using namespace std::string_literals;
+
             // keyword "characters" from 165 - 255
             static std::array<std::string, 91> keywords = {
                 "[RND]"s, "[INKEY$]"s, "[PI]"s, "[FN]"s, "[POINT]"s,
@@ -119,7 +163,7 @@ namespace Spectrum::Debugger
             // TODO 128 to 143 block graphics chars
             if (96 == ch) {
                 // UK pounds sterling symbol
-                out << '£';
+                out << "£";
             } else if (127 == ch) {
                 // copyright symbol
                 out << "©"; // U+00A9 Copyright Sign (0xc2 0xa9 in UTF-8)
@@ -143,14 +187,19 @@ namespace Spectrum::Debugger
         /**
          * The size in bytes of the string being watched.
          */
-        StringSize m_size;
+        WatchSize m_size;
+
+        /**
+         * The character set to use for display.
+         */
+        CharacterSet m_charset;
 
         /**
          * Cache for the type name.
          *
          * Emptied when the size is set; set when the type name is requested and it's not currently set.
          */
-        std::string m_typeName;
+        mutable std::string m_typeName;
     };
 }
 
