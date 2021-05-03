@@ -138,7 +138,7 @@ const Snapshot * ZxSnapshotReader::read() const
 #pragma ide diagnostic ignored "UnreachableCode"
     // NOTE one of these two branches will be diagnosed as unnecessary, depending on the byte order of the host, but the
     // code is required for cross-platform compatibility
-    if (std::endian::native == std::endian::big) {
+    if constexpr (std::endian::native == std::endian::big) {
         registers.bc = content.bc;
         registers.de = content.de;
         registers.hl = content.hl;
@@ -223,7 +223,7 @@ bool ZxSnapshotReader::couldBeSnapshot(std::istream & in)
         return false;
     }
 
-    if (std::endian::native != std::endian::big) {
+    if constexpr (std::endian::native != std::endian::big) {
         wordValue = swapByteOrder(wordValue);
     }
 

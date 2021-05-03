@@ -194,7 +194,7 @@ bool ZxSnapshotWriter::writeTo(std::ostream & out) const
             break;
     }
 
-    if (std::endian::native != std::endian::big) {
+    if constexpr (std::endian::native != std::endian::big) {
         header.bc = swapByteOrder(header.bc);
         header.de = swapByteOrder(header.de);
         header.hl = swapByteOrder(header.hl);
