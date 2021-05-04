@@ -80,6 +80,8 @@ add_executable(
         qtui/memoryview.cpp
         qtui/memorydebugwidget.cpp
         qtui/memorywatchesmodel.cpp
+        qtui/watchescontextmenu.cpp
+        qtui/memorycontextmenu.cpp
         qtui/hexspinboxdelegate.cpp
         qtui/custompokewidget.cpp
         qtui/custompokewidget.h

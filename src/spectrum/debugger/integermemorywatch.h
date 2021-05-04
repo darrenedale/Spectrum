@@ -101,7 +101,7 @@ namespace Spectrum::Debugger
 
                 switch (base()) {
                     case Base::Hex:
-                        out << std::hex << std::showbase << std::setfill('0') << std::setw(sizeof(int_t) * 2) << Util::asNumeric(value);
+                        out << "0x" << std::hex << std::setfill('0') << std::setw(sizeof(int_t) * 2) << Util::asNumeric(value);
                         break;
 
                     case Base::Decimal:

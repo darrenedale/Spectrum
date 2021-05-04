@@ -21,6 +21,7 @@
 #include "keyboardmonitorwidget.h"
 #include "custompokewidget.h"
 #include "memorywatchesmodel.h"
+#include "memorycontextmenu.h"
 #include "../debugger/breakpoint.h"
 #include "../debugger/memorychangedbreakpoint.h"
 #include "../debugger/integermemorywatch.h"
@@ -233,6 +234,7 @@ namespace Spectrum::QtUi
         CustomPokeWidget m_poke;
         MemoryWatchesModel m_watchesModel;
         QTreeView m_watches;
+        MemoryContextMenu m_memoryMenu;
 
         InstructionObserver m_cpuObserver;
         Breakpoints m_breakpoints;
