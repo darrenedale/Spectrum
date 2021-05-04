@@ -2,8 +2,8 @@
 // Created by darren on 10/03/2021.
 //
 
-#ifndef SPECTRUM_KEYBOARDMONITORWIDGET_H
-#define SPECTRUM_KEYBOARDMONITORWIDGET_H
+#ifndef SPECTRUM_QTUI_DEBUGGER_KEYBOARDMONITORWIDGET_H
+#define SPECTRUM_QTUI_DEBUGGER_KEYBOARDMONITORWIDGET_H
 
 #include <QWidget>
 #include <QToolButton>
@@ -14,7 +14,7 @@ namespace Spectrum
     class BaseSpectrum;
 }
 
-namespace Spectrum::QtUi
+namespace Spectrum::QtUi::Debugger
 {
     class KeyboardMonitorWidget
     : public QWidget
@@ -90,4 +90,4 @@ namespace Spectrum::QtUi
     };
 }
 
-#endif //SPECTRUM_KEYBOARDMONITORWIDGET_H
+#endif //SPECTRUM_QTUI_DEBUGGER_KEYBOARDMONITORWIDGET_H

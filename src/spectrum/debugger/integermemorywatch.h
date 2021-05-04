@@ -111,6 +111,17 @@ namespace Spectrum::Debugger
                     case Base::Octal:
                         out << std::oct << std::showbase << Util::asNumeric(value);
                         break;
+
+                    case Base::Binary: {
+                        out << "0b";
+                        decltype(value) mask = 1 << ((sizeof(int_t) * 8) - 1);
+
+                        while (mask) {
+                            out << (value & mask ? '1' : '0');
+                            mask >>= 1;
+                        }
+                        break;
+                    }
                 }
 
                 return out.str();
@@ -149,6 +160,9 @@ namespace Spectrum::Debugger
 
                 case Base::Octal:
                     return "<bigint octal display not available>";
+
+                case Base::Binary:
+                    return "<bigint binary display not available>";
             }
 
             return out.str();

@@ -13,27 +13,29 @@
 #include <QClipboard>
 #include <QSettings>
 #include "debugwindow.h"
-#include "thread.h"
-#include "application.h"
-#include "registerpairwidget.h"
+#include "../thread.h"
+#include "../application.h"
+#include "../registerpairwidget.h"
 #include "memorywatchesmodel.h"
-#include "hexspinboxdelegate.h"
+#include "../hexspinboxdelegate.h"
 #include "watchescontextmenu.h"
-#include "../spectrum48k.h"
-#include "../../util/debug.h"
-#include "../debugger/programcounterbreakpoint.h"
-#include "../debugger/stackpointerbelowbreakpoint.h"
-#include "../debugger/memorychangedbreakpoint.h"
-#include "../debugger/integermemorywatch.h"
-#include "../debugger/stringmemorywatch.h"
+#include "../../spectrum48k.h"
+#include "../../../util/debug.h"
+#include "../../debugger/programcounterbreakpoint.h"
+#include "../../debugger/stackpointerbelowbreakpoint.h"
+#include "../../debugger/memorychangedbreakpoint.h"
+#include "../../debugger/integermemorywatch.h"
+#include "../../debugger/stringmemorywatch.h"
 
-using namespace Spectrum::QtUi;
-using namespace Spectrum::Debugger;
-
+using namespace Spectrum::QtUi::Debugger;
 using ::Z80::InterruptMode;
 using ::Z80::UnsignedWord;
 using ::Z80::UnsignedByte;
 using ::Z80::Register16;
+using Spectrum::Debugger::ProgramCounterBreakpoint;
+using Spectrum::Debugger::StackPointerBelowBreakpoint;
+using Spectrum::Debugger::MemoryBreakpoint;
+using Spectrum::Debugger::StringMemoryWatch;
 
 namespace
 {
@@ -86,7 +88,6 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
     m_watches.setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
     m_watches.setModel(&m_watchesModel);
     m_watches.setItemDelegateForColumn(0, new HexSpinBoxDelegate(&m_watches));
-    m_watches.setHeaderHidden(false);
     m_watches.setItemsExpandable(false);
     m_watches.setRootIsDecorated(false);
     m_watches.setUniformRowHeights(true);
@@ -247,11 +248,11 @@ void DebugWindow::connectWidgets()
     });
 
     connect(&m_memoryWidget, &QWidget::customContextMenuRequested, this, &DebugWindow::memoryContextMenuRequested);
-    connect(&m_memoryWidget, &MemoryDebugWidget::programCounterBreakpointRequested, this, &DebugWindow::setProgramCounterBreakpointTriggered);
+    connect(&m_memoryWidget, &MemoryWidget::programCounterBreakpointRequested, this, &DebugWindow::setProgramCounterBreakpointTriggered);
 
     connect(&m_watches, &QWidget::customContextMenuRequested, this, &DebugWindow::watchesContextMenuRequested);
 
-    connect(&m_poke, &CustomPokeWidget::pokeClicked, [this](::Z80::UnsignedWord address, ::Z80::UnsignedByte value) -> void {
+    connect(&m_poke, &PokeWidget::pokeClicked, [this](::Z80::UnsignedWord address, ::Z80::UnsignedByte value) -> void {
         m_thread->spectrum().memory()->writeByte(address, value);
         updateStateDisplay();
     });
@@ -304,8 +305,7 @@ void DebugWindow::connectWidgets()
     connect(&m_memoryMenu, &MemoryContextMenu::watchWord, this, &DebugWindow::watchIntegerMemoryAddress<::Z80::UnsignedWord>);
     connect(&m_memoryMenu, &MemoryContextMenu::watchByte, this, &DebugWindow::watchIntegerMemoryAddress<::Z80::UnsignedByte>);
     connect(&m_memoryMenu, &MemoryContextMenu::watchString, [this](::Z80::UnsignedWord address) {
-        Util::debug << "Received singal 'watchString' with address " << address << '\n';
-        watchStringMemoryAddress(address, 10);
+        watchStringMemoryAddress(address);
     });
 }
 
@@ -518,7 +518,7 @@ void DebugWindow::memoryContextMenuRequested(const QPoint & pos)
 void DebugWindow::watchesContextMenuRequested(const QPoint & pos)
 {
     WatchesContextMenu menu(&m_watchesModel, m_watches.indexAt(pos));
-    connect (&menu, &WatchesContextMenu::locateInMemoryView, &m_memoryWidget, &MemoryDebugWidget::scrollToAddress);
+    connect (&menu, &WatchesContextMenu::locateInMemoryView, &m_memoryWidget, &MemoryWidget::scrollToAddress);
     menu.exec(m_watches.mapToGlobal(pos));
 }
 
@@ -576,10 +576,11 @@ void DebugWindow::watchStringMemoryAddress(::Z80::UnsignedWord address, std::opt
 {
     if (!length) {
         // TODO get length from user
+        length = std::min(10, static_cast<int>(m_thread->spectrum().memory()->addressableSize() - address));
     }
 
     assert(0 < *length && address + *length < m_thread->spectrum().memory()->addressableSize());
-    m_watchesModel.addWatch(std::make_unique<Debugger::StringMemoryWatch>(m_thread->spectrum().memory(), address, static_cast<std::uint32_t>(*length)));
+    m_watchesModel.addWatch(std::make_unique<StringMemoryWatch>(m_thread->spectrum().memory(), address, static_cast<std::uint32_t>(*length)));
 }
 
 void DebugWindow::InstructionObserver::notify(::Spectrum::Z80 * cpu)

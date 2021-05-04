@@ -23,8 +23,9 @@ namespace Spectrum::Debugger
         enum class Base
         {
             Hex = 0,
-            Decimal = 1,
-            Octal = 2,
+            Decimal,
+            Octal,
+            Binary,
         };
 
         /**

@@ -2,16 +2,16 @@
 // Created by darren on 03/05/2021.
 //
 
-#ifndef SPECTRUM_QTUI_WATCHESCONTEXTMENU_H
-#define SPECTRUM_QTUI_WATCHESCONTEXTMENU_H
+#ifndef SPECTRUM_QTUI_DEBUGGER_WATCHESCONTEXTMENU_H
+#define SPECTRUM_QTUI_DEBUGGER_WATCHESCONTEXTMENU_H
 
 #include <QMenu>
 #include "memorywatchesmodel.h"
-#include "../debugger/stringmemorywatch.h"
-#include "../debugger/integermemorywatchbase.h"
-#include "../../z80/types.h"
+#include "../../debugger/stringmemorywatch.h"
+#include "../../debugger/integermemorywatchbase.h"
+#include "../../../z80/types.h"
 
-namespace Spectrum::QtUi
+namespace Spectrum::QtUi::Debugger
 {
     /**
      * Context menu for the watches view in the debug window.
@@ -31,7 +31,7 @@ namespace Spectrum::QtUi
          * if the model is destroyed.
          *
          * @param model The model containing the watches in the view.
-         * @param idx The model index of the item under the cursor when the context menu was requested (i.e. the target of the menu).
+         * @param idx The model index of the item under the cursor when the context menu was requested (i.e. the subject of the menu).
          * @param parent The parent widget for the menu.
          */
         WatchesContextMenu(MemoryWatchesModel * model, const QModelIndex & idx, QWidget * parent = nullptr);
@@ -103,21 +103,21 @@ namespace Spectrum::QtUi
          *
          * This is used when the context menu is initiated for a specific item in the view.
          */
-        void addItemsForWatch(Debugger::MemoryWatch &);
+        void addItemsForWatch(Spectrum::Debugger::MemoryWatch &);
 
         /**
          * Helper to add the menu items for a String watch.
          *
          * This is used when the context menu is initiated for a specific item in the view, and the item is a String watch.
          */
-        void addItemsForStringWatch(Debugger::StringMemoryWatch &);
+        void addItemsForStringWatch(Spectrum::Debugger::StringMemoryWatch &);
 
         /**
          * Helper to add the menu items for an Integer watch.
          *
          * This is used when the context menu is initiated for a specific item in the view, and the item is an Integer watch.
          */
-        void addItemsForIntegerWatch(Debugger::IntegerMemoryWatchBase &);
+        void addItemsForIntegerWatch(Spectrum::Debugger::IntegerMemoryWatchBase &);
 
     private:
         /**
@@ -126,12 +126,12 @@ namespace Spectrum::QtUi
         MemoryWatchesModel * m_model;
 
         /**
-         * The index in the model for the item that is the target of the menu.
+         * The index in the model for the item that is the subject of the menu.
          *
-         * This will be an invalid index if the menu is not targeted at a specific item.
+         * This will be an invalid index if the menu was not invoked on a specific item.
          */
         QModelIndex m_index;
     };
 }
 
-#endif //SPECTRUM_QTUI_WATCHESCONTEXTMENU_H
+#endif //SPECTRUM_QTUI_DEBUGGER_WATCHESCONTEXTMENU_H

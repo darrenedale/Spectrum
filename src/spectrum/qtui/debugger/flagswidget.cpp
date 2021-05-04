@@ -6,7 +6,7 @@
 
 #include "flagswidget.h"
 
-using namespace Spectrum::QtUi;
+using namespace Spectrum::QtUi::Debugger;
 
 FlagsWidget::FlagsWidget(QWidget * parent)
 : FlagsWidget(0x00, parent)

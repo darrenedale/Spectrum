@@ -7,10 +7,10 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include "programpointerswidget.h"
-#include "../../util/debug.h"
+#include "../../../util/debug.h"
 
 
-using namespace Spectrum::QtUi;
+using namespace Spectrum::QtUi::Debugger;
 using ::Z80::Register16;
 using ::Z80::Registers;
 

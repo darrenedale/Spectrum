@@ -3,9 +3,8 @@
 //
 
 #include "memorycontextmenu.h"
-#include "../../util/debug.h"
 
-using namespace Spectrum::QtUi;
+using namespace Spectrum::QtUi::Debugger;
 
 MemoryContextMenu::MemoryContextMenu(::Z80::UnsignedWord address, QWidget * parent)
 : QMenu(parent),
@@ -49,7 +48,6 @@ void MemoryContextMenu::onBreakAtProgramCounterTriggered()
 
 void MemoryContextMenu::onWatchStringTriggered()
 {
-    Util::debug << "emitting watchString(" << m_address << ")\n";
     Q_EMIT watchString(m_address);
 }
 

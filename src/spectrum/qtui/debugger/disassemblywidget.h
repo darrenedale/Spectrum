@@ -2,16 +2,19 @@
 // Created by darren on 18/03/2021.
 //
 
-#ifndef SPECTRUM_QTUI_DISASSEMBLYWIDGET_H
-#define SPECTRUM_QTUI_DISASSEMBLYWIDGET_H
+#ifndef SPECTRUM_QTUI_DEBUGGER_DISASSEMBLYWIDGET_H
+#define SPECTRUM_QTUI_DEBUGGER_DISASSEMBLYWIDGET_H
 
 #include <QScrollArea>
 
-#include "../basespectrum.h"
-#include "../../z80/assembly/disassembler.h"
+#include "../../basespectrum.h"
+#include "../../../z80/assembly/disassembler.h"
 
-namespace Spectrum::QtUi
+namespace Spectrum::QtUi::Debugger
 {
+    /**
+     * A widget to show the disassembly of a bunch of Z80 machine code.
+     */
     class DisassemblyWidget
     : public QScrollArea
     {
@@ -97,4 +100,4 @@ namespace Spectrum::QtUi
     };
 }
 
-#endif // SPECTRUM_QTUI_DISASSEMBLYWIDGET_H
+#endif // SPECTRUM_QTUI_DEBUGGER_DISASSEMBLYWIDGET_H

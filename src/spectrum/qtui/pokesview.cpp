@@ -12,8 +12,8 @@
 #include <QRegularExpression>
 #include <QVariant>
 #include <QSettings>
-#include "pokeswidget.h"
-#include "pokeswidgetitem.h"
+#include "pokesview.h"
+#include "pokesviewitem.h"
 #include "application.h"
 #include "threadpauser.h"
 #include "../io/pokfilereader.h"
@@ -27,7 +27,7 @@ namespace
     constexpr const char * UuidPropertyName = "pokeUuid";
 }
 
-PokesWidget::PokesWidget(QWidget * parent)
+PokesView::PokesView(QWidget * parent)
 : QWidget(parent),
   m_layout(),
   m_loadPokes(QIcon::fromTheme(QStringLiteral("document-open"), Application::icon(QStringLiteral("open"))), tr("Load pokes")),
@@ -49,13 +49,13 @@ PokesWidget::PokesWidget(QWidget * parent)
     m_layout.setSpacing(0);
 
     setLayout(&m_layout);
-    connect(&m_loadPokes, &QAction::triggered, this, &PokesWidget::loadPokesTriggered);
-    connect(&m_clearPokes, &QAction::triggered, this, &PokesWidget::clearPokesTriggered);
+    connect(&m_loadPokes, &QAction::triggered, this, &PokesView::loadPokesTriggered);
+    connect(&m_clearPokes, &QAction::triggered, this, &PokesView::clearPokesTriggered);
 }
 
-PokesWidget::~PokesWidget() = default;
+PokesView::~PokesView() = default;
 
-void PokesWidget::showEvent(QShowEvent *)
+void PokesView::showEvent(QShowEvent *)
 {
     QSettings settings;
     settings.beginGroup("pokesWidget");
@@ -63,7 +63,7 @@ void PokesWidget::showEvent(QShowEvent *)
     settings.endGroup();
 }
 
-void PokesWidget::hideEvent(QHideEvent * event)
+void PokesView::hideEvent(QHideEvent * event)
 {
     QSettings settings;
     settings.beginGroup("pokesWidget");
@@ -72,7 +72,7 @@ void PokesWidget::hideEvent(QHideEvent * event)
     QWidget::hideEvent(event);
 }
 
-void PokesWidget::loadPokes(const QString & fileName)
+void PokesView::loadPokes(const QString & fileName)
 {
     PokFileReader reader(fileName.toStdString());
 
@@ -101,7 +101,7 @@ void PokesWidget::loadPokes(const QString & fileName)
     Application::showNotification(tr("Read %1 pokes from %2.").arg(pokes.size()).arg(fileName));
 }
 
-void PokesWidget::setActionIconSize(const QSize & size)
+void PokesView::setActionIconSize(const QSize & size)
 {
     m_actionIconSize = size;
 
@@ -109,7 +109,7 @@ void PokesWidget::setActionIconSize(const QSize & size)
     auto count = m_layout.count() - 1;
 
     while (1 <= count) {
-        auto * widget = qobject_cast<PokesWidgetItem *>(m_layout.itemAt(count)->widget());
+        auto * widget = qobject_cast<PokesViewItem *>(m_layout.itemAt(count)->widget());
         --count;
 
         if (!widget) {
@@ -120,7 +120,7 @@ void PokesWidget::setActionIconSize(const QSize & size)
     }
 }
 
-void PokesWidget::addPoke(Spectrum::PokeDefinition && poke)
+void PokesView::addPoke(Spectrum::PokeDefinition && poke)
 {
     auto name = QString::fromStdString(poke.name());
     auto uuid = QUuid::createUuid().toString();
@@ -128,14 +128,14 @@ void PokesWidget::addPoke(Spectrum::PokeDefinition && poke)
     addPokeWidget(name, uuid);
 }
 
-void PokesWidget::addPoke(const Spectrum::PokeDefinition & poke)
+void PokesView::addPoke(const Spectrum::PokeDefinition & poke)
 {
     auto uuid = QUuid::createUuid().toString();
     m_pokes.insert({uuid.toStdString(), poke});
     addPokeWidget(QString::fromStdString(poke.name()), uuid);
 }
 
-void PokesWidget::clearPokes()
+void PokesView::clearPokes()
 {
     m_pokes.clear();
     // NOTE first child widget is the "toolbar", last child widget is the spacer
@@ -153,19 +153,19 @@ void PokesWidget::clearPokes()
     }
 }
 
-void PokesWidget::addPokeWidget(const QString & name, const QString & uuid)
+void PokesView::addPokeWidget(const QString & name, const QString & uuid)
 {
-    auto * item = new PokesWidgetItem(name, uuid, this);
+    auto * item = new PokesViewItem(name, uuid, this);
     item->setIconSize(actionIconSize());
 
-    connect(item, &PokesWidgetItem::activationRequested, this, &PokesWidget::applyPokeTriggered);
-    connect(item, &PokesWidgetItem::deactivationRequested, this, &PokesWidget::undoPokeTriggered);
-    connect(item, &PokesWidgetItem::removeClicked, this, &PokesWidget::removePokeTriggered);
+    connect(item, &PokesViewItem::activationRequested, this, &PokesView::applyPokeTriggered);
+    connect(item, &PokesViewItem::deactivationRequested, this, &PokesView::undoPokeTriggered);
+    connect(item, &PokesViewItem::removeClicked, this, &PokesView::removePokeTriggered);
 
     m_layout.insertWidget(m_layout.count() - 1, item);
 }
 
-void PokesWidget::removePoke(int idx)
+void PokesView::removePoke(int idx)
 {
     if (0 > idx || pokeCount() <= idx) {
         Util::debug << "index " << idx << " out of bounds.\n";
@@ -189,7 +189,7 @@ void PokesWidget::removePoke(int idx)
     removePoke(uuid, item->widget());
 }
 
-void PokesWidget::removePoke(const QString & uuid, QWidget * widget)
+void PokesView::removePoke(const QString & uuid, QWidget * widget)
 {
     if (!widget) {
         widget = findPokeWidget(uuid);
@@ -200,13 +200,13 @@ void PokesWidget::removePoke(const QString & uuid, QWidget * widget)
     delete widget;
 }
 
-QWidget * PokesWidget::findPokeWidget(const QString & uuid) const
+QWidget * PokesView::findPokeWidget(const QString & uuid) const
 {
     // NOTE first child widget is the "toolbar", last child widget is the spacer
     auto count = m_layout.count() - 1;
 
     while (1 <= count) {
-        auto * widget = qobject_cast<PokesWidgetItem *>(m_layout.itemAt(count)->widget());
+        auto * widget = qobject_cast<PokesViewItem *>(m_layout.itemAt(count)->widget());
         --count;
 
         if (!widget) {
@@ -221,7 +221,7 @@ QWidget * PokesWidget::findPokeWidget(const QString & uuid) const
     return nullptr;
 }
 
-void PokesWidget::loadPokesTriggered()
+void PokesView::loadPokesTriggered()
 {
     static QStringList filters;
     static QString lastFilter;
@@ -253,12 +253,12 @@ void PokesWidget::loadPokesTriggered()
     loadPokes(fileName);
 }
 
-void PokesWidget::clearPokesTriggered()
+void PokesView::clearPokesTriggered()
 {
     clearPokes();
 }
 
-void PokesWidget::undoPokeTriggered(const QString & uuid)
+void PokesView::undoPokeTriggered(const QString & uuid)
 {
     auto stdUuid = uuid.toStdString();
 
@@ -271,12 +271,12 @@ void PokesWidget::undoPokeTriggered(const QString & uuid)
     Q_EMIT undoPokeRequested(poke);
 }
 
-void PokesWidget::removePokeTriggered(const QString & uuid)
+void PokesView::removePokeTriggered(const QString & uuid)
 {
     removePoke(uuid);
 }
 
-void PokesWidget::applyPokeTriggered(const QString & uuid)
+void PokesView::applyPokeTriggered(const QString & uuid)
 {
     auto stdUuid = uuid.toStdString();
 

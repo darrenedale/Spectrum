@@ -3,10 +3,11 @@
 //
 
 #include "memorywatchesmodel.h"
-#include "../debugger/stringmemorywatch.h"
-#include "../../util/debug.h"
+#include "../../debugger/stringmemorywatch.h"
+#include "../../../util/debug.h"
 
-using namespace Spectrum::QtUi;
+using namespace Spectrum::QtUi::Debugger;
+using Spectrum::Debugger::StringMemoryWatch;
 
 namespace
 {
@@ -32,7 +33,7 @@ Qt::ItemFlags MemoryWatchesModel::flags(const QModelIndex & idx) const
             break;
 
         case TypeColumn:
-            if(dynamic_cast<Debugger::StringMemoryWatch *>(watch(idx))) {
+            if(dynamic_cast<StringMemoryWatch *>(watch(idx))) {
                 flags |= Qt::ItemFlag::ItemIsEditable;
             }
             break;
@@ -76,7 +77,7 @@ QVariant MemoryWatchesModel::data(const QModelIndex & idx, int role) const
 
                 case TypeColumn:
                     // for string watches, enable editing of the string size in the type column
-                    if (auto * strWatch = dynamic_cast<Debugger::StringMemoryWatch *>(watch(idx)); nullptr != strWatch) {
+                    if (auto * strWatch = dynamic_cast<StringMemoryWatch *>(watch(idx)); nullptr != strWatch) {
                         return strWatch->size();
                     }
                     break;
@@ -94,7 +95,6 @@ QVariant MemoryWatchesModel::data(const QModelIndex & idx, int role) const
 bool MemoryWatchesModel::setData(const QModelIndex & idx, const QVariant & data, int role)
 {
     if (role == Qt::ItemDataRole::EditRole) {
-        // TODO hex spin for address column
         switch (idx.column()) {
             case AddressColumn: {
                 assert(watch(idx));
@@ -122,7 +122,7 @@ bool MemoryWatchesModel::setData(const QModelIndex & idx, const QVariant & data,
                 return true;
 
             case TypeColumn: {
-                auto * strWatch = dynamic_cast<Debugger::StringMemoryWatch *>(watch(idx));
+                auto * strWatch = dynamic_cast<StringMemoryWatch *>(watch(idx));
                 assert(strWatch);
 
                 bool ok;

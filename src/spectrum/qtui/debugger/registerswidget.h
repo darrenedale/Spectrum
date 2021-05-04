@@ -2,17 +2,20 @@
 // Created by darren on 23/03/2021.
 //
 
-#ifndef SPECTRUM_QTUI_REGISTERSWIDGET_H
-#define SPECTRUM_QTUI_REGISTERSWIDGET_H
+#ifndef SPECTRUM_QTUI_DEBUGGER_REGISTERSWIDGET_H
+#define SPECTRUM_QTUI_DEBUGGER_REGISTERSWIDGET_H
 
 #include <QWidget>
 
-#include "registerpairwidget.h"
+#include "../registerpairwidget.h"
 #include "flagswidget.h"
-#include "../../z80/types.h"
+#include "../../../z80/types.h"
 
-namespace Spectrum::QtUi
+namespace Spectrum::QtUi::Debugger
 {
+    /**
+     * Widget to manipulate the registers of a Z80 CPU.
+     */
     class RegistersWidget
     : public QWidget
     {
@@ -44,4 +47,4 @@ namespace Spectrum::QtUi
     };
 }
 
-#endif //SPECTRUM_QTUI_REGISTERSWIDGET_H
+#endif //SPECTRUM_QTUI_DEBUGGER_REGISTERSWIDGET_H

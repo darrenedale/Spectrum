@@ -8,9 +8,9 @@
 #include <vector>
 #include <memory>
 #include <QAbstractItemModel>
-#include "../debugger/memorywatch.h"
+#include "../../debugger/memorywatch.h"
 
-namespace Spectrum::QtUi
+namespace Spectrum::QtUi::Debugger
 {
     class MemoryWatchesModel
     : public QAbstractItemModel

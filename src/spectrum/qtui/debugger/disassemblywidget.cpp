@@ -10,9 +10,9 @@
 #include <QScrollBar>
 #include <QPainter>
 #include "disassemblywidget.h"
-#include "../../util/debug.h"
+#include "../../../util/debug.h"
 
-using namespace Spectrum::QtUi;
+using namespace Spectrum::QtUi::Debugger;
 
 using Disassembler = ::Z80::Assembly::Disassembler;
 using UnsignedWord = ::Z80::UnsignedWord;
@@ -34,7 +34,7 @@ namespace
     class DisassemblyView
     : public QWidget
     {
-        friend class Spectrum::QtUi::DisassemblyWidget;
+        friend class Spectrum::QtUi::Debugger::DisassemblyWidget;
 
     public:
         DisassemblyView(const Disassembler & disassembler, QWidget * parent)

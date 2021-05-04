@@ -2,8 +2,8 @@
 // Created by darren on 14/03/2021.
 //
 
-#ifndef SPECTRUM_CUSTOMPOKEWIDGET_H
-#define SPECTRUM_CUSTOMPOKEWIDGET_H
+#ifndef SPECTRUM_POKEWIDGET_H
+#define SPECTRUM_POKEWIDGET_H
 
 #include <QToolButton>
 #include "hexspinbox.h"
@@ -11,20 +11,20 @@
 
 namespace Spectrum::QtUi
 {
-    class CustomPokeWidget
+    class PokeWidget
     : public QWidget
     {
         Q_OBJECT
 
     public:
-        CustomPokeWidget(::Z80::UnsignedWord address, QWidget *);
-        explicit CustomPokeWidget(::Z80::UnsignedByte, QWidget * = nullptr);
-        explicit CustomPokeWidget(::Z80::UnsignedWord address = 0x0000, ::Z80::UnsignedByte = 0x00, QWidget * = nullptr);
-        CustomPokeWidget(const CustomPokeWidget &) = delete;
-        CustomPokeWidget(CustomPokeWidget &&) = delete;
-        void operator=(const CustomPokeWidget &) = delete;
-        void operator=(CustomPokeWidget &&) = delete;
-        ~CustomPokeWidget() override;
+        PokeWidget(::Z80::UnsignedWord address, QWidget *);
+        explicit PokeWidget(::Z80::UnsignedByte, QWidget * = nullptr);
+        explicit PokeWidget(::Z80::UnsignedWord address = 0x0000, ::Z80::UnsignedByte = 0x00, QWidget * = nullptr);
+        PokeWidget(const PokeWidget &) = delete;
+        PokeWidget(PokeWidget &&) = delete;
+        void operator=(const PokeWidget &) = delete;
+        void operator=(PokeWidget &&) = delete;
+        ~PokeWidget() override;
 
         [[nodiscard]] ::Z80::UnsignedWord address() const
         {
@@ -66,4 +66,4 @@ namespace Spectrum::QtUi
     };
 }
 
-#endif //SPECTRUM_CUSTOMPOKEWIDGET_H
+#endif //SPECTRUM_POKEWIDGET_H

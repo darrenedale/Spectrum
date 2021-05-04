@@ -69,28 +69,28 @@ add_executable(
         qtui/mainwindow.cpp
         qtui/aboutwidget.cpp
         qtui/helpwidget.cpp
-        qtui/pokeswidget.cpp
-        qtui/pokeswidgetitem.cpp
+        qtui/pokesview.cpp
+        qtui/pokesviewitem.cpp
         qtui/thread.cpp
-        qtui/debugwindow.cpp
-        qtui/registerswidget.cpp
-        qtui/shadowregisterswidget.cpp
-        qtui/interruptwidget.cpp
-        qtui/programpointerswidget.cpp
+        qtui/debugger/debugwindow.cpp
+        qtui/debugger/registerswidget.cpp
+        qtui/debugger/shadowregisterswidget.cpp
+        qtui/debugger/interruptwidget.cpp
+        qtui/debugger/programpointerswidget.cpp
         qtui/memoryview.cpp
-        qtui/memorydebugwidget.cpp
-        qtui/memorywatchesmodel.cpp
-        qtui/watchescontextmenu.cpp
-        qtui/memorycontextmenu.cpp
+        qtui/debugger/memorywidget.cpp
+        qtui/debugger/memorywatchesmodel.cpp
+        qtui/debugger/watchescontextmenu.cpp
+        qtui/debugger/memorycontextmenu.cpp
         qtui/hexspinboxdelegate.cpp
-        qtui/custompokewidget.cpp
-        qtui/custompokewidget.h
+        qtui/pokewidget.cpp
+        qtui/pokewidget.h
         qtui/qimagedisplaydevice.cpp
         qtui/registerpairwidget.cpp
-        qtui/flagswidget.cpp
-        qtui/disassemblywidget.cpp
+        qtui/debugger/flagswidget.cpp
+        qtui/debugger/disassemblywidget.cpp
         qtui/threadpauser.h
-        qtui/keyboardmonitorwidget.cpp
+        qtui/debugger/keyboardmonitorwidget.cpp
         qtui/imagewidget.cpp
         qtui/actionbar.cpp
         qtui/widgetupdatesuspender.h

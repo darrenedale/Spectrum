@@ -2,36 +2,36 @@
 // Created by darren on 24/03/2021.
 //
 
-#ifndef SPECTRUM_MEMORYDEBUGWIDGET_H
-#define SPECTRUM_MEMORYDEBUGWIDGET_H
+#ifndef SPECTRUM_QTUI_DEBUGGER_MEMORYDEBUGWIDGET_H
+#define SPECTRUM_QTUI_DEBUGGER_MEMORYDEBUGWIDGET_H
 
 #include <optional>
 #include <QWidget>
 #include <QToolButton>
 
-#include "../basespectrum.h"
-#include "memoryview.h"
-#include "hexspinbox.h"
+#include "../../basespectrum.h"
+#include "../memoryview.h"
+#include "../hexspinbox.h"
 
-namespace Spectrum::QtUi
+namespace Spectrum::QtUi::Debugger
 {
-    class MemoryDebugWidget
+    class MemoryWidget
     : public QWidget
     {
         Q_OBJECT
 
     public:
-        explicit MemoryDebugWidget(BaseSpectrum::MemoryType * = nullptr, QWidget * = nullptr);
+        explicit MemoryWidget(BaseSpectrum::MemoryType * = nullptr, QWidget * = nullptr);
 
-        explicit MemoryDebugWidget(const BaseSpectrum & spectrum, QWidget * parent = nullptr)
-        : MemoryDebugWidget(spectrum.memory(), parent)
+        explicit MemoryWidget(const BaseSpectrum & spectrum, QWidget * parent = nullptr)
+        : MemoryWidget(spectrum.memory(), parent)
         {}
 
-        MemoryDebugWidget(const MemoryDebugWidget &) = delete;
-        MemoryDebugWidget(MemoryDebugWidget &) = delete;
-        void operator=(const MemoryDebugWidget &) = delete;
-        void operator=(MemoryDebugWidget &&) = delete;
-        ~MemoryDebugWidget() override;
+        MemoryWidget(const MemoryWidget &) = delete;
+        MemoryWidget(MemoryWidget &) = delete;
+        void operator=(const MemoryWidget &) = delete;
+        void operator=(MemoryWidget &&) = delete;
+        ~MemoryWidget() override;
 
         void setMemory(BaseSpectrum::MemoryType * memory)
         {
@@ -59,4 +59,4 @@ namespace Spectrum::QtUi
     };
 }
 
-#endif //SPECTRUM_MEMORYDEBUGWIDGET_H
+#endif //SPECTRUM_QTUI_DEBUGGER_MEMORYDEBUGWIDGET_H

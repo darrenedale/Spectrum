@@ -2,8 +2,8 @@
 // Created by darren on 27/03/2021.
 //
 
-#ifndef SPECTRUM_POKESWIDGET_H
-#define SPECTRUM_POKESWIDGET_H
+#ifndef SPECTRUM_POKESVIEW_H
+#define SPECTRUM_POKESVIEW_H
 
 #include <unordered_map>
 #include <QWidget>
@@ -24,7 +24,7 @@ namespace Spectrum::QtUi
     /**
      * A widget to display, apply, undo and remove pokes that can be applied to the running emulator.
      */
-    class PokesWidget
+    class PokesView
     : public QWidget
     {
     Q_OBJECT
@@ -32,12 +32,12 @@ namespace Spectrum::QtUi
     public:
         using Pokes = std::unordered_map<std::string, PokeDefinition>;
 
-        explicit PokesWidget(QWidget * = nullptr);
-        PokesWidget(const PokesWidget &) = delete;
-        PokesWidget(PokesWidget &&) = delete;
-        void operator=(const PokesWidget &) = delete;
-        void operator=(PokesWidget &&) = delete;
-        ~PokesWidget() override;
+        explicit PokesView(QWidget * = nullptr);
+        PokesView(const PokesView &) = delete;
+        PokesView(PokesView &&) = delete;
+        void operator=(const PokesView &) = delete;
+        void operator=(PokesView &&) = delete;
+        ~PokesView() override;
 
         void setActionIconSize(const QSize &);
 
@@ -97,4 +97,4 @@ namespace Spectrum::QtUi
     };
 }
 
-#endif //SPECTRUM_POKESWIDGET_H
+#endif //SPECTRUM_POKESVIEW_H

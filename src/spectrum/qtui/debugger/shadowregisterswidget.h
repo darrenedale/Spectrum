@@ -2,16 +2,16 @@
 // Created by darren on 23/03/2021.
 //
 
-#ifndef SPECTRUM_QTUI_SHADOWREGISTERSWIDGET_H
-#define SPECTRUM_QTUI_SHADOWREGISTERSWIDGET_H
+#ifndef SPECTRUM_QTUI_DEBUGGER_SHADOWREGISTERSWIDGET_H
+#define SPECTRUM_QTUI_DEBUGGER_SHADOWREGISTERSWIDGET_H
 
 #include <QWidget>
 
-#include "registerpairwidget.h"
+#include "../registerpairwidget.h"
 #include "flagswidget.h"
-#include "../../z80/types.h"
+#include "../../../z80/types.h"
 
-namespace Spectrum::QtUi
+namespace Spectrum::QtUi::Debugger
 {
     class ShadowRegistersWidget
             : public QWidget
@@ -42,4 +42,4 @@ namespace Spectrum::QtUi
     };
 }
 
-#endif //SPECTRUM_QTUI_SHADOWREGISTERSWIDGET_H
+#endif //SPECTRUM_QTUI_DEBUGGER_SHADOWREGISTERSWIDGET_H

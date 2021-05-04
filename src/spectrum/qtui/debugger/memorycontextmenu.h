@@ -2,16 +2,16 @@
 // Created by darren on 04/05/2021.
 //
 
-#ifndef SPECTRUM_QTUI_MEMORYCONTEXTMENU_H
-#define SPECTRUM_QTUI_MEMORYCONTEXTMENU_H
+#ifndef SPECTRUM_QTUI_DEBUGGER_MEMORYCONTEXTMENU_H
+#define SPECTRUM_QTUI_DEBUGGER_MEMORYCONTEXTMENU_H
 
 #include <QMenu>
 #include "memorywatchesmodel.h"
-#include "../debugger/stringmemorywatch.h"
-#include "../debugger/integermemorywatchbase.h"
-#include "../../z80/types.h"
+#include "../../debugger/stringmemorywatch.h"
+#include "../../debugger/integermemorywatchbase.h"
+#include "../../../z80/types.h"
 
-namespace Spectrum::QtUi
+namespace Spectrum::QtUi::Debugger
 {
     /**
      * Context menu for the watches view in the debug window.
@@ -31,7 +31,7 @@ namespace Spectrum::QtUi
          * if the model is destroyed.
          *
          * @param model The model containing the watches in the view.
-         * @param idx The model index of the item under the cursor when the context menu was requested (i.e. the target of the menu).
+         * @param idx The model index of the item under the cursor when the context menu was requested (i.e. the subject of the menu).
          * @param parent The parent widget for the menu.
          */
         explicit MemoryContextMenu(::Z80::UnsignedWord address, QWidget * parent = nullptr);
@@ -130,4 +130,4 @@ namespace Spectrum::QtUi
     };
 }
 
-#endif //SPECTRUM_QTUI_MEMORYCONTEXTMENU_H
+#endif //SPECTRUM_QTUI_DEBUGGER_MEMORYCONTEXTMENU_H

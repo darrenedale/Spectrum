@@ -5,10 +5,10 @@
 #include <QGridLayout>
 
 #include "keyboardmonitorwidget.h"
-#include "../spectrum48k.h"
-#include "../keyboard.h"
+#include "../../spectrum48k.h"
+#include "../../keyboard.h"
 
-using namespace Spectrum::QtUi;
+using namespace Spectrum::QtUi::Debugger;
 
 KeyboardMonitorWidget::KeyboardMonitorWidget(BaseSpectrum * spectrum, QWidget * parent)
 :   QWidget(parent),

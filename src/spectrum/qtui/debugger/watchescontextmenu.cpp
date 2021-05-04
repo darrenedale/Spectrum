@@ -5,9 +5,9 @@
 #include <QStringLiteral>
 #include <QClipboard>
 #include "watchescontextmenu.h"
-#include "application.h"
+#include "../application.h"
 
-using namespace Spectrum::QtUi;
+using namespace Spectrum::QtUi::Debugger;
 using Spectrum::Debugger::MemoryWatch;
 using Spectrum::Debugger::StringMemoryWatch;
 using Spectrum::Debugger::IntegerMemoryWatchBase;
@@ -23,7 +23,7 @@ WatchesContextMenu::WatchesContextMenu(MemoryWatchesModel * model, const QModelI
     connect(model, &QAbstractItemModel::destroyed, this, &QMenu::close);
     connect(model, &QAbstractItemModel::dataChanged, this, &QMenu::close);
 
-    // if the meny is targeting a valid watch, add menu items specific to that watch
+    // if the menu subject is a valid watch, add menu items specific to that watch
     if (idx.isValid()) {
         addItemsForWatch(*model->watch(idx));
     }
@@ -113,6 +113,11 @@ void WatchesContextMenu::addItemsForIntegerWatch(IntegerMemoryWatchBase & watch)
     action->setCheckable(true);
     action->setChecked(IntegerMemoryWatchBase::Base::Octal == watch.base());
     group->addAction(action);
+
+    action = subMenu->addAction(tr("Binary"), this, &WatchesContextMenu::onNumericBaseTriggered<IntegerMemoryWatchBase::Base::Binary>);
+    action->setCheckable(true);
+    action->setChecked(IntegerMemoryWatchBase::Base::Binary == watch.base());
+    group->addAction(action);
 }
 
 void WatchesContextMenu::onRemoveWatchTriggered()
@@ -140,28 +145,28 @@ void WatchesContextMenu::onClearTriggered()
     m_model->clear();
 }
 
-template<Spectrum::Debugger::StringMemoryWatch::CharacterSet charset>
+template<StringMemoryWatch::CharacterSet charset>
 void WatchesContextMenu::onCharacterSetTriggered()
 {
-    auto * watch = dynamic_cast<Spectrum::Debugger::StringMemoryWatch *>(m_model->watch(m_index));
+    auto * watch = dynamic_cast<StringMemoryWatch *>(m_model->watch(m_index));
     assert(watch);
     watch->setCharacterSet(charset);
     m_model->dataChanged(m_index, m_index);
 }
 
-template<Spectrum::Debugger::IntegerMemoryWatchBase::ByteOrder byteOrder>
+template<IntegerMemoryWatchBase::ByteOrder byteOrder>
 void WatchesContextMenu::onByteOrderTriggered()
 {
-    auto * watch = dynamic_cast<Spectrum::Debugger::IntegerMemoryWatchBase *>(m_model->watch(m_index));
+    auto * watch = dynamic_cast<IntegerMemoryWatchBase *>(m_model->watch(m_index));
     assert(watch);
     watch->setByteOrder(byteOrder);
     m_model->dataChanged(m_index, m_index);
 }
 
-template<Spectrum::Debugger::IntegerMemoryWatchBase::Base base>
+template<IntegerMemoryWatchBase::Base base>
 void WatchesContextMenu::onNumericBaseTriggered()
 {
-    auto * watch = dynamic_cast<Spectrum::Debugger::IntegerMemoryWatchBase *>(m_model->watch(m_index));
+    auto * watch = dynamic_cast<IntegerMemoryWatchBase *>(m_model->watch(m_index));
     assert(watch);
     watch->setBase(base);
     m_model->dataChanged(m_index, m_index);

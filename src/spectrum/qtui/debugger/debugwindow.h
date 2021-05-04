@@ -1,5 +1,5 @@
-#ifndef QSPECTRUMDEBUGWINDOW_H
-#define QSPECTRUMDEBUGWINDOW_H
+#ifndef SPECTRUM_QTUI_DEBUGGER_SPECTRUMDEBUGWINDOW_H
+#define SPECTRUM_QTUI_DEBUGGER_SPECTRUMDEBUGWINDOW_H
 
 #include <cstdint>
 #include <iostream>
@@ -8,30 +8,32 @@
 #include <QAction>
 #include <QTreeView>
 #include <QTableView>
-#include "../../util/debug.h"
-#include "hexspinbox.h"
+#include "../../../util/debug.h"
+#include "../hexspinbox.h"
+#include "../thread.h"
 #include "registerswidget.h"
 #include "shadowregisterswidget.h"
 #include "interruptwidget.h"
 #include "programpointerswidget.h"
-#include "registerpairwidget.h"
+#include "../registerpairwidget.h"
 #include "flagswidget.h"
 #include "disassemblywidget.h"
-#include "memorydebugwidget.h"
+#include "memorywidget.h"
 #include "keyboardmonitorwidget.h"
-#include "custompokewidget.h"
+#include "../pokewidget.h"
 #include "memorywatchesmodel.h"
 #include "memorycontextmenu.h"
-#include "../debugger/breakpoint.h"
-#include "../debugger/memorychangedbreakpoint.h"
-#include "../debugger/integermemorywatch.h"
+#include "../../debugger/breakpoint.h"
+#include "../../debugger/memorychangedbreakpoint.h"
+#include "../../debugger/integermemorywatch.h"
 
 class QLineEdit;
 
-namespace Spectrum::QtUi
+namespace Spectrum::QtUi::Debugger
 {
     using Spectrum::Debugger::Breakpoint;
-	class Thread;
+    using Spectrum::Debugger::MemoryChangedBreakpoint;
+    using Spectrum::Debugger::IntegerMemoryWatch;
 
 	class DebugWindow
 	: public QMainWindow
@@ -69,7 +71,7 @@ namespace Spectrum::QtUi
         template<class ValueType>
         void breakOnMemoryChange(::Z80::UnsignedWord address)
         {
-            auto * breakpoint = new Debugger::MemoryChangedBreakpoint<ValueType>(address);
+            auto * breakpoint = new MemoryChangedBreakpoint<ValueType>(address);
 
             if (!addBreakpoint(breakpoint)) {
                 Util::debug << "breakpoint monitoring 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << " for " << (sizeof(ValueType) * 8) << "-bit changes already set\n";
@@ -89,12 +91,12 @@ namespace Spectrum::QtUi
          *
          * @param address The address to watch.
          */
-        template<Debugger::IntegerMemoryWatchType ValueType>
+        template<Spectrum::Debugger::IntegerMemoryWatchType ValueType>
         void watchIntegerMemoryAddress(::Z80::UnsignedWord address)
         {
             assert(m_thread);
             assert(m_thread->spectrum().memory());
-            m_watchesModel.addWatch(std::make_unique<Debugger::IntegerMemoryWatch<ValueType>>(m_thread->spectrum().memory(), address));
+            m_watchesModel.addWatch(std::make_unique<IntegerMemoryWatch<ValueType>>(m_thread->spectrum().memory(), address));
         }
 
         /**
@@ -216,9 +218,9 @@ namespace Spectrum::QtUi
         RegistersWidget m_registers;
         DisassemblyWidget m_disassembly;
         ShadowRegistersWidget m_shadowRegisters;
-        InterruptWidget m_interrupts;
+        Debugger::InterruptWidget m_interrupts;
         ProgramPointersWidget m_pointers;
-        MemoryDebugWidget m_memoryWidget;
+        MemoryWidget m_memoryWidget;
         QAction m_pauseResume;
         QAction m_step;
         QAction m_refresh;
@@ -231,7 +233,7 @@ namespace Spectrum::QtUi
         QAction m_breakpointAtStackTop;
 
         KeyboardMonitorWidget m_keyboardMonitor;
-        CustomPokeWidget m_poke;
+        PokeWidget m_poke;
         MemoryWatchesModel m_watchesModel;
         QTreeView m_watches;
         MemoryContextMenu m_memoryMenu;
@@ -246,4 +248,4 @@ namespace Spectrum::QtUi
     };
 }
 
-#endif // QSPECTRUMDEBUGWINDOW_H
+#endif // SPECTRUM_QTUI_DEBUGGER_SPECTRUMDEBUGWINDOW_H

@@ -5,9 +5,9 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include "interruptwidget.h"
-#include "../../util/debug.h"
+#include "../../../util/debug.h"
 
-using namespace Spectrum::QtUi;
+using namespace Spectrum::QtUi::Debugger;
 
 using ::Z80::Register8;
 using ::Z80::UnsignedByte;

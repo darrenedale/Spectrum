@@ -2,15 +2,18 @@
 // Created by darren on 23/03/2021.
 //
 
-#ifndef SPECTRUM_PROGRAMPOINTERSWIDGET_H
-#define SPECTRUM_PROGRAMPOINTERSWIDGET_H
+#ifndef SPECTRUM_QTUI_DEBUGGER_PROGRAMPOINTERSWIDGET_H
+#define SPECTRUM_QTUI_DEBUGGER_PROGRAMPOINTERSWIDGET_H
 
-#include "hexspinbox.h"
-#include "../../z80/types.h"
-#include "../../z80/registers.h"
+#include "../hexspinbox.h"
+#include "../../../z80/types.h"
+#include "../../../z80/registers.h"
 
-namespace Spectrum::QtUi
+namespace Spectrum::QtUi::Debugger
 {
+    /**
+     * Widget to manipulate the SP and PC of a Z80 CPU.
+     */
     class ProgramPointersWidget
     : public QWidget
     {
@@ -91,4 +94,4 @@ namespace Spectrum::QtUi
     };
 }
 
-#endif //SPECTRUM_PROGRAMPOINTERSWIDGET_H
+#endif //SPECTRUM_QTUI_DEBUGGER_PROGRAMPOINTERSWIDGET_H

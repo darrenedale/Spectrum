@@ -6,11 +6,11 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include "application.h"
-#include "pokeswidgetitem.h"
+#include "pokesviewitem.h"
 
 using namespace Spectrum::QtUi;
 
-PokesWidgetItem::PokesWidgetItem(const QString & name, QString  uuid, QWidget * parent)
+PokesViewItem::PokesViewItem(const QString & name, QString  uuid, QWidget * parent)
 : QWidget(parent),
   m_uuid(std::move(uuid)),
   m_onOff(this),
@@ -50,9 +50,9 @@ PokesWidgetItem::PokesWidgetItem(const QString & name, QString  uuid, QWidget * 
     });
 }
 
-PokesWidgetItem::~PokesWidgetItem() = default;
+PokesViewItem::~PokesViewItem() = default;
 
-void PokesWidgetItem::setActivated(bool activated)
+void PokesViewItem::setActivated(bool activated)
 {
     m_onOff.setChecked(activated);
 

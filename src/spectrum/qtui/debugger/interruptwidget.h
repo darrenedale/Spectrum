@@ -2,19 +2,22 @@
 // Created by darren on 23/03/2021.
 //
 
-#ifndef SPECTRUM_QTUI_INTERRUPTWIDGET_H
-#define SPECTRUM_QTUI_INTERRUPTWIDGET_H
+#ifndef SPECTRUM_QTUI_DEBUGGER_INTERRUPTWIDGET_H
+#define SPECTRUM_QTUI_DEBUGGER_INTERRUPTWIDGET_H
 
 #include <QWidget>
 #include <QSpinBox>
 #include <QToolButton>
 
-#include "hexspinbox.h"
-#include "../../z80/types.h"
-#include "../../z80/registers.h"
+#include "../hexspinbox.h"
+#include "../../../z80/types.h"
+#include "../../../z80/registers.h"
 
-namespace Spectrum::QtUi
+namespace Spectrum::QtUi::Debugger
 {
+    /**
+     * A widget to manipulate the current interrupt state of a Z80 CPU.
+     */
     class InterruptWidget
     : public QWidget
     {
@@ -56,4 +59,4 @@ namespace Spectrum::QtUi
     };
 }
 
-#endif //SPECTRUM_QTUI_INTERRUPTWIDGET_H
+#endif //SPECTRUM_QTUI_DEBUGGER_INTERRUPTWIDGET_H

@@ -7,9 +7,9 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include "registerswidget.h"
-#include "../../util/debug.h"
+#include "../../../util/debug.h"
 
-using namespace Spectrum::QtUi;
+using namespace Spectrum::QtUi::Debugger;
 
 using ::Z80::UnsignedWord;
 using ::Z80::Register16;

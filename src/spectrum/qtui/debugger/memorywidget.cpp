@@ -4,12 +4,12 @@
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include "application.h"
-#include "memorydebugwidget.h"
+#include "../application.h"
+#include "memorywidget.h"
 
-using namespace Spectrum::QtUi;
+using namespace Spectrum::QtUi::Debugger;
 
-MemoryDebugWidget::MemoryDebugWidget(Spectrum::BaseSpectrum::MemoryType * memory, QWidget * parent)
+MemoryWidget::MemoryWidget(Spectrum::BaseSpectrum::MemoryType * memory, QWidget * parent)
 : QWidget(parent),
   m_memory(memory),
   m_memoryLocation(),
@@ -26,35 +26,35 @@ MemoryDebugWidget::MemoryDebugWidget(Spectrum::BaseSpectrum::MemoryType * memory
     widgetLayout->addLayout(controlsLayout);
     setLayout(widgetLayout);
 
-    connect(&m_memoryLocation, qOverload<int>(&HexSpinBox::valueChanged), this, &MemoryDebugWidget::locationValueChanged);
+    connect(&m_memoryLocation, qOverload<int>(&HexSpinBox::valueChanged), this, &MemoryWidget::locationValueChanged);
     connect(&m_memoryLocation, qOverload<int>(&HexSpinBox::valueChanged), &m_memory, &MemoryView::scrollToAddress);
-    connect(&m_setBreakpoint, &QToolButton::clicked, this, &MemoryDebugWidget::programCounterBreakpointClicked);
+    connect(&m_setBreakpoint, &QToolButton::clicked, this, &MemoryWidget::programCounterBreakpointClicked);
 }
 
-MemoryDebugWidget::~MemoryDebugWidget() = default;
+MemoryWidget::~MemoryWidget() = default;
 
-void MemoryDebugWidget::programCounterBreakpointClicked()
+void MemoryWidget::programCounterBreakpointClicked()
 {
     Q_EMIT programCounterBreakpointRequested(m_memoryLocation.value());
 }
 
-std::optional<Z80::UnsignedWord> MemoryDebugWidget::addressAt(const QPoint & pos) const
+std::optional<Z80::UnsignedWord> MemoryWidget::addressAt(const QPoint & pos) const
 {
     return m_memory.addressAt(m_memory.mapFromParent(pos));
 }
 
-void MemoryDebugWidget::scrollToAddress(::Z80::UnsignedWord addr)
+void MemoryWidget::scrollToAddress(::Z80::UnsignedWord addr)
 {
     m_memoryLocation.setValue(addr);
     m_memory.scrollToAddress(addr);
 }
 
-void MemoryDebugWidget::clearHighlights()
+void MemoryWidget::clearHighlights()
 {
     m_memory.clearHighlights();
 }
 
-void MemoryDebugWidget::setHighlight(::Z80::UnsignedWord address, const QColor & foreground, const QColor & background)
+void MemoryWidget::setHighlight(::Z80::UnsignedWord address, const QColor & foreground, const QColor & background)
 {
     m_memory.setHighlight(address, foreground, background);
 }
