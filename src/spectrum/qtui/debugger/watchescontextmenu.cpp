@@ -70,8 +70,8 @@ void WatchesContextMenu::addItemsForStringWatch(StringMemoryWatch & watch)
 {
     auto * subMenu = addMenu(tr("Character set"));
     subMenu->setToolTip(tr("Change the character set in which to display the string."));
-    subMenu->addAction(tr("Spectrum"), this, &WatchesContextMenu::onCharacterSetTriggered<StringMemoryWatch::CharacterSet::Spectrum>);
-    subMenu->addAction(tr("ASCII"), this, &WatchesContextMenu::onCharacterSetTriggered<StringMemoryWatch::CharacterSet::Ascii>);
+    subMenu->addAction(tr("Spectrum"), this, &WatchesContextMenu::onCharacterSetTriggered<StringMemoryWatch::CharacterEncoding::Spectrum>);
+    subMenu->addAction(tr("ASCII"), this, &WatchesContextMenu::onCharacterSetTriggered<StringMemoryWatch::CharacterEncoding::Ascii>);
 }
 
 void WatchesContextMenu::addItemsForIntegerWatch(IntegerMemoryWatchBase & watch)
@@ -145,12 +145,12 @@ void WatchesContextMenu::onClearTriggered()
     m_model->clear();
 }
 
-template<StringMemoryWatch::CharacterSet charset>
+template<StringMemoryWatch::CharacterEncoding charset>
 void WatchesContextMenu::onCharacterSetTriggered()
 {
     auto * watch = dynamic_cast<StringMemoryWatch *>(m_model->watch(m_index));
     assert(watch);
-    watch->setCharacterSet(charset);
+    watch->setCharacterEncoding(charset);
     m_model->dataChanged(m_index, m_index);
 }
 

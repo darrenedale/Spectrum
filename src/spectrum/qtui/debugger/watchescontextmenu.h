@@ -75,7 +75,7 @@ namespace Spectrum::QtUi::Debugger
          *
          * @tparam charset
          */
-        template<Spectrum::Debugger::StringMemoryWatch::CharacterSet charset>
+        template<Spectrum::Debugger::StringMemoryWatch::CharacterEncoding charset>
         void onCharacterSetTriggered();
 
         /**

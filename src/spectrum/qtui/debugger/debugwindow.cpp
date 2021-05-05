@@ -35,6 +35,7 @@ using ::Z80::Register16;
 using Spectrum::Debugger::ProgramCounterBreakpoint;
 using Spectrum::Debugger::StackPointerBelowBreakpoint;
 using Spectrum::Debugger::MemoryBreakpoint;
+using Spectrum::Debugger::MemoryWatch;
 using Spectrum::Debugger::StringMemoryWatch;
 
 namespace
@@ -574,13 +575,15 @@ void DebugWindow::stackPointerBelowBreakpointTriggered(::Z80::UnsignedWord addre
 
 void DebugWindow::watchStringMemoryAddress(::Z80::UnsignedWord address, std::optional<int> length)
 {
+    auto * memory = m_thread->spectrum().memory();
+
     if (!length) {
-        // TODO get length from user
-        length = std::min(10, static_cast<int>(m_thread->spectrum().memory()->addressableSize() - address));
+        // make sure the default length fits inside the addressable memory
+        length = std::min(10, static_cast<int>(memory->addressableSize() - address));
     }
 
-    assert(0 < *length && address + *length < m_thread->spectrum().memory()->addressableSize());
-    m_watchesModel.addWatch(std::make_unique<StringMemoryWatch>(m_thread->spectrum().memory(), address, static_cast<std::uint32_t>(*length)));
+    assert(0 < *length && address + *length < memory->addressableSize());
+    m_watchesModel.addWatch(std::make_unique<StringMemoryWatch>(memory, address, static_cast<MemoryWatch::WatchSize>(*length)));
 }
 
 void DebugWindow::InstructionObserver::notify(::Spectrum::Z80 * cpu)

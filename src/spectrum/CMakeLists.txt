@@ -64,7 +64,7 @@ add_executable(
         debugger/memorywatch.h
         debugger/integermemorywatchbase.h
         debugger/integermemorywatch.h
-        debugger/stringmemorywatch.h
+        debugger/stringmemorywatch.cpp
         qtui/application.cpp
         qtui/mainwindow.cpp
         qtui/aboutwidget.cpp

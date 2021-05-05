@@ -2,12 +2,11 @@
 // Created by darren on 01/05/2021.
 //
 
-#ifndef SPECTRUM_STRINGMEMORYWATCH_H
-#define SPECTRUM_STRINGMEMORYWATCH_H
+#ifndef SPECTRUM_DEBUGGER_STRINGMEMORYWATCH_H
+#define SPECTRUM_DEBUGGER_STRINGMEMORYWATCH_H
 
 #include <string>
-#include <sstream>
-#include <cctype>
+#include <iostream>
 #include "memorywatch.h"
 #include "../../z80/types.h"
 
@@ -16,7 +15,9 @@ namespace Spectrum::Debugger
     /**
      * Watch the value of a chunk of memory as a string value.
      *
-     * Currently, the value is always represented as a string of characters in the Spectrum character set.
+     * The watched memory can be interpreted either according to the Spectrum standard character set (which differs slightly from ASCII) or as ASCII. Other
+     * encodings may follow. The display value is always returned as the UTF-8 encoding of the interpreted string. Invalid characters are replaced with
+     * U+FFFD (Replacement Character).
      *
      * @tparam Size The number of bytes to watch.
      */
@@ -27,18 +28,13 @@ namespace Spectrum::Debugger
         /**
          * Enumeration of supported display charsets.
          */
-        enum class CharacterSet
+        enum class CharacterEncoding
         {
             Spectrum = 0,
             Ascii,
         };
 
-        StringMemoryWatch(BaseSpectrum::MemoryType * memory, ::Z80::UnsignedWord address, WatchSize size)
-        : MemoryWatch(memory, address),
-          m_size(static_cast<std::uint32_t>(size)),
-          m_charset(CharacterSet::Spectrum),
-          m_typeName()
-        {}
+        StringMemoryWatch(BaseSpectrum::MemoryType * memory, ::Z80::UnsignedWord address, WatchSize size);
 
         /**
          * Fetch the name of the watch type.
@@ -47,16 +43,7 @@ namespace Spectrum::Debugger
          *
          * @return The type name.
          */
-        [[nodiscard]] std::string typeName() const override
-        {
-            if (m_typeName.empty()) {
-                std::ostringstream out;
-                out << "String [" << size() << ']';
-                m_typeName = out.str();
-            }
-
-            return m_typeName;
-        }
+        [[nodiscard]] std::string typeName() const override;
 
         /**
          * Fetch the size of the string being watched.
@@ -84,56 +71,33 @@ namespace Spectrum::Debugger
         }
 
         /**
-         * Fetch the character set for display.
+         * Fetch the character encoding to assume for the watched memory bytes.
          *
-         * @return The current display character set.
+         * @return The current character encoding.
          */
-        [[nodiscard]] CharacterSet characterSet() const
+        [[nodiscard]] CharacterEncoding characterEncoding() const
         {
             return m_charset;
         }
 
         /**
-         * Set the current display character set.
+         * Set the character encoding to assume for the watched memory bytes.
          *
-         * @param charset The character set to use.
+         * @param encoding The encoding to use.
          */
-        void setCharacterSet(CharacterSet charset)
+        void setCharacterEncoding(CharacterEncoding encoding)
         {
-            m_charset = charset;
+            m_charset = encoding;
         }
 
         /**
-         * Fetch the current display value for the watched memory.
+         * Fetch the string at the watched address.
          *
-         * @return The display value.
+         * The watched bytes in memory are retrieved and interpreted according to the specified encoding. The returned string is UTF-8 encoded.
+         *
+         * @return The display string.
          */
-        [[nodiscard]] std::string displayValue() const override
-        {
-            std::vector<::Z80::UnsignedByte> str(size());
-            memory()->readBytes(address(), str.size(), str.data());
-            std::ostringstream out;
-
-            switch (characterSet()) {
-                case CharacterSet::Spectrum:
-                    for (const auto & byte : str) {
-                        appendSpectrumChar(out, byte);
-                    }
-                    break;
-
-                case CharacterSet::Ascii:
-                    for (const auto & byte : str) {
-                        if (std::isprint(byte)) {
-                            out << byte;
-                        } else {
-                            out << "�"; // U+FFFD Replacement Character (0xef 0xbf 0xbd in UTF-8)
-                        }
-                    }
-                    break;
-            }
-
-            return out.str();
-        }
+        [[nodiscard]] std::string displayValue() const override;
 
     protected:
         /**
@@ -142,47 +106,7 @@ namespace Spectrum::Debugger
          * @param out The output stream to write to.
          * @param ch The character index.
          */
-        static void appendSpectrumChar(std::ostream & out, ::Z80::UnsignedByte ch)
-        {
-            using namespace std::string_literals;
-
-            // keyword "characters" from 165 - 255
-            static std::array<std::string, 91> keywords = {
-                "[RND]"s, "[INKEY$]"s, "[PI]"s, "[FN]"s, "[POINT]"s,
-                "[SCREEN$]"s, "[ATTR]"s, "[AT]"s, "[TAB]"s, "[VAL$]"s, "[CODE]"s, "[VAL]"s, "[LEN]"s, "[SIN]"s, "[COS]"s,
-                "[TAN]"s, "[ASN]"s, "[ACS]"s, "[ATN]"s, "[LN]"s, "[EXP]"s, "[INT]"s, "[SQR]"s, "[SGN]"s, "[ABS]"s,
-                "[PEEK]"s, "[IN]"s, "[USR]"s, "[STR$]"s, "[CHR$]"s, "[NOT]"s, "[BIN]"s, "[OR]"s, "[AND]"s, "[<=]"s,
-                "[>=]"s, "[<>]"s, "[LINE]"s, "[THEN]"s, "[TO]"s, "[STEP]"s, "[DEF FN]"s, "[CAT]"s, "[FORMAT]"s, "[MOVE]"s,
-                "[ERASE]"s, "[OPEN #]"s, "[CLOSE #]"s, "[MERGE]"s, "[VERIFY]"s, "[BEEP]"s, "[CIRCLE]"s, "[INK]"s, "[PAPER]"s, "[FLASH]"s,
-                "[BRIGHT]"s, "[INVERSE]"s, "[OVER]"s, "[OUT]"s, "[LPRINT]"s, "[LLIST]"s, "[STOP]"s, "[READ]"s, "[DATA]"s, "[RESTORE]"s,
-                "[NEW]"s, "[BORDER]"s, "[CONTINUE]"s, "[DIM]"s, "[REM]"s, "[FOR]"s, "[GO TO]"s, "[GO SUB]"s, "[INPUT]"s, "[LOAD]"s,
-                "[LIST]"s, "[LET]"s, "[PAUSE]"s, "[NEXT]"s, "[POKE]"s, "[PRINT]"s, "[PLOT]"s, "[RUN]"s, "[SAVE]"s, "[RANDOMIZE]"s,
-                "[IF]"s, "[CLS]"s, "[DRAW]"s, "[CLEAR]"s, "[RETURN]"s, "[COPY]"s,
-            };
-
-            // TODO 128 to 143 block graphics chars
-            if (96 == ch) {
-                // UK pounds sterling symbol
-                out << "£";
-            } else if (127 == ch) {
-                // copyright symbol
-                out << "©"; // U+00A9 Copyright Sign (0xc2 0xa9 in UTF-8)
-            } else if (32 <= ch && 127 >= ch) {
-                // other characters from 32 - 127 inclusive are as ASCII
-                out << static_cast<std::ostream::char_type>(ch);
-            } else if (12 == ch) {
-                // delete
-                out << "⌫"; // U+232b Erase to the Left (0xe2 0x8c 0xab in UTF-8)
-            } else if (13 == ch) {
-                // enter
-                out << "⏎"; // U+23ce Return Symbol (0xe2 0x8f 0x8e in UTF-8)
-            } else if (165 <= ch) {
-                // Spectrum BASIC keyword chars
-                out << keywords[ch - 165];
-            } else {
-                out << "�"; // U+FFFD Replacement Character (0xef 0xbf 0xbd in UTF-8)
-            }
-        }
+        static void appendSpectrumChar(std::ostream & out, ::Z80::UnsignedByte ch);
 
         /**
          * The size in bytes of the string being watched.
@@ -190,9 +114,9 @@ namespace Spectrum::Debugger
         WatchSize m_size;
 
         /**
-         * The character set to use for display.
+         * The character encoding to use when interpreting the watched bytes.
          */
-        CharacterSet m_charset;
+        CharacterEncoding m_charset;
 
         /**
          * Cache for the type name.
@@ -203,4 +127,4 @@ namespace Spectrum::Debugger
     };
 }
 
-#endif //SPECTRUM_STRINGMEMORYWATCH_H
+#endif //SPECTRUM_DEBUGGER_STRINGMEMORYWATCH_H

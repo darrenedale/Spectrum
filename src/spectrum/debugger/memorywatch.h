@@ -10,9 +10,15 @@
 
 namespace Spectrum::Debugger
 {
+    /**
+     * Abstract base class for debug watches on Computer memory.
+     */
     class MemoryWatch
     {
     public:
+        /**
+         * Convenience alias for the size, in bytes, of a chunk of watched memory.
+         */
         using WatchSize = std::uint32_t;
 
         /**
