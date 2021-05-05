@@ -16,7 +16,6 @@
 #include "interruptwidget.h"
 #include "programpointerswidget.h"
 #include "../registerpairwidget.h"
-#include "flagswidget.h"
 #include "disassemblywidget.h"
 #include "memorywidget.h"
 #include "keyboardmonitorwidget.h"

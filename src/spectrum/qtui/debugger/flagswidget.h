@@ -7,7 +7,6 @@
 
 #include <QWidget>
 #include <QToolButton>
-
 #include "../../../z80/z80.h"
 
 namespace Spectrum::QtUi::Debugger
@@ -334,14 +333,96 @@ namespace Spectrum::QtUi::Debugger
          */
         void createLayout();
 
+        /**
+         * Helper template to avoid repeating boilerplate for the individual flag set methods.
+         *
+         * @tparam flagBit The bit of the flag being set.
+         */
+        template <int flagBit>
+        void setFlag(bool);
+
+        /**
+         * Helper to avoid repeating boilerplate to emit the required signals when a flag has changed state.
+         *
+         * @param flagBit The bit of the flag being set.
+         * @param set Whether the flag change is a set (true) or clear (false)
+         */
+        void emitFlagChangeSignals(int flagBit, bool set);
+
+        /**
+         * Type alias to assist with mapping signal methods to of flag bits indices.
+         *
+         */
+        using ChangedSignalMethod = void (FlagsWidget::*)(bool);
+
+        /**
+         * Type alias to assist with mapping signal methods to of flag bits indices.
+         *
+         */
+        using SetSignalMethod = void (FlagsWidget::*)();
+
+        /**
+         * Type alias to assist with mapping signal methods to of flag bits indices.
+         *
+         */
+        using ClearedSignalMethod = void (FlagsWidget::*)();
+
+        /**
+         * The widget for the sign flag.
+         */
         QToolButton m_flagS;
+
+        /**
+         * The widget for the zero flag.
+         */
         QToolButton m_flagZ;
+
+        /**
+         * The widget for the undocumented 5 flag.
+         */
         QToolButton m_flag5;
+
+        /**
+         * The widget for the half-carry flag.
+         */
         QToolButton m_flagH;
+
+        /**
+         * The widget for the undocumented 3 flag.
+         */
         QToolButton m_flag3;
+
+        /**
+         * The widget for the parity/overflow flag.
+         */
         QToolButton m_flagPV;
+
+        /**
+         * The widget for the negation flag.
+         */
         QToolButton m_flagN;
+
+        /**
+         * The widget for the carry flag.
+         */
         QToolButton m_flagC;
+
+        /**
+         * Data structure for a single flag bit index - the button, its label and the signal methods related to it
+         */
+        struct FlagData
+        {
+            QToolButton * button;       // constructor populates this with the address of the appropriate member widget
+            QString label;
+            ChangedSignalMethod changedSignal;
+            SetSignalMethod setSignal;
+            ClearedSignalMethod clearedSignal;
+        };
+
+        /**
+         * Maps of flag bit indices to internal data for that flag, to assist with avoiding repeated boilerplate when handling individual flags.
+         */
+        const std::array<FlagData, 8> m_flagData;
     };
 }
 

@@ -3,28 +3,56 @@
 //
 
 #include <QHBoxLayout>
-
 #include "flagswidget.h"
+#include "../../../util/debug.h"
 
 using namespace Spectrum::QtUi::Debugger;
+
+namespace
+{
+    // bit indices for the individual flags
+    constexpr const int CFlagBit = 0;
+    constexpr const int NFlagBit = 1;
+    constexpr const int PVFlagBit = 2;
+    constexpr const int Undoc3FlagBit = 3;
+    constexpr const int HFlagBit = 4;
+    constexpr const int Undoc5FlagBit = 5;
+    constexpr const int ZFlagBit = 6;
+    constexpr const int SFlagBit = 7;
+}
 
 FlagsWidget::FlagsWidget(QWidget * parent)
 : FlagsWidget(0x00, parent)
 {}
 
 FlagsWidget::FlagsWidget(Z80::UnsignedByte flags, QWidget * parent)
-: QWidget(parent)
+: QWidget(parent),
+  m_flagS(),
+  m_flagZ(),
+  m_flag5(),
+  m_flagH(),
+  m_flag3(),
+  m_flagPV(),
+  m_flagN(),
+  m_flagC(),
+  m_flagData{{
+        {&m_flagC, QStringLiteral("C"), &FlagsWidget::flagCChanged, &FlagsWidget::flagCSet, &FlagsWidget::flagCCleared},      // bit 0 is the carry flag
+        {&m_flagN, QStringLiteral("N"), &FlagsWidget::flagNChanged, &FlagsWidget::flagNSet, &FlagsWidget::flagNCleared},      // bit 1 is the negation flag
+        {&m_flagPV, QStringLiteral("PV"), &FlagsWidget::flagPVChanged, &FlagsWidget::flagPVSet, &FlagsWidget::flagPVCleared}, // bit 2 is the parity/overflow flag
+        {&m_flag3, QStringLiteral("3"), &FlagsWidget::flag3Changed, &FlagsWidget::flag3Set, &FlagsWidget::flag3Cleared},      // bit 3 is the undocumented 3 flag
+        {&m_flagH, QStringLiteral("H"), &FlagsWidget::flagHChanged, &FlagsWidget::flagHSet, &FlagsWidget::flagHCleared},      // bit 4 is the half-carry flag
+        {&m_flag5, QStringLiteral("5"), &FlagsWidget::flag5Changed, &FlagsWidget::flag5Set, &FlagsWidget::flag5Cleared},      // bit 5 is the undocumented 5 flag
+        {&m_flagZ, QStringLiteral("Z"), &FlagsWidget::flagZChanged, &FlagsWidget::flagZSet, &FlagsWidget::flagZCleared},      // bit 6 is the zero flag
+        {&m_flagS, QStringLiteral("S"), &FlagsWidget::flagSChanged, &FlagsWidget::flagSSet, &FlagsWidget::flagSCleared},      // bit 7 is sign flag
+    }}
 {
-    m_flagS.setText(QStringLiteral("S"));
-    m_flagZ.setText(QStringLiteral("Z"));
-    m_flag5.setText(QStringLiteral("5"));
-    m_flagH.setText(QStringLiteral("H"));
-    m_flag3.setText(QStringLiteral("3"));
-    m_flagPV.setText(QStringLiteral("PV"));
-    m_flagN.setText(QStringLiteral("N"));
-    m_flagC.setText(QStringLiteral("C"));
-    for (auto * button : {&m_flagS, &m_flagZ, &m_flag5, &m_flagH, &m_flag3, &m_flagPV, &m_flagN, &m_flagC,}) {
+    for (int flagBit = 0; flagBit < 8; ++flagBit) {
+        auto * button = m_flagData[flagBit].button;
+        button->setText(m_flagData[flagBit].label);
         button->setCheckable(true);
+        connect(button, &QToolButton::toggled, [this, flagBit](bool set) {
+            emitFlagChangeSignals(flagBit, set);
+        });
     }
 
     createLayout();
@@ -37,6 +65,7 @@ void FlagsWidget::createLayout()
 {
     auto * layout = new QHBoxLayout();
 
+    // NOTE the widgets are in the reverse of the display order in m_flagData so we don't use that
     for (auto * button : {&m_flagS, &m_flagZ, &m_flag5, &m_flagH, &m_flag3, &m_flagPV, &m_flagN, &m_flagC,}) {
         layout->addWidget(button);
     }
@@ -47,172 +76,118 @@ void FlagsWidget::createLayout()
 void FlagsWidget::setAllFlags(Z80::UnsignedByte flags)
 {
     Z80::UnsignedByte mask = 0x80;
-    
-    for (auto * button : {&m_flagS, &m_flagZ, &m_flag5, &m_flagH, &m_flag3, &m_flagPV, &m_flagN, &m_flagC,}) {
-        button->setChecked(flags & mask);
+    int flagIdx = 7;
+
+    while (0 <= flagIdx) {
+        auto * const button = m_flagData[flagIdx].button;
+        // stash before and after state for the flag so that we know what signals to emit
+        auto before = button->isChecked();
+        auto after = static_cast<bool>(flags & mask);
+
+        // only update and signal if the state has changed
+        if (before != after) {
+            button->setChecked(after);
+            emitFlagChangeSignals(flagIdx, after);
+        }
+
+        --flagIdx;
         mask >>= 1;
     }
 
-    // TODO emit changed/set/cleared for individual flags
     Q_EMIT flagsChanged(flags);
 }
 
 Z80::UnsignedByte FlagsWidget::allFlags() const
 {
-    Z80::UnsignedByte mask = 0x80;
+    Z80::UnsignedByte mask = 0x01;
     Z80::UnsignedByte flags = 0x00;
 
-    for (auto * button : {&m_flagS, &m_flagZ, &m_flag5, &m_flagH, &m_flag3, &m_flagPV, &m_flagN, &m_flagC,}) {
-        if (button->isChecked()) {
+    for (const auto & flagData : m_flagData) {
+        if (flagData.button->isChecked()) {
             flags |= mask;
         }
         
-        mask >>= 1;
+        mask <<= 1;
     }
     
     return flags;
 }
 
-void FlagsWidget::setFlagS(bool set)
+template <int flagBit>
+void FlagsWidget::setFlag(bool set)
 {
-    if (set == m_flagS.isChecked()) {
+    // implementation template for setFlag() for any given flag
+    static_assert(0 <= flagBit && 7 >= flagBit, "Invalid flag bit in instantiation of template FlagsWidget::setFlag<int>()");
+    auto * button = m_flagData[flagBit].button;
+
+    // short-circuit if there's no change
+    if (set == button->isChecked()) {
         return;
     }
-    
-    m_flagS.setChecked(set);
 
+    button->setChecked(set);
     Q_EMIT flagsChanged(allFlags());
-    Q_EMIT flagSChanged(set);
+    emitFlagChangeSignals(flagBit, set);
+}
 
+void FlagsWidget::emitFlagChangeSignals(int flagBit, bool set)
+{
+    // emit the changed signal for this flag
+    Q_EMIT (this->*(m_flagData[flagBit].changedSignal))(set);
+
+    // emit the set or cleared signal for this flag, based on the new state
     if (set) {
-        Q_EMIT flagSSet();
+        Q_EMIT (this->*(m_flagData[flagBit].setSignal))();
     } else {
-        Q_EMIT flagSCleared();
+        Q_EMIT (this->*(m_flagData[flagBit].clearedSignal))();
     }
+
+}
+
+void FlagsWidget::setFlagS(bool set)
+{
+    // delegate to tepmlate with appropriate flag bit index
+    setFlag<SFlagBit>(set);
 }
 
 void FlagsWidget::setFlagZ(bool set)
 {
-    if (set == m_flagZ.isChecked()) {
-        return;
-    }
-    
-    m_flagZ.setChecked(set);
-
-    Q_EMIT flagsChanged(allFlags());
-    Q_EMIT flagZChanged(set);
-
-    if (set) {
-        Q_EMIT flagZSet();
-    } else {
-        Q_EMIT flagZCleared();
-    }
+    // delegate to tepmlate with appropriate flag bit index
+    setFlag<ZFlagBit>(set);
 }
 
 void FlagsWidget::setFlag5(bool set)
 {
-    if (set == m_flag5.isChecked()) {
-        return;
-    }
-    
-    m_flag5.setChecked(set);
-
-    Q_EMIT flagsChanged(allFlags());
-    Q_EMIT flag5Changed(set);
-
-    if (set) {
-        Q_EMIT flag5Set();
-    } else {
-        Q_EMIT flag5Cleared();
-    }
+    // delegate to tepmlate with appropriate flag bit index
+    setFlag<Undoc5FlagBit>(set);
 }
 
 void FlagsWidget::setFlagH(bool set)
 {
-    if (set == m_flagH.isChecked()) {
-        return;
-    }
-
-    m_flagH.setChecked(set);
-
-    Q_EMIT flagsChanged(allFlags());
-    Q_EMIT flagHChanged(set);
-
-    if (set) {
-        Q_EMIT flagHSet();
-    } else {
-        Q_EMIT flagHCleared();
-    }
+    // delegate to tepmlate with appropriate flag bit index
+    setFlag<HFlagBit>(set);
 }
 
 void FlagsWidget::setFlag3(bool set)
 {
-    if (set == m_flag3.isChecked()) {
-        return;
-    }
-
-    m_flag3.setChecked(set);
-
-    Q_EMIT flagsChanged(allFlags());
-    Q_EMIT flag3Changed(set);
-
-    if (set) {
-        Q_EMIT flag3Set();
-    } else {
-        Q_EMIT flag3Cleared();
-    }
+    // delegate to tepmlate with appropriate flag bit index
+    setFlag<Undoc3FlagBit>(set);
 }
 
 void FlagsWidget::setFlagPV(bool set)
 {
-    if (set == m_flagPV.isChecked()) {
-        return;
-    }
-
-    m_flagPV.setChecked(set);
-
-    Q_EMIT flagsChanged(allFlags());
-    Q_EMIT flagPVChanged(set);
-
-    if (set) {
-        Q_EMIT flagPVSet();
-    } else {
-        Q_EMIT flagPVCleared();
-    }
+    // delegate to tepmlate with appropriate flag bit index
+    setFlag<PVFlagBit>(set);
 }
 
 void FlagsWidget::setFlagN(bool set)
 {
-    if (set == m_flagN.isChecked()) {
-        return;
-    }
-
-    m_flagN.setChecked(set);
-
-    Q_EMIT flagsChanged(allFlags());
-    Q_EMIT flagNChanged(set);
-
-    if (set) {
-        Q_EMIT flagNSet();
-    } else {
-        Q_EMIT flagNCleared();
-    }
+    // delegate to tepmlate with appropriate flag bit index
+    setFlag<NFlagBit>(set);
 }
 
 void FlagsWidget::setFlagC(bool set)
 {
-    if (set == m_flagC.isChecked()) {
-        return;
-    }
-
-    m_flagC.setChecked(set);
-
-    Q_EMIT flagsChanged(allFlags());
-    Q_EMIT flagCChanged(set);
-
-    if (set) {
-        Q_EMIT flagCSet();
-    } else {
-        Q_EMIT flagCCleared();
-    }
+    // delegate to tepmlate with appropriate flag bit index
+    setFlag<CFlagBit>(set);
 }
