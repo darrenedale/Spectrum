@@ -9,11 +9,11 @@
 #include <QSpinBox>
 #include <QTimer>
 #include "qimagedisplaydevice.h"
-#include "debugwindow.h"
+#include "debugger/debugwindow.h"
 #include "aboutwidget.h"
 #include "helpwidget.h"
 #include "spectrumdisplayimagewidget.h"
-#include "pokeswidget.h"
+#include "pokesview.h"
 #include "../mouseinterface.h"
 #include "../joystickinterface.h"
 #include "../keyboard.h"
@@ -171,7 +171,7 @@ namespace Spectrum::QtUi
         Keyboard m_keyboard;
         QImageDisplayDevice m_display;
         SpectrumDisplayImageWidget m_displayWidget;
-        PokesWidget m_pokesWidget;
+        PokesView m_pokesWidget;
         QAction m_load;
         QAction m_save;
 
@@ -207,7 +207,7 @@ namespace Spectrum::QtUi
 
         QSlider m_emulationSpeedSlider;
         QSpinBox m_emulationSpeedSpin;
-        DebugWindow m_debugWindow;
+        Debugger::DebugWindow m_debugWindow;
         std::unique_ptr<AboutWidget> m_aboutWidget;
         std::unique_ptr<HelpWidget> m_helpWidget;
 

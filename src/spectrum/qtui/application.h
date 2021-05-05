@@ -93,14 +93,26 @@ namespace Spectrum::QtUi
         /**
          * Fetch a named icon.
          *
-         * The icon will be suitable for the current theme type.
-         *
          * @param name The icon to fetch.
          * @param type The theme type for the icon. Default is Unknown, which will use the current system theme type.
          *
          * @return The icon. This will be a null icon if the provided name does not name a valid icon.
          */
         [[nodiscard]] static QIcon icon(const QString & name, ThemeType type = ThemeType::Unknown) ;
+
+        /**
+         * Fetch a theme icon, using a named icon as fallback.
+         *
+         * The icon will be fetched from the system theme, or will use the built-in icon if the platform doesn't have a concept of system-wide icon themes or
+         * there is no matching icon in the theme.
+         *
+         * @param systemThemeName The icon to use from the system theme, if possible.
+         * @param name The built-in icon to use as a fallback.
+         * @param type The theme type for the built-in icon, if required. Default is Unknown, which will use the current system theme type.
+         *
+         * @return The icon. This will be a null icon if the provided name does not name a valid icon.
+         */
+        [[nodiscard]] static QIcon icon(const QString & systemThemeName, const QString & name, ThemeType type = ThemeType::Unknown) ;
 
     private:
         /**

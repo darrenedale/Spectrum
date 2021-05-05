@@ -793,13 +793,13 @@ void MainWindow::connectSignals()
 	    }
 	});
 
-	connect(&m_pokesWidget, &PokesWidget::applyPokeRequested, [this](const PokeDefinition & poke) {
+	connect(&m_pokesWidget, &PokesView::applyPokeRequested, [this](const PokeDefinition & poke) {
 	    // TODO check if poke has any user-provided values
 	    poke.apply(*m_spectrum);
 	    statusBar()->showMessage(tr("%1 poke activated.").arg(QString::fromStdString(poke.name())));
 	});
 
-	connect(&m_pokesWidget, &PokesWidget::undoPokeRequested, [this](const PokeDefinition & poke) {
+	connect(&m_pokesWidget, &PokesView::undoPokeRequested, [this](const PokeDefinition & poke) {
 	    poke.undo(*m_spectrum);
         statusBar()->showMessage(tr("%1 poke deactivated.").arg(QString::fromStdString(poke.name())));
 	});

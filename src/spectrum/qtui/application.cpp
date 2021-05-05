@@ -67,3 +67,8 @@ QIcon Application::icon(const QString & name, ThemeType type)
             return QIcon(QStringLiteral(":/icons/light/") % name);
     }
 }
+
+QIcon Application::icon(const QString & systemThemeName, const QString & name, Application::ThemeType type)
+{
+    return QIcon::fromTheme(systemThemeName, icon(name, type));
+}
