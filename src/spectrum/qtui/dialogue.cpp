@@ -79,10 +79,6 @@ void Dialogue::setTitle(const QString & title)
 
 QPushButton * Dialogue::addButton(QDialogButtonBox::StandardButton button)
 {
-    if (m_controls.parent() != layout()) {
-        layout()->addWidget(&m_controls);
-    }
-
     auto * ret = m_controls.addButton(button);
 
     if (1 == m_controls.buttons().size()) {
@@ -95,10 +91,6 @@ QPushButton * Dialogue::addButton(QDialogButtonBox::StandardButton button)
 
 QPushButton * Dialogue::addButton(const QString & text, QDialogButtonBox::ButtonRole role)
 {
-    if (m_controls.parent() != layout()) {
-        layout()->addWidget(&m_controls);
-    }
-
     auto * ret = m_controls.addButton(text, role);
 
     if (1 == m_controls.buttons().size()) {
@@ -207,6 +199,7 @@ void Dialogue::rebuildLayout()
     ++row;
 
     if (!m_controls.buttons().isEmpty()) {
+        Util::debug << "controls will span " << (col + 1) << '\n';
         layout->addWidget(&m_controls, row, 0, 1, (col + 1));
         layout->setRowStretch(row, 0);
         ++row;
