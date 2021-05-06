@@ -77,8 +77,8 @@ void StringMemoryWatch::appendSpectrumChar(std::ostream & out, ::Z80::UnsignedBy
     } else if (127 == ch) {
         // copyright symbol
         out << "©"; // U+00A9 Copyright Sign (0xc2 0xa9 in UTF-8)
-    } else if (32 <= ch && 127 >= ch) {
-        // other characters from 32 - 127 inclusive are as ASCII
+    } else if (32 <= ch && 127 > ch) {
+        // other characters from 32 - 126 inclusive are as ASCII
         out << static_cast<std::ostream::char_type>(ch);
     } else if (12 == ch) {
         // delete
@@ -94,7 +94,7 @@ void StringMemoryWatch::appendSpectrumChar(std::ostream & out, ::Z80::UnsignedBy
         out << "\xe2\x96\x9d";  // U+259D Quadrant upper-right
     } else if (130 == ch) {
         // Spectrum block graphic
-        out << "\xe2\x96\x9d";  // U+2598 Quadrant upper-left
+        out << "\xe2\x96\x98";  // U+2598 Quadrant upper-left
     } else if (131 == ch) {
         // Spectrum block graphic
         out << "\xe2\x96\x80";  // U+2580 Upper half-block
