@@ -249,8 +249,6 @@ void DebugWindow::connectWidgets()
     });
 
     connect(&m_memoryWidget, &QWidget::customContextMenuRequested, this, &DebugWindow::memoryContextMenuRequested);
-    connect(&m_memoryWidget, &MemoryWidget::programCounterBreakpointRequested, this, &DebugWindow::setProgramCounterBreakpointTriggered);
-
     connect(&m_watches, &QWidget::customContextMenuRequested, this, &DebugWindow::watchesContextMenuRequested);
 
     connect(&m_poke, &PokeWidget::pokeClicked, [this](::Z80::UnsignedWord address, ::Z80::UnsignedByte value) -> void {

@@ -8,8 +8,8 @@
 #include <QPaintEvent>
 #include <QScrollBar>
 #include <QToolTip>
-
 #include "memoryview.h"
+#include "application.h"
 
 using namespace Spectrum::QtUi;
 
@@ -198,7 +198,8 @@ namespace
 
 MemoryView::MemoryView(Spectrum::BaseSpectrum::MemoryType * memory, QWidget * parent)
 : QScrollArea(parent),
-  m_memory(memory)
+  m_memory(memory),
+  m_lastSearch()
 {
     QScrollArea::setWidget(new MemoryViewInternal(memory, this));
 }
@@ -237,6 +238,61 @@ void MemoryView::setMemory(BaseSpectrum::MemoryType * memory)
     view->setMemory(memory);
     verticalScrollBar()->setValue(0);
     update();
+}
+
+void MemoryView::find(::Z80::UnsignedWord value, std::optional<::Z80::UnsignedWord> fromAddress)
+{
+    Util::debug << "Searching for unsigned word\n";
+    if constexpr (::Z80::HostByteOrder != ::Z80::Z80ByteOrder) {
+        value = Util::swapByteOrder(value);
+    }
+
+    find(QByteArray(reinterpret_cast<const char *>(&value), sizeof(::Z80::UnsignedWord)), fromAddress);
+}
+
+void MemoryView::find(::Z80::SignedWord value, std::optional<::Z80::UnsignedWord> fromAddress)
+{
+    Util::debug << "Searching for unsigned word\n";
+    if constexpr (::Z80::HostByteOrder != ::Z80::Z80ByteOrder) {
+        value = Util::swapByteOrder(value);
+    }
+
+    find(QByteArray(reinterpret_cast<const char *>(&value), sizeof(::Z80::UnsignedWord)), fromAddress);
+}
+
+void MemoryView::find(const QByteArray & value, std::optional<::Z80::UnsignedWord> fromAddress)
+{
+    if (!fromAddress) {
+        if (m_lastSearch && m_lastSearch->foundAt) {
+            fromAddress = *(m_lastSearch->foundAt) + 1;
+        } else {
+            fromAddress = 0;
+        }
+    }
+
+    const auto endAddress = m_memory->addressableSize() - value.size();
+    std::vector<::Z80::UnsignedByte> searchBuffer(value.size());
+
+    for (::Z80::UnsignedWord address = *fromAddress; address < endAddress; ++address) {
+        m_memory->readBytes(address, searchBuffer.size(), searchBuffer.data());
+
+        if (0 == std::memcmp(value.data(), searchBuffer.data(), searchBuffer.size())) {
+            if (m_lastSearch && m_lastSearch->foundAt) {
+                removeHighlight(*(m_lastSearch->foundAt));
+            }
+
+            m_lastSearch = {.query = value, .foundAt = address,};
+            scrollToAddress(address);
+            setHighlight(address, qRgb(0x44, 0x44, 0x44), qRgb(0x88, 0xcc, 0x88));
+            QTimer::singleShot(5000, [this, address]() {
+                removeHighlight(address);
+            });
+            return;
+        }
+    }
+
+    m_lastSearch = {.query = value, .foundAt = {},};
+    Application::showNotification(tr("Search value not found."));
 }
 
 MemoryView::~MemoryView() = default;

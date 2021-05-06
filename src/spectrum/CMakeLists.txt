@@ -79,6 +79,7 @@ add_executable(
         qtui/debugger/programpointerswidget.cpp
         qtui/memoryview.cpp
         qtui/debugger/memorywidget.cpp
+        qtui/debugger/memorysearchwidget.cpp
         qtui/debugger/memorywatchesmodel.cpp
         qtui/debugger/watchescontextmenu.cpp
         qtui/debugger/memorycontextmenu.cpp
