@@ -4,6 +4,7 @@
 
 #include <sstream>
 #include <iomanip>
+#include "../basespectrum.h"
 #include "registervaluebreakpoint.h"
 
 using namespace Spectrum::Debugger;
