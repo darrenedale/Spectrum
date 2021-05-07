@@ -14,7 +14,6 @@
     <file alias="copy">../icons/copy-dark.svg</file>
     <file alias="clear">../icons/clear-dark.svg</file>
     <file alias="remove">../icons/remove-dark.svg</file>
-    <file alias="breakpoint">../icons/breakpoint-dark.svg</file>
 </qresource>
 <qresource prefix="/icons/light">
     <file alias="app">../icons/app-light.svg</file>
@@ -31,6 +30,5 @@
     <file alias="copy">../icons/copy-light.svg</file>
     <file alias="clear">../icons/clear-light.svg</file>
     <file alias="remove">../icons/remove-light.svg</file>
-    <file alias="breakpoint">../icons/breakpoint-light.svg</file>
 </qresource>
 </RCC>

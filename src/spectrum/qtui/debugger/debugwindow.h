@@ -21,6 +21,7 @@
 #include "keyboardmonitorwidget.h"
 #include "../pokewidget.h"
 #include "memorywatchesmodel.h"
+#include "breakpointsmodel.h"
 #include "memorycontextmenu.h"
 #include "../../debugger/breakpoint.h"
 #include "../../debugger/memorychangedbreakpoint.h"
@@ -70,15 +71,15 @@ namespace Spectrum::QtUi::Debugger
         template<class ValueType>
         void breakOnMemoryChange(::Z80::UnsignedWord address)
         {
-            auto * breakpoint = new MemoryChangedBreakpoint<ValueType>(address);
+            auto breakpoint = std::make_unique<MemoryChangedBreakpoint<ValueType>>(address);
 
-            if (!addBreakpoint(breakpoint)) {
+            if (hasBreakpoint(*breakpoint)) {
                 Util::debug << "breakpoint monitoring 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << " for " << (sizeof(ValueType) * 8) << "-bit changes already set\n";
-                delete breakpoint;
                 return;
             }
 
             breakpoint->addObserver(&m_memoryBreakpointObserver);
+            m_breakpointsModel.addBreakpoint(std::move(breakpoint));
             Util::debug << "setting breakpoint monitoring 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << " for " << (sizeof(ValueType) * 8) << "-bit changes\n";
             showStatusMessage(
                     tr("Breakpoint set monitoring 0x%1 for %2-bit changes.").arg(address, 4, 16, QLatin1Char('0')).arg(
@@ -132,7 +133,7 @@ namespace Spectrum::QtUi::Debugger
          *
          * @return true if the breakpoint was added, false if not.
          */
-        bool addBreakpoint(Breakpoint *);
+        bool addBreakpoint(std::unique_ptr<Breakpoint>);
 
 	protected:
 	    void showEvent(QShowEvent *) override;
@@ -140,6 +141,7 @@ namespace Spectrum::QtUi::Debugger
 
         void memoryContextMenuRequested(const QPoint &);
         void watchesContextMenuRequested(const QPoint &);
+        void breakpointsContextMenuRequested(const QPoint &);
 
     private:
 	    class InstructionObserver
@@ -235,10 +237,11 @@ namespace Spectrum::QtUi::Debugger
         PokeWidget m_poke;
         MemoryWatchesModel m_watchesModel;
         QTreeView m_watches;
+        BreakpointsModel m_breakpointsModel;
+        QTreeView m_breakpoints;
         MemoryContextMenu m_memoryMenu;
 
         InstructionObserver m_cpuObserver;
-        Breakpoints m_breakpoints;
         ProgramCounterBreakpointObserver m_pcObserver;
         MemoryBreakpointObserver m_memoryBreakpointObserver;
         StackPointerBelowBreakpointObserver m_spBelowObserver;
