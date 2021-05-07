@@ -11,7 +11,6 @@
 #include "../../util/debug.h"
 
 using namespace Spectrum::Io;
-using ::Z80::UnsignedByte;
 using ::Z80::InterruptMode;
 
 namespace
@@ -202,7 +201,7 @@ Zx82SnapshotWriter::CompressedMemory Zx82SnapshotWriter::compressMemory(const Z8
             }
 
             // if the replica run leaves a single dangling byte at the end, omit the last byte from the run so that it can be used with the dangling byte in a
-            // literal run of two since we can't encode lone byte
+            // literal run of two since we can't encode the lone byte
             if (runEnd == (end - 1)) {
                 --runEnd;
 

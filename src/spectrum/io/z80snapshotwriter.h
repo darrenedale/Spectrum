@@ -12,9 +12,8 @@ namespace Spectrum::Io
     /**
      * Writes a snapshot in .z80 format.
      *
-     * All generated snapshots use the extended .z80 format with compressed memory images stored in pages. The format
-     * doesn't support 16K models directly so snapshots of 16K models are output as 48K models (with the extra 32k of
-     * memory as all 0xff bytes, as they would present when addressed in a 16K model).
+     * All generated snapshots use the extended .z80 format with compressed memory images stored in pages. The format doesn't support 16K models directly so
+     * snapshots of 16K models are output as 48K models (with the extra 32k of memory as all 0xff bytes, as they would present when addressed in a 16K model).
      *
      * Satisfies the SnapshotWriterClass concept.
      */
@@ -36,7 +35,7 @@ namespace Spectrum::Io
          */
         static const std::string & formatName()
         {
-            static std::string name("z80");
+            static const std::string name("z80");
             return name;
         }
 

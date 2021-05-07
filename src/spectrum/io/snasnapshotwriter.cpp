@@ -77,7 +77,7 @@ bool SnaSnapshotWriter::writeTo(std::ostream & out) const
         return false;
     }
 
-    // only RAM is written to .sna files (not ROM)
+    // NOTE we assume a standard Spectrum 16K/48K memory object with a single contiguous block of bytes
     out.write(reinterpret_cast<const std::ostream::char_type *>(memory->pointerTo(0x4000)), static_cast<std::streamsize>(memory->availableSize() - 0x4000));
     return !out.bad() && !out.fail();
 }

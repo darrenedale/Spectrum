@@ -2,8 +2,8 @@
 // Created by darren on 14/04/2021.
 //
 
-#ifndef SPECTRUM_SPSNAPSHOTWRITER_H
-#define SPECTRUM_SPSNAPSHOTWRITER_H
+#ifndef SPECTRUM_IO_SPSNAPSHOTWRITER_H
+#define SPECTRUM_IO_SPSNAPSHOTWRITER_H
 
 #include "snapshotwriter.h"
 
@@ -11,6 +11,8 @@ namespace Spectrum::Io
 {
     /**
      * Write a Spectrum snapshot in .sp format.
+     *
+     * Snapshots in .sp format only support 48K Spectrums.
      *
      * Satisfies the SnapshotWriterClass concept.
      */
@@ -32,7 +34,7 @@ namespace Spectrum::Io
          */
         static const std::string & formatName()
         {
-            static std::string name("sp");
+            static const std::string name("sp");
             return name;
         }
 
@@ -52,4 +54,4 @@ namespace Spectrum::Io
     };
 }
 
-#endif //SPECTRUM_SPSNAPSHOTWRITER_H
+#endif //SPECTRUM_IO_SPSNAPSHOTWRITER_H

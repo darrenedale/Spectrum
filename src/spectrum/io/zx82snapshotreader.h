@@ -45,7 +45,7 @@ namespace Spectrum::Io
          */
         static const std::string & formatName()
         {
-            static std::string name("zx82");
+            static const std::string name("zx82");
             return name;
         }
 
@@ -77,8 +77,8 @@ namespace Spectrum::Io
         /**
          * Decompress bytes read from the stream using the IFF/ILBM runLength1 scheme.
          *
-         * The data is decompressed into a pre-allocated buffer. The buffer must be at least 48kb in size in order to
-         * store a fully-decompressed Spectrum 48K RAM image.
+         * The data is decompressed into a pre-allocated buffer. The buffer must be at least 48kb in size in order to store a fully-decompressed Spectrum 48K
+         * RAM image.
          *
          * @param dest A buffer into which to store the decompressed bytes.
          * @param source The compressed image.

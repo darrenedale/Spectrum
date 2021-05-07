@@ -6,7 +6,6 @@
 #include <bit>
 #include <set>
 #include <iostream>
-
 #include "../cpu.h"
 #include "../simplememory.h"
 #include "registers.h"

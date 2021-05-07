@@ -3,7 +3,6 @@
 //
 
 #include <cassert>
-
 #include "snapshotreader.h"
 
 using namespace Spectrum::Io;

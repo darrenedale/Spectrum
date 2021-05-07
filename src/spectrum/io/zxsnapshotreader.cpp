@@ -136,8 +136,8 @@ const Snapshot * ZxSnapshotReader::read() const
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "Simplify"
 #pragma ide diagnostic ignored "UnreachableCode"
-    // NOTE one of these two branches will be diagnosed as unnecessary, depending on the byte order of the host, but the
-    // code is required for cross-platform compatibility
+    // NOTE one of these two branches will be diagnosed as unnecessary, depending on the byte order of the host, but the code is required for cross-platform
+    // compatibility. the condition is resolved at compile time so only the required code should be generated and no runtime branch should be necessary
     if constexpr (std::endian::native == std::endian::big) {
         registers.bc = content.bc;
         registers.de = content.de;
@@ -223,9 +223,14 @@ bool ZxSnapshotReader::couldBeSnapshot(std::istream & in)
         return false;
     }
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "Simplify"
+    // NOTE this will be diagnosed as unnecessary, depending on the byte order of the host, but the code is required for cross-platform compatibility. its
+    // necessity is determined at compile time and will result in no code being generated if the condition is not true
     if constexpr (std::endian::native != std::endian::big) {
         wordValue = swapByteOrder(wordValue);
     }
+#pragma clang diagnostic pop
 
     if (-1 > wordValue || 1 < wordValue) {
         return false;

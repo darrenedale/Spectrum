@@ -194,6 +194,10 @@ bool ZxSnapshotWriter::writeTo(std::ostream & out) const
             break;
     }
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "Simplify"
+    // NOTE this will be diagnosed as unnecessary, depending on the byte order of the host, but the code is required for cross-platform compatibility. its
+    // necessity is determined at compile time and will result in no code being generated if the condition is not true
     if constexpr (std::endian::native != std::endian::big) {
         header.bc = swapByteOrder(header.bc);
         header.de = swapByteOrder(header.de);
@@ -214,6 +218,7 @@ bool ZxSnapshotWriter::writeTo(std::ostream & out) const
 
         header.interruptMode = swapByteOrder(header.interruptMode);
     }
+#pragma clang diagnostic pop
 
     out.write(reinterpret_cast<const std::ostream::char_type *>(&header), sizeof(Header));
     return !out.bad() && !out.fail();

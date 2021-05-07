@@ -4,8 +4,7 @@
 
 #include <iostream>
 #include "z80snapshotwriter.h"
-#include "../memory128k.h"
-#include "../memoryplus2a.h"
+#include "../pagingmemoryinterface.h"
 #include "../../util/debug.h"
 
 using namespace Spectrum::Io;

@@ -5,7 +5,6 @@
 #include <fstream>
 #include <sstream>
 #include "pokfilereader.h"
-#include "../pokedefinition.h"
 #include "../../util/debug.h"
 
 using namespace Spectrum::Io;
@@ -18,7 +17,7 @@ namespace
     /**
      * Helper to skip over whitespace when reading from a stream.
      *
-     * @param in
+     * @param in The stream to skip.
      */
     void skipWhitespace(std::istream & in)
     {

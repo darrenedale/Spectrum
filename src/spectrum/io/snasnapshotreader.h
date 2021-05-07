@@ -2,13 +2,18 @@
 // Created by darren on 22/03/2021.
 //
 
-#ifndef SPECTRUM_SNASNAPSHOTREADER_H
-#define SPECTRUM_SNASNAPSHOTREADER_H
+#ifndef SPECTRUM_IO_SNASNAPSHOTREADER_H
+#define SPECTRUM_IO_SNASNAPSHOTREADER_H
 
 #include "snapshotreader.h"
 
 namespace Spectrum::Io
 {
+    /**
+     * Read a snapshot in .sna format.
+     *
+     * There are two variations of this format, one for 48K Spectrums, one for 128K Spectrums. This reader currently only supports the 48K format.
+     */
     class SnaSnapshotReader
     : public SnapshotReader
     {
@@ -37,7 +42,7 @@ namespace Spectrum::Io
          */
         static const std::string & formatName()
         {
-            static std::string name("sna");
+            static const std::string name("sna");
             return name;
         }
 
@@ -63,4 +68,4 @@ namespace Spectrum::Io
     };
 }
 
-#endif //SPECTRUM_SNASNAPSHOTREADER_H
+#endif //SPECTRUM_IO_SNASNAPSHOTREADER_H

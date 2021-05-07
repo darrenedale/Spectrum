@@ -14,8 +14,7 @@ namespace Spectrum::Io
      * Write a snapshot in .zx (Amiga KGB emulator) format.
      *
      * This isn't a great format for interchange - as far as I can tell the screen border colour is not stored and there's plenty of wasted space in the
-     * "header" that stores the registers etc. It also stores the memory image before the "header" so it can't be extended to support 128K Spectrums, and it
-     * stores 132 bytes of ROM (the last 16.5 characters in the character set) with the memory image.
+     * "header" that stores the registers etc. It also stores the memory image before the "header" so it can't be extended to support 128K Spectrums.
      *
      * Satisfies the SnapshotWriterClass concept.
      */
@@ -37,7 +36,7 @@ namespace Spectrum::Io
          */
         static const std::string & formatName()
         {
-            static std::string name("zx");
+            static const std::string name("zx");
             return name;
         }
 

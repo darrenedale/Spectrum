@@ -12,7 +12,7 @@ namespace Spectrum::Io
     /**
      * Reader class for snapshots in .zx format.
      *
-     * References:
+     * References (valid April 2021):
      * - http://spectrum-zx.chat.ru/faq/fileform.html
      */
     class ZxSnapshotReader
@@ -43,7 +43,7 @@ namespace Spectrum::Io
          */
         static const std::string & formatName()
         {
-            static std::string name("zx");
+            static const std::string name("zx");
             return name;
         }
 

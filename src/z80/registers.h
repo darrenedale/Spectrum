@@ -6,7 +6,6 @@
 #define Z80_REGISTERS_H
 
 #include <ostream>
-
 #include "types.h"
 
 namespace

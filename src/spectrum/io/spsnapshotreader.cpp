@@ -5,7 +5,6 @@
 #include <iostream>
 #include <iomanip>
 #include <iterator>
-
 #include "spsnapshotreader.h"
 #include "../spectrum48k.h"
 #include "../../util/debug.h"

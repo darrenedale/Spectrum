@@ -2,12 +2,11 @@
 // Created by darren on 22/03/2021.
 //
 
-#ifndef SPECTRUM_SNAPSHOTREADER_H
-#define SPECTRUM_SNAPSHOTREADER_H
+#ifndef SPECTRUM_IO_SNAPSHOTREADER_H
+#define SPECTRUM_IO_SNAPSHOTREADER_H
 
 #include <istream>
 #include <fstream>
-
 #include "../snapshot.h"
 
 namespace Spectrum::Io
@@ -67,10 +66,32 @@ namespace Spectrum::Io
           m_snapshot(nullptr)
         {}
 
-        // readers can be move constructed/assigned but not copied
+        /**
+         * SnapshotReaders cannot be copied owing to possible issues of input stream ownership.
+         */
         SnapshotReader(const SnapshotReader & other) = delete;
+
+        /**
+         * Move constructor.
+         *
+         * After this method is called, the other reader must not be used.
+         *
+         * @param other The reader to move.
+         */
         SnapshotReader(SnapshotReader && other) noexcept;
+
+        /**
+         * SnapshotReaders cannot be copied owing to possible issues of input stream ownership.
+         */
         SnapshotReader & operator=(const SnapshotReader & other) = delete;
+
+        /**
+         * Move assignment.
+         *
+         * After this method is called, the other reader must not be used.
+         *
+         * @param other The reader to move.
+         */
         SnapshotReader & operator=(SnapshotReader && other) noexcept;
 
         /**
@@ -223,4 +244,4 @@ namespace Spectrum::Io
     };
 }
 
-#endif //SPECTRUM_SNAPSHOTREADER_H
+#endif //SPECTRUM_IO_SNAPSHOTREADER_H

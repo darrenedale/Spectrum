@@ -2,11 +2,10 @@
 // Created by darren on 22/03/2021.
 //
 
-#ifndef SPECTRUM_SPSNAPSHOTREADER_H
-#define SPECTRUM_SPSNAPSHOTREADER_H
+#ifndef SPECTRUM_IO_SPSNAPSHOTREADER_H
+#define SPECTRUM_IO_SPSNAPSHOTREADER_H
 
 #include <optional>
-
 #include "snapshotreader.h"
 #include "../../z80/types.h"
 
@@ -14,6 +13,8 @@ namespace Spectrum::Io
 {
     /**
      * Read a snapshot in .sp format.
+     *
+     * Snapshots in .sp format only support 48K Spectrums.
      */
     class SpSnapshotReader
     : public SnapshotReader
@@ -27,8 +28,7 @@ namespace Spectrum::Io
         /**
          * Read a snapshot from the current stream.
          *
-         * The returned pointer is owned by the reader. It must not be destroyed nor dereferenced after the reader has
-         * been destroyed.
+         * The returned pointer is owned by the reader. It must not be destroyed nor dereferenced after the reader has been destroyed.
          *
          * @return The snapshot, or nullptr if the read failed.
          */
@@ -43,7 +43,7 @@ namespace Spectrum::Io
          */
         static const std::string & formatName()
         {
-            static std::string name("sp");
+            static const std::string name("sp");
             return name;
         }
 
@@ -73,4 +73,4 @@ namespace Spectrum::Io
     };
 }
 
-#endif //SPECTRUM_SPSNAPSHOTREADER_H
+#endif //SPECTRUM_IO_SPSNAPSHOTREADER_H

@@ -2,8 +2,8 @@
 // Created by darren on 15/03/2021.
 //
 
-#ifndef SPECTRUM_SNASNAPSHOTWRITER_H
-#define SPECTRUM_SNASNAPSHOTWRITER_H
+#ifndef SPECTRUM_IO_SNASNAPSHOTWRITER_H
+#define SPECTRUM_IO_SNASNAPSHOTWRITER_H
 
 #include "snapshotwriter.h"
 
@@ -12,8 +12,10 @@ namespace Spectrum::Io
     /**
      * Write a spectrum snapshot in .sna format.
      *
-     * NOTE You must ensure that the PC is on the top of the stack before the snapshot is created otherwise the file
-     * will be unusable. Using the following sequence should work:
+     * There are two variations of this format, one for 48K Spectrums, one for 128K Spectrums. This writer currently only supports the 48K format.
+     *
+     * NOTE You must ensure that the PC is on the top of the stack before the snapshot is created otherwise the file will be unusable. Using the following
+     * sequence should work:
      *
      *     // execute a CALL $0000 to put the PC on the stack
      *     spectrum.z80()->execute({0xcd, 0x00, 0x00}, false);
@@ -23,9 +25,8 @@ namespace Spectrum::Io
      *
      *     // save the snapshot ...
      *
-     * This is a quirk of the .sna format - it doesn't store the PC in the snapshot, it expects the PC to be on the top
-     * of the Spectrum stack, and expects a RETN instruction to be executed to when the snapshot is restored to a
-     * Spectrum.
+     * This is a quirk of the .sna format - it doesn't store the PC in the snapshot, it expects the PC to be on the top of the Spectrum stack, and expects a
+     * RETN instruction to be executed to when the snapshot is restored to a Spectrum.
      *
      * Satisfies the SnapshotWriterClass concept.
      */
@@ -47,7 +48,7 @@ namespace Spectrum::Io
          */
         static const std::string & formatName()
         {
-            static std::string name("sna");
+            static const std::string name("sna");
             return name;
         }
 
@@ -67,4 +68,4 @@ namespace Spectrum::Io
     };
 }
 
-#endif //SPECTRUM_SNASNAPSHOTWRITER_H
+#endif //SPECTRUM_IO_SNASNAPSHOTWRITER_H

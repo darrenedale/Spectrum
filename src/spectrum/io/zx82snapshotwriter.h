@@ -19,7 +19,7 @@ namespace Spectrum::Io
      *
      * Satisfies the SnapshotWriterClass concept.
      *
-     * References:
+     * References (valid April 2021):
      * - https://hwiegman.home.xs4all.nl/fileformats/spectrum/Spectrum%20FAQ%20-%20File%20Formats.htm
      * - http://aminet.net/package/misc/emu/Speculator (See Docs/Spec97.guide)
      */
@@ -41,7 +41,7 @@ namespace Spectrum::Io
          */
         static const std::string & formatName()
         {
-            static std::string name("zx82");
+            static const std::string name("zx82");
             return name;
         }
 
@@ -81,9 +81,14 @@ namespace Spectrum::Io
 
     protected:
         /**
+         * Convenience alias.
+         */
+        using UnsignedByte = ::Z80::UnsignedByte;
+
+        /**
          * Convenience alias for the type representing compressed memory.
          */
-        using CompressedMemory = std::vector<::Z80::UnsignedByte>;
+        using CompressedMemory = std::vector<UnsignedByte>;
 
         /**
          * Helper to compress a memory image.
@@ -96,7 +101,7 @@ namespace Spectrum::Io
          *
          * @return A vector of bytes containing the compressed representation of the provided memory.
          */
-        static CompressedMemory compressMemory(const Z80::UnsignedByte * memory, std::uint32_t size);
+        static CompressedMemory compressMemory(const UnsignedByte * memory, std::uint32_t size);
 
     private:
         /**

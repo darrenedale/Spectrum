@@ -2,11 +2,10 @@
 // Created by darren on 22/03/2021.
 //
 
-#ifndef SPECTRUM_Z80SNAPSHOTREADER_H
-#define SPECTRUM_Z80SNAPSHOTREADER_H
+#ifndef SPECTRUM_IO_Z80SNAPSHOTREADER_H
+#define SPECTRUM_IO_Z80SNAPSHOTREADER_H
 
 #include <optional>
-
 #include "snapshotreader.h"
 #include "../../z80/types.h"
 
@@ -15,8 +14,8 @@ namespace Spectrum::Io
     /**
      * Read a snapshot in .z80 format.
      *
-     * All versions of the format (at the time of writing) are supported. Only the models supported by the emulator will
-     * be read; other models will not produce a Snapshot object (read() and snapshot() will return nullptr).
+     * All versions of the format (at the time of writing) are supported. Only the models supported by the emulator will be read; other models will not produce
+     * a Snapshot object (read() and snapshot() will return nullptr).
      */
     class Z80SnapshotReader
     : public SnapshotReader
@@ -37,7 +36,6 @@ namespace Spectrum::Io
          */
         const Snapshot * read() const override;
 
-
         /**
          * Fetch the unique name for the format read by this class.
          *
@@ -47,7 +45,7 @@ namespace Spectrum::Io
          */
         static const std::string & formatName()
         {
-            static std::string name("z80");
+            static const std::string name("z80");
             return name;
         }
 
@@ -98,4 +96,4 @@ namespace Spectrum::Io
     };
 }
 
-#endif //SPECTRUM_Z80SNAPSHOTREADER_H
+#endif //SPECTRUM_IO_Z80SNAPSHOTREADER_H
