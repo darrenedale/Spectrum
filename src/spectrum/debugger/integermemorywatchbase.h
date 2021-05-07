@@ -12,6 +12,9 @@ namespace Spectrum::Debugger
 {
     /**
      * Abstract base class for integer-based memory watches.
+     *
+     * Primarily, this base class enables code that uses integer watches to treat all instantiations of the IntegerMemoryWatch template class the same through a
+     * pointer/reference to this base class.
      */
     class IntegerMemoryWatchBase
     : public MemoryWatch

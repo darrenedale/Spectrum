@@ -10,30 +10,45 @@
 
 namespace Spectrum::Debugger
 {
+    /**
+     * Base class for breakpoints that monitor the state of 16-bit register pairs.
+     */
     class RegisterBreakpoint
     : public Breakpoint
     {
-    private:
+    protected:
+        /**
+         * Convenience alias for the register type.
+         */
         using Register16 = ::Z80::Register16;
 
     public:
+        /**
+         * Initialise a new RegisterBreakpoint for a given 16-bit register pair.
+         *
+         * @param reg The register that is the subject of the breakpoint.
+         */
         explicit RegisterBreakpoint(Register16 reg)
         : Breakpoint(),
           m_register(reg)
         {}
 
-        [[nodiscard]] std::string typeName() const override = 0;
-        [[nodiscard]] std::string conditionDescription() const override = 0;
-
+        /**
+         * Fetch the register being watched by this breakpoint.
+         *
+         * NOTE this method name deviates from the usual naming convention because register is a reserved word in C++.
+         *
+         * @return The register.
+         */
         [[nodiscard]] inline Register16 watchedRegister() const
         {
             return m_register;
         }
 
-        bool operator==(const Breakpoint &) const override = 0;
-        bool check(const BaseSpectrum & spectrum) override = 0;
-
     private:
+        /**
+         * The register that is the subject of the breakpoint.
+         */
         Register16 m_register;
     };
 }

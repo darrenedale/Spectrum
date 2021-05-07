@@ -4,7 +4,6 @@
 
 #include <sstream>
 #include <iomanip>
-
 #include "programcounterbreakpoint.h"
 
 using namespace Spectrum::Debugger;

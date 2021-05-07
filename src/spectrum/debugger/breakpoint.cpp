@@ -2,6 +2,7 @@
 // Created by darren on 12/03/2021.
 //
 
+#include <cassert>
 #include "breakpoint.h"
 
 using namespace Spectrum::Debugger;

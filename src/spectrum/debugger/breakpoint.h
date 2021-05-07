@@ -5,9 +5,13 @@
 #ifndef SPECTRUM_DEBUGGER_BREAKPOINT_H
 #define SPECTRUM_DEBUGGER_BREAKPOINT_H
 
-#include "../qtui/thread.h"
-#include "../../z80/types.h"
-#include "../basespectrum.h"
+#include <string>
+#include <vector>
+
+namespace Spectrum
+{
+    class BaseSpectrum;
+}
 
 namespace Spectrum::Debugger
 {
@@ -98,6 +102,8 @@ namespace Spectrum::Debugger
     protected:
         /**
          * Helper to notify all observers when a breakpoint's condition is met.
+         *
+         * Call this from inside your subclass's check() method if the breakpoint condition is met.
          */
         void notifyObservers();
 

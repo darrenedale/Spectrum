@@ -5,7 +5,6 @@
 #include <sstream>
 #include <iomanip>
 #include "registervaluebreakpoint.h"
-#include "../../z80/types.h"
 
 using namespace Spectrum::Debugger;
 
@@ -21,7 +20,12 @@ bool RegisterValueBreakpoint::operator==(const Breakpoint & other) const
 
 bool RegisterValueBreakpoint::check(const Spectrum::BaseSpectrum & spectrum)
 {
-    return spectrum.z80()->registerValue(watchedRegister()) == targetValue();
+    if (spectrum.z80()->registerValue(watchedRegister()) == targetValue()) {
+        notifyObservers();
+        return true;
+    }
+
+    return false;
 }
 
 std::string RegisterValueBreakpoint::typeName() const

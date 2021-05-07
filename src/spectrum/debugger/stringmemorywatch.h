@@ -34,6 +34,15 @@ namespace Spectrum::Debugger
             Ascii,
         };
 
+        /**
+         * Initialise a new StringMemoryWatch with a given memory object, address and string length.
+         *
+         * The watched string must fall entirely within the addressable size of the provided memory.
+         *
+         * @param memory The memory to watch.
+         * @param address The address to watch in the memory.
+         * @param size The size of the string to watch.
+         */
         StringMemoryWatch(BaseSpectrum::MemoryType * memory, ::Z80::UnsignedWord address, WatchSize size);
 
         /**
