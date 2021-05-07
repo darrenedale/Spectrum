@@ -84,9 +84,9 @@ namespace Spectrum::QtUi::Debugger
         /**
          * Set the data for an item.
          *
-         * Only labels for watches can be edited.
+         * Labels and addresses of watches can be edited. If the watch is a String watch, the length of the observed string can also be edited.
          *
-         * @param idx The index of the watch to edit. The column must be the Label column.
+         * @param idx The index of the watch to edit. The column must be either the Label, Address or Type column.
          * @param value The value to set for the label.
          * @param role The data role. Only the Edit role is accepted.
          *
@@ -121,7 +121,7 @@ namespace Spectrum::QtUi::Debugger
          *
          * Since there is no hierarchy of items, the parent is always the root index, which is the default-constructed QModelIndex.
          *
-         * @return A defualt-constructed QModelIndex.
+         * @return A default-constructed QModelIndex.
          */
         [[nodiscard]] constexpr QModelIndex parent(const QModelIndex &) const override
         {
@@ -221,6 +221,9 @@ namespace Spectrum::QtUi::Debugger
         void update();
 
     private:
+        /**
+         * Storage type for the watches in the model.
+         */
         using Watches = std::vector<std::unique_ptr<MemoryWatch>>;
 
         /**
