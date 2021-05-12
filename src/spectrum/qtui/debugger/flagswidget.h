@@ -5,6 +5,7 @@
 #ifndef SPECTRUM_QTUI_DEBUGGER_FLAGSWIDGET_H
 #define SPECTRUM_QTUI_DEBUGGER_FLAGSWIDGET_H
 
+#include <array>
 #include <QWidget>
 #include <QToolButton>
 #include "../../../z80/z80.h"

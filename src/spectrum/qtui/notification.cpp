@@ -76,8 +76,12 @@ void Notification::show(std::optional<int> timeout) const
 
 #elif (defined(Q_OS_WIN))
 
+// uncomment this to use winrt toast notifications when C++/WinRT is compatible with C++20
+//#define SPECTRUM_NOTIFICATION_USE_WINRT
+
 #include <QStringBuilder>
 
+#if (defined(SPECTRUM_NOTIFICATION_USE_WINRT))
 // NOTE this won't currently build - C++/WinRT won't currently build with C++20.
 #include <winrt/Windows.UI.Notifications.h>
 #include <winrt/Windows.Data.Xml.Dom.h>
@@ -106,13 +110,16 @@ namespace
         return doc;
     }
 }
+#endif
 
 void Notification::show(std::optional<int> timeout) const
 {
+#if (defined(SPECTRUM_NOTIFICATION_USE_WINRT))
     ToastNotification toast(notificationXml(message(), title()));
     DesktopNotificationManagerCompat::CreateToastNotifier(Application::applicationName().toStdWString()).Show(toast);
-
+#else
     showFallbackNotification(message(), title());
+#endif
 }
 
 #elif (defined(Q_OS_MACOS))

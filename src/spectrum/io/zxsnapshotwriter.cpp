@@ -2,6 +2,7 @@
 // Created by darren on 27/04/2021.
 //
 
+#include <array>
 #include "zxsnapshotwriter.h"
 #include "../../util/debug.h"
 

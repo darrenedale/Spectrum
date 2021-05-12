@@ -3,6 +3,7 @@
 //
 
 #include <iostream>
+#include <array>
 #include "z80snapshotwriter.h"
 #include "../pagingmemoryinterface.h"
 #include "../../util/debug.h"
