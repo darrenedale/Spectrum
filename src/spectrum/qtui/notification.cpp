@@ -7,6 +7,7 @@
 #include "application.h"
 #include "notification.h"
 #include "dialogue.h"
+#include "../../util/debug.h"
 
 using namespace Spectrum::QtUi;
 

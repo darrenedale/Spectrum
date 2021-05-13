@@ -15,6 +15,7 @@
 #include "pokesview.h"
 #include "pokesviewitem.h"
 #include "application.h"
+#include "mainwindow.h"
 #include "threadpauser.h"
 #include "../io/pokfilereader.h"
 #include "../../util/debug.h"

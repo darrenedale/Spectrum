@@ -2,6 +2,7 @@
 // Created by darren on 05/05/2021.
 //
 
+#include <iomanip>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QKeyEvent>
@@ -9,6 +10,7 @@
 #include "../application.h"
 #include "../widgetupdatesuspender.h"
 #include "memorysearchwidget.h"
+#include "../../../util/debug.h"
 
 using namespace Spectrum::QtUi::Debugger;
 

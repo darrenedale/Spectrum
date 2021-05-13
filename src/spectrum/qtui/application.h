@@ -9,10 +9,11 @@
 
 #include <memory>
 #include <QApplication>
-#include "mainwindow.h"
 
 namespace Spectrum::QtUi
 {
+    class MainWindow;
+
     class Application : public QApplication
     {
         Q_OBJECT
@@ -41,24 +42,26 @@ namespace Spectrum::QtUi
         Application(int & argc, char ** argv);
 
         /**
+         * Destructor.
+         *
+         * The destructor is default, but must be declared and defaulted in the implementation file so that the instantiation of a unique_ptr with a forward-
+         * declared class (MainWindow) compiles correctly.
+         */
+        ~Application() override;
+
+        /**
          * Fetch a read-only reference to the emulator main window.
          *
          * @return The main window.
          */
-        [[nodiscard]] const MainWindow & mainWindow() const
-        {
-            return *m_mainWindow;
-        }
+        [[nodiscard]] const MainWindow & mainWindow() const;
 
         /**
          * Fetch a reference to the emulator main window.
          *
          * @return The main window.
          */
-        MainWindow & mainWindow()
-        {
-            return *m_mainWindow;
-        }
+        MainWindow & mainWindow();
 
         /**
          * Show an application-wide notification.

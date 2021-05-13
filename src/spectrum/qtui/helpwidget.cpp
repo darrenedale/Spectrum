@@ -44,7 +44,7 @@ HelpWidget::HelpWidget(QWidget * parent)
     layout->addStretch(10);
     mainLayout->addLayout(layout);
 
-    connect(button, &QPushButton::clicked, this, &AboutWidget::hide);
+    connect(button, &QPushButton::clicked, this, &HelpWidget::hide);
 
     setLayout(mainLayout);
 }

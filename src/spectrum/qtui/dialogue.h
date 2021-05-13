@@ -7,6 +7,7 @@
 
 #include <QDialog>
 #include <QLabel>
+#include <QIcon>
 #include <QDialogButtonBox>
 
 class QPushButton;

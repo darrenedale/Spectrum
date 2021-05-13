@@ -8,6 +8,7 @@
 #include <QPaintEvent>
 #include <QScrollBar>
 #include <QToolTip>
+#include <QTimer>
 #include "memoryview.h"
 #include "application.h"
 

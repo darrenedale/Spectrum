@@ -4,6 +4,7 @@
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QLabel>
 #include "../application.h"
 #include "memorywidget.h"
 

@@ -6,6 +6,7 @@
 #include <QStatusBar>
 #include <QIcon>
 #include <QStringBuilder>
+#include "mainwindow.h"
 #include "application.h"
 #include "notification.h"
 
@@ -72,3 +73,15 @@ QIcon Application::icon(const QString & systemThemeName, const QString & name, A
 {
     return QIcon::fromTheme(systemThemeName, icon(name, type));
 }
+
+MainWindow & Application::mainWindow()
+{
+    return *m_mainWindow;
+}
+
+const MainWindow & Application::mainWindow() const
+{
+    return *m_mainWindow;
+}
+
+Application::~Application() = default;
