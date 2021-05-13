@@ -15,8 +15,9 @@ namespace Spectrum::QtUi::Debugger
     class BreakpointsModel
     : public QAbstractItemModel
     {
-    public:
+        Q_OBJECT
 
+    public:
         /**
          * The item data role to fetch the enabled status of an item.
          *
@@ -109,7 +110,7 @@ namespace Spectrum::QtUi::Debugger
          *
          * @return The index.
          */
-        [[nodiscard]] QModelIndex index(int row, int col, const QModelIndex &) const override
+        [[nodiscard]] QModelIndex index(int row, int col, const QModelIndex & = {}) const override
         {
             return createIndex(row, col);
         }
@@ -289,7 +290,32 @@ namespace Spectrum::QtUi::Debugger
         {
             return breakpoint(idx.row());
         }
-        
+
+    Q_SIGNALS:
+        /**
+         * Emitted when a breakpoint has been removed.
+         *
+         * The breakpoint pointer is provided for reference only. IT MUST NOT BE DEREFERENCED OR DELETED. The Breakpoint was owned by the model and has already
+         * been destroyed.
+         *
+         * @param breakpoint The breakpoint that was removed.
+         */
+        void breakpointRemoved(Spectrum::Debugger::Breakpoint * breakpoint);
+
+        /**
+         * Emitted when a breakpoint has been enabled.
+         *
+         * @param breakpoint The breakpoint that was enabled.
+         */
+        void breakpointEnabled(Spectrum::Debugger::Breakpoint * breakpoint);
+
+        /**
+         * Emitted when a breakpoint has been disabled.
+         *
+         * @param index breakpoint The breakpoint that was disabled.
+         */
+        void breakpointDisabled(Spectrum::Debugger::Breakpoint * breakpoint);
+
     private:
         /**
          * Internal data structure for representing breakpoints stored in the model.
@@ -309,7 +335,6 @@ namespace Spectrum::QtUi::Debugger
          * Storage for the breakpoints contained in the model.
          */
         Breakpoints m_breakpoints;
-
     };
 }
 

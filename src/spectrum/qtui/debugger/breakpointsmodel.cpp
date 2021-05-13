@@ -11,7 +11,6 @@ namespace
 {
     constexpr const int TypeColumn = 0;
     constexpr const int ConditionColumn = 1;
-    constexpr const int StatusColumn = 2;
 }
 
 BreakpointsModel::BreakpointsModel(QObject * parent)
@@ -36,14 +35,12 @@ QVariant BreakpointsModel::headerData(int section, Qt::Orientation orientation, 
         case ConditionColumn:
             return tr("Condition");
 
-        case StatusColumn:
-            return QLatin1String("");
-
         default:
             // unreachable code - if we get here columnCount() has been changed without providing the header for the extra column(s)
             assert(false);
             return {};
-    }}
+    }
+}
 
 QVariant BreakpointsModel::data(const QModelIndex & idx, int role) const
 {
@@ -58,9 +55,6 @@ QVariant BreakpointsModel::data(const QModelIndex & idx, int role) const
 
             case ConditionColumn:
                 return QString::fromStdString(breakpoint(idx)->conditionDescription());
-
-            case StatusColumn:
-                return QLatin1String("");
         }
 
         // unreachable code - if we get here columnCount() has been changed without providing the data for the extra column(s)
@@ -98,7 +92,9 @@ void BreakpointsModel::removeBreakpoint(int idx)
 {
     assert(0 <= idx && idx < rowCount());
     beginRemoveRows({}, idx, idx);
+    auto * breakpoint = m_breakpoints[idx].breakpoint.get();
     m_breakpoints.erase(m_breakpoints.cbegin() + idx);
+    Q_EMIT breakpointRemoved(breakpoint);
     endRemoveRows();
 }
 
@@ -118,8 +114,15 @@ void BreakpointsModel::enableBreakpoint(BreakpointsModel::Breakpoint * breakpoin
 void BreakpointsModel::enableBreakpoint(int idx)
 {
     assert(0 <= idx && idx < rowCount());
+
+    if (m_breakpoints[idx].isEnabled) {
+        // no change
+        return;
+    }
+
     m_breakpoints[idx].isEnabled = true;
     Q_EMIT dataChanged(createIndex(idx, 0), createIndex(idx, columnCount() - 1));
+    Q_EMIT breakpointEnabled(m_breakpoints[idx].breakpoint.get());
 }
 
 void BreakpointsModel::disableBreakpoint(BreakpointsModel::Breakpoint * breakpoint)
@@ -138,8 +141,15 @@ void BreakpointsModel::disableBreakpoint(BreakpointsModel::Breakpoint * breakpoi
 void BreakpointsModel::disableBreakpoint(int idx)
 {
     assert(0 <= idx && idx < rowCount());
+
+    if (!m_breakpoints[idx].isEnabled) {
+        // no change
+        return;
+    }
+
     m_breakpoints[idx].isEnabled = false;
     Q_EMIT dataChanged(createIndex(idx, 0), createIndex(idx, columnCount() - 1));
+    Q_EMIT breakpointDisabled(m_breakpoints[idx].breakpoint.get());
 }
 
 bool BreakpointsModel::breakpointIsEnabled(Breakpoint * breakpoint) const

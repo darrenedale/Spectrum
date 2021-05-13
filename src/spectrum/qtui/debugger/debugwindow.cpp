@@ -97,11 +97,7 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
     font.setPointSizeF(font.pointSizeF() * 0.85);
     m_watches.setFont(font);
 
-    m_breakpoints.setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
     m_breakpoints.setModel(&m_breakpointsModel);
-    m_breakpoints.setItemsExpandable(false);
-    m_breakpoints.setRootIsDecorated(false);
-    m_breakpoints.setUniformRowHeights(true);
     m_breakpoints.setFont(font);
 
     m_statusClearTimer.setSingleShot(true);

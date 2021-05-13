@@ -72,6 +72,7 @@ add_executable(
         qtui/pokesview.cpp
         qtui/pokesviewitem.cpp
         qtui/thread.cpp
+        qtui/actionableitemview.h
         qtui/debugger/debugwindow.cpp
         qtui/debugger/registerswidget.cpp
         qtui/debugger/shadowregisterswidget.cpp
@@ -81,6 +82,7 @@ add_executable(
         qtui/debugger/memorywidget.cpp
         qtui/debugger/memorysearchwidget.cpp
         qtui/debugger/memorywatchesmodel.cpp
+        qtui/debugger/breakpointsview.cpp
         qtui/debugger/breakpointsmodel.cpp
         qtui/debugger/watchescontextmenu.cpp
         qtui/debugger/breakpointscontextmenu.cpp
