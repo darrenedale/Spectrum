@@ -16,6 +16,7 @@
 #include <QPainter>
 #include <QScreen>
 #include <QToolTip>
+#include <QTimer>
 #include <QApplication>
 
 namespace Spectrum::QtUi

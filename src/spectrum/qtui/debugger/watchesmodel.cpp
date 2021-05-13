@@ -2,7 +2,7 @@
 // Created by darren on 02/05/2021.
 //
 
-#include "memorywatchesmodel.h"
+#include "watchesmodel.h"
 #include "../../debugger/stringmemorywatch.h"
 #include "../../../util/debug.h"
 
@@ -17,12 +17,12 @@ namespace
     constexpr const int ValueColumn = 3;
 }
 
-MemoryWatchesModel::MemoryWatchesModel(QObject * parent)
+WatchesModel::WatchesModel(QObject * parent)
 : QAbstractItemModel(parent),
   m_watches()
 {}
 
-Qt::ItemFlags MemoryWatchesModel::flags(const QModelIndex & idx) const
+Qt::ItemFlags WatchesModel::flags(const QModelIndex & idx) const
 {
     Qt::ItemFlags flags = Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemNeverHasChildren;
 
@@ -42,7 +42,7 @@ Qt::ItemFlags MemoryWatchesModel::flags(const QModelIndex & idx) const
     return flags;
 }
 
-QVariant MemoryWatchesModel::data(const QModelIndex & idx, int role) const
+QVariant WatchesModel::data(const QModelIndex & idx, int role) const
 {
     if (idx.row() >= rowCount() || idx.column() >= columnCount()) {
         return {};
@@ -92,7 +92,7 @@ QVariant MemoryWatchesModel::data(const QModelIndex & idx, int role) const
     return {};
 }
 
-bool MemoryWatchesModel::setData(const QModelIndex & idx, const QVariant & data, int role)
+bool WatchesModel::setData(const QModelIndex & idx, const QVariant & data, int role)
 {
     if (role == Qt::ItemDataRole::EditRole) {
         switch (idx.column()) {
@@ -147,13 +147,13 @@ bool MemoryWatchesModel::setData(const QModelIndex & idx, const QVariant & data,
     return false;
 }
 
-MemoryWatchesModel::MemoryWatch * MemoryWatchesModel::watch(int idx) const
+WatchesModel::MemoryWatch * WatchesModel::watch(int idx) const
 {
     assert(idx < rowCount());
     return m_watches[idx].get();
 }
 
-void MemoryWatchesModel::removeWatch(MemoryWatchesModel::MemoryWatch * watch)
+void WatchesModel::removeWatch(WatchesModel::MemoryWatch * watch)
 {
     auto pos = std::find_if(m_watches.cbegin(), m_watches.cend(), [watch](const auto & modelWatch) -> bool {
         return modelWatch.get() == watch;
@@ -166,7 +166,7 @@ void MemoryWatchesModel::removeWatch(MemoryWatchesModel::MemoryWatch * watch)
     removeWatch(static_cast<int>(std::distance(m_watches.cbegin(), pos)));
 }
 
-void MemoryWatchesModel::removeWatch(int row)
+void WatchesModel::removeWatch(int row)
 {
     assert(0 <= row && row < rowCount());
     beginRemoveRows({}, row, row);
@@ -174,7 +174,7 @@ void MemoryWatchesModel::removeWatch(int row)
     endRemoveRows();
 }
 
-void MemoryWatchesModel::removeAllWatches(::Z80::UnsignedWord address)
+void WatchesModel::removeAllWatches(::Z80::UnsignedWord address)
 {
     for (auto it = m_watches.begin(); it != m_watches.end(); ) {
         if ((*it)->address() == address) {
@@ -185,7 +185,7 @@ void MemoryWatchesModel::removeAllWatches(::Z80::UnsignedWord address)
     }
 }
 
-void MemoryWatchesModel::clear()
+void WatchesModel::clear()
 {
     auto n = rowCount();
 
@@ -198,7 +198,7 @@ void MemoryWatchesModel::clear()
     endRemoveRows();
 }
 
-QVariant MemoryWatchesModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant WatchesModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (Qt::Orientation::Vertical == orientation) {
         return {};
@@ -228,12 +228,12 @@ QVariant MemoryWatchesModel::headerData(int section, Qt::Orientation orientation
     }
 }
 
-QModelIndex MemoryWatchesModel::index(int row, int col, const QModelIndex &) const
+QModelIndex WatchesModel::index(int row, int col, const QModelIndex &) const
 {
     return createIndex(row, col);
 }
 
-void MemoryWatchesModel::update()
+void WatchesModel::update()
 {
     if (isEmpty()) {
         return;

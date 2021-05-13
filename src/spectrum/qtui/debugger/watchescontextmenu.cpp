@@ -12,7 +12,7 @@ using Spectrum::Debugger::MemoryWatch;
 using Spectrum::Debugger::StringMemoryWatch;
 using Spectrum::Debugger::IntegerMemoryWatchBase;
 
-WatchesContextMenu::WatchesContextMenu(MemoryWatchesModel * model, const QModelIndex & idx, QWidget * parent)
+WatchesContextMenu::WatchesContextMenu(WatchesModel * model, const QModelIndex & idx, QWidget * parent)
 : QMenu(parent),
   m_model(model),
   m_index(idx)

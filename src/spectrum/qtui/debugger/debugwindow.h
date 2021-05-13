@@ -20,7 +20,8 @@
 #include "memorywidget.h"
 #include "keyboardmonitorwidget.h"
 #include "../pokewidget.h"
-#include "memorywatchesmodel.h"
+#include "watchesmodel.h"
+#include "watchesview.h"
 #include "breakpointsmodel.h"
 #include "breakpointsview.h"
 #include "memorycontextmenu.h"
@@ -507,12 +508,12 @@ namespace Spectrum::QtUi::Debugger
         /**
          * The data model for the memory watches the user has added.
          */
-        MemoryWatchesModel m_watchesModel;
+        WatchesModel m_watchesModel;
 
         /**
          * The view of the watches.
          */
-        QTreeView m_watches;
+        WatchesView m_watches;
 
         /**
          * The data model for the breakpoints the user has added.

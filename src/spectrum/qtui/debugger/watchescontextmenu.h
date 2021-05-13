@@ -6,7 +6,7 @@
 #define SPECTRUM_QTUI_DEBUGGER_WATCHESCONTEXTMENU_H
 
 #include <QMenu>
-#include "memorywatchesmodel.h"
+#include "watchesmodel.h"
 #include "../../debugger/stringmemorywatch.h"
 #include "../../debugger/integermemorywatchbase.h"
 #include "../../../z80/types.h"
@@ -34,7 +34,7 @@ namespace Spectrum::QtUi::Debugger
          * @param idx The model index of the item under the cursor when the context menu was requested (i.e. the subject of the menu).
          * @param parent The parent widget for the menu.
          */
-        WatchesContextMenu(MemoryWatchesModel * model, const QModelIndex & idx, QWidget * parent = nullptr);
+        WatchesContextMenu(WatchesModel * model, const QModelIndex & idx, QWidget * parent = nullptr);
 
     Q_SIGNALS:
         /**
@@ -123,7 +123,7 @@ namespace Spectrum::QtUi::Debugger
         /**
          * The model containing the items in the view whose context menu this object represents.
          */
-        MemoryWatchesModel * m_model;
+        WatchesModel * m_model;
 
         /**
          * The index in the model for the item that is the subject of the menu.

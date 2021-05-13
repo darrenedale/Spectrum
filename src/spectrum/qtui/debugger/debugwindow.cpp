@@ -87,18 +87,13 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
     m_pointers.addStackPointerAction(&m_navigateToSp);
     m_pointers.addStackPointerAction(&m_breakpointAtStackTop);
 
-    m_watches.setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-    m_watches.setModel(&m_watchesModel);
-    m_watches.setItemDelegateForColumn(0, new HexSpinBoxDelegate(&m_watches));
-    m_watches.setItemsExpandable(false);
-    m_watches.setRootIsDecorated(false);
-    m_watches.setUniformRowHeights(true);
     auto font = m_watches.font();
     font.setPointSizeF(font.pointSizeF() * 0.85);
     m_watches.setFont(font);
+    m_watches.setModel(&m_watchesModel);
 
-    m_breakpoints.setModel(&m_breakpointsModel);
     m_breakpoints.setFont(font);
+    m_breakpoints.setModel(&m_breakpointsModel);
 
     m_statusClearTimer.setSingleShot(true);
 
