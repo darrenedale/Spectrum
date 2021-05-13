@@ -16,9 +16,9 @@
 #include "../thread.h"
 #include "../application.h"
 #include "../registerpairwidget.h"
-#include "memorywatchesmodel.h"
 #include "../hexspinboxdelegate.h"
 #include "watchescontextmenu.h"
+#include "breakpointscontextmenu.h"
 #include "../../spectrum48k.h"
 #include "../../../util/debug.h"
 #include "../../debugger/programcounterbreakpoint.h"
@@ -67,11 +67,12 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
   m_breakpointAtStackTop(tr("Set breakpoint at address on top of stack")),
   m_keyboardMonitor(&m_thread->spectrum()),
   m_watchesModel(),
+  m_breakpointsModel(),
   m_watches(),
+  m_breakpoints(),
   m_memoryMenu(0),
   m_poke(),
   m_cpuObserver((*this)),
-  m_breakpoints(),
   m_memoryBreakpointObserver(*this),
   m_pcObserver(*this),
   m_spBelowObserver(*this),
@@ -95,6 +96,9 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
     auto font = m_watches.font();
     font.setPointSizeF(font.pointSizeF() * 0.85);
     m_watches.setFont(font);
+
+    m_breakpoints.setModel(&m_breakpointsModel);
+    m_breakpoints.setFont(font);
 
     m_statusClearTimer.setSingleShot(true);
 
@@ -126,12 +130,6 @@ DebugWindow::DebugWindow(Thread * thread, QWidget * parent )
 DebugWindow::~DebugWindow()
 {
     m_thread->spectrum().z80()->removeInstructionObserver(&m_cpuObserver);
-
-    for (auto * breakpoint : m_breakpoints) {
-        delete breakpoint;
-    }
-
-    m_breakpoints.clear();
 }
 
 void DebugWindow::createToolbars()
@@ -155,6 +153,11 @@ void DebugWindow::createDockWidgets()
     dock = new QDockWidget(tr("Watches"), this);
     dock->setObjectName(QStringLiteral("watches-dock"));
     dock->setWidget(&m_watches);
+    addDockWidget(Qt::DockWidgetArea::BottomDockWidgetArea, dock);
+
+    dock = new QDockWidget(tr("Breakpoints"), this);
+    dock->setObjectName(QStringLiteral("breakpoints-dock"));
+    dock->setWidget(&m_breakpoints);
     addDockWidget(Qt::DockWidgetArea::BottomDockWidgetArea, dock);
 
     dock = new QDockWidget(tr("Memory"), this);
@@ -250,6 +253,7 @@ void DebugWindow::connectWidgets()
 
     connect(&m_memoryWidget, &QWidget::customContextMenuRequested, this, &DebugWindow::memoryContextMenuRequested);
     connect(&m_watches, &QWidget::customContextMenuRequested, this, &DebugWindow::watchesContextMenuRequested);
+    connect(&m_breakpoints, &QWidget::customContextMenuRequested, this, &DebugWindow::breakpointsContextMenuRequested);
 
     connect(&m_poke, &PokeWidget::pokeClicked, [this](::Z80::UnsignedWord address, ::Z80::UnsignedByte value) -> void {
         m_thread->spectrum().memory()->writeByte(address, value);
@@ -442,49 +446,45 @@ void DebugWindow::setProgramCounterBreakpointTriggered(UnsignedWord addr)
 
 void DebugWindow::breakAtProgramCounter(UnsignedWord address)
 {
-    auto * breakpoint = new ProgramCounterBreakpoint(address);
+    auto breakpoint = std::make_unique<ProgramCounterBreakpoint>(address);
 
-    if (!addBreakpoint(breakpoint)) {
+    if (hasBreakpoint(*breakpoint)) {
         Util::debug << "breakpoint already set: 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << "\n";
-        delete breakpoint;
         return;
     }
 
     breakpoint->addObserver(&m_pcObserver);
+    m_breakpointsModel.addBreakpoint(std::move(breakpoint));
     showStatusMessage(tr("Breakpoint set at PC = 0x%1.").arg(address, 4, 16, QLatin1Char('0')), DefaultTransientMessageTimeout);
 }
 
 void DebugWindow::breakIfStackPointerBelow(UnsignedWord address)
 {
-    auto * breakpoint = new StackPointerBelowBreakpoint(address);
+    auto breakpoint = std::make_unique<StackPointerBelowBreakpoint>(address);
 
-    if (!addBreakpoint(breakpoint)) {
+    if (hasBreakpoint(*breakpoint)) {
         Util::debug << "stack pointer breakpoint already set at 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << "\n";
-        delete breakpoint;
         return;
     }
 
     breakpoint->addObserver(&m_spBelowObserver);
+    m_breakpointsModel.addBreakpoint(std::move(breakpoint));
     showStatusMessage(tr("Breakpoint set at SP < 0x%1.").arg(address, 4, 16, QLatin1Char('0')), DefaultTransientMessageTimeout);
 }
 
-bool DebugWindow::addBreakpoint(Breakpoint * breakpoint)
+bool DebugWindow::addBreakpoint(std::unique_ptr<Breakpoint> breakpoint)
 {
     if (hasBreakpoint(*breakpoint)) {
         return false;
     }
 
-    m_breakpoints.push_back(breakpoint);
+    m_breakpointsModel.addBreakpoint(std::move(breakpoint));
     return true;
 }
 
 bool DebugWindow::hasBreakpoint(const Breakpoint & breakpoint) const
 {
-    auto existingBreakpoint = std::find_if(m_breakpoints.cbegin(), m_breakpoints.cend(), [&breakpoint](const auto * existingBreakpoint) -> bool {
-        return (*existingBreakpoint) == breakpoint;
-    });
-
-    return existingBreakpoint != m_breakpoints.cend();
+    return m_breakpointsModel.hasBreakpoint(breakpoint);
 }
 
 void DebugWindow::showStatusMessage(const QString & status, int timeout)
@@ -517,8 +517,14 @@ void DebugWindow::memoryContextMenuRequested(const QPoint & pos)
 void DebugWindow::watchesContextMenuRequested(const QPoint & pos)
 {
     WatchesContextMenu menu(&m_watchesModel, m_watches.indexAt(pos));
-    connect (&menu, &WatchesContextMenu::locateInMemoryView, &m_memoryWidget, &MemoryWidget::scrollToAddress);
+    connect(&menu, &WatchesContextMenu::locateInMemoryView, &m_memoryWidget, &MemoryWidget::scrollToAddress);
     menu.exec(m_watches.mapToGlobal(pos));
+}
+
+void DebugWindow::breakpointsContextMenuRequested(const QPoint & pos)
+{
+    BreakpointsContextMenu menu(&m_breakpointsModel, m_breakpoints.indexAt(pos));
+    menu.exec(m_breakpoints.mapToGlobal(pos));
 }
 
 void DebugWindow::locateProgramCounterInMemory()
@@ -587,9 +593,12 @@ void DebugWindow::watchStringMemoryAddress(::Z80::UnsignedWord address, std::opt
 void DebugWindow::InstructionObserver::notify(::Spectrum::Z80 * cpu)
 {
     const auto & spectrum = window.m_thread->spectrum();
+    const auto breakpointCount = window.m_breakpointsModel.rowCount();
 
-    for (auto * breakpoint : window.m_breakpoints) {
-        breakpoint->check(spectrum);
+    for (auto idx = 0; idx < breakpointCount; ++idx) {
+        if (window.m_breakpointsModel.breakpointIsEnabled(idx)) {
+            window.m_breakpointsModel.breakpoint(idx)->check(spectrum);
+        }
     }
 }
 
