@@ -7,16 +7,8 @@
 
 #include <array>
 #include <QTreeView>
-#include <QString>
-#include <QIcon>
-#include <QRect>
-#include <QTimer>
+#include <QAction>
 #include "../actionableitemview.h"
-
-namespace Spectrum::Debugger
-{
-    class Breakpoint;
-}
 
 namespace Spectrum::QtUi::Debugger
 {

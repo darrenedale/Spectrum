@@ -6,9 +6,6 @@
 #define SPECTRUM_QTUI_DEBUGGER_MEMORYCONTEXTMENU_H
 
 #include <QMenu>
-#include "memorywatchesmodel.h"
-#include "../../debugger/stringmemorywatch.h"
-#include "../../debugger/integermemorywatchbase.h"
 #include "../../../z80/types.h"
 
 namespace Spectrum::QtUi::Debugger
