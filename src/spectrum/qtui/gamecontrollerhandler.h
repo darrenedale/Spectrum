@@ -2,9 +2,10 @@
 // Created by darren on 19/04/2021.
 //
 
-#ifndef SPECTRUM_GAMECONTROLLERHANDLER_H
-#define SPECTRUM_GAMECONTROLLERHANDLER_H
+#ifndef SPECTRUM_QTUI_GAMECONTROLLERHANDLER_H
+#define SPECTRUM_QTUI_GAMECONTROLLERHANDLER_H
 
+#include <memory>
 #include <QGamepad>
 #include "../joystickinterface.h"
 
@@ -233,4 +234,4 @@ namespace Spectrum::QtUi
     };
 }
 
-#endif //SPECTRUM_GAMECONTROLLERHANDLER_H
+#endif //SPECTRUM_QTUI_GAMECONTROLLERHANDLER_H

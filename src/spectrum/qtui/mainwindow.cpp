@@ -1160,12 +1160,19 @@ void MainWindow::rescanGameControllers()
         QGamepad gamepad(gamepadId);
         Util::debug << "found connected gameController \"" << gamepad.name().toStdString() << "\" [" << gamepadId << "]\n";
 
-        auto * action = m_gameControllersMenu.addAction(gamepad.name(), [this, gamepadId]() {
+        auto name = gamepad.name().trimmed();
+
+        if (name.isEmpty()) {
+            name = tr("Unnamed controller #%1").arg(gamepadId);
+        }
+
+        auto * action = m_gameControllersMenu.addAction(name, [this, gamepadId]() {
             m_gameControllerHandler.setGameController(gamepadId);
         });
 
         m_gameControllersGroup.addAction(action);
-        action->setData(gamepad.name());
+
+        action->setData(name);
         action->setCheckable(true);
         action->setChecked(currentController && gamepadId == currentController->deviceId());
     }
