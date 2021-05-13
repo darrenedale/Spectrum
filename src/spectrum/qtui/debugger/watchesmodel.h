@@ -2,8 +2,8 @@
 // Created by darren on 02/05/2021.
 //
 
-#ifndef SPECTRUM_QTUI_MEMORYWATCHESMODEL_H
-#define SPECTRUM_QTUI_MEMORYWATCHESMODEL_H
+#ifndef SPECTRUM_QTUI_DEBUGGER_MEMORYWATCHESMODEL_H
+#define SPECTRUM_QTUI_DEBUGGER_MEMORYWATCHESMODEL_H
 
 #include <vector>
 #include <memory>
@@ -12,7 +12,7 @@
 
 namespace Spectrum::QtUi::Debugger
 {
-    class MemoryWatchesModel
+    class WatchesModel
     : public QAbstractItemModel
     {
         Q_OBJECT
@@ -28,7 +28,7 @@ namespace Spectrum::QtUi::Debugger
          *
          * @param parent The owner of the model.
          */
-        explicit MemoryWatchesModel(QObject * parent = nullptr);
+        explicit WatchesModel(QObject * parent = nullptr);
 
         /**
          * The number of columns the model has available.
@@ -234,4 +234,4 @@ namespace Spectrum::QtUi::Debugger
 
 }
 
-#endif //SPECTRUM_QTUI_MEMORYWATCHESMODEL_H
+#endif //SPECTRUM_QTUI_DEBUGGER_MEMORYWATCHESMODEL_H
