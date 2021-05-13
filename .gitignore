@@ -6,3 +6,4 @@ dist/**/Games/*.sp
 dist/**/Games/*.tap
 dist/**/Games/*.tzx
 /dist/windows/Spectrum.zip
+.idea/*
