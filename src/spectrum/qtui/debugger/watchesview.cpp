@@ -13,6 +13,11 @@ using WatchesViewBase = Spectrum::QtUi::ActionableItemView<QTreeView>;
 namespace
 {
     /**
+     * The index of the address column.
+     */
+    constexpr const int AddressColumn = 0;
+
+    /**
      * The index in the array of the "remove" action.
      */
     constexpr const int RemoveAction = 0;
@@ -24,7 +29,7 @@ WatchesView::WatchesView(QWidget * parent)
           std::make_unique<QAction>(Application::icon(QStringLiteral("list-remove"), QStringLiteral("remove")), tr("Remove")),
       })
 {
-    setItemDelegateForColumn(0, new HexSpinBoxDelegate(this));
+    setItemDelegateForColumn(AddressColumn, new HexSpinBoxDelegate(this));
     setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
     setItemsExpandable(false);
     setRootIsDecorated(false);

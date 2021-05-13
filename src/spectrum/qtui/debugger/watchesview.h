@@ -2,8 +2,8 @@
 // Created by darren on 08/05/2021.
 //
 
-#ifndef SPECTRUM_QTUI_DEBUGGER_WATCHESSVIEW_H
-#define SPECTRUM_QTUI_DEBUGGER_WATCHESSVIEW_H
+#ifndef SPECTRUM_QTUI_DEBUGGER_WATCHESVIEW_H
+#define SPECTRUM_QTUI_DEBUGGER_WATCHESVIEW_H
 
 #include <array>
 #include <QTreeView>
@@ -18,7 +18,7 @@ namespace Spectrum::QtUi::Debugger
      *
      * The QTreeView class is extended via ActionableItemView to add an overlay with a single item action that can be clicked by the user to affect the state of
      * the memory watch under the mouse pointer:
-     * - "remove" deletes the breakpoint
+     * - "remove" deletes the watch
      */
     class WatchesView
     : public ActionableItemView<QTreeView>
@@ -46,4 +46,4 @@ namespace Spectrum::QtUi::Debugger
     };
 }
 
-#endif //SPECTRUM_QTUI_DEBUGGER_WATCHESSVIEW_H
+#endif //SPECTRUM_QTUI_DEBUGGER_WATCHESVIEW_H
