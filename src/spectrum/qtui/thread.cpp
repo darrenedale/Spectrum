@@ -52,6 +52,7 @@ void Thread::run()
         if (m_reset) {
             m_spectrum->reset();
             m_reset = false;
+            Q_EMIT spectrumReset();
             continue;
         }
 

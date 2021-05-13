@@ -487,6 +487,9 @@ MainWindow::MainWindow(QWidget * parent)
 
 	connect(&m_spectrumThread, &Thread::paused, this, &MainWindow::threadPaused);
 	connect(&m_spectrumThread, &Thread::resumed, this, &MainWindow::threadResumed);
+	connect(&m_spectrumThread, &Thread::spectrumReset, [this]() {
+        setWindowTitle(QString::fromStdString(std::to_string(m_spectrum->model())));
+    });
 
 	loadSettings();
 

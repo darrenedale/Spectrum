@@ -1,5 +1,5 @@
-#ifndef SPECTRUM_EMULATOR_MAINWINDOW_H
-#define SPECTRUM_EMULATOR_MAINWINDOW_H
+#ifndef SPECTRUM_QTUI_MAINWINDOW_H
+#define SPECTRUM_QTUI_MAINWINDOW_H
 
 #include <memory>
 #include <QMainWindow>
@@ -39,12 +39,60 @@ namespace Spectrum::QtUi
     Q_OBJECT
 
     public:
+	    /**
+	     * Default-initialise a new MainWindow.
+	     */
         explicit MainWindow(QWidget * = nullptr);
+
+        /**
+         * MainWindow objects cannot be copy-constructed.
+         */
+        MainWindow(const MainWindow &) = delete;
+
+        /**
+         * MainWindow objects cannot be move-constructed.
+         */
+        MainWindow(MainWindow &&) = delete;
+
+        /**
+         * MainWindow objects cannot be copy assigned.
+         */
+        void operator=(const MainWindow &) = delete;
+
+        /**
+         * MainWindow objects cannot be move assigned.
+         */
+        void operator=(MainWindow &&) = delete;
+
+        /**
+         * Destructor.
+         */
         ~MainWindow() override;
 
+        /**
+         * Switch the running Spectrum to the given model.
+         *
+         * The thread will be stopped, the currently running Spectrum will be destroyed and a new Spectrum of the provided model will be created and run by the
+         * thread. This implies that any unsaved work or game progress in the previously running Spectrum will be discarded.
+         *
+         * @param model The model to switch to.
+         */
         void setModel(Spectrum::Model model);
+
+        /**
+         * Fetch the model of the currently running Spectrum.
+         *
+         * @return One of the Spectrum::Model constants.
+         */
         Spectrum::Model model() const;
 
+        /**
+         * Save a screenshot of the current Spectrum screen to the provided file.
+         *
+         * If the provided filename ends in .scr it is saved as a Spectrum screen dump. Otherwise, the extension indicates one of the formats supported by Qt.
+         *
+         * @param fileName The file to save to.
+         */
         void saveScreenshot(const QString & fileName);
 
         /**
@@ -62,10 +110,25 @@ namespace Spectrum::QtUi
          * @param format
          */
         bool loadSnapshot(const QString & fileName, QString format = {});
+
+        /**
+         * Load a snapshot from a given quick-save slot.
+         *
+         * @param slotIndex The slot to load from.
+         *
+         * @return true if the snapshot was loaded, false otherwise.
+         */
         bool loadSnapshotFromSlot(int slotIndex);
 
         // NOTE can't be const because the thread must be paused
         void saveSnapshot(const QString & fileName, QString format = {});
+
+        /**
+         * Save a snapshot to a given quick-save slot.
+         *
+         * @param slotIndex The slot to save to.
+         * @param format Set the save format. If an empty string is provided, the default format (currently .z80) will be used.
+         */
         void saveSnapshotToSlot(int slotIndex, QString format = {});
 
         /**
@@ -75,31 +138,57 @@ namespace Spectrum::QtUi
          */
         void rescanGameControllers();
 
+        /**
+         * Fetch a read/write reference to the currently running Spectrum.
+         *
+         * @return The spectrum.
+         */
         inline BaseSpectrum & spectrum()
         {
             return *m_spectrum;
         }
 
+        /**
+         * Fetch a read-only reference to the currently running Spectrum.
+         *
+         * @return The spectrum.
+         */
         [[nodiscard]] inline const BaseSpectrum & spectrum() const
         {
             return *m_spectrum;
         }
 
+        /**
+         * Fetch a read/write reference to the Spectrum thread.
+         *
+         * @return The thread.
+         */
         inline Thread & spectrumThread()
         {
             return m_spectrumThread;
         }
 
+        /**
+         * Fetch a read-only reference to the Spectrum thread.
+         *
+         * @return The thread.
+         */
         [[nodiscard]] inline const Thread & spectrumThread() const
         {
             return m_spectrumThread;
         }
 
+        /**
+         * Pause the currently running Spectrum.
+         */
         inline void pauseSpectrum()
         {
             m_spectrumThread.pause();
         }
 
+        /**
+         * Resume the currently running Spectrum if it is paused.
+         */
         inline void resumeSpectrum()
         {
             m_spectrumThread.resume();
@@ -108,9 +197,26 @@ namespace Spectrum::QtUi
         bool eventFilter(QObject *, QEvent *) override;
 
 	protected:
+	    /**
+	     * Helper to guess the format of a snapshot file.
+	     *
+	     * The returned strings come from the snapshot readers. The first reader that reports it can read the provided file is queried for its snapshot type
+	     * string, which is returned.
+	     *
+	     * @param fileName The file to inspect.
+	     *
+	     * @return A string representation of the format. This will be empty if the format could not be reliably guessed.
+	     */
 	    static QString guessSnapshotFormat(const QString & fileName);
 
+	    /**
+	     * Helper to load the user's emulator settings.
+	     */
 	    void loadSettings();
+
+        /**
+         * Helper to load the user's current emulator settings.
+         */
 	    void saveSettings();
 
         void showEvent(QShowEvent *) override;
@@ -120,19 +226,72 @@ namespace Spectrum::QtUi
 	    void keyReleaseEvent(QKeyEvent *) override;
 	    void dragEnterEvent(QDragEnterEvent *) override;
 	    void dropEvent(QDropEvent *) override;
+
+	    /**
+	     * Helper to force a re-rendering of the Spectrum display to the UI.
+	     */
         void refreshSpectrumDisplay();
 
         void updateStatusBarSpeedWidget();
 
     private:
+	    /**
+	     * Helper to attach the devices the user has enabled to the Spectrum currently running.
+	     *
+	     * This is used when the model is changed to attach the devices to the new Spectrum model.
+	     */
 	    void attachSpectrumDevices();
+
+        /**
+         * Helper to remove the devices the user has enabled from the Spectrum currently running.
+         *
+         * This is used when the model is changed to remove the devices from the old Spectrum model before it is destroyed.
+         */
 	    void detachSpectrumDevices();
+
+	    /**
+	     * Helper to stop the Spectrum thread.
+	     *
+	     * The thread is stopped cleanly if possible. If the thread does not cleanly stop after 3 seconds it is forcibly terminated.
+	     *
+	     * This is used when the model is changed and in the destructor when the thread is being destroyed. In debug builds, console output will indicate how
+	     * the thread stopped.
+	     */
         void stopThread();
 
+        /**
+         * Helper to create the main window's menu bar.
+         *
+         * This is extracted to a helper primarily for ease of maintenance.
+         */
         void createMenuBar();
+
+        /**
+         * Helper to create the main window's tool bars.
+         *
+         * This is extracted to a helper primarily for ease of maintenance.
+         */
         void createToolBars();
+
+        /**
+         * Helper to create the main window's dock widgets.
+         *
+         * This is extracted to a helper primarily for ease of maintenance.
+         */
         void createDockWidgets();
+
+        /**
+         * Helper to create the main window's status bar.
+         *
+         * This is extracted to a helper primarily for ease of maintenance.
+         */
         void createStatusBar();
+
+        /**
+         * Helper to connect signals from the internal components.
+         *
+         * This is extracted to a helper primarily for ease of maintenance.
+         */
         void connectSignals();
 
         void pauseResumeTriggered();
@@ -156,8 +315,19 @@ namespace Spectrum::QtUi
         void stepTriggered();
         void debugTriggered();
 
+        /**
+         * Handler for when the Spectrum thread pauses.
+         */
         void threadPaused();
+
+        /**
+         * Handler for when the Spectrum thread resumes after a pause.
+         */
         void threadResumed();
+
+        /**
+         * Handler for when the Spectrum thread steps a single instruction while paused.
+         */
         void threadStepped();
 
         void debugWindowHidden();
@@ -224,4 +394,4 @@ namespace Spectrum::QtUi
 	};
 }
 
-#endif // SPECTRUM_EMULATOR_MAINWINDOW_H
+#endif // SPECTRUM_QTUI_MAINWINDOW_H

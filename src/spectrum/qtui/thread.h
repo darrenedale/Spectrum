@@ -58,6 +58,7 @@ namespace Spectrum::QtUi
         void stepped();
         void debuggingStarted();
         void debuggingFinished();
+        void spectrumReset();
         void spectrumChanged(Spectrum::BaseSpectrum *);
 
     protected:
