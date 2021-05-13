@@ -27,8 +27,7 @@ namespace Spectrum::QtUi::Debugger
          * The model must outlive the context menu. For safety reasons, the menu will close if the model's data changes (the index may no longer be valid) or
          * if the model is destroyed.
          *
-         * @param model The model containing the watches in the view.
-         * @param idx The model index of the item under the cursor when the context menu was requested (i.e. the subject of the menu).
+         * @param address The address for which to provide context menu actions.
          * @param parent The parent widget for the menu.
          */
         explicit MemoryContextMenu(::Z80::UnsignedWord address, QWidget * parent = nullptr);
@@ -122,6 +121,8 @@ namespace Spectrum::QtUi::Debugger
 
         /**
          * The action added as the section title.
+         *
+         * We only keep a pointer to this so that we can update the text when the address changes.
          */
         QAction * m_sectionTitle;
     };
