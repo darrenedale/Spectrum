@@ -5,10 +5,12 @@
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
+#include <cmath>
 #include <QHelpEvent>
 #include <QToolTip>
 #include <QScrollBar>
 #include <QPainter>
+#include <QStringBuilder>
 #include "disassemblywidget.h"
 #include "../../../util/debug.h"
 
@@ -37,6 +39,17 @@ namespace
         friend class Spectrum::QtUi::Debugger::DisassemblyWidget;
 
     public:
+        /**
+         * Extend the Mnemonic structure to include the address at which the instruction is located.
+         *
+         * We require the address for display and for querying the location of an address in the view.
+         */
+        struct AddressedMnemonic
+                : public ::Z80::Assembly::Mnemonic
+        {
+            UnsignedWord address = 0x0000;
+        };
+
         DisassemblyView(const Disassembler & disassembler, QWidget * parent)
         : QWidget(parent),
           m_disassembler(disassembler)
@@ -75,7 +88,7 @@ namespace
          * @param address
          * @return
          */
-        std::optional<int> addressYCoordinate(UnsignedWord address)
+        [[nodiscard]] std::optional<int> addressYCoordinate(UnsignedWord address) const
         {
             int line = 0;
 
@@ -93,6 +106,63 @@ namespace
             }
 
             return line * m_lineHeight;
+        }
+
+        /**
+         * Identify the address, if any, at a given y-coordinate.
+         *
+         * @param y The y-coordinate.
+         *
+         * @return The address, or an empty optional if there is no address at the given coordinates.
+         */
+        [[nodiscard]] std::optional<AddressedMnemonic> mnemonicAt(int y) const
+        {
+            int mnemonicIdx = std::floor(y / static_cast<double>(lineHeight()));
+
+            if (mnemonicIdx >= m_mnemonics.size()) {
+                return {};
+            }
+
+            return m_mnemonics[mnemonicIdx];
+        }
+
+        /**
+         * Identify the address, if any, at a given y-coordinate.
+         *
+         * @param y The y-coordinate.
+         *
+         * @return The address, or an empty optional if there is no address at the given coordinates.
+         */
+        [[nodiscard]] std::optional<AddressedMnemonic> mnemonicAt(const QPoint & pos) const
+        {
+            return mnemonicAt(pos.y());
+        }
+
+        /**
+         * Identify the address, if any, at a given y-coordinate.
+         *
+         * @param y The y-coordinate.
+         *
+         * @return The address, or an empty optional if there is no address at the given coordinates.
+         */
+        [[nodiscard]] std::optional<UnsignedWord> addressAt(int y) const
+        {
+            auto mnemonic = mnemonicAt(y);
+            return mnemonic ? std::make_optional<UnsignedWord>(mnemonic->address) : std::make_optional<UnsignedWord>();
+        }
+
+        /**
+         * Identify the address, if any, at a given pair of coordinates.
+         *
+         * Only the y coordinate is of any consequence - there is one instruction per "line", so only one possible address per y-coordinate.
+         *
+         * @param pos The coordinates.
+         *
+         * @return The address, or an empty optional if there is no address at the given coordinates.
+         */
+        [[nodiscard]] std::optional<UnsignedWord> addressAt(const QPoint & pos) const
+        {
+            return addressAt(pos.y());
         }
 
         /**
@@ -147,15 +217,39 @@ namespace
         /**
          * Qt event handler.
          *
-         * TODO show tooltip
-         *
          * @param event
          * @return
          */
         bool event(QEvent * event) override
         {
             if (QEvent::Type::ToolTip == event->type()) {
+                const auto pos = reinterpret_cast<QHelpEvent *>(event)->pos();
+                const auto mnemonic = mnemonicAt(pos);
 
+                if (!mnemonic) {
+                    QToolTip::showText(mapToGlobal(pos), tr("<p>Disassembly of the current memory of the Spectrum.</p><p>For models with paging memory, this shows the disassembly of the currently paged-in banks. The disassembly is automatically updated, so it should remain correct even for self-modifying code."));
+                } else {
+                    QString operands;
+                    auto operandIdx = 1;
+
+                    for (const auto & operand : mnemonic->operands) {
+                        operands = operands % "<br>" % tr("Operand %1").arg(operandIdx) % ": " % QString::fromStdString(std::to_string(operand)) % " [" % QString::fromStdString(std::to_string(operand.mode)) % ' ' % tr("addressing") % ']';
+                        ++operandIdx;
+                    }
+
+                    QToolTip::showText(mapToGlobal(pos), tr(
+                        "<p>Address: 0x%1<br>"
+                        "Mnemonic: %2<br>"
+                        "Instruction: %3"
+                        "%4<br>"                    // operands
+                        "Size: %5 %6</p>"
+                    ).arg(mnemonic->address, 4, 16, QLatin1Char('0'))
+                    .arg(QString::fromStdString(std::to_string(*mnemonic)), QString::fromStdString(std::to_string(mnemonic->instruction)), operands)
+                    .arg(static_cast<std::uint16_t>(mnemonic->size))
+                    .arg(1 == mnemonic->size ? tr("byte") : tr("bytes")));
+                }
+
+                return true;
             }
 
             return QWidget::event(event);
@@ -209,17 +303,6 @@ namespace
         }
 
     private:
-        /**
-         * Extend the Mnemonic structure to include the address at which the instruction is located.
-         *
-         * We require the address for display and for querying the location of an address in the view.
-         */
-        struct AddressedMnemonic
-        : public ::Z80::Assembly::Mnemonic
-        {
-            UnsignedWord address = 0x0000;
-        };
-
         using Mnemonics = std::vector<AddressedMnemonic>;
         static constexpr const QChar FillChar = QChar('0');
 

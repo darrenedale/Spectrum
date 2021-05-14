@@ -69,6 +69,45 @@ std::string std::to_string(const Operand & op)
 
     return out.str();
 }
+
+std::string std::to_string(const AddressingMode & mode)
+{
+    switch (mode) {
+        case AddressingMode::Immediate:
+            return "immediate";
+
+        case AddressingMode::ImmediateExtended:
+            return "extended immediate";
+
+        case AddressingMode::ModifiedPageZero:
+            return "modified page zero";
+
+        case AddressingMode::Relative:
+            return "relative";
+
+        case AddressingMode::Extended:
+            return "extended";
+
+        case AddressingMode::Indexed:
+            return "indexed";
+
+        case AddressingMode::Register8:
+            return "8-bit register";
+
+        case AddressingMode::Register16:
+            return "16-bit register";
+
+        case AddressingMode::Register8Indirect:
+            return "8-bit register indirect";
+
+        case AddressingMode::Register16Indirect:
+            return "16-bit register indirect";
+
+        case AddressingMode::Bit:
+            return "bit";
+    }
+}
+
 //
 //OperandValue Operand::evaluate(::Z80::Z80 * cpu, bool asDestination) const
 //{

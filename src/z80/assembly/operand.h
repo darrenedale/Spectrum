@@ -63,6 +63,7 @@ namespace Z80::Assembly
 namespace std
 {
     std::string to_string(const ::Z80::Assembly::Operand &);
+    std::string to_string(const ::Z80::Assembly::AddressingMode &);
 }
 
 #endif //Z80_ASSEMBLY_OPERAND_H
