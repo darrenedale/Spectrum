@@ -22,8 +22,6 @@ namespace Spectrum::QtUi::Debugger
     class DisassemblyWidget
     : public QScrollArea
     {
-        Q_OBJECT
-
     public:
         /**
          * Initialise a new disassembly widget with a memory object.
