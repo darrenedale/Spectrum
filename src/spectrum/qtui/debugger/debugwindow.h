@@ -242,8 +242,6 @@ namespace Spectrum::QtUi::Debugger
 	     * Helper class to observe instruction execution on the monitored thread's Spectrum's CPU.
 	     *
 	     * An instance of the observer is added to the CPU in order to check breakpoints after each executed instruction.
-	     *
-	     * TODO consider using an anonymous class instead?
 	     */
 	    class InstructionObserver
         : public ::Spectrum::Z80::Observer

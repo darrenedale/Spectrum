@@ -399,12 +399,6 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
             case Model::SpectrumPlus3:
                 snapshot->screenBuffer = (header.lastOut0x7ffd & ShadowDisplayFileFlag ? ScreenBuffer128k::Shadow : ScreenBuffer128k::Normal);
                 snapshot->pagedBankNumber = header.lastOut0x7ffd & PagedRamMask128k;
-
-                // TODO if paging was disabled then a further OUT to port 0x7ffd was executed with bit 5 reset, paging
-                //  will still be disabled but this byte will indicate that it's enabled - therefore our snapshot won't
-                //  reflect the true state of the spectrum from which it was created. is there anywhere else in the file
-                //  format that indicates paging status? while a genuine problem, it's unlikely to affect much as I
-                //  believe disabling paging was very rare in the real world
                 snapshot->pagingEnabled = !(header.lastOut0x7ffd & PagingDisabledFlag);
 
                 if (Model::SpectrumPlus2a == snapshot->model() || Model::SpectrumPlus3 == snapshot->model()) {
