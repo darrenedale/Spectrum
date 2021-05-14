@@ -366,7 +366,7 @@ bool Z80SnapshotWriter::writeMemoryPage(std::ostream & out, const ::Z80::Unsigne
         size = 0x4000;
         data = reinterpret_cast<const std::ostream::char_type *>(memory);
     } else {
-        writeHostWord(out, compressed.size());
+        writeHostWord(out, static_cast<UnsignedWord>(compressed.size()));
         data = reinterpret_cast<const std::ostream::char_type *>(compressed.data());
         size = static_cast<std::streamsize>(compressed.size());
     }

@@ -96,7 +96,6 @@ const Spectrum::Snapshot * SpSnapshotReader::read() const
 
     // read file
     Header header = {};
-    std::ifstream::char_type * programBuffer;
 
     // read header
     in.read(reinterpret_cast<std::ifstream::char_type *>(&header), sizeof(header));

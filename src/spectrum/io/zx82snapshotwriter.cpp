@@ -249,7 +249,7 @@ Zx82SnapshotWriter::CompressedMemory Zx82SnapshotWriter::compressMemory(const Z8
 
         switch (currentRunType) {
             case RunType::Literal:
-                ret.push_back(runEnd - memory - 1);
+                ret.push_back(static_cast<UnsignedByte>(runEnd - memory - 1));
 
                 // dump all the source bytes to the compressed buffer
                 while (memory < runEnd) {

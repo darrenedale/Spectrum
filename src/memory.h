@@ -6,6 +6,7 @@
 #define MEMORY_H
 
 #include <optional>
+#include <array>
 #include <memory>
 #include <cassert>
 #include <cstdint>

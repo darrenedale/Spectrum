@@ -3,6 +3,7 @@
 //
 
 #include <iomanip>
+#include <optional>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QKeyEvent>

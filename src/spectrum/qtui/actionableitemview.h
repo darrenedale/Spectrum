@@ -626,13 +626,13 @@ namespace Spectrum::QtUi
                 switch (itemActionHorizontalAlignment()) {
                     case ItemActionHorizontalAlignment::ViewportRightEdge: {
                         itemRect = ViewType::visualRect(ViewType::model()->index(m_hoveredItem->row(), ViewType::model()->columnCount() - 1));
-                        iconRect = QRect(ViewType::viewport()->rect().right() - (m_itemActionIconExtent * m_itemActions.size()), 0, m_itemActionIconExtent, m_itemActionIconExtent);
+                        iconRect = QRect(ViewType::viewport()->rect().right() - static_cast<int>(m_itemActionIconExtent * m_itemActions.size()), 0, m_itemActionIconExtent, m_itemActionIconExtent);
                         break;
                     }
 
                     case ItemActionHorizontalAlignment::ItemRightEdge: {
                         itemRect = ViewType::visualRect(ViewType::model()->index(m_hoveredItem->row(), ViewType::model()->columnCount() - 1));
-                        iconRect = QRect(itemRect.right() - (m_itemActionIconExtent * m_itemActions.size()), 0, m_itemActionIconExtent, m_itemActionIconExtent);
+                        iconRect = QRect(itemRect.right() - static_cast<int>(m_itemActionIconExtent * m_itemActions.size()), 0, m_itemActionIconExtent, m_itemActionIconExtent);
                         break;
                     }
 

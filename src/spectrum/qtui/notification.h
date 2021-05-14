@@ -6,6 +6,7 @@
 #define SPECTRUM_QTUI_NOTIFICATION_H
 
 #include <memory>
+#include <optional>
 #include <QtGlobal>
 #include <QString>
 
