@@ -13,7 +13,7 @@
 #include "aboutwidget.h"
 #include "helpwidget.h"
 #include "spectrumdisplayimagewidget.h"
-#include "pokesview.h"
+#include "cheatsview.h"
 #include "../mouseinterface.h"
 #include "../joystickinterface.h"
 #include "../keyboard.h"
@@ -341,7 +341,7 @@ namespace Spectrum::QtUi
         Keyboard m_keyboard;
         QImageDisplayDevice m_display;
         SpectrumDisplayImageWidget m_displayWidget;
-        PokesView m_pokesWidget;
+        CheatsView m_pokesWidget;
         QAction m_load;
         QAction m_save;
 

@@ -12,7 +12,7 @@
 #include <QRegularExpression>
 #include <QVariant>
 #include <QSettings>
-#include "pokesview.h"
+#include "cheatsview.h"
 #include "pokesviewitem.h"
 #include "application.h"
 #include "mainwindow.h"
@@ -28,12 +28,12 @@ namespace
     constexpr const char * UuidPropertyName = "pokeUuid";
 }
 
-PokesView::PokesView(QWidget * parent)
+CheatsView::CheatsView(QWidget * parent)
 : QWidget(parent),
   m_layout(),
-  m_loadPokes(QIcon::fromTheme(QStringLiteral("document-open"), Application::icon(QStringLiteral("open"))), tr("Load pokes")),
-  m_clearPokes(QIcon::fromTheme(QStringLiteral("edit-clear-list"), Application::icon(QStringLiteral("clear"))), tr("Clear pokes")),
-  m_pokes(),
+  m_loadCheats(QIcon::fromTheme(QStringLiteral("document-open"), Application::icon(QStringLiteral("open"))), tr("Load pokes")),
+  m_clearCheats(QIcon::fromTheme(QStringLiteral("edit-clear-list"), Application::icon(QStringLiteral("clear"))), tr("Clear pokes")),
+  m_cheats(),
   m_actionIconSize()
 {
     int iconSize = style()->pixelMetric(QStyle::PM_ButtonIconSize, nullptr, this);
@@ -42,38 +42,42 @@ PokesView::PokesView(QWidget * parent)
 
     m_toolBar.setIconSize(m_actionIconSize);
     m_toolBar.addStretch(10);
-    m_toolBar.addAction(&m_loadPokes);
-    m_toolBar.addAction(&m_clearPokes);
+    m_toolBar.addAction(&m_loadCheats);
+    m_toolBar.addAction(&m_clearCheats);
     m_layout.addWidget(&m_toolBar);
 
     m_layout.addStretch(10);
     m_layout.setSpacing(0);
 
     setLayout(&m_layout);
-    connect(&m_loadPokes, &QAction::triggered, this, &PokesView::loadPokesTriggered);
-    connect(&m_clearPokes, &QAction::triggered, this, &PokesView::clearPokesTriggered);
+    connect(&m_loadCheats, &QAction::triggered, this, &CheatsView::loadCheatsTriggered);
+    connect(&m_clearCheats, &QAction::triggered, this, &CheatsView::clearCheatsTriggered);
+
+    loadSettings();
 }
 
-PokesView::~PokesView() = default;
+CheatsView::~CheatsView()
+{
+    saveSettings();
+}
 
-void PokesView::showEvent(QShowEvent *)
+void CheatsView::loadSettings()
 {
     QSettings settings;
     settings.beginGroup("pokesWidget");
-    m_lastPokeLoadDir = settings.value(QStringLiteral("lastPokeLoadDir")).toString();
+    m_lastLoadDir = settings.value(QStringLiteral("lastPokeLoadDir")).toString();
     settings.endGroup();
 }
 
-void PokesView::hideEvent(QHideEvent * event)
+void CheatsView::saveSettings()
 {
     QSettings settings;
     settings.beginGroup("pokesWidget");
-    settings.setValue(QStringLiteral("lastPokeLoadDir"), m_lastPokeLoadDir);
+    settings.setValue(QStringLiteral("lastPokeLoadDir"), m_lastLoadDir);
     settings.endGroup();
-    QWidget::hideEvent(event);
 }
 
-void PokesView::loadPokes(const QString & fileName)
+void CheatsView::loadCheats(const QString & fileName)
 {
     PokFileReader reader(fileName.toStdString());
 
@@ -96,13 +100,13 @@ void PokesView::loadPokes(const QString & fileName)
     }
 
     for (const auto & poke : pokes) {
-        addPoke(poke);
+        addCheat(poke);
     }
 
     Application::showNotification(tr("Read %1 pokes from %2.").arg(pokes.size()).arg(fileName));
 }
 
-void PokesView::setActionIconSize(const QSize & size)
+void CheatsView::setActionIconSize(const QSize & size)
 {
     m_actionIconSize = size;
 
@@ -121,24 +125,24 @@ void PokesView::setActionIconSize(const QSize & size)
     }
 }
 
-void PokesView::addPoke(Spectrum::PokeDefinition && poke)
+void CheatsView::addCheat(Spectrum::PokeDefinition && poke)
 {
     auto name = QString::fromStdString(poke.name());
     auto uuid = QUuid::createUuid().toString();
-    m_pokes.insert({uuid.toStdString(), std::move(poke)});
-    addPokeWidget(name, uuid);
+    m_cheats.insert({uuid.toStdString(), std::move(poke)});
+    addCheatWidget(name, uuid);
 }
 
-void PokesView::addPoke(const Spectrum::PokeDefinition & poke)
+void CheatsView::addCheat(const Spectrum::PokeDefinition & poke)
 {
     auto uuid = QUuid::createUuid().toString();
-    m_pokes.insert({uuid.toStdString(), poke});
-    addPokeWidget(QString::fromStdString(poke.name()), uuid);
+    m_cheats.insert({uuid.toStdString(), poke});
+    addCheatWidget(QString::fromStdString(poke.name()), uuid);
 }
 
-void PokesView::clearPokes()
+void CheatsView::clearCheats()
 {
-    m_pokes.clear();
+    m_cheats.clear();
     // NOTE first child widget is the "toolbar", last child widget is the spacer
     auto count = m_layout.count() - 1;
 
@@ -154,21 +158,21 @@ void PokesView::clearPokes()
     }
 }
 
-void PokesView::addPokeWidget(const QString & name, const QString & uuid)
+void CheatsView::addCheatWidget(const QString & name, const QString & uuid)
 {
     auto * item = new PokesViewItem(name, uuid, this);
     item->setIconSize(actionIconSize());
 
-    connect(item, &PokesViewItem::activationRequested, this, &PokesView::applyPokeTriggered);
-    connect(item, &PokesViewItem::deactivationRequested, this, &PokesView::undoPokeTriggered);
-    connect(item, &PokesViewItem::removeClicked, this, &PokesView::removePokeTriggered);
+    connect(item, &PokesViewItem::activationRequested, this, &CheatsView::applyCheatTriggered);
+    connect(item, &PokesViewItem::deactivationRequested, this, &CheatsView::undoCheatTriggered);
+    connect(item, &PokesViewItem::removeClicked, this, &CheatsView::removeCheatTriggered);
 
     m_layout.insertWidget(m_layout.count() - 1, item);
 }
 
-void PokesView::removePoke(int idx)
+void CheatsView::removeCheat(int idx)
 {
-    if (0 > idx || pokeCount() <= idx) {
+    if (0 > idx || cheatCount() <= idx) {
         Util::debug << "index " << idx << " out of bounds.\n";
         return;
     }
@@ -187,21 +191,21 @@ void PokesView::removePoke(int idx)
         return;
     }
 
-    removePoke(uuid, item->widget());
+    removeCheat(uuid, item->widget());
 }
 
-void PokesView::removePoke(const QString & uuid, QWidget * widget)
+void CheatsView::removeCheat(const QString & uuid, QWidget * widget)
 {
     if (!widget) {
-        widget = findPokeWidget(uuid);
+        widget = findCheatWidget(uuid);
     }
 
-    m_pokes.erase(uuid.toStdString());
+    m_cheats.erase(uuid.toStdString());
     m_layout.removeWidget(widget);
     delete widget;
 }
 
-QWidget * PokesView::findPokeWidget(const QString & uuid) const
+QWidget * CheatsView::findCheatWidget(const QString & uuid) const
 {
     // NOTE first child widget is the "toolbar", last child widget is the spacer
     auto count = m_layout.count() - 1;
@@ -222,7 +226,7 @@ QWidget * PokesView::findPokeWidget(const QString & uuid) const
     return nullptr;
 }
 
-void PokesView::loadPokesTriggered()
+void CheatsView::loadCheatsTriggered()
 {
     static QStringList filters;
     static QString lastFilter;
@@ -234,13 +238,13 @@ void PokesView::loadPokesTriggered()
         filters << tr("POK Poke files (*.pok)");
     }
 
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Load pokes"), m_lastPokeLoadDir, filters.join(";;"), &lastFilter);
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Load pokes"), m_lastLoadDir, filters.join(";;"), &lastFilter);
 
     if(fileName.isEmpty()) {
         return;
     }
 
-    m_lastPokeLoadDir = QFileInfo(fileName).path();
+    m_lastLoadDir = QFileInfo(fileName).path();
     auto format = lastFilter;
 
     if (!format.isEmpty()) {
@@ -251,41 +255,41 @@ void PokesView::loadPokesTriggered()
         }
     }
 
-    loadPokes(fileName);
+    loadCheats(fileName);
 }
 
-void PokesView::clearPokesTriggered()
+void CheatsView::clearCheatsTriggered()
 {
-    clearPokes();
+    clearCheats();
 }
 
-void PokesView::undoPokeTriggered(const QString & uuid)
+void CheatsView::undoCheatTriggered(const QString & uuid)
 {
     auto stdUuid = uuid.toStdString();
 
-    if (!m_pokes.contains(stdUuid)) {
+    if (!m_cheats.contains(stdUuid)) {
         Util::debug << "Poke with UUID " << stdUuid << " not found\n";
         return;
     }
 
-    const auto & poke = m_pokes[stdUuid];
-    Q_EMIT undoPokeRequested(poke);
+    const auto & poke = m_cheats[stdUuid];
+    Q_EMIT undoCheatRequested(poke);
 }
 
-void PokesView::removePokeTriggered(const QString & uuid)
+void CheatsView::removeCheatTriggered(const QString & uuid)
 {
-    removePoke(uuid);
+    removeCheat(uuid);
 }
 
-void PokesView::applyPokeTriggered(const QString & uuid)
+void CheatsView::applyCheatTriggered(const QString & uuid)
 {
     auto stdUuid = uuid.toStdString();
 
-    if (!m_pokes.contains(stdUuid)) {
+    if (!m_cheats.contains(stdUuid)) {
         Util::debug << "Poke with UUID " << stdUuid << " not found\n";
         return;
     }
 
-    const auto & poke = m_pokes[stdUuid];
-    Q_EMIT applyPokeRequested(poke);
+    const auto & poke = m_cheats[stdUuid];
+    Q_EMIT applyCheatRequested(poke);
 }

@@ -604,8 +604,8 @@ void MainWindow::createMenuBar()
 
     menu->addAction(&m_kempstonMouse);
     menu->addSeparator();
-    menu->addAction(m_pokesWidget.loadPokesAction());
-    menu->addAction(m_pokesWidget.clearPokesAction());
+    menu->addAction(m_pokesWidget.loadCheatsAction());
+    menu->addAction(m_pokesWidget.clearCheatsAction());
 
     menu = tempMenuBar->addMenu(tr("Display"));
     menu->addAction(&m_saveScreenshot);
@@ -729,7 +729,7 @@ void MainWindow::createToolBars()
 
 void MainWindow::createDockWidgets()
 {
-    auto * dock = new QDockWidget(tr("Pokes"), this);
+    auto * dock = new QDockWidget(tr("Cheats"), this);
     dock->setObjectName(QStringLiteral("pokes-dock"));
     dock->setWidget(&m_pokesWidget);
     addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, dock);
@@ -796,13 +796,13 @@ void MainWindow::connectSignals()
 	    }
 	});
 
-	connect(&m_pokesWidget, &PokesView::applyPokeRequested, [this](const PokeDefinition & poke) {
+	connect(&m_pokesWidget, &CheatsView::applyCheatRequested, [this](const PokeDefinition & poke) {
 	    // TODO check if poke has any user-provided values
 	    poke.apply(*m_spectrum);
 	    statusBar()->showMessage(tr("%1 poke activated.").arg(QString::fromStdString(poke.name())));
 	});
 
-	connect(&m_pokesWidget, &PokesView::undoPokeRequested, [this](const PokeDefinition & poke) {
+	connect(&m_pokesWidget, &CheatsView::undoCheatRequested, [this](const PokeDefinition & poke) {
 	    poke.undo(*m_spectrum);
         statusBar()->showMessage(tr("%1 poke deactivated.").arg(QString::fromStdString(poke.name())));
 	});
