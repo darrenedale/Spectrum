@@ -2,7 +2,8 @@
 #define INTERPRETER_Z80INTERPRETER_H
 
 #include <vector>
-#include <QString>
+#include <memory>
+#include <string>
 #include "../z80/types.h"
 
 namespace Z80
@@ -46,19 +47,55 @@ namespace Interpreter
          *
          * @param cpu The Z80 CPU to use to execute instructions.
          */
-        explicit Z80Interpreter(Z80Cpu * cpu);
+        explicit Z80Interpreter(std::unique_ptr<Z80Cpu> cpu);
 
         /**
          * Destructor.
          */
         virtual ~Z80Interpreter();
 
+        /**
+         * Check whether the interpreter has a CPU.
+         *
+         * @return true if the interpreter has a non-null Z80, false otherwise.
+         */
         [[nodiscard]] bool hasCpu() const;
+
+        /**
+         * Fetch the interpreter's CPU.
+         *
+         * The returned pointer could be nullptr. The returned pointer must not be destroyed, it remains the property of the interpreter.
+         *
+         * @return The CPU, or nullptr if the interpreter does not have one.
+         */
         [[nodiscard]] Z80Cpu * cpu() const;
 
-        void setCpu(Z80Cpu * cpu);
+        /**
+         * Set the interpreter's CPU.
+         *
+         * The CPU may be nullptr. Ownership of the CPU is transferred to the interpreter.
+         *
+         * @param cpu The CPU to set.
+         */
+        void setCpu(std::unique_ptr<Z80Cpu> cpu);
+
+        /**
+         * Run the interpreter.
+         *
+         * Do not call this method if the interpreter has no CPU.
+         *
+         * A REPL is started. The function returns when the user quits the REPL.
+         */
         void run();
-        static void run(Z80Cpu * cpu);
+
+        /**
+         * Convenience function to start an interpreter with a given CPU.
+         *
+         * Do not call this method with a null CPU.
+         *
+         * @param cpu The CPU to use the run the interpreter.
+         */
+        static void run(std::unique_ptr<Z80Cpu> cpu);
 
     protected:
         /**
@@ -69,8 +106,14 @@ namespace Interpreter
         /**
          * Type alias for a stream of tokens read from the provided input.
          */
-        using Tokens = std::vector<QString>;
+        using Tokens = std::vector<std::string>;
 
+        /**
+         * An opaque value representing an invalid opcode.
+         *
+         * Use this for comparison when checking for invalid opcodes. It is only useful for comparison with return values from the assembly helpers. Its actual
+         * value is not defined and must not be relied upon.
+         */
         static const Opcode InvalidInstruction;
 
         /**
@@ -78,7 +121,7 @@ namespace Interpreter
          *
          * @return The input.
          */
-        QString readInput();
+        std::string readInput();
 
         /**
          * Tokenise a string of input into a token stream.
@@ -87,10 +130,10 @@ namespace Interpreter
          * 
          * @return The set of tokens.
          */
-        static Tokens tokenise(const QString & input);
+        static Tokens tokenise(const std::string & input);
 
         // returns true if the interpreter should continue running, false if it should exit.
-        bool handleInput(const QString & input);
+        bool handleInput(const std::string & input);
 
         /**
          * Dispatcher for .dot commands.
@@ -799,14 +842,9 @@ namespace Interpreter
 
     private:
         /**
-         * Helper to deallocate and discard the CPU.
-         */
-        void discardCpu();
-        
-        /**
          * The Z80 CPU that is used to execute instructions.
          */
-        Z80Cpu * m_cpu;
+        std::unique_ptr<Z80Cpu> m_cpu;
         
         /**
          * Whether the assembled machine code should be output for each instruction executed.
