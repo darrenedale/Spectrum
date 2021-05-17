@@ -177,11 +177,10 @@ void Z80Interpreter::runOpcode(const Opcode & opcode)
         std::cout << "\n";
     }
 
-    int cycles, size;
-    m_cpu->execute(opcode.data(), false, &cycles, &size);
+    auto cost = m_cpu->execute(opcode.data(), false);
 
     if (m_showInstructionCost) {
-        std::cout << "instruction consumed " << cycles << " CPU cycles and would occupy " << size
+        std::cout << "instruction consumed " << cost.tStates << " CPU cycles and would occupy " << cost.size
                   << " byte(s) of RAM.\n";
     }
 
@@ -411,7 +410,7 @@ void Z80Interpreter::dotDumpMemory(int low, int len) const
         return;
     }
 
-    const UnsignedByte * ram = m_cpu->memory();
+    const auto * ram = m_cpu->memory();
     std::cout << "         ";
     std::cout << std::setfill('0') << std::hex;
 
@@ -435,7 +434,7 @@ void Z80Interpreter::dotDumpMemory(int low, int len) const
             std::cout << "\n 0x" << std::setw(4) << addr << " :";
         }
 
-        std::cout << " 0x" << std::setw(2) << static_cast<std::uint16_t>(ram[addr]);
+        std::cout << " 0x" << std::setw(2) << static_cast<std::uint16_t>(ram->readByte(addr));
     }
 
     std::cout << "\n" << std::dec << std::setfill(' ');
