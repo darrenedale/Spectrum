@@ -265,6 +265,31 @@ namespace Spectrum::QtUi
          * This is extracted to a helper primarily for ease of maintenance.
          */
         void createMenuBar();
+        
+        /**
+         * Helper to create the File menu in the menu bar.
+         */
+        void createFileMenu();
+
+        /**
+         * Helper to create the Spectrum menu in the menu bar.
+         */
+        void createSpectrumMenu();
+
+        /**
+         * Helper to create the Display menu in the menu bar.
+         */
+        void createDisplayMenu();
+
+        /**
+         * Helper to create the Debugger menu in the menu bar.
+         */
+        void createDebuggerMenu();
+
+        /**
+         * Helper to create the Help menu in the menu bar.
+         */
+        void createHelpMenu();
 
         /**
          * Helper to create the main window's tool bars.
@@ -272,6 +297,21 @@ namespace Spectrum::QtUi
          * This is extracted to a helper primarily for ease of maintenance.
          */
         void createToolBars();
+
+        /**
+         * Helper to create the main tool bar.
+         */
+        void createMainToolBar();
+
+        /**
+         * Helper to create the debug tool bar.
+         */
+        void createDebugToolBar();
+
+        /**
+         * Helper to create the speed tool bar.
+         */
+        void createSpeedToolBar();
 
         /**
          * Helper to create the main window's dock widgets.

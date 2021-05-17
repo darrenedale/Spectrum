@@ -540,40 +540,36 @@ void MainWindow::stopThread()
 void MainWindow::createMenuBar()
 {
     auto * tempMenuBar = menuBar();
-    auto * menu = tempMenuBar->addMenu(tr("File"));
+    createFileMenu();
+    createSpectrumMenu();
+    createDisplayMenu();
+    createDebuggerMenu();
+    createHelpMenu();
+}
+
+void MainWindow::createFileMenu()
+{
+    auto * menu = menuBar()->addMenu(tr("File"));
     menu->setToolTipsVisible(true);
     menu->addAction(&m_reset);
     menu->addSeparator();
     menu->addAction(&m_load);
     menu->addAction(&m_save);
 
-    // F1-5 loads from slot 1-5
-    // Shift + F1-5 saves to slot 1-5
+    {    // F1-5 loads from slot 1-5
+        // Shift + F1-5 saves to slot 1-5
 
-    auto * subMenu = menu->addMenu(tr("Load slot"));
-//    subMenu->addAction(tr("Default slot"), [this]() {
-//        // TODO configuration to set default slot
-//        loadSnapshotFromSlot(1);
-//    }, Qt::Key::Key_F1);
-//    subMenu->addSeparator();
+        auto * loadSlotSubMenu = menu->addMenu(tr("Load slot"));
+        auto * saveSlotSubMenu = menu->addMenu(tr("Save slot"));
 
-    for (int slotIndex = 1; slotIndex <= 5; ++slotIndex) {
-        subMenu->addAction(tr("Slot %1").arg(slotIndex),  [this, slotIndex]() {
-            loadSnapshotFromSlot(slotIndex);
-        }, QKeySequence(tr("F%1").arg(slotIndex)));
-    }
-
-    subMenu = menu->addMenu(tr("Save slot"));
-//    subMenu->addAction(tr("Default slot"), [this]() {
-//        // TODO configuration to set default slot
-//        saveSnapshotToSlot(1, QStringLiteral("z80"));
-//    }, Qt::Key::Key_F2);
-//    subMenu->addSeparator();
-
-    for (int slotIndex = 1; slotIndex <= 5; ++slotIndex) {
-        subMenu->addAction(tr("Slot %1").arg(slotIndex), [this, slotIndex]() {
-            saveSnapshotToSlot(slotIndex, QStringLiteral("z80"));
-        }, QKeySequence(tr("Shift+F%1").arg(slotIndex)));
+        for (int slotIndex = 1; slotIndex <= 5; ++slotIndex) {
+            loadSlotSubMenu->addAction(tr("Slot %1").arg(slotIndex), [this, slotIndex]() {
+                loadSnapshotFromSlot(slotIndex);
+            }, QKeySequence(tr("F%1").arg(slotIndex)));
+            saveSlotSubMenu->addAction(tr("Slot %1").arg(slotIndex), [this, slotIndex]() {
+                saveSnapshotToSlot(slotIndex, QStringLiteral("z80"));
+            }, QKeySequence(tr("Shift+F%1").arg(slotIndex)));
+        }
     }
 
     menu->addSeparator();
@@ -581,11 +577,15 @@ void MainWindow::createMenuBar()
         close();
     });
 
-    menu = tempMenuBar->addMenu(tr("Spectrum"));
+}
+
+void MainWindow::createSpectrumMenu()
+{
+    auto * menu = menuBar()->addMenu(tr("Spectrum"));
     menu->addAction(&m_pauseResume);
     menu->addAction(&m_reset);
     menu->addSeparator();
-    subMenu = menu->addMenu(tr("Model"));
+    auto * subMenu = menu->addMenu(tr("Model"));
     subMenu->setToolTip(tr("Choose which Spectrum model to emulate."));
 
     for (auto * action : {&m_model16, &m_model48, &m_model128, &m_modelPlus2, &m_modelPlus2a, &m_modelPlus3, }) {
@@ -606,12 +606,15 @@ void MainWindow::createMenuBar()
     menu->addSeparator();
     menu->addAction(m_pokesWidget.loadCheatsAction());
     menu->addAction(m_pokesWidget.clearCheatsAction());
+}
 
-    menu = tempMenuBar->addMenu(tr("Display"));
+void MainWindow::createDisplayMenu()
+{
+    auto * menu = menuBar()->addMenu(tr("Display"));
     menu->addAction(&m_saveScreenshot);
     menu->addSeparator();
 
-    subMenu = menu->addMenu(tr("Frame Skip"));
+    auto * subMenu = menu->addMenu(tr("Frame Skip"));
 
     {
         auto * action = subMenu->addAction(tr("Don't skip, render every frame"), [this]() {
@@ -663,14 +666,20 @@ void MainWindow::createMenuBar()
 
         borderColourGroup->addAction(action);
     }
+}
 
-    menu = tempMenuBar->addMenu(tr("Debugger"));
+void MainWindow::createDebuggerMenu()
+{
+    auto * menu = menuBar()->addMenu(tr("Debugger"));
     menu->addAction(&m_debug);
     menu->addAction(&m_debugStep);
     menu->addSeparator();
     menu->addAction(&m_refreshScreen);
+}
 
-    menu = tempMenuBar->addMenu(tr("Help"));
+void MainWindow::createHelpMenu()
+{
+    auto * menu = menuBar()->addMenu(tr("Help"));
 
     auto * action = menu->addAction(tr("About"));
     connect(action, &QAction::triggered, [this]() {
@@ -703,21 +712,34 @@ void MainWindow::createMenuBar()
 
 void MainWindow::createToolBars()
 {
-	auto * tempToolBar = addToolBar(tr("Main"));
-	tempToolBar->setObjectName(QStringLiteral("main-toolbar"));
+    createMainToolBar();
+    createDebugToolBar();
+    createSpeedToolBar();
+}
+
+void MainWindow::createMainToolBar()
+{
+    auto * tempToolBar = addToolBar(tr("Main"));
+    tempToolBar->setObjectName(QStringLiteral("main-toolbar"));
     tempToolBar->addAction(&m_load);
     tempToolBar->addAction(&m_save);
     tempToolBar->addSeparator();
     tempToolBar->addAction(&m_pauseResume);
     tempToolBar->addAction(&m_reset);
+}
 
-    tempToolBar = addToolBar(tr("Debug"));
+void MainWindow::createDebugToolBar()
+{
+    auto * tempToolBar = addToolBar(tr("Debug"));
     tempToolBar->setObjectName(QStringLiteral("debug-toolbar"));
     tempToolBar->addAction(&m_debug);
     tempToolBar->addAction(&m_debugStep);
     tempToolBar->addAction(&m_refreshScreen);
+}
 
-    tempToolBar = addToolBar(tr("Speed"));
+void MainWindow::createSpeedToolBar()
+{
+    auto * tempToolBar = addToolBar(tr("Speed"));
     tempToolBar->setObjectName(QStringLiteral("speed-toolbar"));
     auto geom = tempToolBar->geometry();
     geom.moveLeft(width() / 3 * 2);
@@ -730,7 +752,7 @@ void MainWindow::createToolBars()
 void MainWindow::createDockWidgets()
 {
     auto * dock = new QDockWidget(tr("Cheats"), this);
-    dock->setObjectName(QStringLiteral("pokes-dock"));
+    dock->setObjectName(QStringLiteral("cheats-dock"));
     dock->setWidget(&m_pokesWidget);
     addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, dock);
 }
