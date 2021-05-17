@@ -41,8 +41,10 @@ namespace Spectrum::QtUi
     public:
 	    /**
 	     * Default-initialise a new MainWindow.
+	     *
+	     * @param parent The widget that owns the new MainWindow instance.
 	     */
-        explicit MainWindow(QWidget * = nullptr);
+        explicit MainWindow(QWidget * parent = nullptr);
 
         /**
          * MainWindow objects cannot be copy-constructed.
@@ -219,12 +221,46 @@ namespace Spectrum::QtUi
          */
 	    void saveSettings();
 
+	    /**
+	     * Handler for when the main window is made visible.
+	     *
+	     * Loads the last known state of the window (geometry, docks, toolbars, etc.).
+	     */
         void showEvent(QShowEvent *) override;
+
+        /**
+         * Handler for when the main window is closed.
+         *
+         * Stores the state of the window (geometry, docks, toolbars, etc.).
+         */
 	    void closeEvent(QCloseEvent *) override;
 
+	    /**
+	     * Handler for when the window receives key presses.
+	     *
+	     * Along with keyReleaseEvent, handles the user holding down the TAB key to temporarily accelerate the emulation.
+	     */
 	    void keyPressEvent(QKeyEvent *) override;
+
+	    /**
+	     * Handler for when the window receives a key release event.
+	     *
+	     * Along with keyReleaseEvent, handles the user holding down the TAB key to temporarily accelerate the emulation.
+	     */
 	    void keyReleaseEvent(QKeyEvent *) override;
+
+	    /**
+	     * Handler for when the user drags some content into the window.
+	     *
+	     * Enables drag-and-drop loading of snapshot files.
+	     */
 	    void dragEnterEvent(QDragEnterEvent *) override;
+
+        /**
+         * Handler for when the user drops some content into the window.
+         *
+         * Loads a snapshot if it is dropped on the window.
+         */
 	    void dropEvent(QDropEvent *) override;
 
 	    /**
@@ -232,6 +268,9 @@ namespace Spectrum::QtUi
 	     */
         void refreshSpectrumDisplay();
 
+        /**
+         * Helper to synchronise the speed readout in the status bar with the running Spectrum.
+         */
         void updateStatusBarSpeedWidget();
 
     private:
@@ -430,7 +469,6 @@ namespace Spectrum::QtUi
         std::unique_ptr<JoystickInterface> m_joystick;
         GameControllerHandler m_gameControllerHandler;
         std::unique_ptr<MouseInterface> m_mouse;
-
 	};
 }
 
