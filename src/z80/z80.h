@@ -38,38 +38,34 @@ namespace Z80
 {
     class IODevice;
 
+    /**
+     * Abstraction of an emulated Z80 CPU.
+     */
     class Z80
     : public Cpu
     {
     public:
         using Memory = ::Memory<UnsignedByte>;
 
+        /**
+         * Initialise a new Z80 with a memory object.
+         *
+         * The Z80 borrows the memory, it does not own it.
+         *
+         * @param memory The memory available to the Z80.
+         */
         Z80(Memory * memory);
+
+        /**
+         * Destructor.
+         */
         ~Z80() override;
 
-//        static inline UnsignedWord swapByteOrder(UnsignedWord value)
-//        {
-//            return (((value & 0xff00) >> 8) & 0x00ff) | (((value & 0x00ff) << 8) & 0xff00);
-//        }
-//
-//        static inline UnsignedWord z80ToHostByteOrder(UnsignedWord value)
-//        {
-//            if constexpr (Z80ByteOrder == HostByteOrder) {
-//                return value;
-//            }
-//
-//            return swapByteOrder(value);
-//        }
-//
-//        static inline UnsignedWord hostToZ80ByteOrder(UnsignedWord value)
-//        {
-//            if constexpr (Z80ByteOrder == HostByteOrder) {
-//                return value;
-//            }
-//
-//            return swapByteOrder(value);
-//        }
-
+        /**
+         * A Z80 is valid as long as it has some memory to access.
+         *
+         * @return true if the Z80 is valid, false otherwise.
+         */
         [[nodiscard]] bool isValid() const
         {
             return m_memory;
@@ -98,26 +94,39 @@ namespace Z80
             m_tStates = tStates;
         }
 
-        // Register getters
+        /**
+         * Obtain a read-write reference to the register set of the Z80.
+         *
+         * The register set contains the current state of all the Z80's registers. Since it is a reference, the returned
+         * object will be kept up-to-date with the state of the CPU to which they belong, and any changes you make will
+         * affect subsequent instructions executed by the Z80.
+         *
+         * @return The registers.
+         */
         Registers & registers()
         {
             return m_registers;
         }
 
+        /**
+         * Obtain a read-only reference to the register set of the Z80.
+         *
+         * The register set contains the current state of all the Z80's registers. Since it is a reference, the returned
+         * object will be kept up-to-date with the state of the CPU to which they belong.
+         *
+         * @return The registers.
+         */
         [[nodiscard]] const Registers & registers() const
         {
             return m_registers;
         }
 
-        //
-        // register values in host byte order
-        //
-        
         /**
          * Retrieve the value of a register pair in host byte order.
          *
-         * @param reg
-         * @return
+         * @param reg The register pair whose value is sought.
+         *
+         * @return The value of the register pair.
          */
         [[nodiscard]] UnsignedWord registerValue(Register16 reg) const;
 
@@ -128,6 +137,10 @@ namespace Z80
          * @return
          */
         [[nodiscard]] UnsignedWord registerValueZ80(Register16 reg) const;
+
+        //
+        // register values in host byte order
+        //
 
         /**
          * Retrieve a register value.
@@ -436,21 +449,45 @@ namespace Z80
             return m_interruptMode;
         }
 
+        /**
+         * Set the primary iff.
+         *
+         * The primary iff essentially indicates whether interrupts are enabled or disabled.
+         *
+         * @param iff Whether to set (true) or clear (false) the iff.
+         */
         inline void setIff1(bool iff)
         {
             m_iff1 = iff;
         }
 
+        /**
+         * Fetch the state of the primary iff.
+         *
+         * The primary iff essentially indicates whether interrupts are enabled or disabled.
+         *
+         * @return true if iff1 is set, false if it is cleared.
+         */
         [[nodiscard]] inline bool iff1() const
         {
             return m_iff1;
         }
 
+        /**
+         * Set the secondary iff.
+         *
+         * @param iff Whether to set (true) or clear (false) the iff.
+         */
         inline void setIff2(bool iff)
         {
             m_iff2 = iff;
         }
 
+        /**
+         * Fetch the state of the secondary iff.
+         *
+         * @return true if iff2 is set, false if it is cleared.
+         */
         [[nodiscard]] inline bool iff2() const
         {
             return m_iff2;
@@ -906,7 +943,7 @@ namespace Z80
          *
          * @param addr The address of the value to fetch. The address is given in host byte order.
          *
-         * @return
+         * @return The unsigned 8-bit value at the given address.
          */
         [[nodiscard]] inline UnsignedByte peekUnsigned(MemoryType::Address addr) const
         {
@@ -915,6 +952,18 @@ namespace Z80
             }
 
             return m_memory->readByte(addr);
+        }
+
+        /**
+         * Fetch an 8-bit value from the Z80 memory.
+         *
+         * @param addr The address of the value to fetch. The address is given in host byte order.
+         *
+         * @return The signed 8-bit value at the given address.
+         */
+        inline SignedByte peekSigned(MemoryType::Address addr) const
+        {
+            return static_cast<SignedByte>(peekUnsigned(addr));
         }
 
         /**
@@ -938,11 +987,6 @@ namespace Z80
          * @return
          */
         [[nodiscard]] UnsignedWord peekUnsignedZ80Word(MemoryType::Address addr) const;
-
-        inline SignedByte peekSigned(MemoryType::Address addr) const
-        {
-            return static_cast<SignedByte>(peekUnsigned(addr));
-        }
 
         /**
          * Write an 8-bit value to a memory address.
@@ -968,6 +1012,19 @@ namespace Z80
          */
         void pokeZ80Word(MemoryType::Address addr, UnsignedWord value);
 
+        /**
+         * Reset the Z80.
+         *
+         * Resetting causes the following to h9appen:
+         * - any pending interrupts are cancelled
+         * - the interrupt mode is set to IM0
+         * - interrupts are disabled
+         * - the CPU is resumed (if it was in the halted state)
+         * - all registers are reset to 0, except:
+         *   - SP is set to 0xffff (the top of the Z80 address space)
+         *   - the accumulator and the shadow accumulator are set to 0xff
+         *   - all flags and shadow flags are set
+         */
         void reset();
 
         /**
@@ -995,16 +1052,18 @@ namespace Z80
 
         /**
          * Trigger a non-maskable interrupt (NMI).
+         *
+         * The NMI will be handled the next time an instruction completes executing.
          */
         void nmi();
 
         /**
          * Trigger a maskable interrupt.
          *
-         * If interrupts are currently being handled (IFF1 == true) then the interrupt will be triggered after the next
-         * instruction has finished executing.
+         * If interrupts are currently being handled (IFF1 == true) then the interrupt will be triggered the next time
+         * an instruction completes executing.
          *
-         * @param data
+         * @param data The data placed on the data bus by the interrupting device.
          */
         void interrupt(UnsignedByte data = 0x00);
 
@@ -1036,8 +1095,22 @@ namespace Z80
         virtual int fetchExecuteCycle();
 
     protected:
+        /**
+         * Handle an NMI.
+         *
+         * If you create a Z80 subclass you can reimplement this to customise NMI handling. If you do this, you are
+         * advised to call this base implementation to ensure the Z80 is un-halted. The base implementation sets the
+         * PC to 0x0066, but it does not trigger any execution, so your reimplementation can set the PC to the address
+         * of some other NMI handling routine if required.
+         */
         virtual void handleNmi();
 
+        /**
+         * Handle a maskable interrupt.
+         *
+         * If you create a Z80 subclass you can reimplement this to customise interrupt handling. The base
+         * implementation acts according to the current interrupt mode, and un-halts the Z80.
+         */
         virtual int handleInterrupt();
 
         // doPc is altered to be false if the PC has been altered during instruction execution and should therefore not
@@ -1049,32 +1122,139 @@ namespace Z80
         InstructionCost executeDdcbOrFdcbInstruction(UnsignedWord & reg, const UnsignedByte * instruction);
 
     private:
+        /**
+         * The t-state costs of plain (non-extended) Z80 instructions.
+         *
+         * The index into the array is the opcode byte value.
+         */
         static const int PlainOpcodeTStates[256];
+
+        /**
+         * The t-state costs of 0xcb-extended Z80 instructions.
+         *
+         * The index into the array is the value of the second opcode byte (i.e. the value following the 0xcb extension
+         * byte).
+         */
         static const std::uint8_t CbOpcodeTStates[256];
+
+        /**
+         * The t-state costs of 0xdd- and 0xfd-extended Z80 instructions.
+         *
+         * The index into the array is the value of the second opcode byte (i.e. the value following the 0xdd or 0xfd
+         * extension byte).
+         */
         static const int DdOrFdOpcodeTStates[256];
+
+        /**
+         * The t-state costs of 0xed-extended Z80 instructions.
+         *
+         * The index into the array is the value of the second opcode byte (i.e. the value following the 0xced extension
+         * byte).
+         */
         static const std::uint8_t EdOpcodeTStates[256];
+
+        /**
+         * The t-state costs of double-extended 0xdd 0xcb or 0xfd 0xcb Z80 instructions.
+         *
+         * The index into the array is the value of the *fourth* opcode byte. These instructions are all index-register
+         * (IX or IY) equivalents of the 0xcb-extended instructions that work with the HL register. All of these
+         * instructions are of the form 0xdd 0xcb {offset} {instruction-byte} or  0xdd 0xcb {offset} {instruction-byte}:
+         * that is, the third byte is the offset to apply tot he value in the IX or IY register and the fourth byte
+         * indicates the operation. This is they byte that is used to index this array.
+         */
         static const std::uint8_t DdCbOrFdCbOpcodeTStates[256];
 
+        /**
+         * The byte sizes of plain (non-extended) Z80 instructions..
+         *
+         * The index into the array is the opcode byte value.
+         */
         static const std::uint8_t PlainOpcodeSizes[256];
+
+        /**
+         * The byte sizes of 0xcb-extended Z80 instructions.
+         *
+         * The index into the array is the value of the second opcode byte (i.e. the value following the 0xcb extension
+         * byte).
+         */
         static const std::uint8_t DdOrFdOpcodeSizes[256];
+
+        /**
+         * The byte sizes of 0xed-extended Z80 instructions.
+         *
+         * The index into the array is the value of the second opcode byte (i.e. the value following the 0xced extension
+         * byte).
+         */
         static const std::uint8_t EdOpcodeSizes[256];
 
+        // NOTE all 0xdd 0xcb and 0xfd 0xcb instructions are four bytes in size.
+
+        /**
+         * The Z80 registers.
+         */
         Registers m_registers;
 
-        // interrupt handling
+        /**
+         * Counts the t-states for every instruction executed.
+         *
+         * Client code can use this to determine interrupt timing, for example.
+         */
         std::uint32_t m_tStates;
+
+        /**
+         * Primary interrupt flip-flop.
+         *
+         * Essentially, a flag indicating whether interrupts are enabled.
+         */
         bool m_iff1;
+
+        /**
+         * Secondary interrupt flip-flop.
+         */
         bool m_iff2;
+
+        /**
+         * The current interrupt mode.
+         *
+         * This indicates how maskable interrupts are handled.
+         */
         InterruptMode m_interruptMode;
+
+        /**
+         * Flag indicating when an NMI has been requested.
+         */
         bool m_nmiPending;
+
+        /**
+         * Flag indicating when a maskable interrupt has been requested.
+         */
         bool m_interruptRequested;
+
+        /**
+         * The data placed on the data bus by an IO device when it requests an interrupt.
+         */
         UnsignedByte m_interruptData;
+
+        /**
+         * Flag indicating whether handling of a pending interrupt should be deferred.
+         *
+         * The Z80 does this under some circumstances to enable a return instruction to be executed before handling the
+         * interrupt.
+         */
         bool m_delayInterruptOneInstruction;
 
-        // set when a HALT instruction is executed; cleared when an interrupt occurs or the CPU is reset
+        /**
+         * Flag indicating that the CPU is in its halted state.
+         *
+         * This is set when a HALT instruction is executed and cleared when an interrupt occurs or the CPU is reset.
+         */
         bool m_halted;
-        
-        unsigned long long m_clockSpeed;    // clock speed in Hz
+
+        /**
+         * The IO devices connected to the Z80.
+         *
+         * These are all borrowed, not owned.
+         */
         std::set<IODevice *> m_ioDevices;
 
 #if (!defined(NDEBUG))

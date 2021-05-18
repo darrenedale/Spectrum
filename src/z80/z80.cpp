@@ -1178,8 +1178,8 @@ int Z80::Z80::handleInterrupt()
     if (m_halted) {
         // HALTing the CPU (either via HALT instruction or by some device signalling the HALT pin) freezes the PC. In either case, once we resume we need the
         // PC to move on to the next instruction (otherwise it would simply re-execute the HALT)
-        ++m_registers.pc;
         m_halted = false;
+        ++m_registers.pc;
     }
 
     switch (m_interruptMode) {
