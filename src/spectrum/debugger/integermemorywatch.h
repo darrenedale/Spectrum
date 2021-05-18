@@ -80,7 +80,7 @@ namespace Spectrum::Debugger
          *
          * @return
          */
-        [[nodiscard]] std::string displayValue() const
+        [[nodiscard]] std::string displayValue() const override
         {
             if constexpr (8 < sizeof(int_t)) {
                 return bigDisplayValue();

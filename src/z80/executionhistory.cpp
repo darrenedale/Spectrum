@@ -133,6 +133,8 @@ OperandValue Z80::ExecutedInstruction::evaluateOperand(const Operand & operand, 
             }
 
         case AddressingMode::Register8:
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch"     // we're only interested in the 8-bit registers that can be addressed explicitly using register addressing
             // TODO for now we're just returning the register's content in all cases, but strictly speaking we should
             //  return the register if it's as destination, the register value if it's as source
             switch (operand.register8) {
@@ -166,8 +168,11 @@ OperandValue Z80::ExecutedInstruction::evaluateOperand(const Operand & operand, 
                 case Register8::R:
                     return {.unsignedByte = registersBefore.r};
             }
+#pragma clang diagnostic pop
 
         case AddressingMode::Register16:
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch"     // we're only interested in the 16-bit registers that can be addressed explicitly using register addressing
             // TODO for now we're just returning the register's content in all cases, but strictly speaking we should
             //  return the register if it's as destination, the register value if it's as source
             switch (operand.register16) {
@@ -189,11 +194,14 @@ OperandValue Z80::ExecutedInstruction::evaluateOperand(const Operand & operand, 
                 case Register16::IY:
                     return {.unsignedWord = registersBefore.iy};
            }
+#pragma clang diagnostic pop
 
         case AddressingMode::Register8Indirect: {
             // the port determined from the register
             UnsignedByte registerValue = 0;
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch"     // we're only interested in the 8-bit registers that can be addressed explicitly using indirect addressing
             switch (operand.register8) {
                 case Register8::A:
                     registerValue = registersBefore.a;
@@ -225,12 +233,16 @@ OperandValue Z80::ExecutedInstruction::evaluateOperand(const Operand & operand, 
                 case Register8::R:
                     registerValue = registersBefore.r;
             }
+#pragma clang diagnostic pop
 
             return {.unsignedWord = static_cast<UnsignedWord>((registersBefore.b << 8) | registerValue)};
         }
 
         case AddressingMode::Register16Indirect: {
             if (asDestination) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch"     // we're only interested in the 16-bit registers that can be addressed explicitly as destinations using register
+                                                // indirect addressing
                 switch (operand.register16) {
                     case Register16::AF:
                         return {.unsignedWord = registersBefore.af};
@@ -250,7 +262,11 @@ OperandValue Z80::ExecutedInstruction::evaluateOperand(const Operand & operand, 
                     case Register16::IY:
                         return {.unsignedWord = registersBefore.iy};
                 }
+#pragma clang diagnostic pop
             } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch"     // we're only interested in the 16-bit registers that can be addressed explicitly as sources using register
+                                                // indirect addressing
                 switch (operand.register16) {
                     case Register16::BC:
                         return {.unsignedWord = *reinterpret_cast<const UnsignedWord *>(memoryFragments.indirectBc)};
@@ -264,6 +280,7 @@ OperandValue Z80::ExecutedInstruction::evaluateOperand(const Operand & operand, 
                     case Register16::SP:
                         return {.unsignedWord = *reinterpret_cast<const UnsignedWord *>(memoryFragments.indirectSp)};
                 }
+#pragma clang diagnostic pop
             }
         }
         break;

@@ -380,7 +380,7 @@ namespace Spectrum
          * @param startAddress The address of the mapping to remove. It must be within the addressable range of the memory.
          * @param storage The block of storage to unmap.
          */
-        void unmapMemory(Address startAddress, const Byte * storage)
+        void unmapMemory(Address startAddress, const Byte * storage) override
         {
             const auto pos =std::find_if(m_mappedMemory.crbegin(), m_mappedMemory.crend(), [startAddress, storage](const MappedMemoryBlock & block) -> bool {
                 return block.address == startAddress && block.storage == storage;

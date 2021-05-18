@@ -550,6 +550,8 @@ namespace Spectrum::QtUi
          */
         bool event(QEvent * ev) override
         {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch"     // we're only interested in a subset of event types
             switch (ev->type()) {
                 case QEvent::Type::HoverMove: {
                     const auto pos = reinterpret_cast<QHoverEvent *>(ev)->pos();
@@ -576,6 +578,7 @@ namespace Spectrum::QtUi
                     }
                     break;
             }
+#pragma clang diagnostic pop
 
             return ViewType::event(ev);
         }
@@ -791,7 +794,22 @@ namespace Spectrum::QtUi
          */
         struct ItemActionData
         {
-            QAction * action{};
+            /**
+             * Constructor.
+             *
+             * We define the constructor because clang's std::vector::emplace_back() doesn't have a c'tor to call to create a instance otherwise. Not sure if
+             * this is a shortcoming of clang++ or a non-standard feature of gcc.
+             *
+             * There is no need to receive an rvalue ref to the connection handle and move it because it's size is a single pointer. No value in moving QRect
+             * either since its members are all POD: copy and move are no different.
+             */
+            ItemActionData(QAction * act, const QRect & geom, const QMetaObject::Connection & conn)
+            : action(act),
+              geometry(geom),
+              destructHandler(conn)
+            {}
+
+            QAction * action;
             QRect geometry;                             // the notional rectangle in which the action's spacing, button background and icon are rendered
             QMetaObject::Connection destructHandler;    // connection handle for the lambda that removes the action when it's destroyed
         };

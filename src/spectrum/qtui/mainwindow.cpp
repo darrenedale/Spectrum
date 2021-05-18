@@ -177,8 +177,9 @@ namespace
      */
     std::vector<::Spectrum::Keyboard::Key> mapToSpectrumKeys(Qt::Key key)
     {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch"     // we're only interested in the keys that map to the Spectrum keyboard
         // TODO configurable mapping
-        // only interested in keys mapped to Spectrum keyboard
         switch (key) {
             case Qt::Key::Key_Backspace:
                 return {::Spectrum::Keyboard::Key::CapsShift, Keyboard::Key::Num0};
@@ -375,6 +376,7 @@ namespace
             default:
                 return {};
         }
+#pragma clang diagnostic pop
     }
 
     /**
@@ -386,7 +388,8 @@ namespace
      */
     JoystickMapping mapToSpectrumJoystick(Qt::Key key)
     {
-        // only interested in keys mapped to joystick actions
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch"     // we're only interested in keys that map to the virtual joystick
         switch (key) {
             case Qt::Key::Key_Up:
                 return JoystickMapping::Up;
@@ -403,6 +406,7 @@ namespace
             case Qt::Key::Key_Control:
                 return JoystickMapping::Button1;
         }
+#pragma clang diagnostic pop
 
         return JoystickMapping::None;
     }

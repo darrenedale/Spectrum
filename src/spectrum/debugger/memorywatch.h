@@ -38,6 +38,11 @@ namespace Spectrum::Debugger
         }
 
         /**
+         * Destructor.
+         */
+        virtual ~MemoryWatch() = default;
+
+        /**
          * Fetch the memory that is being watched.
          *
          * @return The memory.
