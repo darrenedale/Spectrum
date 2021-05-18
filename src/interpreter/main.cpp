@@ -10,6 +10,6 @@ int main(int argc, char * argv[])
 {
     using Memory = SimpleMemory<::Z80::UnsignedByte>;
 	const auto memory = std::make_unique<Memory>(65536);
-	Z80Interpreter::run(new Z80::Z80(memory.get()));
+	Z80Interpreter::run(std::make_unique<Z80::Z80>(memory.get()));
 	return 0;
 }

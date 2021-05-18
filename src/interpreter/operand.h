@@ -5,9 +5,9 @@
 #ifndef INTERPRETER_OPERAND_H
 #define INTERPRETER_OPERAND_H
 
-#include <QString>
-
+#include <string>
 #include "../z80/types.h"
+#include "../util/string.h"
 
 namespace Interpreter
 {
@@ -70,8 +70,8 @@ namespace Interpreter
          *
          * @param op The operand string.
          */
-        inline explicit Operand(const QString & op)
-        : m_string(op.trimmed().toUpper()),
+        inline explicit Operand(const std::string & op)
+        : m_string(std::move(Util::upper_cased(Util::trimmed(op)))),
           m_type(OperandType::InvalidOperand),
           m_number(0)
         {
@@ -276,7 +276,7 @@ namespace Interpreter
          *
          * @return The string representation of the operand.
          */
-        [[nodiscard]] inline const QString & string() const
+        [[nodiscard]] inline const std::string & string() const
         {
             return m_string;
         }
@@ -288,7 +288,7 @@ namespace Interpreter
          *
          * @return The string representation of the operand.
          */
-        [[nodiscard]] inline const QString & operand() const
+        [[nodiscard]] inline const std::string & operand() const
         {
             return m_string;
         }
@@ -412,7 +412,7 @@ namespace Interpreter
         /**
          * The original string representation of the operand.
          */
-        QString m_string;
+        std::string m_string;
 
         /**
          * The parse operand type.

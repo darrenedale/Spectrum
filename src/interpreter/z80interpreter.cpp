@@ -5,7 +5,7 @@
  * - obviously there is no PC since instructions are being run on-demand.
  * - this means there is no looping
  * - it also means that the block operations (LDIR, OTIR, etc.) don't work correctly because they rely on manipulating
- *   the PC to  loop through the block (the instructions are assembled and executed, but at most one iteration of the
+ *   the PC to loop through the block (the instructions are assembled and executed, but at most one iteration of the
  *   loop will be executed)
  *
  * TODO:
@@ -15,100 +15,94 @@
  */
 
 #include "z80interpreter.h"
-
 #include <iostream>
 #include <iomanip>
+#include <algorithm>
+#include <numeric>
+#include <regex>
 #include <cmath>
 #include <cassert>
-#include <QString>
-#include <QStringBuilder>
-#include <QRegularExpression>
 #include <readline/readline.h>
 #include <readline/history.h>
-
 #include "../z80/z80.h"
+#include "../util/string.h"
+#include "../util/debug.h"
 #include "operand.h"
 
-// opcodes that work with 8-bit registers use a pattern of 3 bits to select which register - these macros define those
-// bit patterns
-// TODO use constexpr const std::uint8_t for these
-#define RegbitsB 0x00
-#define RegbitsC 0x01
-#define RegbitsD 0x02
-#define RegbitsE 0x03
-#define RegbitsH 0x04
-#define RegbitsL 0x05
-#define RegbitsIndirectHl 0x06
-#define RegbitsIndirectIxIy RegbitsIndirectHl
-#define RegbitsA 0x07
-
 using namespace Interpreter;
+
+namespace
+{
+    // opcodes that work with 8-bit registers use a pattern of 3 bits to select which register - these constants define those bit patterns
+    constexpr const std::uint8_t RegbitsB = 0x00;
+    constexpr const std::uint8_t RegbitsC = 0x01;
+    constexpr const std::uint8_t RegbitsD = 0x02;
+    constexpr const std::uint8_t RegbitsE = 0x03;
+    constexpr const std::uint8_t RegbitsH = 0x04;
+    constexpr const std::uint8_t RegbitsL = 0x05;
+    constexpr const std::uint8_t RegbitsIndirectHl = 0x06;
+    constexpr const std::uint8_t RegbitsIndirectIxIy = RegbitsIndirectHl;
+    constexpr const std::uint8_t RegbitsA = 0x07;
+
+    constexpr const std::array<const char *, 5> AffirmativeResponses = {"TRUE", "YES", "ON", "Y", "1"};
+    constexpr const std::array<const char *, 5> NegativeResponses = {"FALSE", "NO", "OFF", "N", "0"};
+}
 
 using SignedByte = Z80::SignedByte;
 using SignedWord = Z80::SignedWord;
 
+using Util::trimmed;
+using Util::trim;
+using Util::upper_cased;
+using Util::upper_case;
+
 const Z80Interpreter::Opcode Z80Interpreter::InvalidInstruction;
 
-Z80Interpreter::Z80Interpreter(Z80::Z80 * cpu)
-        : m_cpu(cpu),
-          m_showOpcodes(false),
-          m_showInstructionCost(false),
-          m_autoShowFlags(false)
+Z80Interpreter::Z80Interpreter(std::unique_ptr<Z80::Z80> cpu)
+: m_cpu(std::move(cpu)),
+  m_showOpcodes(false),
+  m_showInstructionCost(false),
+  m_autoShowFlags(false)
 {
 }
 
-Z80Interpreter::~Z80Interpreter()
-{
-    discardCpu();
-}
-
-void Z80Interpreter::discardCpu()
-{
-    delete m_cpu;
-    m_cpu = nullptr;
-}
+Z80Interpreter::~Z80Interpreter() = default;
 
 bool Z80Interpreter::hasCpu() const
 {
-    return (nullptr != m_cpu);
+    return static_cast<bool>(m_cpu);
 }
 
 Z80Cpu * Z80Interpreter::cpu() const
 {
-    return m_cpu;
+    return m_cpu.get();
 }
 
-void Z80Interpreter::setCpu(Z80Cpu * cpu)
+void Z80Interpreter::setCpu(std::unique_ptr<Z80Cpu> cpu)
 {
-    discardCpu();
-    m_cpu = cpu;
+    m_cpu = std::move(cpu);
 }
 
 void Z80Interpreter::run()
 {
+    assert(hasCpu());
     std::cout << "Z80 interpreter\nDarren Edale, 2021\n\nType \".help\" for help.\n\n";
-
-    if (!hasCpu()) {
-        std::cout << "No CPU. Exiting.";
-        return;
-    }
-
     std::cout << m_cpu->clockSpeedMHz() << "MHz Z80 CPU, " << m_cpu->memorySize() << " bytes of RAM\n";
 
     while (handleInput(readInput())) {
     }
 }
 
-void Z80Interpreter::run(Z80Cpu * cpu)
+void Z80Interpreter::run(std::unique_ptr<Z80Cpu> cpu)
 {
-    Z80Interpreter interpreter(cpu);
+    Z80Interpreter interpreter(std::move(cpu));
     interpreter.run();
 }
 
-QString Z80Interpreter::readInput()
+std::string Z80Interpreter::readInput()
 {
-    char * line = readline("> ");
-    QString ret = QString::fromUtf8(line);
+    auto * line = readline("> ");
+    auto ret = std::string(line);
 
     if (line) {
         if (*line) {
@@ -121,19 +115,47 @@ QString Z80Interpreter::readInput()
     return ret;
 }
 
-Z80Interpreter::Tokens Z80Interpreter::tokenise(const QString & input)
+Z80Interpreter::Tokens Z80Interpreter::tokenise(const std::string & input)
 {
-    auto tmp = input.split(QRegularExpression("[ ,]+"));
-    Tokens ret{tmp.begin(), tmp.end()};
+    // delimit tokens with any amount of whitespace or a single comma surrounded by any amount of whitespace
+    // NOTE we must present the alternatives in this order because the ECMA grammar accepts the leftmost match of all the alternatives; the other option is to
+    // use extended grammar which accepts the longest and then the leftmost as a tie-breaker but does not support non-capturing matches. Not doing one of these
+    // would result in the delimiter " , " being matched by the " +" alternative, meaning the following token would be incorrect
+    static const std::regex tokenBoundary("(?: *, *| +)", std::regex::optimize);
+    Tokens tokens;
+    auto it = std::sregex_iterator(input.cbegin(), input.cend(), tokenBoundary);
 
-    for(auto & str : ret) {
-        str = str.trimmed();
+    if (it == std::sregex_iterator()) {
+        // no delimiters, it's a single-token input line
+        tokens.push_back(input);
+    } else {
+        // accepting iterators means we could migrate to tokens being string_view objects in future
+        auto addToken = [&tokens](const std::string::const_iterator & begin, const std::string::const_iterator & end) {
+            std::string str(begin, end);
+            trim(str);
+            tokens.push_back(str);
+        };
+
+        // the start location of the next token
+        auto start = input.cbegin();
+
+        // add all the delimited tokens
+        while (it != std::sregex_iterator()) {
+            addToken(start, input.cbegin() + it->position());
+            start = input.cbegin() + it->position() + it->length();
+            ++it;
+        }
+
+        // if there's a trailing token (i.e. delimited by the end of the input), add it.
+        if (start != input.cend()) {
+            addToken(start, input.cend());
+        }
     }
 
-    return ret;
+    return tokens;
 }
 
-bool Z80Interpreter::handleInput(const QString & input)
+bool Z80Interpreter::handleInput(const std::string & input)
 {
     Tokens tokens = tokenise(input);
 
@@ -141,11 +163,12 @@ bool Z80Interpreter::handleInput(const QString & input)
         return true;
     }
 
-    if (".quit" == tokens[0] || ".exit" == tokens[0] || ".halt" == tokens[0]) {
+    if (".quit" == tokens.front() || ".exit" == tokens.front() || ".halt" == tokens.front()) {
         return false;
     }
 
-    if (tokens[0].startsWith('.')) {
+    // NOTE tokens.front() cannot be empty
+    if (tokens.front()[0] == '.') {
         handleDotCommand(tokens);
     } else {
         runOpcode(assembleInstruction(tokens));
@@ -192,47 +215,35 @@ void Z80Interpreter::runOpcode(const Opcode & opcode)
 /* dot-command methods */
 void Z80Interpreter::handleDotCommand(const Tokens & tokens)
 {
-    if (1 > tokens.size()) {
+    if (tokens.empty()) {
         std::cerr << "handleDotCommand() given no tokens to interpret.\n";
         return;
     }
 
-    if (tokens.at(0) == ".help") {
+    if (tokens.front() == ".help") {
         dotHelp();
-    } else if (tokens.at(0) == ".ram") {
+    } else if (tokens.front() == ".ram" || tokens.front() == ".dumpram") {
         dotDumpMemory(tokens);
-    } else if (tokens.at(0) == ".dumpram") {
-        dotDumpMemory(tokens);
-    } else if (tokens.at(0) == ".regs") {
+    } else if (tokens.front() == ".regs" || tokens.front() == ".dumpregisters") {
         dotDumpRegisters();
-    } else if (tokens.at(0) == ".dumpregisters") {
-        dotDumpRegisters();
-    } else if (tokens.at(0) == ".status") {
+    } else if (tokens.front() == ".status") {
         dotStatus();
-    } else if (tokens.at(0) == ".rv") {
+    } else if (tokens.front() == ".rv" || tokens.front() == ".regvalue" || tokens.front() == ".registervalue") {
         dotRegisterValue(tokens);
-    } else if (tokens.at(0) == ".regvalue") {
-        dotRegisterValue(tokens);
-    } else if (tokens.at(0) == ".registervalue") {
-        dotRegisterValue(tokens);
-    } else if (tokens.at(0) == ".showopcodes") {
+    } else if (tokens.front() == ".showopcodes") {
         dotShowOpcodes();
-    } else if (tokens.at(0) == ".hideopcodes") {
+    } else if (tokens.front() == ".hideopcodes") {
         dotHideOpcodes();
-    } else if (tokens.at(0) == ".showcosts") {
+    } else if (tokens.front() == ".showcosts") {
         dotShowCosts();
-    } else if (tokens.at(0) == ".hidecosts") {
+    } else if (tokens.front() == ".hidecosts") {
         dotHideCosts();
-    } else if (tokens.at(0) == ".flags") {
+    } else if (tokens.front() == ".flags" || tokens.front() == ".dumpflags") {
         dotDumpFlags();
-    } else if (tokens.at(0) == ".dumpflags") {
-        dotDumpFlags();
-    } else if (tokens.at(0) == ".autoflags") {
-        dotAutoShowFlags(tokens);
-    } else if (tokens.at(0) == ".autoshowflags") {
+    } else if (tokens.front() == ".autoflags" || tokens.front() == ".autoshowflags") {
         dotAutoShowFlags(tokens);
     } else {
-        std::cout << "Unrecognised command \"" << tokens.at(0).toStdString() << "\": try \".help\".\n";
+        std::cout << "Unrecognised command \"" << tokens.front() << "\": try \".help\".\n";
     }
 }
 
@@ -322,16 +333,18 @@ void Z80Interpreter::dotHideOpcodes()
 
 void Z80Interpreter::dotAutoShowFlags(const Tokens & tokens)
 {
-    if (1 == tokens.size() || tokens.at(1).toUpper() == "TRUE" || tokens.at(1).toUpper() == "YES" ||
-        tokens.at(1) == "1" || tokens.at(1).toUpper() == "ON" || tokens.at(1).toUpper() == "Y") {
+    if (1 == tokens.size() || std::any_of(AffirmativeResponses.cbegin(), AffirmativeResponses.cend(), [token = std::move(upper_cased(tokens[1]))] (const auto & affirmativeResponse) -> bool {
+        return token == affirmativeResponse;
+    })) {
         m_autoShowFlags = true;
         std::cout << "automatically showing flags from now on.\n";
-    } else if (tokens.at(1).toUpper() == "FALSE" || tokens.at(1).toUpper() == "NO" || tokens.at(1) == "0" ||
-               tokens.at(1).toUpper() == "OFF" || tokens.at(1).toUpper() == "N") {
+    } else if (std::any_of(NegativeResponses.cbegin(), NegativeResponses.cend(), [token = std::move(upper_cased(tokens[1]))] (const auto & negativeResponse) -> bool {
+        return token == negativeResponse;
+    })) {
         m_autoShowFlags = false;
         std::cout << "no longer automatically showing flags.\n";
     } else {
-        std::cout << "unrecognised parameter \"" << tokens.at(1).toStdString() << "\"\n";
+        std::cout << "unrecognised parameter \"" << tokens[1] << "\"\n";
     }
 }
 
@@ -351,6 +364,8 @@ void Z80Interpreter::dotDumpFlags() const
     std::cout << "\n";
 }
 
+#include <charconv>
+
 void Z80Interpreter::dotDumpMemory(const Tokens & tokens) const
 {
     assert(!tokens.empty());
@@ -358,37 +373,43 @@ void Z80Interpreter::dotDumpMemory(const Tokens & tokens) const
     int len = 16;
 
     if (1 < tokens.size()) {
-        auto token = tokens.at(1).trimmed();
+        auto token = std::move(trimmed(tokens.at(1)));
         bool ok;
 
         if ('$' == token[0]) {
-            low = token.midRef(1).toUInt(&ok, 16);
-        } else if ("0x" == token.midRef(0, 2)) {
-            low = token.midRef(2).toUInt(&ok, 16);
+            auto [endPtr, error] = std::from_chars(token.data() + 1, token.data() + token.size(), low, 16);
+            ok = error == std::errc() && endPtr == token.data() + token.size();
+        } else if ("0x" == std::string_view(token.cbegin(), token.cbegin() + 2)) {
+            auto [endPtr, error] = std::from_chars(token.data() + 2, token.data() + token.size(), low, 16);
+            ok = error == std::errc() && endPtr == token.data() + token.size();
         } else {
-            low = token.toUInt(&ok);
+            auto [endPtr, error] = std::from_chars(token.data(), token.data() + token.size(), low);
+            ok = error == std::errc() && endPtr == token.data() + token.size();
         }
 
         if (!ok) {
-            std::cout << tokens.at(0).toStdString() << ": invalid start byte \"" << token.toStdString() << "\"\n";
+            std::cout << tokens.front() << ": invalid start byte \"" << token << "\"\n";
             return;
         }
     }
 
     if (2 < tokens.size()) {
-        auto token = tokens.at(2).trimmed();
+        auto token = std::move(trimmed(tokens.at(2)));
         bool ok;
 
         if ('$' == token[0]) {
-            len = token.midRef(1).toUInt(&ok, 16);
-        } else if ("0x" == token.midRef(0, 2)) {
-            len = token.midRef(2).toUInt(&ok, 16);
+            auto [endPtr, error] = std::from_chars(token.data() + 1, token.data() + token.size(), len, 16);
+            ok = error == std::errc() && endPtr == token.data() + token.size();
+        } else if ("0x" == std::string_view(token.cbegin(), token.cbegin() + 2)) {
+            auto [endPtr, error] = std::from_chars(token.data() + 2, token.data() + token.size(), len, 16);
+            ok = error == std::errc() && endPtr == token.data() + token.size();
         } else {
-            len = token.toUInt(&ok);
+            auto [endPtr, error] = std::from_chars(token.data(), token.data() + token.size(), len);
+            ok = error == std::errc() && endPtr == token.data() + token.size();
         }
 
         if (!ok) {
-            std::cout << tokens.at(0).toStdString() << ": invalid dump length \"" << token.toStdString() << "\"\n";
+            std::cout << tokens.at(0) << ": invalid dump length \"" << token << "\"\n";
             return;
         }
     }
@@ -495,66 +516,66 @@ void Z80Interpreter::dotRegisterValue(const Tokens & tokens) const
         return;
     }
 
-    const auto & registerToken = tokens[1];
+    const auto registerToken = std::move(upper_cased(tokens[1]));
     
-    if (registerToken.toUpper() == "A") {
+    if (registerToken == "A") {
         dotRegisterValue(Register8::A);
-    } else if (registerToken.toUpper() == "B") {
+    } else if (registerToken == "B") {
         dotRegisterValue(Register8::B);
-    } else if (registerToken.toUpper() == "C") {
+    } else if (registerToken == "C") {
         dotRegisterValue(Register8::C);
-    } else if (registerToken.toUpper() == "D") {
+    } else if (registerToken == "D") {
         dotRegisterValue(Register8::D);
-    } else if (registerToken.toUpper() == "E") {
+    } else if (registerToken == "E") {
         dotRegisterValue(Register8::E);
-    } else if (registerToken.toUpper() == "H") {
+    } else if (registerToken == "H") {
         dotRegisterValue(Register8::H);
-    } else if (registerToken.toUpper() == "L") {
+    } else if (registerToken == "L") {
         dotRegisterValue(Register8::L);
-    } else if (registerToken.toUpper() == "F") {
+    } else if (registerToken == "F") {
         dotRegisterValue(Register8::F);
-    } else if (registerToken.toUpper() == "AF") {
+    } else if (registerToken == "AF") {
         dotRegisterValue(Register16::AF);
-    } else if (registerToken.toUpper() == "BC") {
+    } else if (registerToken == "BC") {
         dotRegisterValue(Register16::BC);
-    } else if (registerToken.toUpper() == "DE") {
+    } else if (registerToken == "DE") {
         dotRegisterValue(Register16::DE);
-    } else if (registerToken.toUpper() == "HL") {
+    } else if (registerToken == "HL") {
         dotRegisterValue(Register16::HL);
-    } else if (registerToken.toUpper() == "SP") {
+    } else if (registerToken == "SP") {
         dotRegisterValue(Register16::SP);
-    } else if (registerToken.toUpper() == "PC") {
+    } else if (registerToken == "PC") {
         dotRegisterValue(Register16::PC);
-    } else if (registerToken.toUpper() == "IX") {
+    } else if (registerToken == "IX") {
         dotRegisterValue(Register16::IX);
-    } else if (registerToken.toUpper() == "IY") {
+    } else if (registerToken == "IY") {
         dotRegisterValue(Register16::IY);
-    } else if (registerToken.toUpper() == "A'") {
+    } else if (registerToken == "A'") {
         dotRegisterValue(Register8::AShadow);
-    } else if (registerToken.toUpper() == "B'") {
+    } else if (registerToken == "B'") {
         dotRegisterValue(Register8::BShadow);
-    } else if (registerToken.toUpper() == "C'") {
+    } else if (registerToken == "C'") {
         dotRegisterValue(Register8::CShadow);
-    } else if (registerToken.toUpper() == "D'") {
+    } else if (registerToken == "D'") {
         dotRegisterValue(Register8::DShadow);
-    } else if (registerToken.toUpper() == "E'") {
+    } else if (registerToken == "E'") {
         dotRegisterValue(Register8::EShadow);
-    } else if (registerToken.toUpper() == "H'") {
+    } else if (registerToken == "H'") {
         dotRegisterValue(Register8::HShadow);
-    } else if (registerToken.toUpper() == "L'") {
+    } else if (registerToken == "L'") {
         dotRegisterValue(Register8::LShadow);
-    } else if (registerToken.toUpper() == "F'") {
+    } else if (registerToken == "F'") {
         dotRegisterValue(Register8::FShadow);
-    } else if (registerToken.toUpper() == "AF'") {
+    } else if (registerToken == "AF'") {
         dotRegisterValue(Register16::AFShadow);
-    } else if (registerToken.toUpper() == "BC'") {
+    } else if (registerToken == "BC'") {
         dotRegisterValue(Register16::BCShadow);
-    } else if (registerToken.toUpper() == "DE'") {
+    } else if (registerToken == "DE'") {
         dotRegisterValue(Register16::DEShadow);
-    } else if (registerToken.toUpper() == "HL'") {
+    } else if (registerToken == "HL'") {
         dotRegisterValue(Register16::HLShadow);
     } else {
-        std::cout << "unrecognised register: \"" << registerToken.toStdString() << "\"\n";
+        std::cout << "unrecognised register: \"" << tokens[1] << "\"\n";
     }
 }
 
@@ -738,143 +759,143 @@ Z80Interpreter::Opcode Z80Interpreter::assembleInstruction(const Tokens & tokens
         return Opcode();
     }
 
-    if (tokens.at(0).toUpper() == "ADC") {
+    const auto & token = std::move(upper_cased(tokens.front()));
+    
+    if (token == "ADC") {
         return assembleADC(tokens);
-    } else if (tokens.at(0).toUpper() == "ADC") {
-        return assembleADC(tokens);
-    } else if (tokens.at(0).toUpper() == "ADD") {
+    } else if (token == "ADD") {
         return assembleADD(tokens);
-    } else if (tokens.at(0).toUpper() == "AND") {
+    } else if (token == "AND") {
         return assembleAND(tokens);
-    } else if (tokens.at(0).toUpper() == "BIT") {
+    } else if (token == "BIT") {
         return assembleBIT(tokens);
-    } else if (tokens.at(0).toUpper() == "CALL") {
+    } else if (token == "CALL") {
         return assembleCALL(tokens);
-    } else if (tokens.at(0).toUpper() == "CCF") {
+    } else if (token == "CCF") {
         return assembleCCF(tokens);
-    } else if (tokens.at(0).toUpper() == "CP") {
+    } else if (token == "CP") {
         return assembleCP(tokens);
-    } else if (tokens.at(0).toUpper() == "CPD") {
+    } else if (token == "CPD") {
         return assembleCPD(tokens);
-    } else if (tokens.at(0).toUpper() == "CPDR") {
+    } else if (token == "CPDR") {
         return assembleCPDR(tokens);
-    } else if (tokens.at(0).toUpper() == "CPI") {
+    } else if (token == "CPI") {
         return assembleCPI(tokens);
-    } else if (tokens.at(0).toUpper() == "CPIR") {
+    } else if (token == "CPIR") {
         return assembleCPIR(tokens);
-    } else if (tokens.at(0).toUpper() == "CPL") {
+    } else if (token == "CPL") {
         return assembleCPL(tokens);
-    } else if (tokens.at(0).toUpper() == "DAA") {
+    } else if (token == "DAA") {
         return assembleDAA(tokens);
-    } else if (tokens.at(0).toUpper() == "DEC") {
+    } else if (token == "DEC") {
         return assembleDEC(tokens);
-    } else if (tokens.at(0).toUpper() == "DI") {
+    } else if (token == "DI") {
         return assembleDI(tokens);
-    } else if (tokens.at(0).toUpper() == "DJNZ") {
+    } else if (token == "DJNZ") {
         return assembleDJNZ(tokens);
-    } else if (tokens.at(0).toUpper() == "EI") {
+    } else if (token == "EI") {
         return assembleEI(tokens);
-    } else if (tokens.at(0).toUpper() == "EX") {
+    } else if (token == "EX") {
         return assembleEX(tokens);
-    } else if (tokens.at(0).toUpper() == "EXX") {
+    } else if (token == "EXX") {
         return assembleEXX(tokens);
-    } else if (tokens.at(0).toUpper() == "HALT") {
+    } else if (token == "HALT") {
         return assembleHALT(tokens);
-    } else if (tokens.at(0).toUpper() == "IM") {
+    } else if (token == "IM") {
         return assembleIM(tokens);
-    } else if (tokens.at(0).toUpper() == "IN") {
+    } else if (token == "IN") {
         return assembleIN(tokens);
-    } else if (tokens.at(0).toUpper() == "INC") {
+    } else if (token == "INC") {
         return assembleINC(tokens);
-    } else if (tokens.at(0).toUpper() == "IND") {
+    } else if (token == "IND") {
         return assembleIND(tokens);
-    } else if (tokens.at(0).toUpper() == "INDR") {
+    } else if (token == "INDR") {
         return assembleINDR(tokens);
-    } else if (tokens.at(0).toUpper() == "INI") {
+    } else if (token == "INI") {
         return assembleINI(tokens);
-    } else if (tokens.at(0).toUpper() == "INIR") {
+    } else if (token == "INIR") {
         return assembleINIR(tokens);
-    } else if (tokens.at(0).toUpper() == "JP") {
+    } else if (token == "JP") {
         return assembleJP(tokens);
-    } else if (tokens.at(0).toUpper() == "JR") {
+    } else if (token == "JR") {
         return assembleJR(tokens);
-    } else if (tokens.at(0).toUpper() == "LD") {
+    } else if (token == "LD") {
         return assembleLD(tokens);
-    } else if (tokens.at(0).toUpper() == "LDD") {
+    } else if (token == "LDD") {
         return assembleLDD(tokens);
-    } else if (tokens.at(0).toUpper() == "LDDR") {
+    } else if (token == "LDDR") {
         return assembleLDDR(tokens);
-    } else if (tokens.at(0).toUpper() == "LDI") {
+    } else if (token == "LDI") {
         return assembleLDI(tokens);
-    } else if (tokens.at(0).toUpper() == "LDIR") {
+    } else if (token == "LDIR") {
         return assembleLDIR(tokens);
-    } else if (tokens.at(0).toUpper() == "NEG") {
+    } else if (token == "NEG") {
         return assembleNEG(tokens);
-    } else if (tokens.at(0).toUpper() == "NOP") {
+    } else if (token == "NOP") {
         return assembleNOP(tokens);
-    } else if (tokens.at(0).toUpper() == "OR") {
+    } else if (token == "OR") {
         return assembleOR(tokens);
-    } else if (tokens.at(0).toUpper() == "OUT") {
+    } else if (token == "OUT") {
         return assembleOUT(tokens);
-    } else if (tokens.at(0).toUpper() == "OUTD") {
+    } else if (token == "OUTD") {
         return assembleOUTD(tokens);
-    } else if (tokens.at(0).toUpper() == "OTDR") {
+    } else if (token == "OTDR") {
         return assembleOTDR(tokens);
-    } else if (tokens.at(0).toUpper() == "OUTI") {
+    } else if (token == "OUTI") {
         return assembleOUTI(tokens);
-    } else if (tokens.at(0).toUpper() == "OTIR") {
+    } else if (token == "OTIR") {
         return assembleOTIR(tokens);
-    } else if (tokens.at(0).toUpper() == "POP") {
+    } else if (token == "POP") {
         return assemblePOP(tokens);
-    } else if (tokens.at(0).toUpper() == "PUSH") {
+    } else if (token == "PUSH") {
         return assemblePUSH(tokens);
-    } else if (tokens.at(0).toUpper() == "RES") {
+    } else if (token == "RES") {
         return assembleRES(tokens);
-    } else if (tokens.at(0).toUpper() == "RET") {
+    } else if (token == "RET") {
         return assembleRET(tokens);
-    } else if (tokens.at(0).toUpper() == "RETI") {
+    } else if (token == "RETI") {
         return assembleRETI(tokens);
-    } else if (tokens.at(0).toUpper() == "RETN") {
+    } else if (token == "RETN") {
         return assembleRETN(tokens);
-    } else if (tokens.at(0).toUpper() == "RLA") {
+    } else if (token == "RLA") {
         return assembleRLA(tokens);
-    } else if (tokens.at(0).toUpper() == "RL") {
+    } else if (token == "RL") {
         return assembleRL(tokens);
-    } else if (tokens.at(0).toUpper() == "RLCA") {
+    } else if (token == "RLCA") {
         return assembleRLCA(tokens);
-    } else if (tokens.at(0).toUpper() == "RLC") {
+    } else if (token == "RLC") {
         return assembleRLC(tokens);
-    } else if (tokens.at(0).toUpper() == "RLD") {
+    } else if (token == "RLD") {
         return assembleRLD(tokens);
-    } else if (tokens.at(0).toUpper() == "RRA") {
+    } else if (token == "RRA") {
         return assembleRRA(tokens);
-    } else if (tokens.at(0).toUpper() == "RR") {
+    } else if (token == "RR") {
         return assembleRR(tokens);
-    } else if (tokens.at(0).toUpper() == "RRCA") {
+    } else if (token == "RRCA") {
         return assembleRRCA(tokens);
-    } else if (tokens.at(0).toUpper() == "RRC") {
+    } else if (token == "RRC") {
         return assembleRRC(tokens);
-    } else if (tokens.at(0).toUpper() == "RRD") {
+    } else if (token == "RRD") {
         return assembleRRD(tokens);
-    } else if (tokens.at(0).toUpper() == "RST") {
+    } else if (token == "RST") {
         return assembleRST(tokens);
-    } else if (tokens.at(0).toUpper() == "SBC") {
+    } else if (token == "SBC") {
         return assembleSBC(tokens);
-    } else if (tokens.at(0).toUpper() == "SCF") {
+    } else if (token == "SCF") {
         return assembleSCF(tokens);
-    } else if (tokens.at(0).toUpper() == "SET") {
+    } else if (token == "SET") {
         return assembleSET(tokens);
-    } else if (tokens.at(0).toUpper() == "SLA") {
+    } else if (token == "SLA") {
         return assembleSLA(tokens);
-    } else if (tokens.at(0).toUpper() == "SRA") {
+    } else if (token == "SRA") {
         return assembleSRA(tokens);
-    } else if (tokens.at(0).toUpper() == "SLL") {
+    } else if (token == "SLL") {
         return assembleSLL(tokens);
-    } else if (tokens.at(0).toUpper() == "SRL") {
+    } else if (token == "SRL") {
         return assembleSRL(tokens);
-    } else if (tokens.at(0).toUpper() == "SUB") {
+    } else if (token == "SUB") {
         return assembleSUB(tokens);
-    } else if (tokens.at(0).toUpper() == "XOR") {
+    } else if (token == "XOR") {
         return assembleXOR(tokens);
     }
     return InvalidInstruction;
@@ -882,7 +903,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleInstruction(const Tokens & tokens
 
 Z80Interpreter::Opcode Z80Interpreter::assembleADC(const Tokens & tokens)
 {
-    int c = tokens.size();
+    auto c = tokens.size();
     Opcode ret;
 
     if (c < 3) {
@@ -975,7 +996,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleADC(const Tokens & tokens)
 
 Z80Interpreter::Opcode Z80Interpreter::assembleADD(const Tokens & tokens)
 {
-    int c = tokens.size();
+    auto c = tokens.size();
     Opcode ret;
 
     if (c < 3) {
@@ -1074,7 +1095,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleADD(const Tokens & tokens)
 
 Z80Interpreter::Opcode Z80Interpreter::assembleAND(const Tokens & tokens)
 {
-    int c = tokens.size();
+    auto c = tokens.size();
     Opcode ret;
 
     if (c < 2) {
@@ -1088,6 +1109,8 @@ Z80Interpreter::Opcode Z80Interpreter::assembleAND(const Tokens & tokens)
         /* AND A,reg8 */
         UnsignedByte opcode = 0xa0;
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch"     // only interested in the registers that are supported with the AND instruction
         switch (op1.reg8()) {
             case Register8::A:
                 opcode |= RegbitsA;
@@ -1111,6 +1134,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleAND(const Tokens & tokens)
                 opcode |= RegbitsL;
                 break;
         }
+#pragma clang diagnostic pop
 
         ret.push_back(opcode);
     } else if ((op1.isIndirectReg16() && op1.reg16() == Register16::HL)) {
@@ -1141,7 +1165,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleAND(const Tokens & tokens)
 
 Z80Interpreter::Opcode Z80Interpreter::assembleBIT(const Tokens & tokens)
 {
-    int c = tokens.size();
+    auto c = tokens.size();
     Opcode ret;
 
     if (c < 3) {
@@ -1208,7 +1232,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleBIT(const Tokens & tokens)
 
 Z80Interpreter::Opcode Z80Interpreter::assembleCALL(const Tokens & tokens)
 {
-    int c = tokens.size();
+    auto c = tokens.size();
     Opcode ret;
 
     if (2 > c) {
@@ -1279,9 +1303,8 @@ Z80Interpreter::Opcode Z80Interpreter::assembleCALL(const Tokens & tokens)
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleCCF(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleCCF(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0x3f);
     return ret;
@@ -1289,7 +1312,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleCCF(const Tokens & tokens)
 
 Z80Interpreter::Opcode Z80Interpreter::assembleCP(const Tokens & tokens)
 {
-    int c = tokens.size();
+    auto c = tokens.size();
     Opcode ret;
 
     if (c < 2) {
@@ -1357,53 +1380,47 @@ Z80Interpreter::Opcode Z80Interpreter::assembleCP(const Tokens & tokens)
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleCPD(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleCPD(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0xed);
     ret.push_back(0xa9);
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleCPDR(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleCPDR(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0xed);
     ret.push_back(0xb9);
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleCPI(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleCPI(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0xed);
     ret.push_back(0xa1);
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleCPIR(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleCPIR(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0xed);
     ret.push_back(0xb1);
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleCPL(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleCPL(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0x2f);
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleDAA(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleDAA(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0x27);
     return ret;
@@ -1493,9 +1510,8 @@ Z80Interpreter::Opcode Z80Interpreter::assembleDEC(const Tokens & tokens)
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleDI(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleDI(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0xf3);
     return ret;
@@ -1520,9 +1536,8 @@ Z80Interpreter::Opcode Z80Interpreter::assembleDJNZ(const Tokens & tokens)
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleEI(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleEI(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0xfb);
     return ret;
@@ -1531,7 +1546,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleEI(const Tokens & tokens)
 Z80Interpreter::Opcode Z80Interpreter::assembleEX(const Tokens & tokens)
 {
     Opcode ret;
-    int c = tokens.size();
+    auto c = tokens.size();
 
     if (3 > c) {
         std::cout << "EX requires two operands.\n";
@@ -1572,17 +1587,15 @@ Z80Interpreter::Opcode Z80Interpreter::assembleEX(const Tokens & tokens)
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleEXX(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleEXX(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0xd9);
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleHALT(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleHALT(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0x76);
     return ret;
@@ -1599,11 +1612,11 @@ Z80Interpreter::Opcode Z80Interpreter::assembleIM(const Tokens & tokens)
 
     ret.push_back(0xed);
 
-    if ("0" == tokens.at(1).toUpper()) {
+    if ("0" == tokens[1]) {
         ret.push_back(0x46);
-    } else if ("1" == tokens.at(1).toUpper()) {
+    } else if ("1" == tokens[1]) {
         ret.push_back(0x56);
-    } else if ("2" == tokens.at(1).toUpper()) {
+    } else if ("2" == tokens[1]) {
         ret.push_back(0x5e);
     } else {
         std::cout << "Invalid interrupt mode (must be 0, 1 or 2).\n";
@@ -1616,7 +1629,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleIM(const Tokens & tokens)
 Z80Interpreter::Opcode Z80Interpreter::assembleIN(const Tokens & tokens)
 {
     Opcode ret;
-    int c = tokens.size();
+    auto c = tokens.size();
 
     if (2 == c) {
         Operand op(tokens.at(1));
@@ -1676,7 +1689,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleIN(const Tokens & tokens)
 Z80Interpreter::Opcode Z80Interpreter::assembleINC(const Tokens & tokens)
 {
     Opcode ret;
-    int c = tokens.size();
+    auto c = tokens.size();
 
     if (2 != c) {
         std::cout << "INC instruction requires one operand.\n";
@@ -1770,27 +1783,24 @@ Z80Interpreter::Opcode Z80Interpreter::assembleINC(const Tokens & tokens)
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleIND(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleIND(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0xed);
     ret.push_back(0xaa);
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleINDR(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleINDR(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0xed);
     ret.push_back(0xba);
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleINI(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleINI(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0xed);
     ret.push_back(0xa2);
@@ -1798,9 +1808,8 @@ Z80Interpreter::Opcode Z80Interpreter::assembleINI(const Tokens & tokens)
 }
 
 
-Z80Interpreter::Opcode Z80Interpreter::assembleINIR(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleINIR(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0xed);
     ret.push_back(0xb2);
@@ -1809,7 +1818,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleINIR(const Tokens & tokens)
 
 Z80Interpreter::Opcode Z80Interpreter::assembleJP(const Tokens & tokens)
 {
-    int c = tokens.size();
+    auto c = tokens.size();
     Opcode ret;
 
     if (2 > c) {
@@ -1900,7 +1909,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleJP(const Tokens & tokens)
 
 Z80Interpreter::Opcode Z80Interpreter::assembleJR(const Tokens & tokens)
 {
-    int c = tokens.size();
+    auto c = tokens.size();
     Opcode ret;
 
     if (2 > c) {
@@ -1959,7 +1968,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleJR(const Tokens & tokens)
 
 Z80Interpreter::Opcode Z80Interpreter::assembleLD(const Tokens & tokens)
 {
-    int c = tokens.size();
+    auto c = tokens.size();
     Opcode ret;
 
     if (c < 3) {
@@ -2298,54 +2307,48 @@ Z80Interpreter::Opcode Z80Interpreter::assembleLD(const Tokens & tokens)
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleLDD(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleLDD(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0xed);
     ret.push_back(0xa8);
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleLDDR(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleLDDR(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0xed);
     ret.push_back(0xb8);
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleLDI(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleLDI(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0xed);
     ret.push_back(0xa0);
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleLDIR(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleLDIR(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0xed);
     ret.push_back(0xb0);
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleNEG(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleNEG(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0xed);
     ret.push_back(0x44);
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleNOP(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleNOP(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0x00);
     return ret;
@@ -2353,7 +2356,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleNOP(const Tokens & tokens)
 
 Z80Interpreter::Opcode Z80Interpreter::assembleOR(const Tokens & tokens)
 {
-    int c = tokens.size();
+    auto c = tokens.size();
     Opcode ret;
 
     if (c < 2) {
@@ -2424,7 +2427,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleOR(const Tokens & tokens)
 Z80Interpreter::Opcode Z80Interpreter::assembleOUT(const Tokens & tokens)
 {
     Opcode ret;
-    int c = tokens.size();
+    auto c = tokens.size();
 
     if (3 == c) {
         Operand op1(tokens.at(1));
@@ -2479,36 +2482,32 @@ Z80Interpreter::Opcode Z80Interpreter::assembleOUT(const Tokens & tokens)
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleOUTD(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleOUTD(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0xed);
     ret.push_back(0xab);
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleOTDR(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleOTDR(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0xed);
     ret.push_back(0xbb);
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleOUTI(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleOUTI(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0xed);
     ret.push_back(0xa3);
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleOTIR(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleOTIR(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0xed);
     ret.push_back(0xb3);
@@ -2517,7 +2516,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleOTIR(const Tokens & tokens)
 
 Z80Interpreter::Opcode Z80Interpreter::assemblePOP(const Tokens & tokens)
 {
-    int c = tokens.size();
+    auto c = tokens.size();
     Opcode ret;
 
     if (c < 2) {
@@ -2553,7 +2552,7 @@ Z80Interpreter::Opcode Z80Interpreter::assemblePOP(const Tokens & tokens)
 
 Z80Interpreter::Opcode Z80Interpreter::assemblePUSH(const Tokens & tokens)
 {
-    int c = tokens.size();
+    auto c = tokens.size();
     Opcode ret;
 
     if (c < 2) {
@@ -2589,7 +2588,7 @@ Z80Interpreter::Opcode Z80Interpreter::assemblePUSH(const Tokens & tokens)
 
 Z80Interpreter::Opcode Z80Interpreter::assembleRES(const Tokens & tokens)
 {
-    int c = tokens.size();
+    auto c = tokens.size();
     Opcode ret;
 
     if (c < 3) {
@@ -2656,7 +2655,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleRES(const Tokens & tokens)
 
 Z80Interpreter::Opcode Z80Interpreter::assembleRET(const Tokens & tokens)
 {
-    int c = tokens.size();
+    auto c = tokens.size();
     Opcode ret;
 
     if (1 == c) {
@@ -2704,27 +2703,24 @@ Z80Interpreter::Opcode Z80Interpreter::assembleRET(const Tokens & tokens)
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleRETI(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleRETI(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0xed);
     ret.push_back(0x4d);
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleRETN(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleRETN(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0xed);
     ret.push_back(0x45);
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleRLA(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleRLA(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0x17);
     return ret;
@@ -2732,7 +2728,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleRLA(const Tokens & tokens)
 
 Z80Interpreter::Opcode Z80Interpreter::assembleRL(const Tokens & tokens)
 {
-    int c = tokens.size();
+    auto c = tokens.size();
 
     if (2 != c) {
         std::cout << "RL instruction requires one operand.\n";
@@ -2785,9 +2781,8 @@ Z80Interpreter::Opcode Z80Interpreter::assembleRL(const Tokens & tokens)
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleRLCA(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleRLCA(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0x07);
     return ret;
@@ -2795,7 +2790,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleRLCA(const Tokens & tokens)
 
 Z80Interpreter::Opcode Z80Interpreter::assembleRLC(const Tokens & tokens)
 {
-    int c = tokens.size();
+    auto c = tokens.size();
 
     if (2 != c) {
         std::cout << "RLC instruction requires one operand.\n";
@@ -2848,18 +2843,16 @@ Z80Interpreter::Opcode Z80Interpreter::assembleRLC(const Tokens & tokens)
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleRLD(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleRLD(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0xed);
     ret.push_back(0x6f);
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleRRA(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleRRA(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0x1f);
     return ret;
@@ -2867,7 +2860,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleRRA(const Tokens & tokens)
 
 Z80Interpreter::Opcode Z80Interpreter::assembleRR(const Tokens & tokens)
 {
-    int c = tokens.size();
+    auto c = tokens.size();
 
     if (2 != c) {
         std::cout << "RR instruction requires one operand.\n";
@@ -2920,9 +2913,8 @@ Z80Interpreter::Opcode Z80Interpreter::assembleRR(const Tokens & tokens)
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleRRCA(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleRRCA(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0x0f);
     return ret;
@@ -2930,7 +2922,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleRRCA(const Tokens & tokens)
 
 Z80Interpreter::Opcode Z80Interpreter::assembleRRC(const Tokens & tokens)
 {
-    int c = tokens.size();
+    auto c = tokens.size();
 
     if (2 != c) {
         std::cout << "RRC instruction requires one operand.\n";
@@ -2983,24 +2975,22 @@ Z80Interpreter::Opcode Z80Interpreter::assembleRRC(const Tokens & tokens)
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleRRD(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleRRD(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0xed);
     ret.push_back(0x67);
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleRST(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleRST(const Tokens &)
 {
-    Q_UNUSED(tokens);
     return Opcode();
 }
 
 Z80Interpreter::Opcode Z80Interpreter::assembleSBC(const Tokens & tokens)
 {
-    int c = tokens.size();
+    auto c = tokens.size();
 
     if (2 > tokens.size()) {
         std::cout << "SBC instruction requires at least one operand.\n";
@@ -3096,9 +3086,8 @@ Z80Interpreter::Opcode Z80Interpreter::assembleSBC(const Tokens & tokens)
     return ret;
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleSCF(const Tokens & tokens)
+Z80Interpreter::Opcode Z80Interpreter::assembleSCF(const Tokens &)
 {
-    Q_UNUSED(tokens);
     Opcode ret;
     ret.push_back(0x37);
     return ret;
@@ -3106,7 +3095,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleSCF(const Tokens & tokens)
 
 Z80Interpreter::Opcode Z80Interpreter::assembleSET(const Tokens & tokens)
 {
-    int c = tokens.size();
+    auto c = tokens.size();
     Opcode ret;
 
     if (c < 3) {
@@ -3171,7 +3160,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleSET(const Tokens & tokens)
 
 Z80Interpreter::Opcode Z80Interpreter::assembleSLA(const Tokens & tokens)
 {
-    int c = tokens.size();
+    auto c = tokens.size();
 
     if (2 != c) {
         std::cout << "SLA instruction requires one operand.\n";
@@ -3234,7 +3223,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleSLA(const Tokens & tokens)
 
 Z80Interpreter::Opcode Z80Interpreter::assembleSRA(const Tokens & tokens)
 {
-    int c = tokens.size();
+    auto c = tokens.size();
 
     if (2 != c) {
         std::cout << "SRA instruction requires one operand.\n";
@@ -3297,7 +3286,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleSRA(const Tokens & tokens)
 
 Z80Interpreter::Opcode Z80Interpreter::assembleSLL(const Tokens & tokens)
 {
-    int c = tokens.size();
+    auto c = tokens.size();
 
     if (2 != c) {
         std::cout << "SLL instruction requires one operand.\n";
@@ -3360,7 +3349,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleSLL(const Tokens & tokens)
 
 Z80Interpreter::Opcode Z80Interpreter::assembleSRL(const Tokens & tokens)
 {
-    int c = tokens.size();
+    auto c = tokens.size();
 
     if (2 != c) {
         std::cout << "SRL instruction requires one operand.\n";
@@ -3423,7 +3412,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleSRL(const Tokens & tokens)
 
 Z80Interpreter::Opcode Z80Interpreter::assembleSUB(const Tokens & tokens)
 {
-    int c = tokens.size();
+    auto c = tokens.size();
     Opcode ret;
 
     if (c < 2) {
@@ -3484,7 +3473,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleSUB(const Tokens & tokens)
 
 Z80Interpreter::Opcode Z80Interpreter::assembleXOR(const Tokens & tokens)
 {
-    int c = tokens.size();
+    auto c = tokens.size();
     Opcode ret;
 
     if (c < 2) {
