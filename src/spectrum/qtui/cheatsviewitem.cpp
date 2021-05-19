@@ -6,11 +6,11 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include "application.h"
-#include "pokesviewitem.h"
+#include "cheatsviewitem.h"
 
 using namespace Spectrum::QtUi;
 
-PokesViewItem::PokesViewItem(const QString & name, QString  uuid, QWidget * parent)
+CheatsViewItem::CheatsViewItem(const QString & name, QString  uuid, QWidget * parent)
 : QWidget(parent),
   m_uuid(std::move(uuid)),
   m_onOff(this),
@@ -26,13 +26,13 @@ PokesViewItem::PokesViewItem(const QString & name, QString  uuid, QWidget * pare
     m_onOff.setChecked(false);
     m_onOff.setIcon(QIcon::fromTheme(QStringLiteral("dialog-ok-apply"), spectrumApp->icon(QStringLiteral("ok"))));
     m_onOff.setText(tr("Off"));
-    m_onOff.setToolTip(tr("Switch the poke '%1' on/off.").arg(name));
+    m_onOff.setToolTip(tr("Switch the cheat '%1' on/off.").arg(name));
     layout->addWidget(&m_onOff);
 
     m_remove.setAutoRaise(true);
     m_remove.setIcon(QIcon::fromTheme(QStringLiteral("list-remove"), spectrumApp->icon(QStringLiteral("remove"))));
     m_remove.setText(tr("Remove"));
-    m_remove.setToolTip(tr("Remove the poke '%1' from this list.").arg(name));
+    m_remove.setToolTip(tr("Remove the cheat '%1' from this list.").arg(name));
     layout->addWidget(&m_remove);
 
     setLayout(layout);
@@ -50,9 +50,9 @@ PokesViewItem::PokesViewItem(const QString & name, QString  uuid, QWidget * pare
     });
 }
 
-PokesViewItem::~PokesViewItem() = default;
+CheatsViewItem::~CheatsViewItem() = default;
 
-void PokesViewItem::setActivated(bool activated)
+void CheatsViewItem::setActivated(bool activated)
 {
     m_onOff.setChecked(activated);
 

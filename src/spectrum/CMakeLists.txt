@@ -70,7 +70,7 @@ add_executable(
         qtui/aboutwidget.cpp
         qtui/helpwidget.cpp
         qtui/cheatsview.cpp
-        qtui/pokesviewitem.cpp
+        qtui/cheatsviewitem.cpp
         qtui/thread.cpp
         qtui/actionableitemview.h
         qtui/debugger/debugwindow.cpp

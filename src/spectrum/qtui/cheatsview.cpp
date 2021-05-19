@@ -13,7 +13,7 @@
 #include <QVariant>
 #include <QSettings>
 #include "cheatsview.h"
-#include "pokesviewitem.h"
+#include "cheatsviewitem.h"
 #include "application.h"
 #include "mainwindow.h"
 #include "threadpauser.h"
@@ -31,8 +31,8 @@ namespace
 CheatsView::CheatsView(QWidget * parent)
 : QWidget(parent),
   m_layout(),
-  m_loadCheats(QIcon::fromTheme(QStringLiteral("document-open"), Application::icon(QStringLiteral("open"))), tr("Load pokes")),
-  m_clearCheats(QIcon::fromTheme(QStringLiteral("edit-clear-list"), Application::icon(QStringLiteral("clear"))), tr("Clear pokes")),
+  m_loadCheats(QIcon::fromTheme(QStringLiteral("document-open"), Application::icon(QStringLiteral("open"))), tr("Load cheats")),
+  m_clearCheats(QIcon::fromTheme(QStringLiteral("edit-clear-list"), Application::icon(QStringLiteral("clear"))), tr("Clear cheats")),
   m_cheats(),
   m_actionIconSize()
 {
@@ -64,16 +64,16 @@ CheatsView::~CheatsView()
 void CheatsView::loadSettings()
 {
     QSettings settings;
-    settings.beginGroup("pokesWidget");
-    m_lastLoadDir = settings.value(QStringLiteral("lastPokeLoadDir")).toString();
+    settings.beginGroup("cheatsWidget");
+    m_lastLoadDir = settings.value(QStringLiteral("lastCheatLoadDir")).toString();
     settings.endGroup();
 }
 
 void CheatsView::saveSettings()
 {
     QSettings settings;
-    settings.beginGroup("pokesWidget");
-    settings.setValue(QStringLiteral("lastPokeLoadDir"), m_lastLoadDir);
+    settings.beginGroup("cheatsWidget");
+    settings.setValue(QStringLiteral("lastCheatLoadDir"), m_lastLoadDir);
     settings.endGroup();
 }
 
@@ -82,7 +82,7 @@ void CheatsView::loadCheats(const QString & fileName)
     PokFileReader reader(fileName.toStdString());
 
     if (!reader.isValid()) {
-        Application::showNotification(tr("Poke file %1 could not be opened.").arg(fileName));
+        Application::showNotification(tr("Cheat file %1 could not be opened.").arg(fileName));
         return;
     }
 
@@ -92,7 +92,7 @@ void CheatsView::loadCheats(const QString & fileName)
         auto poke = reader.nextPoke();
 
         if (!poke) {
-            Application::showNotification(tr("Error reading pokes from %1.").arg(fileName));
+            Application::showNotification(tr("Error reading cheats from %1.").arg(fileName));
             return;
         }
 
@@ -103,7 +103,7 @@ void CheatsView::loadCheats(const QString & fileName)
         addCheat(poke);
     }
 
-    Application::showNotification(tr("Read %1 pokes from %2.").arg(pokes.size()).arg(fileName));
+    Application::showNotification(tr("Read %1 cheats from %2.").arg(pokes.size()).arg(fileName));
 }
 
 void CheatsView::setActionIconSize(const QSize & size)
@@ -114,7 +114,7 @@ void CheatsView::setActionIconSize(const QSize & size)
     auto count = m_layout.count() - 1;
 
     while (1 <= count) {
-        auto * widget = qobject_cast<PokesViewItem *>(m_layout.itemAt(count)->widget());
+        auto * widget = qobject_cast<CheatsViewItem *>(m_layout.itemAt(count)->widget());
         --count;
 
         if (!widget) {
@@ -160,12 +160,12 @@ void CheatsView::clearCheats()
 
 void CheatsView::addCheatWidget(const QString & name, const QString & uuid)
 {
-    auto * item = new PokesViewItem(name, uuid, this);
+    auto * item = new CheatsViewItem(name, uuid, this);
     item->setIconSize(actionIconSize());
 
-    connect(item, &PokesViewItem::activationRequested, this, &CheatsView::applyCheatTriggered);
-    connect(item, &PokesViewItem::deactivationRequested, this, &CheatsView::undoCheatTriggered);
-    connect(item, &PokesViewItem::removeClicked, this, &CheatsView::removeCheatTriggered);
+    connect(item, &CheatsViewItem::activationRequested, this, &CheatsView::applyCheatTriggered);
+    connect(item, &CheatsViewItem::deactivationRequested, this, &CheatsView::undoCheatTriggered);
+    connect(item, &CheatsViewItem::removeClicked, this, &CheatsView::removeCheatTriggered);
 
     m_layout.insertWidget(m_layout.count() - 1, item);
 }
@@ -211,7 +211,7 @@ QWidget * CheatsView::findCheatWidget(const QString & uuid) const
     auto count = m_layout.count() - 1;
 
     while (1 <= count) {
-        auto * widget = qobject_cast<PokesViewItem *>(m_layout.itemAt(count)->widget());
+        auto * widget = qobject_cast<CheatsViewItem *>(m_layout.itemAt(count)->widget());
         --count;
 
         if (!widget) {
@@ -238,7 +238,7 @@ void CheatsView::loadCheatsTriggered()
         filters << tr("POK Poke files (*.pok)");
     }
 
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Load pokes"), m_lastLoadDir, filters.join(";;"), &lastFilter);
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Load cheats"), m_lastLoadDir, filters.join(";;"), &lastFilter);
 
     if(fileName.isEmpty()) {
         return;
