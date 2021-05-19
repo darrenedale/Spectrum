@@ -124,7 +124,9 @@ add_executable(
         ../util/endian.h
         ../util/debug.h
         ../util/numeric.h
-        ../util/concepts.h)
+        ../util/concepts.h
+        ../../dist/macos/Spectrum/Spectrum.icns
+)
 
 target_link_libraries(spectrum Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Gamepad Qt5::DBus)
 
@@ -132,6 +134,21 @@ set_target_properties(
         spectrum
         PROPERTIES
         CXX_STANDARD 20
+        OUTPUT_NAME Spectrum
 )
+
+if (APPLE)
+    set_target_properties(
+            spectrum
+            PROPERTIES
+            MACOSX_BUNDLE ON
+            RESOURCE "../../dist/macos/Spectrum/Spectrum.icns"
+            MACOSX_BUNDLE_BUNDLE_NAME Spectrum
+            MACOSX_BUNDLE_BUNDLE_VERSION 0.5
+            MACOSX_BUNDLE_SHORT_VERSION_STRING "0.5"
+            MACOSX_BUNDLE_INFO_STRING "A ZX Spectrum emulator"
+            MACOSX_BUNDLE_ICON_FILE Spectrum.icns
+    )
+endif(APPLE)
 
 add_subdirectory(screenview)
