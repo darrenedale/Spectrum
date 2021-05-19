@@ -1,6 +1,7 @@
 #include <filesystem>
 #include <iostream>
 #include <fstream>
+#include <QtGlobal>
 #include <QMenuBar>
 #include <QToolBar>
 #include <QStatusBar>
@@ -52,6 +53,10 @@
 #include "../io/snapshotwriterfactory.h"
 #include "../../util/debug.h"
 
+#if (defined(Q_OS_MAC))
+#include <CoreFoundation/CoreFoundation.h>
+#endif
+
 using namespace Spectrum::QtUi;
 using namespace Spectrum::Io;
 using ::Z80::InterruptMode;
@@ -91,82 +96,155 @@ namespace
      *
      * Note the 16K and 48K ROMs are identical.
      */
-    constexpr const char * Default16kRom = "roms/spectrum48.rom";
+    constexpr const char * Default16kRom = "spectrum48.rom";
 
     /**
      * The relative path to the default ROM for 48K Spectrum models.
      */
-    constexpr const char * Default48kRom = "roms/spectrum48.rom";
+    constexpr const char * Default48kRom = "spectrum48.rom";
 
     /**
      * The relative path to the default main ROM for 128K Spectrum models.
      */
-    constexpr const char * Default128kRom0 = "roms/spectrum128-0.rom";
+    constexpr const char * Default128kRom0 = "spectrum128-0.rom";
 
     /**
      * The relative path to the default 48K BASIC ROM for 128K Spectrum models.
      */
-    constexpr const char * Default128kRom1 = "roms/spectrum128-1.rom";
+    constexpr const char * Default128kRom1 = "spectrum128-1.rom";
 
     /**
      * The relative path to the default main ROM for +2 Spectrum models.
      */
-    constexpr const char * DefaultPlus2Rom0 = "roms/spectrumplus2-0.rom";
+    constexpr const char * DefaultPlus2Rom0 = "spectrumplus2-0.rom";
 
     /**
      * The relative path to the default 48K BASIC ROM for +2 Spectrum models.
      */
-    constexpr const char * DefaultPlus2Rom1 = "roms/spectrumplus2-1.rom";
+    constexpr const char * DefaultPlus2Rom1 = "spectrumplus2-1.rom";
 
     /**
      * The relative path to the default main ROM for +2a Spectrum models.
      */
-    constexpr const char * DefaultPlus2aRom0 = "roms/spectrumplus3-0.rom";
+    constexpr const char * DefaultPlus2aRom0 = "spectrumplus3-0.rom";
 
     /**
      * The relative path to the 128K syntax checker ROM for +2a Spectrum models.
      */
-    constexpr const char * DefaultPlus2aRom1 = "roms/spectrumplus3-1.rom";
+    constexpr const char * DefaultPlus2aRom1 = "spectrumplus3-1.rom";
 
     /**
      * The relative path to the +3DOS ROM for +2a Spectrum models.
      */
-    constexpr const char * DefaultPlus2aRom2 = "roms/spectrumplus3-2.rom";
+    constexpr const char * DefaultPlus2aRom2 = "spectrumplus3-2.rom";
 
     /**
      * The relative path to the 48K BASIC ROM for +2a Spectrum models.
      */
-    constexpr const char * DefaultPlus2aRom3 = "roms/spectrumplus3-3.rom";
+    constexpr const char * DefaultPlus2aRom3 = "spectrumplus3-3.rom";
 
     /**
      * The relative path to the default main ROM for +3 Spectrum models.
      */
-    constexpr const char * DefaultPlus3Rom0 = "roms/spectrumplus3-0.rom";
+    constexpr const char * DefaultPlus3Rom0 = "spectrumplus3-0.rom";
 
     /**
      * The relative path to the 128K syntax checker ROM for +3 Spectrum models.
      */
-    constexpr const char * DefaultPlus3Rom1 = "roms/spectrumplus3-1.rom";
+    constexpr const char * DefaultPlus3Rom1 = "spectrumplus3-1.rom";
 
     /**
      * The relative path to the +3DOS ROM for +3 Spectrum models.
      */
-    constexpr const char * DefaultPlus3Rom2 = "roms/spectrumplus3-2.rom";
+    constexpr const char * DefaultPlus3Rom2 = "spectrumplus3-2.rom";
 
     /**
      * The relative path to the 48K BASIC ROM for +3 Spectrum models.
      */
-    constexpr const char * DefaultPlus3Rom3 = "roms/spectrumplus3-3.rom";
+    constexpr const char * DefaultPlus3Rom3 = "spectrumplus3-3.rom";
 
     /**
      * The relative path to the ROM for Timex TC-2048 models (not yet supported).
      */
-    constexpr const char * DefaultTc2048Rom = "roms/tc2048.rom";
+    constexpr const char * DefaultTc2048Rom = "tc2048.rom";
 
     /**
      * ms to wait for the thread to stop before forcibly terminating it
      */
     constexpr const int ThreadStopWaitThreshold = 3000;
+
+    /**
+     * Helper to fetch the actual path to a default ROM file.
+     *
+     * The romPath provided should be one of the default ROM file paths (see above). It will be located in the platform-
+     * specific location in which the ROM files are expected to be found:
+     * - for macOS this is in the app bundle: Spectrum.app/Contents/roms/
+     * - for Linux this is in /usr/share/...
+     * - for Windows this is in the directory where the executable lives (e.g. C:\Program Files\Spectrum) - technically
+     *   the program's working directory
+     *
+     * @param path The path to the ROM file.
+     * @return
+     */
+    std::optional<std::string> romFilePath(const char * romFile)
+    {
+#if (defined(Q_OS_MAC))
+        static std::string basePath;
+
+        if (basePath.empty()) {
+            auto cfPath = static_cast<CFStringRef>(
+                    CFAutorelease(
+                            static_cast<CFStringRef>(
+                                    CFURLCopyFileSystemPath(
+                                            static_cast<CFURLRef>(
+                                                    CFAutorelease(
+                                                            static_cast<CFURLRef>(CFBundleCopyBundleURL(
+                                                                    CFBundleGetMainBundle()))
+                                                    )
+                                            ),
+                                            CFURLPathStyle::kCFURLPOSIXPathStyle
+                                    )
+                            )
+                    )
+            );
+
+            if (auto cPath = CFStringGetCStringPtr(cfPath, kCFStringEncodingUTF8); cPath) {
+                // if CoreFoundation can give us a c-string pointer directly, just copy it
+                basePath = cPath;
+            } else {
+                // otherwise convert it
+
+                // create a buffer of sufficient size to store the longest possible UTF-8 representation of a UTF-16
+                // sequence of the string's length
+                basePath = std::string(
+                        CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfPath), kCFStringEncodingUTF8), '\0');
+
+                // convert to UTF-8
+                CFStringGetCString(cfPath, basePath.data(), static_cast<CFIndex>(basePath.size()),
+                                   kCFStringEncodingUTF8);
+
+                // and trim the buffer's size to the first null byte
+                basePath.resize(std::string::traits_type::length(basePath.data()));
+            }
+
+            basePath += std::string("/Contents/roms/");
+        }
+
+        std::string path = basePath + romFile;
+
+        if (fs::exists(path)) {
+            return path;
+        }
+
+        return {};
+#elif (defined(Q_OS_WIN))
+        return std::string("roms/") + romPath;
+#elif (defined(Q_OS_LINUX))
+        return std::string("roms/") + romPath;
+#else
+        return {};
+#endif
+    }
 
     /**
      * Helper to map a key from a Qt key event to a Spectrum keyboard key combination.
@@ -432,7 +510,10 @@ namespace
 
 MainWindow::MainWindow(QWidget * parent)
 : QMainWindow(parent),
-  m_spectrum(std::make_unique<Spectrum128k>(Default128kRom0, Default128kRom1)),
+  m_spectrum(std::make_unique<Spectrum128k>(
+          (romFilePath(Default128kRom0) ? *romFilePath(Default128kRom0) : ""),
+          (romFilePath(Default128kRom1) ? *romFilePath(Default128kRom1) : "")
+          )),
   m_spectrumThread(*m_spectrum),
   m_display(),
   m_displayWidget(),
@@ -977,72 +1058,77 @@ void MainWindow::setModel(Spectrum::Model model)
     QString error;
 
     switch (model) {
-        case Model::Spectrum16k:
-            if (!fs::exists(Default16kRom)) {
+        case Model::Spectrum16k: {
+            if (auto romFile = romFilePath(Default16kRom); !romFile) {
                 error = tr("The ROM file for the %1 is missing.").arg(QString::fromStdString(std::to_string(model)));
             } else {
-                newSpectrum = std::make_unique<Spectrum16k>(Default16kRom);
+                newSpectrum = std::make_unique<Spectrum16k>(*romFile);
                 m_model16.setChecked(true);
             }
             break;
+        }
 
-        case Model::Spectrum48k:
-            if (!fs::exists(Default48kRom)) {
+        case Model::Spectrum48k: {
+            if (auto romFile = romFilePath(Default48kRom); !romFile) {
                 error = tr("The ROM file for the %1 is missing.").arg(QString::fromStdString(std::to_string(model)));
             } else {
-                newSpectrum = std::make_unique<Spectrum48k>(Default48kRom);
+                newSpectrum = std::make_unique<Spectrum48k>(*romFile);
                 m_model48.setChecked(true);
             }
             break;
+        }
 
-        case Model::Spectrum128k:
-            if (!fs::exists(Default128kRom0)) {
-                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("first"), QString::fromStdString(std::to_string(model)));
-            } else if (!fs::exists(Default128kRom0)) {
-                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("second"), QString::fromStdString(std::to_string(model)));
+        case Model::Spectrum128k: {
+            if (auto romFile0 = romFilePath(Default128kRom0); !romFile0) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("first"),
+                                                                         QString::fromStdString(std::to_string(model)));
+            } else if (auto romFile1 = romFilePath(Default128kRom1); !romFile1) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("second"),
+                                                                         QString::fromStdString(std::to_string(model)));
             } else {
-                newSpectrum = std::make_unique<Spectrum128k>(Default128kRom0, Default128kRom1);
+                newSpectrum = std::make_unique<Spectrum128k>(*romFile0, *romFile1);
                 m_model128.setChecked(true);
             }
             break;
+        }
 
         case Model::SpectrumPlus2:
-            if (!fs::exists(DefaultPlus2Rom0)) {
+            if (auto romFile0 = romFilePath(DefaultPlus2Rom0); !romFile0) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("first"), QString::fromStdString(std::to_string(model)));
-            } else if (!fs::exists(DefaultPlus2Rom1)) {
+            } else if (auto romFile1 = romFilePath(DefaultPlus2Rom1); !romFile1) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("second"), QString::fromStdString(std::to_string(model)));
             } else {
-                newSpectrum = std::make_unique<SpectrumPlus2>(DefaultPlus2Rom0, DefaultPlus2Rom1);
+                newSpectrum = std::make_unique<SpectrumPlus2>(*romFile0, *romFile1);
                 m_modelPlus2.setChecked(true);
             }
             break;
 
         case Model::SpectrumPlus2a:
-            if (!fs::exists(DefaultPlus2aRom0)) {
+            if (auto romFile0 = romFilePath(DefaultPlus2aRom0); !romFile0) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("first"), QString::fromStdString(std::to_string(model)));
-            } else if (!fs::exists(DefaultPlus2aRom1)) {
+            } else if (auto romFile1 = romFilePath(DefaultPlus2aRom1); !romFile1) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("second"), QString::fromStdString(std::to_string(model)));
-            } else if (!fs::exists(DefaultPlus2aRom2)) {
+            } else if (auto romFile2 = romFilePath(DefaultPlus2aRom2); !romFile2) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("third"), QString::fromStdString(std::to_string(model)));
-            } else if (!fs::exists(DefaultPlus2aRom3)) {
+            } else if (auto romFile3 = romFilePath(DefaultPlus2aRom3); !romFile3) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("fourth"), QString::fromStdString(std::to_string(model)));
             } else {
-                newSpectrum = std::make_unique<SpectrumPlus2a>(DefaultPlus2aRom0, DefaultPlus2aRom1, DefaultPlus2aRom2, DefaultPlus2aRom3);
+                newSpectrum = std::make_unique<SpectrumPlus2a>(*romFile0, *romFile1, *romFile2, *romFile3);
                 m_modelPlus2a.setChecked(true);
             }
             break;
 
         case Model::SpectrumPlus3:
-            if (!fs::exists(DefaultPlus2aRom0)) {
+            if (auto romFile0 = romFilePath(DefaultPlus2aRom0); !romFile0) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("first"), QString::fromStdString(std::to_string(model)));
-            } else if (!fs::exists(DefaultPlus2aRom1)) {
+            } else if (auto romFile1 = romFilePath(DefaultPlus2aRom1); !romFile1) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("second"), QString::fromStdString(std::to_string(model)));
-            } else if (!fs::exists(DefaultPlus2aRom2)) {
+            } else if (auto romFile2 = romFilePath(DefaultPlus2aRom2); !romFile2) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("third"), QString::fromStdString(std::to_string(model)));
-            } else if (!fs::exists(DefaultPlus2aRom3)) {
+            } else if (auto romFile3 = romFilePath(DefaultPlus2aRom3); !romFile3) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("fourth"), QString::fromStdString(std::to_string(model)));
             } else {
-                newSpectrum = std::make_unique<SpectrumPlus3>(DefaultPlus3Rom0, DefaultPlus3Rom1, DefaultPlus3Rom2, DefaultPlus3Rom3);
+                newSpectrum = std::make_unique<SpectrumPlus3>(*romFile0, *romFile1, *romFile2, *romFile3);
                 m_modelPlus3.setChecked(true);
             }
             break;
