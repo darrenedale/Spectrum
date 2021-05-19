@@ -19,7 +19,8 @@
 #include <QTimer>
 #include <QApplication>
 
-#if (defined(__clang__) && 13 > __clang_major__)
+#if (!defined(__cpp_lib_concepts) || 202002L > __cpp_lib_concepts)
+// use polyfill for missing concepts library
 #include "../../util/concepts.h"
 #endif
 
