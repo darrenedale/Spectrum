@@ -574,7 +574,11 @@ MainWindow::MainWindow(QWidget * parent)
 
 	connect(&m_spectrumThread, &Thread::paused, this, &MainWindow::threadPaused);
 	connect(&m_spectrumThread, &Thread::resumed, this, &MainWindow::threadResumed);
-	connect(&m_spectrumThread, &Thread::spectrumReset, [this]() {
+
+	// NOTE the context argument is important here since setWindowTitle() is a UI function and must run in the main
+	// thread. With no context the lambda would run in the sender's thread, which in this case is the thread running the
+	// Spectrum not the UI thread; the context ensures the lambda runs in the MainWindow's thread
+	connect(&m_spectrumThread, &Thread::spectrumReset, this, [this]() {
         setWindowTitle(QString::fromStdString(std::to_string(m_spectrum->model())));
     });
 
