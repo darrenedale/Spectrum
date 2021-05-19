@@ -5,6 +5,10 @@
 #ifndef SPECTRUM_IO_SNAPSHOTFORMATMATCHER_H
 #define SPECTRUM_IO_SNAPSHOTFORMATMATCHER_H
 
+#if (defined(__clang__) && 13 > __clang_major__)
+#include "../../util/concepts.h"
+#endif
+
 namespace Spectrum::Io
 {
     /**

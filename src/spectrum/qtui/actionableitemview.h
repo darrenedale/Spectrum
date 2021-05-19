@@ -19,6 +19,10 @@
 #include <QTimer>
 #include <QApplication>
 
+#if (defined(__clang__) && 13 > __clang_major__)
+#include "../../util/concepts.h"
+#endif
+
 namespace Spectrum::QtUi
 {
     /**

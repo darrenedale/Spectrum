@@ -452,7 +452,7 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
                             break;
 
                         default:
-                            in.seekg(in.tellg() + static_cast<std::streamsize>(size), std::ios_base::cur);
+                            in.seekg(in.tellg() + static_cast<std::iostream::pos_type>(size), std::ios_base::cur);
                             break;
                     }
                     break;
