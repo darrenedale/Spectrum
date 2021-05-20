@@ -6,6 +6,8 @@
 #include <QStatusBar>
 #include <QIcon>
 #include <QStringBuilder>
+#include <QtGlobal>
+#include <QStandardPaths>
 #include "mainwindow.h"
 #include "application.h"
 #include "notification.h"
@@ -82,6 +84,30 @@ MainWindow & Application::mainWindow()
 const MainWindow & Application::mainWindow() const
 {
     return *m_mainWindow;
+}
+
+QString Application::romFilePath(const char * const romFile)
+{
+#if (defined(Q_OS_MAC))
+    static QString basePath;
+
+    if (basePath.isNull()) {
+        basePath = QUrl::fromCFUrl(static_cast<CFURLRef>(
+                CFAutorelease(static_cast<CFURLRef>(CFBundleCopyBundleURL( CFBundleGetMainBundle())))
+        )).path() % "/Contents/roms/";
+    }
+
+    auto path = basePath % romFile;
+
+    if (QFileInfo::exists(path)) {
+        return path;
+    }
+
+    return {};
+#elif (defined(Q_OS_WIN) || defined(Q_OS_LINUX))
+    return QStandardPaths::locate(QStandardPaths::StandardLocation::AppDataLocation, QStringLiteral("roms/") % romFile);
+#endif
+    return {};
 }
 
 Application::~Application() = default;

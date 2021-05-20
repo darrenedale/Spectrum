@@ -117,6 +117,37 @@ namespace Spectrum::QtUi
          */
         [[nodiscard]] static QIcon icon(const QString & systemThemeName, const QString & name, ThemeType type = ThemeType::Unknown) ;
 
+        /**
+         * Helper to fetch the actual path to a ROM file provided with the emulator.
+         *
+         * The romFile provided should be one of the default ROM files. The following ROM image files are currently
+         * included with the application:
+         * - spectrum48.rom
+         * - spectrum128-0.rom
+         * - spectrum128-1.rom
+         * - spectrumplus2-0.rom
+         * - spectrumplus2-1.rom
+         * - spectrumplus3-0.rom
+         * - spectrumplus3-1.rom
+         * - spectrumplus3-2.rom
+         * - spectrumplus3-3.rom
+         * - spectrumplus3-0.rom
+         * - spectrumplus3-1.rom
+         * - spectrumplus3-2.rom
+         * - spectrumplus3-3.rom
+         * - tc2048.rom
+         *
+         * It will be located in the platform-specific location in which the ROM files are expected to be found:
+         * - for macOS this is in the app bundle: Spectrum.app/Contents/roms/
+         * - for Linux and Windows this is in one of the standard locations for application data (see
+         *   https://doc.qt.io/qt-5/qstandardpaths.html#StandardLocation-enum)
+         *
+         * @param path The file name of the requested ROM file.
+         *
+         * @return The path to the requested built-in ROM file, or an empty string if the requested ROM cannot be found.
+         */
+        QString romFilePath(const char * const romFile);
+
     private:
         /**
          * The application singleton instance.
