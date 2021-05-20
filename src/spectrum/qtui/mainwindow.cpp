@@ -92,79 +92,79 @@ namespace
     };
 
     /**
-     * The relative path to the default ROM for 16K Spectrum models.
+     * The name of the default ROM for 16K Spectrum models.
      *
      * Note the 16K and 48K ROMs are identical.
      */
     constexpr const char * Default16kRom = "spectrum48.rom";
 
     /**
-     * The relative path to the default ROM for 48K Spectrum models.
+     * The name of the default ROM for 48K Spectrum models.
      */
     constexpr const char * Default48kRom = "spectrum48.rom";
 
     /**
-     * The relative path to the default main ROM for 128K Spectrum models.
+     * The name of the default main ROM for 128K Spectrum models.
      */
     constexpr const char * Default128kRom0 = "spectrum128-0.rom";
 
     /**
-     * The relative path to the default 48K BASIC ROM for 128K Spectrum models.
+     * The name of the default 48K BASIC ROM for 128K Spectrum models.
      */
     constexpr const char * Default128kRom1 = "spectrum128-1.rom";
 
     /**
-     * The relative path to the default main ROM for +2 Spectrum models.
+     * The name of the default main ROM for +2 Spectrum models.
      */
     constexpr const char * DefaultPlus2Rom0 = "spectrumplus2-0.rom";
 
     /**
-     * The relative path to the default 48K BASIC ROM for +2 Spectrum models.
+     * The name of the default 48K BASIC ROM for +2 Spectrum models.
      */
     constexpr const char * DefaultPlus2Rom1 = "spectrumplus2-1.rom";
 
     /**
-     * The relative path to the default main ROM for +2a Spectrum models.
+     * The name of the default main ROM for +2a Spectrum models.
      */
     constexpr const char * DefaultPlus2aRom0 = "spectrumplus3-0.rom";
 
     /**
-     * The relative path to the 128K syntax checker ROM for +2a Spectrum models.
+     * The name of the 128K syntax checker ROM for +2a Spectrum models.
      */
     constexpr const char * DefaultPlus2aRom1 = "spectrumplus3-1.rom";
 
     /**
-     * The relative path to the +3DOS ROM for +2a Spectrum models.
+     * The name of the +3DOS ROM for +2a Spectrum models.
      */
     constexpr const char * DefaultPlus2aRom2 = "spectrumplus3-2.rom";
 
     /**
-     * The relative path to the 48K BASIC ROM for +2a Spectrum models.
+     * The name of the 48K BASIC ROM for +2a Spectrum models.
      */
     constexpr const char * DefaultPlus2aRom3 = "spectrumplus3-3.rom";
 
     /**
-     * The relative path to the default main ROM for +3 Spectrum models.
+     * The name of the default main ROM for +3 Spectrum models.
      */
     constexpr const char * DefaultPlus3Rom0 = "spectrumplus3-0.rom";
 
     /**
-     * The relative path to the 128K syntax checker ROM for +3 Spectrum models.
+     * The name of the 128K syntax checker ROM for +3 Spectrum models.
      */
     constexpr const char * DefaultPlus3Rom1 = "spectrumplus3-1.rom";
 
     /**
-     * The relative path to the +3DOS ROM for +3 Spectrum models.
+     * The name of the +3DOS ROM for +3 Spectrum models.
      */
     constexpr const char * DefaultPlus3Rom2 = "spectrumplus3-2.rom";
 
     /**
-     * The relative path to the 48K BASIC ROM for +3 Spectrum models.
+     * The name of the 48K BASIC ROM for +3 Spectrum models.
      */
     constexpr const char * DefaultPlus3Rom3 = "spectrumplus3-3.rom";
 
     /**
-     * The relative path to the ROM for Timex TC-2048 models (not yet supported).
+     * The name of the ROM for Timex TC-2048 models (not yet supported).
      */
     constexpr const char * DefaultTc2048Rom = "tc2048.rom";
 
@@ -238,7 +238,13 @@ namespace
 
         return {};
 #elif (defined(Q_OS_WIN))
-        return std::string("roms/") + romPath;
+        const auto path = QStandardPaths::locate(QStandardPaths::StandardLocation::AppDataLocation, QStringLiteral("roms/") % romFile);
+
+        if (path.isEmpty()) {
+            return {};
+        }
+
+        return path.toStdString();
 #elif (defined(Q_OS_LINUX))
         return std::string("roms/") + romPath;
 #else
