@@ -4,7 +4,7 @@
 
 #include "application.h"
 
-using namespace ScreenView;
+using namespace Spectrum::ScreenView;
 
 Application::Application(int & argc, char ** argv)
 : QApplication(argc, argv)

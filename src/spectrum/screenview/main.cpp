@@ -3,9 +3,11 @@
 
 int main( int argc, char * argv[] )
 {
-	ScreenView::Application app(argc, argv);
-    QApplication::quitOnLastWindowClosed();
-    ScreenView::MainWindow win;
+    using namespace Spectrum::ScreenView;
+
+	Application app(argc, argv);
+    Application::quitOnLastWindowClosed();
+    MainWindow win;
 	win.show();
-	return QApplication::exec();
+	return Application::exec();
 }

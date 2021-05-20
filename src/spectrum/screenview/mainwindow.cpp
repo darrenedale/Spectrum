@@ -11,7 +11,7 @@
 #include "mainwindow.h"
 #include "../qtui/qimagedisplaydevice.h"
 
-using namespace ScreenView;
+using namespace Spectrum::ScreenView;
 
 MainWindow::MainWindow(QWidget * parent)
 : QMainWindow(parent),
@@ -59,7 +59,7 @@ void MainWindow::loadScreen(const QString & fileName)
     }
 
     std::size_t bytesToRead = DisplayFileSize;
-    auto * buffer = m_screenData;
+    auto * buffer = m_screenData.data();
 
     while (!std::feof(inFile) && 0 < bytesToRead) {
         auto bytesRead = std::fread(buffer, sizeof(std::uint8_t), bytesToRead, inFile);
@@ -125,7 +125,7 @@ void MainWindow::closeEvent(QCloseEvent * ev)
 void MainWindow::updateScreen()
 {
     Spectrum::QtUi::QImageDisplayDevice display;
-    display.redrawDisplay(m_screenData);
+    display.redrawDisplay(m_screenData.data());
     display.setBorder(m_borderColour->colour(), m_borderColour->isBright());
     m_display->setImage(display.image());
 }

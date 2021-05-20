@@ -5,11 +5,18 @@
 #include "colourcombo.h"
 
 namespace {
+    /**
+     * The role for the colour data stored with the combo box items.
+     */
     constexpr const int ColourRole = Qt::UserRole;
+
+    /**
+     * The role for the brightness data stored with the combo box items.
+     */
     constexpr const int BrightRole = ColourRole + 1;
 }
 
-using namespace ScreenView;
+using namespace Spectrum::ScreenView;
 using namespace Spectrum;
 
 ColourCombo::ColourCombo(QWidget * parent)
