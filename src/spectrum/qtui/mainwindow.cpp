@@ -177,8 +177,10 @@ namespace
      */
     std::vector<::Spectrum::Keyboard::Key> mapToSpectrumKeys(Qt::Key key)
     {
+#if (defined(__clang__))
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wswitch"     // we're only interested in the keys that map to the Spectrum keyboard
+#endif
         // TODO configurable mapping
         switch (key) {
             case Qt::Key::Key_Backspace:
@@ -376,7 +378,9 @@ namespace
             default:
                 return {};
         }
+#if (defined(__clang__))
 #pragma clang diagnostic pop
+#endif
     }
 
     /**
@@ -388,8 +392,10 @@ namespace
      */
     JoystickMapping mapToSpectrumJoystick(Qt::Key key)
     {
+#if (defined(__clang__))
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wswitch"     // we're only interested in keys that map to the virtual joystick
+#endif
         switch (key) {
             case Qt::Key::Key_Up:
                 return JoystickMapping::Up;
@@ -406,7 +412,9 @@ namespace
             case Qt::Key::Key_Control:
                 return JoystickMapping::Button1;
         }
+#if (defined(__clang__))
 #pragma clang diagnostic pop
+#endif
 
         return JoystickMapping::None;
     }
@@ -1305,8 +1313,10 @@ void MainWindow::rescanGameControllers()
 
 bool MainWindow::eventFilter(QObject * target, QEvent * event)
 {
+#if (defined(__clang__))
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wswitch"
+#endif
     if (&m_displayWidget == target) {
         switch (event->type()) {
             case QEvent::Type::MouseMove:
@@ -1435,8 +1445,9 @@ bool MainWindow::eventFilter(QObject * target, QEvent * event)
                 break;
         }
     }
+#if (defined(__clang__))
 #pragma clang diagnostic pop
-
+#endif
     return false;
 }
 

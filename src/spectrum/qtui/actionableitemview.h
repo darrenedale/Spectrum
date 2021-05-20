@@ -19,7 +19,8 @@
 #include <QTimer>
 #include <QApplication>
 
-#if (!defined(__cpp_lib_concepts) || 202002L > __cpp_lib_concepts)
+// NOTE I think this should be 202002L (publication date) but MSVC has 201907L (feature freeze date)
+#if (!defined(__cpp_lib_concepts) || 201907L > __cpp_lib_concepts)
 // use polyfill for missing concepts library
 #include "../../util/concepts.h"
 #endif
@@ -555,8 +556,10 @@ namespace Spectrum::QtUi
          */
         bool event(QEvent * ev) override
         {
+#if (defined(__clang__))
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wswitch"     // we're only interested in a subset of event types
+#endif
             switch (ev->type()) {
                 case QEvent::Type::HoverMove: {
                     const auto pos = reinterpret_cast<QHoverEvent *>(ev)->pos();
@@ -583,8 +586,9 @@ namespace Spectrum::QtUi
                     }
                     break;
             }
+#if (defined(__clang__))
 #pragma clang diagnostic pop
-
+#endif
             return ViewType::event(ev);
         }
 
