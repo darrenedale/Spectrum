@@ -78,8 +78,8 @@ namespace Spectrum
         assert(z80());
 
         static steady_clock::time_point lastInterrupt = steady_clock::now();
-        // TODO standard spectrum refresh is not exactly 50FPS it's 50.08 (69888 t-states)
-        int interruptThreshold = static_cast<int>(z80()->clockSpeed() / 50);
+        // standard spectrum refresh is not exactly 50FPS it's 50.08 (69888 t-states)
+        int interruptThreshold = static_cast<int>(static_cast<double>(z80()->clockSpeed()) / 50.08);
 
         while (0 < instructionCount) {
             m_interruptTStateCounter += z80()->fetchExecuteCycle();
