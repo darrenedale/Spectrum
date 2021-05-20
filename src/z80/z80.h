@@ -68,7 +68,7 @@ namespace Z80
          */
         [[nodiscard]] bool isValid() const
         {
-            return m_memory;
+            return memory();
         }
 
         /**
@@ -941,21 +941,22 @@ namespace Z80
         /**
          * Fetch an 8-bit value from the Z80 memory.
          *
+         * Do not attempt to read outside the addressable range.
+         *
          * @param addr The address of the value to fetch. The address is given in host byte order.
          *
          * @return The unsigned 8-bit value at the given address.
          */
         [[nodiscard]] inline UnsignedByte peekUnsigned(MemoryType::Address addr) const
         {
-            if (addr < 0 || addr >= memorySize()) {
-                return 0;
-            }
-
-            return m_memory->readByte(addr);
+            assert (0 <= addr < 0 && memory()->addressableSize() > addr);
+            return memory()->readByte(addr);
         }
 
         /**
          * Fetch an 8-bit value from the Z80 memory.
+         *
+         * Do not attempt to read outside the addressable range.
          *
          * @param addr The address of the value to fetch. The address is given in host byte order.
          *
@@ -969,7 +970,7 @@ namespace Z80
         /**
          * Fetch a 16-bit value from the Z80 memory.
          *
-         * The value is converted to host byte order.
+         * The value is converted to host byte order. Do not attempt to read outside the addressable range.
          *
          * @param addr The address of the value to fetch. The address is given in host byte order.
          *
@@ -980,7 +981,7 @@ namespace Z80
         /**
          * Fetch a 16-bit value from the Z80 memory.
          *
-         * The value is return in Z80 byte order.
+         * The value is return in Z80 byte order. Do not attempt to read outside the addressable range.
          *
          * @param addr The address of the value to fetch. The address is given in host byte order.
          *
@@ -991,6 +992,8 @@ namespace Z80
         /**
          * Write an 8-bit value to a memory address.
          *
+         * Do not attempt to write outside the addressable range.
+         *
          * @param addr The address to write the 8-bit value. The address is given in host byte order.
          * @param value
          */
@@ -999,6 +1002,16 @@ namespace Z80
         /**
          * Write a 16-bit value to the Z80 memory.
          *
+         * The value is provided in HOST byte order and converted to Z80 byte order if necessary. The address to write is
+         * provided in HOST byte order and has no conversion applied - it's just an offset into the Z80 memory. The memory
+         * locations actually written are addr and addr + 1. For example, if you poke the value 65280 (0xff00) into address
+         * 20000 (0x4e20) the result in the Z80 memory will be:
+         *
+         * 0x4e20: 0x00
+         * 0x4e21: 0xff
+         *
+         * Do not attempt to write outside the addressable range.
+         *
          * @param addr The address to write the first byte of the 16-bit value. The address is given in host byte order.
          * @param value The 16-bit value to write, in host byte order.
          */
@@ -1006,6 +1019,17 @@ namespace Z80
 
         /**
          * Write a 16-bit value to the Z80 memory.
+         *
+         * The value is provided in Z80 byte order - it is the caller's responsibility to ensure that the value has already been
+         * converted to Z80 byte order if this differs from the host byte order. The address to write is provided in HOST byte
+         * order and has no conversion applied - it's just an offset into the Z80 memory. The memory locations actually written
+         * are addr and addr + 1. For example, if you poke the value 65280 (0xff00) in Z80 byte order (0x00 0xff) into address
+         * 20000 (0x4e20) the result in the Z80 memory will be:
+         *
+         * 0x4e20: 0x00
+         * 0x4e21: 0xff
+         *
+         * Do not attempt to write outside the addressable range.
          *
          * @param addr The address to write the first byte of the 16-bit value. The address is given in host byte order.
          * @param value The 16-bit value to write, in Z80 byte order.

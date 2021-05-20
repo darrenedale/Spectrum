@@ -263,7 +263,7 @@ pokeHostWord(m_registers.sp, (reg));
 }
 
 #define Z80__ADD__REG8__REG8(dest,src) Z80__ADD__REG8__N(dest,src)
-#define Z80__ADD__REG8__INDIRECT_REG16(dest,src) Z80__ADD__REG8__N(dest,(*(m_memory->pointerTo(src))))
+#define Z80__ADD__REG8__INDIRECT_REG16(dest,src) Z80__ADD__REG8__N(dest,(*(memory()->pointerTo(src))))
 
 #define Z80__ADD__REG16__REG16(dest,src) \
 {       \
@@ -278,7 +278,7 @@ pokeHostWord(m_registers.sp, (reg));
     Z80_FLAG_F3_UPDATE((dest) & (Z80_FLAG_F3_MASK << 8)); \
 }
 
-#define Z80__ADD__REG8__INDIRECT_REG16_D(dest, reg, d) Z80__ADD__REG8__N((dest),(*(m_memory->pointerTo((reg) + (d)))))
+#define Z80__ADD__REG8__INDIRECT_REG16_D(dest, reg, d) Z80__ADD__REG8__N((dest),(*(memory()->pointerTo((reg) + (d)))))
 
 //
 // addition with carry instructions
@@ -392,10 +392,10 @@ Z80_FLAG_S_UPDATE((reg) & 0x80);        \
 Z80_FLAG_F3_UPDATE((reg) & Z80_FLAG_F3_MASK); \
 Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
 
-#define Z80__INC__INDIRECT_REG16(reg) Z80__INC__REG8(*(m_memory->pointerTo(reg)))
+#define Z80__INC__INDIRECT_REG16(reg) Z80__INC__REG8(*(memory()->pointerTo(reg)))
 #define Z80__INC__REG16(reg) (reg)++;
 // TODO memptr
-#define Z80__INC__INDIRECT_REG16_D(reg, d) Z80__INC__REG8(*(m_memory->pointerTo((reg) + (d))))
+#define Z80__INC__INDIRECT_REG16_D(reg, d) Z80__INC__REG8(*(memory()->pointerTo((reg) + (d))))
 
 //
 // decrement instructions
@@ -410,10 +410,10 @@ Z80_FLAG_S_UPDATE((reg) & 0x80); \
 Z80_FLAG_F3_UPDATE((reg) & Z80_FLAG_F3_MASK); \
 Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
 
-#define Z80__DEC__INDIRECT_REG16(reg) Z80__DEC__REG8(*(m_memory->pointerTo(reg)))
+#define Z80__DEC__INDIRECT_REG16(reg) Z80__DEC__REG8(*(memory()->pointerTo(reg)))
 #define Z80__DEC__REG16(reg) (reg)--;
 // TODO memptr
-#define Z80__DEC__INDIRECT_REG16_D(reg, d) Z80__DEC__REG8(*(m_memory->pointerTo((reg) + (d))));
+#define Z80__DEC__INDIRECT_REG16_D(reg, d) Z80__DEC__REG8(*(memory()->pointerTo((reg) + (d))));
 
 //
 // negation instruction
@@ -951,122 +951,42 @@ void Z80::Z80::reset()
 	m_registers.reset();
 }
 
-/**
- * Store a 16-bit value in the Z80's memory.
- *
- * The value is provided in HOST byte order and converted to Z80 byte order if necessary. The address to write is
- * provided in HOST byte order and has no conversion applied - it's just an offset into the Z80 memory. The memory
- * locations actually written are addr and addr + 1. For example, if you poke the value 65280 (0xff00) into address
- * 20000 (0x4e20) the result in the Z80 memory will be:
- *
- * 0x4e20: 0x00
- * 0x4e21: 0xff
- *
- * @param addr
- * @param value
- */
 void Z80::Z80::pokeHostWord(MemoryType::Address addr, UnsignedWord value)
 {
-	if (0 > addr || memorySize() <= addr + 1) {
-        Util::debug << "Attempt to write outside addressable range (word 0x"
-	        << std::hex << std::setfill('0') << std::setw(4) << value << " to 0x"
-	        << std::setw(8) << addr << ")\n";
-
-#if (!defined(NDEBUG))
-        dumpState(std::cerr);
-        dumpExecutionHistory(10, std::cerr);
-#endif
-	    return;
-	}
+    assert(memory() && 0 > addr && memory()->addressableSize() > (addr + 1));
 
 	value = hostToZ80ByteOrder(value);
-	auto * bytes = reinterpret_cast<UnsignedByte *>(&value);
-	m_memory->writeByte(addr, bytes[0]);
-	m_memory->writeByte(addr + 1, bytes[1]);
+    memory()->writeBytes(addr, 2, reinterpret_cast<UnsignedByte *>(&value));
 }
 
-/**
- * Store a 16-bit value in the Z80's memory.
- *
- * The value is provided in Z80 byte order - it is the caller's responsibility to ensure that the value has already been
- * converted to Z80 byte order if this differs from the host byte order. The address to write is provided in HOST byte
- * order and has no conversion applied - it's just an offset into the Z80 memory. The memory locations actually written
- * are addr and addr + 1. For example, if you poke the value 65280 (0xff00) in Z80 byte order (0x00 0xff) into address
- * 20000 (0x4e20) the result in the Z80 memory will be:
- *
- * 0x4e20: 0x00
- * 0x4e21: 0xff
- *
- * @param addr
- * @param value
- */
 void Z80::Z80::pokeZ80Word(MemoryType::Address addr, UnsignedWord value)
 {
-	if (0 > addr || memorySize() <= addr + 1) {
-        Util::debug << "Attempt to write outside addressable range (Z80 word 0x"
-                  << std::hex << std::setfill('0') << std::setw(4) << value << " to 0x"
-                  << std::setw(8) << addr << ")\n";
-#if (!defined(NDEBUG))
-        dumpState(std::cerr);
-        dumpExecutionHistory(10, std::cerr);
-#endif
-        return;
-	}
-
-    auto * bytes = reinterpret_cast<UnsignedByte *>(&value);
-    m_memory->writeByte(addr, bytes[0]);
-    m_memory->writeByte(addr + 1, bytes[1]);
+    assert(memory() && 0 > addr && memory()->addressableSize() > (addr + 1));
+    memory()->writeBytes(addr, 2, reinterpret_cast<UnsignedByte *>(&value));
 }
 
 void Z80::Z80::pokeUnsigned(MemoryType::Address addr, UnsignedByte value)
 {
-    if (addr < 0 || addr > memorySize()) {
-        Util::debug << "Attempt to write outside addressable range (byte 0x"
-                  << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(value) << " to 0x"
-                  << std::setw(8) << addr << ")\n";
-#if (!defined(NDEBUG))
-        dumpState(std::cerr);
-        dumpExecutionHistory(10, std::cerr);
-#endif
-        return;
-    }
-
-    m_memory->writeByte(addr, value);
+    assert(memory() && 0 > addr && memory()->addressableSize() > addr);
+    memory()->writeByte(addr, value);
 }
 
 UnsignedWord Z80::Z80::peekUnsignedHostWord(MemoryType::Address addr) const
 {
-    // TODO make an assertion instead
-    if (0 > addr || memorySize() <= addr + 1) {
-        Util::debug << "Attempt to read outside addressable range (word from 0x"
-                  << std::hex << std::setfill('0') << std::setw(8) << addr << ")\n";
-#if (!defined(NDEBUG))
-        dumpState(std::cerr);
-        dumpExecutionHistory(10, std::cerr);
-#endif
-        return 0;
-    }
+    assert(memory() && 0 > addr && memory()->addressableSize() > (addr + 1));
 
     if (HostByteOrder == Z80ByteOrder) {
-        return (*m_memory)[addr + 1] << 8 | (*m_memory)[addr];
+        return (*memory())[addr + 1] << 8 | (*memory())[addr];
     }
 
-    return ((*m_memory)[addr] << 8) | (*m_memory)[addr + 1];
+    return ((*memory())[addr] << 8) | (*memory())[addr + 1];
 }
 
 UnsignedWord Z80::Z80::peekUnsignedZ80Word(MemoryType::Address addr) const
 {
-    // TODO make an assertion instead
-    if (0 > addr || memorySize() <= addr + 1) {
-        Util::debug << "Attempt to read outside addressable range (Z80 word from 0x"
-                  << std::hex << std::setfill('0') << std::setw(8) << addr << ")\n";
-#if (!defined(NDEBUG))
-        dumpState(std::cerr);
-        dumpExecutionHistory(10, std::cerr);
-#endif
-    }
+    assert(memory() && 0 > addr && memory()->addressableSize() > (addr + 1));
 
-    return (*m_memory)[addr + 1] << 8 | (*m_memory)[addr];
+    return (*memory())[addr + 1] << 8 | (*memory())[addr];
 }
 
 Z80::InstructionCost Z80::Z80::execute(const UnsignedByte * instruction, bool doPc)

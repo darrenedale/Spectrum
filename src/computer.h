@@ -159,11 +159,9 @@ public:
     /**
      * Fetch the size of the computer's memory.
      *
-     * TODO consider altering the return type.
-     *
      * @return The memory size.
      */
-    inline int memorySize() const
+    inline typename MemoryType<>::Size memorySize() const
     {
         return m_memory->addressableSize();
     }

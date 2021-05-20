@@ -68,13 +68,25 @@ public:
     void setMemory(MemoryType * memory);
 
     /**
-     * Fetch the memory the CPU is using.
+     * Fetch a read-write pointero to the memory the CPU is using.
      *
      * The memory could be nullptr.
      *
      * @return A pointer to the memory.
      */
     inline MemoryType * memory()
+    {
+        return m_memory;
+    }
+
+    /**
+     * Fetch a read-only pointer to the memory the CPU is using.
+     *
+     * The memory could be nullptr.
+     *
+     * @return A pointer to the memory.
+     */
+    [[nodiscard]] inline const MemoryType * memory() const
     {
         return m_memory;
     }

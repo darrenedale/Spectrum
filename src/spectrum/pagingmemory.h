@@ -64,8 +64,6 @@ namespace Spectrum
 
         /**
          * Convenience alias for a ROM number.
-         *
-         * TODO consider making a strong type for this.
          */
         using RomNumber = int;
 

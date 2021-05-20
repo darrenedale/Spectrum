@@ -26,8 +26,6 @@ namespace Spectrum
 
         /**
          * Convenience alias for a RAM page number.
-         *
-         * TODO consider making a strong type for this.
          */
         using PageNumber = int;
 
