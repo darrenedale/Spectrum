@@ -9,7 +9,6 @@
  *   loop will be executed)
  *
  * TODO:
- * - assembleRST()
  * - handle IX+n, IY+n operands
  * - handle port operands
  */
@@ -2977,15 +2976,63 @@ Z80Interpreter::Opcode Z80Interpreter::assembleRRC(const Tokens & tokens)
 
 Z80Interpreter::Opcode Z80Interpreter::assembleRRD(const Tokens &)
 {
-    Opcode ret;
-    ret.push_back(0xed);
-    ret.push_back(0x67);
-    return ret;
+    return {{0xed, 0x67}};
 }
 
-Z80Interpreter::Opcode Z80Interpreter::assembleRST(const Tokens &)
+Z80Interpreter::Opcode Z80Interpreter::assembleRST(const Tokens & tokens)
 {
-    return Opcode();
+    static constexpr const char * const invalidResetLocation = "RST instruction's operand must be one of the reset addresses $00, $08, $10, $18, $20, $28, $30, $38.";
+    auto c = tokens.size();
+
+    if (2 > tokens.size()) {
+        std::cout << "RST instruction requires at least one operand.\n";
+        return InvalidInstruction;
+    }
+
+    Operand op(tokens[1]);
+
+    if (!op.isByte()) {
+        std::cout << invalidResetLocation << '\n';
+        return InvalidInstruction;
+    }
+
+    switch (op.byte()) {
+        case 0x00:
+            return {std::initializer_list<Opcode::value_type>{0b11000111}};
+            break;
+
+        case 0x08:
+            return {std::initializer_list<Opcode::value_type>{0b11001111}};
+            break;
+
+        case 0x10:
+            return {std::initializer_list<Opcode::value_type>{0b11010111}};
+            break;
+
+        case 0x18:
+            return {std::initializer_list<Opcode::value_type>{0b11011111}};
+            break;
+
+        case 0x20:
+            return {std::initializer_list<Opcode::value_type>{0b11100111}};
+            break;
+
+        case 0x28:
+            return {std::initializer_list<Opcode::value_type>{0b11101111}};
+            break;
+
+        case 0x30:
+            return {std::initializer_list<Opcode::value_type>{0b11110111}};
+            break;
+
+        case 0x38:
+            return {std::initializer_list<Opcode::value_type>{0b11111111}};
+            break;
+
+        default:
+            std::cout << invalidResetLocation << '\n';
+            return InvalidInstruction;
+    }
 }
 
 Z80Interpreter::Opcode Z80Interpreter::assembleSBC(const Tokens & tokens)
