@@ -51,11 +51,6 @@
 #include "../io/snapshotformatguesser.h"
 #include "../io/snapshotreaderfactory.h"
 #include "../io/snapshotwriterfactory.h"
-#include "../../util/debug.h"
-
-#if (defined(Q_OS_MAC))
-#include <CoreFoundation/CoreFoundation.h>
-#endif
 
 using namespace Spectrum::QtUi;
 using namespace Spectrum::Io;

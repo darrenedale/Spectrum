@@ -8,9 +8,14 @@
 #include <QStringBuilder>
 #include <QtGlobal>
 #include <QStandardPaths>
+#include <QFileInfo>
 #include "mainwindow.h"
 #include "application.h"
 #include "notification.h"
+
+#if (defined(Q_OS_MAC))
+#include <CoreFoundation/CoreFoundation.h>
+#endif
 
 using namespace Spectrum::QtUi;
 
@@ -92,7 +97,7 @@ QString Application::romFilePath(const char * const romFile)
     static QString basePath;
 
     if (basePath.isNull()) {
-        basePath = QUrl::fromCFUrl(static_cast<CFURLRef>(
+        basePath = QUrl::fromCFURL(static_cast<CFURLRef>(
                 CFAutorelease(static_cast<CFURLRef>(CFBundleCopyBundleURL( CFBundleGetMainBundle())))
         )).path() % "/Contents/roms/";
     }
