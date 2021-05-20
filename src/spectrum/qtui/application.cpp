@@ -9,6 +9,7 @@
 #include <QtGlobal>
 #include <QStandardPaths>
 #include <QFileInfo>
+#include <QDir>
 #include "mainwindow.h"
 #include "application.h"
 #include "notification.h"
@@ -29,7 +30,7 @@ Application::Application(int & argc, char ** argv)
     m_instance = this;
     setWindowIcon(icon(QStringLiteral("app")));
 
-    #if (defined(NDEBUG))
+#if (defined(NDEBUG))
     setApplicationDisplayName(QStringLiteral("Spectrum"));
 #else
     setApplicationDisplayName(QStringLiteral("Spectrum [Debug Build]"));
@@ -38,13 +39,15 @@ Application::Application(int & argc, char ** argv)
     setApplicationName(QStringLiteral("Spectrum"));
     setOrganizationDomain(QStringLiteral("net.equituk"));
     setOrganizationName(QStringLiteral("Equit"));
-    setProperty("version", QStringLiteral("0.5"));
+    setProperty("version", QStringLiteral("0.6"));
     setProperty("author", QStringLiteral("Darren Edale"));
 
     // we must initialise this after the application name etc. have been set because the main window constructor depends on some of these properties
     m_mainWindow = std::make_unique<MainWindow>();
     m_mainWindow->show();
 }
+
+Application::~Application() = default;
 
 void Application::showNotification(const QString & message, int timeout)
 {
@@ -103,16 +106,22 @@ QString Application::romFilePath(const char * const romFile)
     }
 
     auto path = basePath % romFile;
+#elif (defined(Q_OS_WIN) || defined(Q_OS_LINUX))
+    auto path = QStandardPaths::locate(QStandardPaths::StandardLocation::AppDataLocation, QStringLiteral("roms/") % romFile);
+#else
+    QString path;
+#endif
+
+    if (QFileInfo::exists(path)) {
+        return path;
+    }
+
+    // if not in system location try current working directory
+    path = QDir::currentPath() % "/roms/" % romFile;
 
     if (QFileInfo::exists(path)) {
         return path;
     }
 
     return {};
-#elif (defined(Q_OS_WIN) || defined(Q_OS_LINUX))
-    return QStandardPaths::locate(QStandardPaths::StandardLocation::AppDataLocation, QStringLiteral("roms/") % romFile);
-#endif
-    return {};
 }
-
-Application::~Application() = default;

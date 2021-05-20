@@ -14,6 +14,18 @@ namespace Spectrum::QtUi
 {
     class MainWindow;
 
+    /**
+     * Core Application class to run the emulator.
+     *
+     * This class is a singleton. It creates and opens a main window. The application singleton instance is always available from the instance() method, or
+     * using the convenience macro spectrumApp. The main window for the Application is available from spectrumApp->mainWindow().
+     *
+     * Various application-wide services are provided by the class:
+     * - determination of the type of system theme (dark/light)
+     * - loading of icons suitable for the system theme
+     * - display of desktop notifications
+     * - location of installed Spectrum ROM image files
+     */
     class Application : public QApplication
     {
         Q_OBJECT
@@ -146,7 +158,7 @@ namespace Spectrum::QtUi
          *
          * @return The path to the requested built-in ROM file, or an empty string if the requested ROM cannot be found.
          */
-        QString romFilePath(const char * const romFile);
+        static QString romFilePath(const char * romFile);
 
     private:
         /**

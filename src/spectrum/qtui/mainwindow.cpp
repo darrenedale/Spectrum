@@ -441,7 +441,7 @@ namespace
 MainWindow::MainWindow(QWidget * parent)
 : QMainWindow(parent),
   m_spectrum(std::make_unique<Spectrum128k>(
-          spectrumApp->romFilePath(Default128kRom0).toStdString(), spectrumApp->romFilePath(Default128kRom1).toStdString())
+          Application::romFilePath(Default128kRom0).toStdString(), Application::romFilePath(Default128kRom1).toStdString())
           ),
   m_spectrumThread(*m_spectrum),
   m_display(),
@@ -992,7 +992,7 @@ void MainWindow::setModel(Spectrum::Model model)
 
     switch (model) {
         case Model::Spectrum16k: {
-            if (auto romFile = spectrumApp->romFilePath(Default16kRom); romFile.isEmpty()) {
+            if (auto romFile = Application::romFilePath(Default16kRom); romFile.isEmpty()) {
                 error = tr("The ROM file for the %1 is missing.").arg(QString::fromStdString(std::to_string(model)));
             } else {
                 newSpectrum = std::make_unique<Spectrum16k>(romFile.toStdString());
@@ -1002,7 +1002,7 @@ void MainWindow::setModel(Spectrum::Model model)
         }
 
         case Model::Spectrum48k: {
-            if (auto romFile = spectrumApp->romFilePath(Default48kRom); romFile.isEmpty()) {
+            if (auto romFile = Application::romFilePath(Default48kRom); romFile.isEmpty()) {
                 error = tr("The ROM file for the %1 is missing.").arg(QString::fromStdString(std::to_string(model)));
             } else {
                 newSpectrum = std::make_unique<Spectrum48k>(romFile.toStdString());
@@ -1012,10 +1012,10 @@ void MainWindow::setModel(Spectrum::Model model)
         }
 
         case Model::Spectrum128k: {
-            if (auto romFile0 = spectrumApp->romFilePath(Default128kRom0); romFile0.isEmpty()) {
+            if (auto romFile0 = Application::romFilePath(Default128kRom0); romFile0.isEmpty()) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("first"),
                                                                          QString::fromStdString(std::to_string(model)));
-            } else if (auto romFile1 = spectrumApp->romFilePath(Default128kRom1); romFile1.isEmpty()) {
+            } else if (auto romFile1 = Application::romFilePath(Default128kRom1); romFile1.isEmpty()) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("second"),
                                                                          QString::fromStdString(std::to_string(model)));
             } else {
@@ -1026,9 +1026,9 @@ void MainWindow::setModel(Spectrum::Model model)
         }
 
         case Model::SpectrumPlus2:
-            if (auto romFile0 = spectrumApp->romFilePath(DefaultPlus2Rom0); romFile0.isEmpty()) {
+            if (auto romFile0 = Application::romFilePath(DefaultPlus2Rom0); romFile0.isEmpty()) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("first"), QString::fromStdString(std::to_string(model)));
-            } else if (auto romFile1 = spectrumApp->romFilePath(DefaultPlus2Rom1); romFile1.isEmpty()) {
+            } else if (auto romFile1 = Application::romFilePath(DefaultPlus2Rom1); romFile1.isEmpty()) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("second"), QString::fromStdString(std::to_string(model)));
             } else {
                 newSpectrum = std::make_unique<SpectrumPlus2>(romFile0.toStdString(), romFile1.toStdString());
@@ -1037,13 +1037,13 @@ void MainWindow::setModel(Spectrum::Model model)
             break;
 
         case Model::SpectrumPlus2a:
-            if (auto romFile0 = spectrumApp->romFilePath(DefaultPlus2aRom0); romFile0.isEmpty()) {
+            if (auto romFile0 = Application::romFilePath(DefaultPlus2aRom0); romFile0.isEmpty()) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("first"), QString::fromStdString(std::to_string(model)));
-            } else if (auto romFile1 = spectrumApp->romFilePath(DefaultPlus2aRom1); romFile1.isEmpty()) {
+            } else if (auto romFile1 = Application::romFilePath(DefaultPlus2aRom1); romFile1.isEmpty()) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("second"), QString::fromStdString(std::to_string(model)));
-            } else if (auto romFile2 = spectrumApp->romFilePath(DefaultPlus2aRom2); romFile2.isEmpty()) {
+            } else if (auto romFile2 = Application::romFilePath(DefaultPlus2aRom2); romFile2.isEmpty()) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("third"), QString::fromStdString(std::to_string(model)));
-            } else if (auto romFile3 = spectrumApp->romFilePath(DefaultPlus2aRom3); romFile3.isEmpty()) {
+            } else if (auto romFile3 = Application::romFilePath(DefaultPlus2aRom3); romFile3.isEmpty()) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("fourth"), QString::fromStdString(std::to_string(model)));
             } else {
                 newSpectrum = std::make_unique<SpectrumPlus2a>(romFile0.toStdString(), romFile1.toStdString(), romFile2.toStdString(), romFile3.toStdString());
@@ -1052,13 +1052,13 @@ void MainWindow::setModel(Spectrum::Model model)
             break;
 
         case Model::SpectrumPlus3:
-            if (auto romFile0 = spectrumApp->romFilePath(DefaultPlus2aRom0); romFile0.isEmpty()) {
+            if (auto romFile0 = Application::romFilePath(DefaultPlus2aRom0); romFile0.isEmpty()) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("first"), QString::fromStdString(std::to_string(model)));
-            } else if (auto romFile1 = spectrumApp->romFilePath(DefaultPlus2aRom1); romFile1.isEmpty()) {
+            } else if (auto romFile1 = Application::romFilePath(DefaultPlus2aRom1); romFile1.isEmpty()) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("second"), QString::fromStdString(std::to_string(model)));
-            } else if (auto romFile2 = spectrumApp->romFilePath(DefaultPlus2aRom2); romFile2.isEmpty()) {
+            } else if (auto romFile2 = Application::romFilePath(DefaultPlus2aRom2); romFile2.isEmpty()) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("third"), QString::fromStdString(std::to_string(model)));
-            } else if (auto romFile3 = spectrumApp->romFilePath(DefaultPlus2aRom3); romFile3.isEmpty()) {
+            } else if (auto romFile3 = Application::romFilePath(DefaultPlus2aRom3); romFile3.isEmpty()) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("fourth"), QString::fromStdString(std::to_string(model)));
             } else {
                 newSpectrum = std::make_unique<SpectrumPlus3>(romFile0.toStdString(), romFile1.toStdString(), romFile2.toStdString(), romFile3.toStdString());
