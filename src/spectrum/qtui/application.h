@@ -15,6 +15,19 @@ namespace Spectrum::QtUi
 {
     class MainWindow;
 
+    /**
+     * Core Application class to run the emulator.
+     *
+     * This class is a singleton. It creates and opens a main window. The application singleton instance is always available from the instance() method, or
+     * using the convenience macro spectrumApp. The main window for the Application is available from spectrumApp->mainWindow().
+     *
+     * Various application-wide services are provided by the class:
+     * - determination of the type of system theme (dark/light)
+     * - loading of icons suitable for the system theme
+     * - display of desktop notifications
+     * - location of installed Spectrum ROM image files
+     * - management of recently used snapshot files
+     */
     class Application : public QApplication
     {
         Q_OBJECT
@@ -162,6 +175,37 @@ namespace Spectrum::QtUi
          * @return The icon. This will be a null icon if the provided name does not name a valid icon.
          */
         [[nodiscard]] static QIcon icon(const QString & systemThemeName, const QString & name, ThemeType type = ThemeType::Unknown) ;
+
+        /**
+         * Helper to fetch the actual path to a ROM file provided with the emulator.
+         *
+         * The romFile provided should be one of the default ROM files. The following ROM image files are currently
+         * included with the application:
+         * - spectrum48.rom
+         * - spectrum128-0.rom
+         * - spectrum128-1.rom
+         * - spectrumplus2-0.rom
+         * - spectrumplus2-1.rom
+         * - spectrumplus3-0.rom
+         * - spectrumplus3-1.rom
+         * - spectrumplus3-2.rom
+         * - spectrumplus3-3.rom
+         * - spectrumplus3-0.rom
+         * - spectrumplus3-1.rom
+         * - spectrumplus3-2.rom
+         * - spectrumplus3-3.rom
+         * - tc2048.rom
+         *
+         * It will be located in the platform-specific location in which the ROM files are expected to be found:
+         * - for macOS this is in the app bundle: Spectrum.app/Contents/roms/
+         * - for Linux and Windows this is in one of the standard locations for application data (see
+         *   https://doc.qt.io/qt-5/qstandardpaths.html#StandardLocation-enum)
+         *
+         * @param path The file name of the requested ROM file.
+         *
+         * @return The path to the requested built-in ROM file, or an empty string if the requested ROM cannot be found.
+         */
+        static QString romFilePath(const char * romFile);
 
     Q_SIGNALS:
         /**

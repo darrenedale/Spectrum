@@ -1,6 +1,7 @@
 #include <filesystem>
 #include <iostream>
 #include <fstream>
+#include <QtGlobal>
 #include <QMenuBar>
 #include <QToolBar>
 #include <QStatusBar>
@@ -50,7 +51,6 @@
 #include "../io/snapshotformatguesser.h"
 #include "../io/snapshotreaderfactory.h"
 #include "../io/snapshotwriterfactory.h"
-#include "../../util/debug.h"
 
 using namespace Spectrum::QtUi;
 using namespace Spectrum::Io;
@@ -87,81 +87,81 @@ namespace
     };
 
     /**
-     * The relative path to the default ROM for 16K Spectrum models.
+     * The name of the default ROM for 16K Spectrum models.
      *
      * Note the 16K and 48K ROMs are identical.
      */
-    constexpr const char * Default16kRom = "roms/spectrum48.rom";
+    constexpr const char * Default16kRom = "spectrum48.rom";
 
     /**
-     * The relative path to the default ROM for 48K Spectrum models.
+     * The name of the default ROM for 48K Spectrum models.
      */
-    constexpr const char * Default48kRom = "roms/spectrum48.rom";
+    constexpr const char * Default48kRom = "spectrum48.rom";
 
     /**
-     * The relative path to the default main ROM for 128K Spectrum models.
+     * The name of the default main ROM for 128K Spectrum models.
      */
-    constexpr const char * Default128kRom0 = "roms/spectrum128-0.rom";
+    constexpr const char * Default128kRom0 = "spectrum128-0.rom";
 
     /**
-     * The relative path to the default 48K BASIC ROM for 128K Spectrum models.
+     * The name of the default 48K BASIC ROM for 128K Spectrum models.
      */
-    constexpr const char * Default128kRom1 = "roms/spectrum128-1.rom";
+    constexpr const char * Default128kRom1 = "spectrum128-1.rom";
 
     /**
-     * The relative path to the default main ROM for +2 Spectrum models.
+     * The name of the default main ROM for +2 Spectrum models.
      */
-    constexpr const char * DefaultPlus2Rom0 = "roms/spectrumplus2-0.rom";
+    constexpr const char * DefaultPlus2Rom0 = "spectrumplus2-0.rom";
 
     /**
-     * The relative path to the default 48K BASIC ROM for +2 Spectrum models.
+     * The name of the default 48K BASIC ROM for +2 Spectrum models.
      */
-    constexpr const char * DefaultPlus2Rom1 = "roms/spectrumplus2-1.rom";
+    constexpr const char * DefaultPlus2Rom1 = "spectrumplus2-1.rom";
 
     /**
-     * The relative path to the default main ROM for +2a Spectrum models.
+     * The name of the default main ROM for +2a Spectrum models.
      */
-    constexpr const char * DefaultPlus2aRom0 = "roms/spectrumplus3-0.rom";
+    constexpr const char * DefaultPlus2aRom0 = "spectrumplus3-0.rom";
 
     /**
-     * The relative path to the 128K syntax checker ROM for +2a Spectrum models.
+     * The name of the 128K syntax checker ROM for +2a Spectrum models.
      */
-    constexpr const char * DefaultPlus2aRom1 = "roms/spectrumplus3-1.rom";
+    constexpr const char * DefaultPlus2aRom1 = "spectrumplus3-1.rom";
 
     /**
-     * The relative path to the +3DOS ROM for +2a Spectrum models.
+     * The name of the +3DOS ROM for +2a Spectrum models.
      */
-    constexpr const char * DefaultPlus2aRom2 = "roms/spectrumplus3-2.rom";
+    constexpr const char * DefaultPlus2aRom2 = "spectrumplus3-2.rom";
 
     /**
-     * The relative path to the 48K BASIC ROM for +2a Spectrum models.
+     * The name of the 48K BASIC ROM for +2a Spectrum models.
      */
-    constexpr const char * DefaultPlus2aRom3 = "roms/spectrumplus3-3.rom";
+    constexpr const char * DefaultPlus2aRom3 = "spectrumplus3-3.rom";
 
     /**
-     * The relative path to the default main ROM for +3 Spectrum models.
+     * The name of the default main ROM for +3 Spectrum models.
      */
-    constexpr const char * DefaultPlus3Rom0 = "roms/spectrumplus3-0.rom";
+    constexpr const char * DefaultPlus3Rom0 = "spectrumplus3-0.rom";
 
     /**
-     * The relative path to the 128K syntax checker ROM for +3 Spectrum models.
+     * The name of the 128K syntax checker ROM for +3 Spectrum models.
      */
-    constexpr const char * DefaultPlus3Rom1 = "roms/spectrumplus3-1.rom";
+    constexpr const char * DefaultPlus3Rom1 = "spectrumplus3-1.rom";
 
     /**
-     * The relative path to the +3DOS ROM for +3 Spectrum models.
+     * The name of the +3DOS ROM for +3 Spectrum models.
      */
-    constexpr const char * DefaultPlus3Rom2 = "roms/spectrumplus3-2.rom";
+    constexpr const char * DefaultPlus3Rom2 = "spectrumplus3-2.rom";
 
     /**
-     * The relative path to the 48K BASIC ROM for +3 Spectrum models.
+     * The name of the 48K BASIC ROM for +3 Spectrum models.
      */
-    constexpr const char * DefaultPlus3Rom3 = "roms/spectrumplus3-3.rom";
+    constexpr const char * DefaultPlus3Rom3 = "spectrumplus3-3.rom";
 
     /**
-     * The relative path to the ROM for Timex TC-2048 models (not yet supported).
+     * The name of the ROM for Timex TC-2048 models (not yet supported).
      */
-    constexpr const char * DefaultTc2048Rom = "roms/tc2048.rom";
+    constexpr const char * DefaultTc2048Rom = "tc2048.rom";
 
     /**
      * ms to wait for the thread to stop before forcibly terminating it
@@ -440,7 +440,9 @@ namespace
 
 MainWindow::MainWindow(QWidget * parent)
 : QMainWindow(parent),
-  m_spectrum(std::make_unique<Spectrum128k>(Default128kRom0, Default128kRom1)),
+  m_spectrum(std::make_unique<Spectrum128k>(
+          Application::romFilePath(Default128kRom0).toStdString(), Application::romFilePath(Default128kRom1).toStdString())
+          ),
   m_spectrumThread(*m_spectrum),
   m_display(),
   m_displayWidget(),
@@ -1026,72 +1028,77 @@ void MainWindow::setModel(Spectrum::Model model)
     QString error;
 
     switch (model) {
-        case Model::Spectrum16k:
-            if (!fs::exists(Default16kRom)) {
+        case Model::Spectrum16k: {
+            if (auto romFile = Application::romFilePath(Default16kRom); romFile.isEmpty()) {
                 error = tr("The ROM file for the %1 is missing.").arg(QString::fromStdString(std::to_string(model)));
             } else {
-                newSpectrum = std::make_unique<Spectrum16k>(Default16kRom);
+                newSpectrum = std::make_unique<Spectrum16k>(romFile.toStdString());
                 m_model16.setChecked(true);
             }
             break;
+        }
 
-        case Model::Spectrum48k:
-            if (!fs::exists(Default48kRom)) {
+        case Model::Spectrum48k: {
+            if (auto romFile = Application::romFilePath(Default48kRom); romFile.isEmpty()) {
                 error = tr("The ROM file for the %1 is missing.").arg(QString::fromStdString(std::to_string(model)));
             } else {
-                newSpectrum = std::make_unique<Spectrum48k>(Default48kRom);
+                newSpectrum = std::make_unique<Spectrum48k>(romFile.toStdString());
                 m_model48.setChecked(true);
             }
             break;
+        }
 
-        case Model::Spectrum128k:
-            if (!fs::exists(Default128kRom0)) {
-                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("first"), QString::fromStdString(std::to_string(model)));
-            } else if (!fs::exists(Default128kRom0)) {
-                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("second"), QString::fromStdString(std::to_string(model)));
+        case Model::Spectrum128k: {
+            if (auto romFile0 = Application::romFilePath(Default128kRom0); romFile0.isEmpty()) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("first"),
+                                                                         QString::fromStdString(std::to_string(model)));
+            } else if (auto romFile1 = Application::romFilePath(Default128kRom1); romFile1.isEmpty()) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("second"),
+                                                                         QString::fromStdString(std::to_string(model)));
             } else {
-                newSpectrum = std::make_unique<Spectrum128k>(Default128kRom0, Default128kRom1);
+                newSpectrum = std::make_unique<Spectrum128k>(romFile0.toStdString(), romFile1.toStdString());
                 m_model128.setChecked(true);
             }
             break;
+        }
 
         case Model::SpectrumPlus2:
-            if (!fs::exists(DefaultPlus2Rom0)) {
+            if (auto romFile0 = Application::romFilePath(DefaultPlus2Rom0); romFile0.isEmpty()) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("first"), QString::fromStdString(std::to_string(model)));
-            } else if (!fs::exists(DefaultPlus2Rom1)) {
+            } else if (auto romFile1 = Application::romFilePath(DefaultPlus2Rom1); romFile1.isEmpty()) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("second"), QString::fromStdString(std::to_string(model)));
             } else {
-                newSpectrum = std::make_unique<SpectrumPlus2>(DefaultPlus2Rom0, DefaultPlus2Rom1);
+                newSpectrum = std::make_unique<SpectrumPlus2>(romFile0.toStdString(), romFile1.toStdString());
                 m_modelPlus2.setChecked(true);
             }
             break;
 
         case Model::SpectrumPlus2a:
-            if (!fs::exists(DefaultPlus2aRom0)) {
+            if (auto romFile0 = Application::romFilePath(DefaultPlus2aRom0); romFile0.isEmpty()) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("first"), QString::fromStdString(std::to_string(model)));
-            } else if (!fs::exists(DefaultPlus2aRom1)) {
+            } else if (auto romFile1 = Application::romFilePath(DefaultPlus2aRom1); romFile1.isEmpty()) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("second"), QString::fromStdString(std::to_string(model)));
-            } else if (!fs::exists(DefaultPlus2aRom2)) {
+            } else if (auto romFile2 = Application::romFilePath(DefaultPlus2aRom2); romFile2.isEmpty()) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("third"), QString::fromStdString(std::to_string(model)));
-            } else if (!fs::exists(DefaultPlus2aRom3)) {
+            } else if (auto romFile3 = Application::romFilePath(DefaultPlus2aRom3); romFile3.isEmpty()) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("fourth"), QString::fromStdString(std::to_string(model)));
             } else {
-                newSpectrum = std::make_unique<SpectrumPlus2a>(DefaultPlus2aRom0, DefaultPlus2aRom1, DefaultPlus2aRom2, DefaultPlus2aRom3);
+                newSpectrum = std::make_unique<SpectrumPlus2a>(romFile0.toStdString(), romFile1.toStdString(), romFile2.toStdString(), romFile3.toStdString());
                 m_modelPlus2a.setChecked(true);
             }
             break;
 
         case Model::SpectrumPlus3:
-            if (!fs::exists(DefaultPlus2aRom0)) {
+            if (auto romFile0 = Application::romFilePath(DefaultPlus2aRom0); romFile0.isEmpty()) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("first"), QString::fromStdString(std::to_string(model)));
-            } else if (!fs::exists(DefaultPlus2aRom1)) {
+            } else if (auto romFile1 = Application::romFilePath(DefaultPlus2aRom1); romFile1.isEmpty()) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("second"), QString::fromStdString(std::to_string(model)));
-            } else if (!fs::exists(DefaultPlus2aRom2)) {
+            } else if (auto romFile2 = Application::romFilePath(DefaultPlus2aRom2); romFile2.isEmpty()) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("third"), QString::fromStdString(std::to_string(model)));
-            } else if (!fs::exists(DefaultPlus2aRom3)) {
+            } else if (auto romFile3 = Application::romFilePath(DefaultPlus2aRom3); romFile3.isEmpty()) {
                 error = tr("The %1 ROM file for the %2 is missing.").arg(tr("fourth"), QString::fromStdString(std::to_string(model)));
             } else {
-                newSpectrum = std::make_unique<SpectrumPlus3>(DefaultPlus3Rom0, DefaultPlus3Rom1, DefaultPlus3Rom2, DefaultPlus3Rom3);
+                newSpectrum = std::make_unique<SpectrumPlus3>(romFile0.toStdString(), romFile1.toStdString(), romFile2.toStdString(), romFile3.toStdString());
                 m_modelPlus3.setChecked(true);
             }
             break;

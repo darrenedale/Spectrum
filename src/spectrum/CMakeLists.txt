@@ -138,17 +138,38 @@ set_target_properties(
 )
 
 if (APPLE)
+    find_library(COREFOUNDATION_FRAMEWORK NAMES CoreFoundation)
+
+    set(
+            RESOURCE_FILES
+            ../../dist/macos/Spectrum/Spectrum.icns
+            ../../roms/spectrum48.rom
+            ../../roms/spectrum128-0.rom
+            ../../roms/spectrum128-1.rom
+            ../../roms/spectrumplus2-0.rom
+            ../../roms/spectrumplus2-1.rom
+            ../../roms/spectrumplus2-2.rom
+            ../../roms/spectrumplus2-3.rom
+            ../../roms/spectrumplus3-0.rom
+            ../../roms/spectrumplus3-1.rom
+            ../../roms/spectrumplus3-2.rom
+            ../../roms/spectrumplus3-3.rom
+    )
+
     set_target_properties(
             spectrum
             PROPERTIES
             MACOSX_BUNDLE ON
-            RESOURCE "../../dist/macos/Spectrum/Spectrum.icns"
+            RESOURCE "${RESOURCE_FILES}"
             MACOSX_BUNDLE_BUNDLE_NAME Spectrum
             MACOSX_BUNDLE_BUNDLE_VERSION 0.5
             MACOSX_BUNDLE_SHORT_VERSION_STRING "0.5"
             MACOSX_BUNDLE_INFO_STRING "A ZX Spectrum emulator"
             MACOSX_BUNDLE_ICON_FILE Spectrum.icns
     )
+
+    target_link_libraries(spectrum "${COREFOUNDATION_FRAMEWORK}")
+
 endif(APPLE)
 
 add_subdirectory(screenview)

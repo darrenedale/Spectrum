@@ -6,11 +6,18 @@
 #include <QStatusBar>
 #include <QIcon>
 #include <QStringBuilder>
+#include <QtGlobal>
+#include <QStandardPaths>
 #include <QFileInfo>
+#include <QDir>
 #include <QSettings>
 #include "mainwindow.h"
 #include "application.h"
 #include "notification.h"
+
+#if (defined(Q_OS_MAC))
+#include <CoreFoundation/CoreFoundation.h>
+#endif
 
 using namespace Spectrum::QtUi;
 
@@ -32,7 +39,7 @@ Application::Application(int & argc, char ** argv)
     m_instance = this;
     setWindowIcon(icon(QStringLiteral("app")));
 
-    #if (defined(NDEBUG))
+#if (defined(NDEBUG))
     setApplicationDisplayName(QStringLiteral("Spectrum"));
 #else
     setApplicationDisplayName(QStringLiteral("Spectrum [Debug Build]"));
@@ -41,7 +48,7 @@ Application::Application(int & argc, char ** argv)
     setApplicationName(QStringLiteral("Spectrum"));
     setOrganizationDomain(QStringLiteral("net.equituk"));
     setOrganizationName(QStringLiteral("Equit"));
-    setProperty("version", QStringLiteral("0.5"));
+    setProperty("version", QStringLiteral("0.6"));
     setProperty("author", QStringLiteral("Darren Edale"));
 
     loadRecentSnapshots();
@@ -173,4 +180,36 @@ void Application::saveRecentSnapshots() const
     settings.beginGroup(QLatin1String("application"));
     settings.setValue(QLatin1String("recentSnapshots"), snapshots);
     settings.endGroup();
+}
+
+QString Application::romFilePath(const char * const romFile)
+{
+#if (defined(Q_OS_MAC))
+    static QString basePath;
+
+    if (basePath.isNull()) {
+        basePath = QUrl::fromCFURL(static_cast<CFURLRef>(
+                CFAutorelease(static_cast<CFURLRef>(CFBundleCopyBundleURL( CFBundleGetMainBundle())))
+        )).path() % "/Contents/roms/";
+    }
+
+    auto path = basePath % romFile;
+#elif (defined(Q_OS_WIN) || defined(Q_OS_LINUX))
+    auto path = QStandardPaths::locate(QStandardPaths::StandardLocation::AppDataLocation, QStringLiteral("roms/") % romFile);
+#else
+    QString path;
+#endif
+
+    if (QFileInfo::exists(path)) {
+        return path;
+    }
+
+    // if not in system location try current working directory
+    path = QDir::currentPath() % "/roms/" % romFile;
+
+    if (QFileInfo::exists(path)) {
+        return path;
+    }
+
+    return {};
 }
