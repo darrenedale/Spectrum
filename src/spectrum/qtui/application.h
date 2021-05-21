@@ -8,6 +8,7 @@
 #define spectrumApp (::Spectrum::QtUi::Application::instance())
 
 #include <memory>
+#include <vector>
 #include <QApplication>
 
 namespace Spectrum::QtUi
@@ -19,6 +20,8 @@ namespace Spectrum::QtUi
         Q_OBJECT
 
     public:
+        using RecentSnapshots = std::vector<QString>;
+
         /**
          * Types of theme.
          *
@@ -62,6 +65,49 @@ namespace Spectrum::QtUi
          * @return The main window.
          */
         MainWindow & mainWindow();
+
+        /**
+         * Fetch the most recently-loaded snapshots.
+         *
+         * The list could be empty. The returned list is ordered most-recently-used to least-recently-used.
+         *
+         * @return The set of snapshots.
+         */
+        [[nodiscard]] const RecentSnapshots & recentSnapshots() const
+        {
+            return m_recentSnapshots;
+        }
+
+        /**
+         * Add a snapshot file to the list of recently-loaded snapshots.
+         *
+         * If the snapshot is already in the list it won't be added but will be moved to the top of the list (i.e. the most recently used).
+         *
+         * @param fileName The path to the snapshot to add.
+         */
+        void addRecentSnapshot(QString fileName);
+
+        /**
+         * Remove a snapshot file from the list of recently-loaded snapshots.
+         *
+         * If the snapshot is not in the list this is a no-op.
+         *
+         * @param fileName The path to the snapshot to remove.
+         */
+        void removeRecentSnapshot(QString fileName);
+
+        /**
+         * Clear the list of recently-loaded snapshots.
+         */
+        void clearRecentSnapshots()
+        {
+            if (m_recentSnapshots.empty()) {
+                return;
+            }
+
+            m_recentSnapshots.clear();
+            Q_EMIT recentSnapshotsChanged(m_recentSnapshots);
+        }
 
         /**
          * Show an application-wide notification.
@@ -117,6 +163,25 @@ namespace Spectrum::QtUi
          */
         [[nodiscard]] static QIcon icon(const QString & systemThemeName, const QString & name, ThemeType type = ThemeType::Unknown) ;
 
+    Q_SIGNALS:
+        /**
+         * Emitted whenever the list of recent snapshots has changed.
+         *
+         * @param snapshots The list of recent snapshots.
+         */
+        void recentSnapshotsChanged(const RecentSnapshots & snapshots);
+
+    protected:
+        /**
+         * Read the list of recent snapshots from the settings.
+         */
+        void loadRecentSnapshots();
+
+        /**
+         * Save the list of recent snapshots to the settings.
+         */
+        void saveRecentSnapshots() const;
+
     private:
         /**
          * The application singleton instance.
@@ -127,6 +192,11 @@ namespace Spectrum::QtUi
          * The main window.
          */
         std::unique_ptr<MainWindow> m_mainWindow;
+
+        /**
+         * The most recently-loaded snapshots.
+         */
+        RecentSnapshots m_recentSnapshots;
     };
 }
 

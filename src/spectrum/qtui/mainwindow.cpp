@@ -447,6 +447,7 @@ MainWindow::MainWindow(QWidget * parent)
   m_pokesWidget(),
   m_load(QIcon::fromTheme(QStringLiteral("document-open"), Application::icon(QStringLiteral("open"))), tr("Load snapshot")),
   m_save(QIcon::fromTheme(QStringLiteral("document-save"), Application::icon(QStringLiteral("save"))), tr("Save snapshot")),
+  m_recentSnapshots(tr("Recent snapshots")),
   m_pauseResume(QIcon::fromTheme(QStringLiteral("media-playback-start"), Application::icon(QStringLiteral("resume"))), tr("Start/Pause")),
   m_model16(tr("Spectrum 16k")),
   m_model48(tr("Spectrum 48k")),
@@ -502,8 +503,13 @@ MainWindow::MainWindow(QWidget * parent)
 
     m_debugWindow.installEventFilter(this);
     m_load.setShortcut(tr("Ctrl+O"));
+    m_load.setToolTip(tr("Load a snapshot from disk."));
     m_save.setShortcut(tr("Ctrl+S"));
+    m_save.setToolTip(tr("Save a snapshot of the current Spectrum to disk."));
     m_pauseResume.setShortcuts({Qt::Key::Key_Pause, Qt::Key::Key_Escape, tr("Ctrl+P"),});
+
+    m_recentSnapshots.setToolTipsVisible(true);
+    m_recentSnapshots.setToolTip(tr("Reload a recently used snapshot."));
 
     auto * model = new QActionGroup(this);
 
@@ -650,16 +656,21 @@ void MainWindow::createFileMenu()
 {
     auto * menu = menuBar()->addMenu(tr("File"));
     menu->setToolTipsVisible(true);
-    menu->addAction(&m_reset);
-    menu->addSeparator();
     menu->addAction(&m_load);
     menu->addAction(&m_save);
+    menu->addMenu(&m_recentSnapshots);
+    refreshRecentSnapshots();
+    menu->addSeparator();
 
     {    // F1-5 loads from slot 1-5
         // Shift + F1-5 saves to slot 1-5
 
         auto * loadSlotSubMenu = menu->addMenu(tr("Load slot"));
         auto * saveSlotSubMenu = menu->addMenu(tr("Save slot"));
+        loadSlotSubMenu->setToolTipsVisible(true);
+        saveSlotSubMenu->setToolTipsVisible(true);
+        loadSlotSubMenu->setToolTip(tr("Load a snapshot from a quick-access slot."));
+        saveSlotSubMenu->setToolTip(tr("Save a snapshot to a quick-access slot."));
 
         for (int slotIndex = 1; slotIndex <= 5; ++slotIndex) {
             loadSlotSubMenu->addAction(tr("Slot %1").arg(slotIndex), [this, slotIndex]() {
@@ -875,6 +886,7 @@ void MainWindow::connectSignals()
 
 	connect(&m_load, &QAction::triggered, this, &MainWindow::loadSnapshotTriggered);
 	connect(&m_save, &QAction::triggered, this, &MainWindow::saveSnapshotTriggered);
+	connect(spectrumApp, &Application::recentSnapshotsChanged, this, &MainWindow::refreshRecentSnapshots);
 
 	connect(&m_pauseResume, &QAction::triggered, this, &MainWindow::pauseResumeTriggered);
 	connect(&m_reset, &QAction::triggered, &m_spectrumThread, &Thread::reset);
@@ -975,6 +987,31 @@ void MainWindow::refreshSpectrumDisplay()
     }
 
     m_displayWidget.setImage(image);
+}
+
+void MainWindow::refreshRecentSnapshots()
+{
+    m_recentSnapshots.clear();
+    const auto & recentSnapshots = spectrumApp->recentSnapshots();
+
+    if (recentSnapshots.empty()) {
+        auto * action = m_recentSnapshots.addAction(tr("No recent snapshots."));
+        action->setEnabled(false);
+    } else {
+        for (const auto & snapshotFile : recentSnapshots) {
+            auto * action = m_recentSnapshots.addAction(QFileInfo(snapshotFile).fileName(), [this, snapshotFile]() {
+                if (loadSnapshot(snapshotFile)) {
+                    // ensure loaded snapshot is top of the list (most recent)
+                    spectrumApp->addRecentSnapshot(snapshotFile);
+                }
+            });
+
+            action->setToolTip(tr("Load %1").arg(snapshotFile));
+        }
+
+        m_recentSnapshots.addSeparator();
+        m_recentSnapshots.addAction(Application::icon(QLatin1String("edit-clear-list"), QLatin1String("clear")), tr("Clear"), spectrumApp, &Application::clearRecentSnapshots);
+    }
 }
 
 Spectrum::Model MainWindow::model() const
@@ -1763,7 +1800,11 @@ void MainWindow::dropEvent(QDropEvent * event)
     const auto & url = urls.constFirst();
 
     if (url.isLocalFile()) {
-        loadSnapshot(url.toLocalFile());
+        auto fileName = url.toLocalFile();
+
+        if (loadSnapshot(fileName)) {
+            spectrumApp->addRecentSnapshot(fileName);
+        }
     } else {
         Util::debug << "remote URLs cannot yet be loaded.\n";
     }
@@ -1834,7 +1875,9 @@ void MainWindow::loadSnapshotTriggered()
         }
     }
 
-    loadSnapshot(fileName, format);
+    if (loadSnapshot(fileName, format)) {
+        spectrumApp->addRecentSnapshot(fileName);
+    }
 }
 
 void MainWindow::saveSnapshotTriggered()
@@ -2074,6 +2117,7 @@ bool MainWindow::loadSnapshotFromSlot(int slotIndex)
         return false;
     }
 
+    // NOTE we deliberately don't update the recents list: we only want it to include users' files, the storage of snapshot slots is an implementation detail
     setWindowTitle(QStringLiteral("%1 | Snapshot slot %2").arg(QString::fromStdString(std::to_string(m_spectrum->model()))).arg(slotIndex));
     return true;
 }

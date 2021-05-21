@@ -269,6 +269,11 @@ namespace Spectrum::QtUi
         void refreshSpectrumDisplay();
 
         /**
+         * Helper to refresh the list of recent snapshots in the File menu.
+         */
+        void refreshRecentSnapshots();
+
+        /**
          * Helper to synchronise the speed readout in the status bar with the running Spectrum.
          */
         void updateStatusBarSpeedWidget();
@@ -420,6 +425,11 @@ namespace Spectrum::QtUi
         CheatsView m_pokesWidget;
         QAction m_load;
         QAction m_save;
+
+        /**
+         * The submenu in the File menu containing the list of recently-loaded snapshots.
+         */
+        QMenu m_recentSnapshots;
 
         QAction m_pauseResume;
         QAction m_reset;
