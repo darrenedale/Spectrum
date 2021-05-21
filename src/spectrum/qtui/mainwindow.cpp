@@ -1139,7 +1139,7 @@ void MainWindow::saveScreenshot(const QString & fileName)
             return;
         }
 
-        outFile.write(reinterpret_cast<const char *>(m_spectrum->displayMemory()), m_spectrum->displayMemorySize());
+        outFile.write(reinterpret_cast<const char *>(m_spectrum->displayMemory().data()), DisplayFile::extent);
         outFile.close();
     } else {
         m_display.image().save(fileName);

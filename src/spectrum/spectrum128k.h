@@ -34,8 +34,6 @@ namespace Spectrum
         using MemoryType = Memory128k;
         using ScreenBuffer = ScreenBuffer128k;
 
-        static constexpr const int DisplayMemorySize = 6912;
-
         /**
          * Default constructor.
          *
@@ -93,25 +91,13 @@ namespace Spectrum
         void applySnapshot(const Snapshot &snapshot) override;
 
         /**
-         * Fetch the display memory.
+         * Fetch the Spectrum's display file.
          *
-         * The returned pointer is guaranteed to be a contiguous array of at least 6912 bytes representing the
-         * Spectrum's display file. It takes account of the currently switched page file (normal or shadow) for double-
-         * buffering.
+         * The returned span takes account of the currently switched page file (normal or shadow) for double- buffering.
          *
-         * @return
+         * @return The Spectrum's current display file memory.
          */
-        [[nodiscard]] ::Z80::UnsignedByte * displayMemory() const override;
-
-        /**
-         * The size of the display file in bytes.
-         *
-         * @return 6912
-         */
-        [[nodiscard]] int displayMemorySize() const override
-        {
-            return DisplayMemorySize;
-        }
+        [[nodiscard]] DisplayFile displayMemory() const override;
 
         /**
          * Determine which screen buffer is currently active.

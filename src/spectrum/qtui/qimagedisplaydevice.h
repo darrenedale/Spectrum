@@ -1,5 +1,5 @@
-#ifndef QSPECTRUMDISPLAY_H
-#define QSPECTRUMDISPLAY_H
+#ifndef SPECTRUM_QTUI_QIMAGESPECTRUMDISPLAY_H
+#define SPECTRUM_QTUI_QIMAGESPECTRUMDISPLAY_H
 
 #include <cstdint>
 #include <QRgb>
@@ -70,9 +70,9 @@ namespace Spectrum::QtUi
          *
          * The display will be redrawn if the frame rate is unlimited, or it's limited but we've reached the time point for the next frame.
          *
-         * @param displayMemory A pointer to the Spectrum display file.
+         * @param displayMemory The display file memory from the Spectrum.
          */
-        void redrawDisplay(const uint8_t * displayMemory) override;
+        void redrawDisplay(const DisplayFile & displayMemory) override;
 
         /**
          * Actually render a frame.
@@ -82,9 +82,9 @@ namespace Spectrum::QtUi
          * This is public so that, for example, the UI can present the user with an option to refresh the display while paused or in debug mode after a step,
          * etc.
          *
-         * @param displayMemory
+         * @param displayMemory The display file memory from the Spectrum.
          */
-        void renderFrame(const uint8_t * displayMemory);
+        void renderFrame(const DisplayFile & displayMemory);
 
         /**
          * Set the device to render the display in black and white.
@@ -189,8 +189,6 @@ namespace Spectrum::QtUi
         static constexpr const QRgb DefaultBlackAndWhiteBackground = 0xffcdcdcd;
 
 	private:
-	    using clock = std::chrono::steady_clock;
-
 	    /**
 	     * Enumerates the available colour rendering modes.
 	     */
@@ -243,4 +241,4 @@ namespace Spectrum::QtUi
     };
 }
 
-#endif // QSPECTRUMDISPLAY_H
+#endif // SPECTRUM_QTUI_QIMAGESPECTRUMDISPLAY_H

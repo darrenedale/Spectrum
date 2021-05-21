@@ -66,7 +66,7 @@ QImageDisplayDevice::QImageDisplayDevice(int frameSkip)
     assert (m_frameSkip > 0);
 }
 
-void QImageDisplayDevice::redrawDisplay(const uint8_t * displayMemory)
+void QImageDisplayDevice::redrawDisplay(const DisplayFile & displayMemory)
 {
     using namespace std::chrono_literals;
 
@@ -78,7 +78,7 @@ void QImageDisplayDevice::redrawDisplay(const uint8_t * displayMemory)
     }
 }
 
-void QImageDisplayDevice::renderFrame(const uint8_t * displayMemory)
+void QImageDisplayDevice::renderFrame(const DisplayFile & displayMemory)
 {
     bool flashInvert = m_frameCounter & 0x10;
     auto * data = reinterpret_cast<QRgb *>(image().bits());

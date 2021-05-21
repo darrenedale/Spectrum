@@ -30,15 +30,15 @@ SpectrumPlus2a::SpectrumPlus2a()
 : SpectrumPlus2a({}, {}, {}, {})
 {}
 
-UnsignedByte * SpectrumPlus2a::displayMemory() const
+DisplayFile SpectrumPlus2a::displayMemory() const
 {
     assert(memoryPlus2a());
 
     if (ScreenBuffer::Shadow == m_screenBuffer) {
-        return memoryPlus2a()->pagePointer(7);
+        return DisplayFile(memoryPlus2a()->pagePointer(7), DisplayFile::extent);
     }
 
-    return memoryPlus2a()->pagePointer(5);
+    return DisplayFile(memoryPlus2a()->pagePointer(5), DisplayFile::extent);
 }
 
 SpectrumPlus2a::~SpectrumPlus2a()

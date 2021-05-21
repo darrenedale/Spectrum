@@ -26,7 +26,6 @@ namespace Spectrum
     public:
         using MemoryType = Spectrum::Memory;
         static constexpr const int DisplayMemoryOffset = 0x4000;
-        static constexpr const int DisplayMemorySize = 6912;
 
         /**
          * Default constructor.
@@ -90,24 +89,13 @@ namespace Spectrum
         void applySnapshot(const Snapshot &snapshot) override;
 
         /**
-         * Fetch a pointer to the Spectrum's display file.
+         * Fetch the Spectrum's display file.
          *
-         * It's safe to use the returned pointer as a pointer to a contiguous block of 16kb of Spectrum RAM. Only
-         * the first 6912 bytes is the display file.
+         * @return The Spectrum's current display file memory.
          */
-        [[nodiscard]] ByteType * displayMemory() const override
+        [[nodiscard]] DisplayFile displayMemory() const override
         {
-            return memory()->pointerTo(DisplayMemoryOffset);
-        }
-
-        /**
-         * The size, in bytes, of the display memory.
-         *
-         * @return 6912.
-         */
-        [[nodiscard]] int displayMemorySize() const override
-        {
-            return DisplayMemorySize;
+            return DisplayFile(memory()->pointerTo(DisplayMemoryOffset), DisplayFile::extent);
         }
 
     protected:
