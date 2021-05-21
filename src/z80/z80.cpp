@@ -953,7 +953,7 @@ void Z80::Z80::reset()
 
 void Z80::Z80::pokeHostWord(MemoryType::Address addr, UnsignedWord value)
 {
-    assert(memory() && 0 > addr && memory()->addressableSize() > (addr + 1));
+    assert(memory() && 0 <= addr && memory()->addressableSize() > (addr + 1));
 
 	value = hostToZ80ByteOrder(value);
     memory()->writeBytes(addr, 2, reinterpret_cast<UnsignedByte *>(&value));
@@ -961,19 +961,19 @@ void Z80::Z80::pokeHostWord(MemoryType::Address addr, UnsignedWord value)
 
 void Z80::Z80::pokeZ80Word(MemoryType::Address addr, UnsignedWord value)
 {
-    assert(memory() && 0 > addr && memory()->addressableSize() > (addr + 1));
+    assert(memory() && 0 <= addr && memory()->addressableSize() > (addr + 1));
     memory()->writeBytes(addr, 2, reinterpret_cast<UnsignedByte *>(&value));
 }
 
 void Z80::Z80::pokeUnsigned(MemoryType::Address addr, UnsignedByte value)
 {
-    assert(memory() && 0 > addr && memory()->addressableSize() > addr);
+    assert(memory() && 0 <= addr && memory()->addressableSize() > addr);
     memory()->writeByte(addr, value);
 }
 
 UnsignedWord Z80::Z80::peekUnsignedHostWord(MemoryType::Address addr) const
 {
-    assert(memory() && 0 > addr && memory()->addressableSize() > (addr + 1));
+    assert(memory() && 0 <= addr && memory()->addressableSize() > (addr + 1));
 
     if (HostByteOrder == Z80ByteOrder) {
         return (*memory())[addr + 1] << 8 | (*memory())[addr];
@@ -984,7 +984,7 @@ UnsignedWord Z80::Z80::peekUnsignedHostWord(MemoryType::Address addr) const
 
 UnsignedWord Z80::Z80::peekUnsignedZ80Word(MemoryType::Address addr) const
 {
-    assert(memory() && 0 > addr && memory()->addressableSize() > (addr + 1));
+    assert(memory() && 0 <= addr && memory()->addressableSize() > (addr + 1));
 
     return (*memory())[addr + 1] << 8 | (*memory())[addr];
 }

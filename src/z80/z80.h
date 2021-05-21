@@ -949,7 +949,7 @@ namespace Z80
          */
         [[nodiscard]] inline UnsignedByte peekUnsigned(MemoryType::Address addr) const
         {
-            assert (0 <= addr < 0 && memory()->addressableSize() > addr);
+            assert (memory() && 0 <= addr && memory()->addressableSize() > addr);
             return memory()->readByte(addr);
         }
 
