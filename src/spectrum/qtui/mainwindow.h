@@ -409,9 +409,6 @@ namespace Spectrum::QtUi
          */
         void threadStepped();
 
-        void debugWindowHidden();
-        void debugWindowShown();
-
         QString m_lastSnapshotLoadDir;
         QString m_lastScreenshotDir;
         std::unique_ptr<BaseSpectrum> m_spectrum;
