@@ -193,7 +193,7 @@ QString Application::romFilePath(const char * const romFile)
         )).path() % "/Contents/roms/";
     }
 
-    auto path = basePath % romFile;
+    QString path = basePath % romFile;
 #elif (defined(Q_OS_WIN) || defined(Q_OS_LINUX))
     auto path = QStandardPaths::locate(QStandardPaths::StandardLocation::AppDataLocation, QStringLiteral("roms/") % romFile);
 #else
