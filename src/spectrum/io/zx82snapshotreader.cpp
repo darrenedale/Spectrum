@@ -25,6 +25,7 @@ namespace
     const std::uint32_t Identifier = *reinterpret_cast<const std::uint32_t *>("ZX82");
 
 DISABLE_WARNING_PUSH
+DISABLE_WARNING_UNKNOWN_PRAGMA
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
     // these are all the types of data that can be stored in .zx82 files, but we only use Snapshot
     enum class Type : std::uint8_t
@@ -53,6 +54,7 @@ DISABLE_WARNING_POP
 
 #pragma pack(push, 1)
 DISABLE_WARNING_PUSH
+DISABLE_WARNING_UNKNOWN_PRAGMA
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
     // fileLength, startAddress and arrayName are not used for Snapshot type stream content
     // NOTE all 16-bit values are big endian (MC68000 byte order)
@@ -88,6 +90,7 @@ DISABLE_WARNING_POP
         RegisterPair sp;
         std::uint8_t i;
 DISABLE_WARNING_PUSH
+DISABLE_WARNING_UNKNOWN_PRAGMA
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
         std::uint8_t unused;
 DISABLE_WARNING_POP
@@ -144,7 +147,9 @@ const Spectrum::Snapshot * Zx82SnapshotReader::read() const
     registers.r = header.r;
 
 DISABLE_WARNING_PUSH
+DISABLE_WARNING_UNKNOWN_PRAGMA
 #pragma ide diagnostic ignored "Simplify"
+DISABLE_WARNING_UNKNOWN_PRAGMA
 #pragma ide diagnostic ignored "UnreachableCode"
     // NOTE one of these two branches will be diagnosed as unnecessary, depending on the byte order of the host, but the
     // code is required for cross-platform compatibility

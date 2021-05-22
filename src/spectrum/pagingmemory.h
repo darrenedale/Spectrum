@@ -455,6 +455,10 @@ namespace Spectrum
          *
          * @return
          */
+// suppress warning in release builds - the assertion ensures this warning isn't present in debug builds, but the assertion is optimised away in release
+// builds so we must explicitly suppress the warning
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_NO_RETURN_VALUE
         [[nodiscard]] Byte * mapAddress(Address address) const override
         {
             assert(address <= 0xffff);
@@ -490,11 +494,6 @@ namespace Spectrum
 
             // unreachable code
             assert(false);
-
-// suppress warning in release builds - the assertion above ensures this warning isn't present in debug builds, but the assertion is optimised away in release
-// builds so we must explicitly suppress the warning
-DISABLE_WARNING_PUSH
-DISABLE_WARNING_NO_RETURN_VALUE
         }
 DISABLE_WARNING_POP
 

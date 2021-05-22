@@ -17,6 +17,7 @@ using ::Z80::hostToZ80ByteOrder;
 namespace
 {
 DISABLE_WARNING_PUSH
+DISABLE_WARNING_UNKNOWN_PRAGMA
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
     // these are required by the format but many are unused because we don't support all models
     enum class MachineType : uint8_t
@@ -48,6 +49,7 @@ DISABLE_WARNING_POP
     };
 
 DISABLE_WARNING_PUSH
+DISABLE_WARNING_UNKNOWN_PRAGMA
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
     // this is currently never populated as this is really emulator config rather than part of the machine state
     struct JoystickMapping
@@ -58,6 +60,7 @@ DISABLE_WARNING_PUSH
 DISABLE_WARNING_POP
 
 DISABLE_WARNING_PUSH
+DISABLE_WARNING_UNKNOWN_PRAGMA
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 #pragma pack(push, 1)
     // the compiler must not pad this struct otherwise header won't be read from the stream correctly
@@ -121,6 +124,8 @@ DISABLE_WARNING_PUSH
 DISABLE_WARNING_POP
 }
 
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_NO_RETURN_VALUE
 bool Z80SnapshotWriter::writeTo(std::ostream & out) const
 {
     switch (snapshot().model()) {
@@ -139,8 +144,6 @@ bool Z80SnapshotWriter::writeTo(std::ostream & out) const
 
     // unreachable code
     assert(false);
-DISABLE_WARNING_PUSH
-DISABLE_WARNING_NO_RETURN_VALUE
 }
 DISABLE_WARNING_POP
 

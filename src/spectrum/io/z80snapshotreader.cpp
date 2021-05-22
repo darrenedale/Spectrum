@@ -34,6 +34,7 @@ namespace
     };
 
 DISABLE_WARNING_PUSH
+DISABLE_WARNING_UNKNOWN_PRAGMA
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
     // several enumerated values are required for the format but never actually used by the reader
     enum class V1MachineType : uint8_t
@@ -83,6 +84,7 @@ DISABLE_WARNING_PUSH
 DISABLE_WARNING_POP
 
 DISABLE_WARNING_PUSH
+DISABLE_WARNING_UNKNOWN_PRAGMA
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
     // sound is not currently emulated so this struct is never used but must be present in the format
     struct SoundChipRegisters
@@ -106,6 +108,7 @@ DISABLE_WARNING_PUSH
     };
 
 DISABLE_WARNING_PUSH
+DISABLE_WARNING_UNKNOWN_PRAGMA
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
     // this is never used because it's emulator config not machine state
     struct JoystickMapping

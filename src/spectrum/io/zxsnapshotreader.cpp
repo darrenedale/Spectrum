@@ -20,6 +20,7 @@ using Spectrum::Snapshot;
 namespace
 {
 DISABLE_WARNING_PUSH
+DISABLE_WARNING_UNKNOWN_PRAGMA
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
     // required for format compatibility but unused
     struct Settings
@@ -59,6 +60,7 @@ DISABLE_WARNING_POP
     //
     // words are typed as uint16_t rather than UnsignedWord to make it clear that they're not in Z80 byte order
 DISABLE_WARNING_PUSH
+DISABLE_WARNING_UNKNOWN_PRAGMA
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
     // several members are required for format compatibility but are unused
     struct ZxFileContent
@@ -135,7 +137,9 @@ const Snapshot * ZxSnapshotReader::read() const
     snapshot->iff2 = snapshot->iff1;
 
 DISABLE_WARNING_PUSH
+DISABLE_WARNING_UNKNOWN_PRAGMA
 #pragma ide diagnostic ignored "Simplify"
+DISABLE_WARNING_UNKNOWN_PRAGMA
 #pragma ide diagnostic ignored "UnreachableCode"
     // NOTE one of these two branches will be diagnosed as unnecessary, depending on the byte order of the host, but the code is required for cross-platform
     // compatibility. the condition is resolved at compile time so only the required code should be generated and no runtime branch should be necessary
@@ -225,6 +229,7 @@ bool ZxSnapshotReader::couldBeSnapshot(std::istream & in)
     }
 
 DISABLE_WARNING_PUSH
+DISABLE_WARNING_UNKNOWN_PRAGMA
 #pragma ide diagnostic ignored "Simplify"
     // NOTE this will be diagnosed as unnecessary, depending on the byte order of the host, but the code is required for cross-platform compatibility. its
     // necessity is determined at compile time and will result in no code being generated if the condition is not true

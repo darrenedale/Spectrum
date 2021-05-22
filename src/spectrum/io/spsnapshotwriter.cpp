@@ -66,12 +66,14 @@ namespace
         UnsignedWord sp;            // the stack pointer, Z80 byte order
         UnsignedWord pc;            // the program counter, Z80 byte order
 DISABLE_WARNING_PUSH
+DISABLE_WARNING_UNKNOWN_PRAGMA
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
         // reserved by the format for future use and currently unused by this code
         UnsignedWord reserved1;
 DISABLE_WARNING_POP
         UnsignedByte border;
 DISABLE_WARNING_PUSH
+DISABLE_WARNING_UNKNOWN_PRAGMA
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
         // reserved by the format for future use and currently unused by this code
         UnsignedByte reserved2;
