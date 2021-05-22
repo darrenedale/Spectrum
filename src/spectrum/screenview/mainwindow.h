@@ -88,9 +88,10 @@ namespace Spectrum::ScreenView
         void updateScreen();
 
     private:
-        // 6144 for pixel data, 768 for attrs
-        static constexpr const std::size_t DisplayFileSize = 6912;
-        using ScreenData = std::array<std::uint8_t, DisplayFileSize>;
+        /**
+         * Storage for the screen data.
+         */
+        using ScreenData = std::array<std::uint8_t, Spectrum::DisplayFile::extent>;
 
         /**
          * Widget for the user to enter a file name.

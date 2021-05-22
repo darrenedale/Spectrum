@@ -7,12 +7,20 @@
 
 #include <cstdint>
 #include <string>
+#include <span>
 #include <iostream>
 #include "../z80/types.h"
 
 namespace Spectrum
 {
     using Byte = ::Z80::UnsignedByte;
+
+    /**
+     * Representation of the Spectrum display file.
+     *
+     * A lightweight way of passing the display area of a Spectrum's memory between objects.
+     */
+    using DisplayFile = std::span<Byte, 6912>;
 
     /**
      * Enumeration of Spectrum colours.

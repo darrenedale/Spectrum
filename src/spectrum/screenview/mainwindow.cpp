@@ -58,7 +58,7 @@ void MainWindow::loadScreen(const QString & fileName)
         return;
     }
 
-    std::size_t bytesToRead = DisplayFileSize;
+    std::size_t bytesToRead = Spectrum::DisplayFile::extent;
     auto * buffer = m_screenData.data();
 
     while (!std::feof(inFile) && 0 < bytesToRead) {
@@ -125,7 +125,7 @@ void MainWindow::closeEvent(QCloseEvent * ev)
 void MainWindow::updateScreen()
 {
     Spectrum::QtUi::QImageDisplayDevice display;
-    display.redrawDisplay(m_screenData.data());
+    display.redrawDisplay(DisplayFile(m_screenData.data(), DisplayFile::extent));
     display.setBorder(m_borderColour->colour(), m_borderColour->isBright());
     m_display->setImage(display.image());
 }

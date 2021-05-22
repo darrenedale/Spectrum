@@ -1,8 +1,8 @@
-#ifndef SPECTRUMDISPLAYDEVICE_H
-#define SPECTRUMDISPLAYDEVICE_H
+#ifndef SPECTRUM_DISPLAYDEVICE_H
+#define SPECTRUM_DISPLAYDEVICE_H
 
+#include <span>
 #include <cstdint>
-
 #include "types.h"
 #include "../z80/types.h"
 #include "../z80/iodevice.h"
@@ -11,6 +11,10 @@ namespace Spectrum
 {
     /**
      * Interface for display devices for Spectrums.
+     *
+     * Display devices only use Z80 IO to set the border colour. All other output is handled by direct memory access to
+     * the Spectrum display file. In the context of this emulator, the Spectrum object emulates the ULA interrupt that
+     * times display updates and calls redrawDisplay() with the appropriate memory pointer.
      */
 	class DisplayDevice
     : public ::Z80::IODevice
@@ -39,7 +43,7 @@ namespace Spectrum
         }
 
         /**
-         * Display devices are read-only.
+         * Display devices are write-only.
          *
          * @param port
          * @return
@@ -60,12 +64,33 @@ namespace Spectrum
             setBorder(static_cast<Colour>(value & 0b00000111));
         }
 
+        /**
+         * Fetch the current border colour.
+         *
+         * @return The border colour.
+         */
         virtual Colour border() const = 0;
-        virtual void setBorder(Colour, bool bright = false) = 0;
-        virtual void redrawDisplay(const uint8_t * displayMemory) = 0;
+
+        /**
+         * Set the border colour.
+         *
+         * @param colour The border colour.
+         * @param bright Whether the bright (true) or normal (false) version of the colour should be used.
+         */
+        virtual void setBorder(Colour colour, bool bright = false) = 0;
+
+        /**
+         * Render the Spectrum's display file.
+         *
+         * @param displayMemory 6912 bytes representing the Spectrum's display file.
+         */
+        virtual void redrawDisplay(const DisplayFile & displayMemory) = 0;
 
 	protected:
-	    typedef std::uint8_t Attribute;
+	    /**
+	     * Alias for an attribute byte.
+	     */
+	    using Attribute = std::uint8_t;
 
 	    // some useful constants for the default Spectrum DisplayFile
 	    static constexpr const int Width = 256;
@@ -76,21 +101,49 @@ namespace Spectrum
 	    static constexpr const int AttributeBrightMask = 0b01000000;
 	    static constexpr const int AttributeFlashMask = 0b10000000;
 
+	    /**
+	     * Helper to determine whether an attribute byte from the Spectrum display file includes the Bright flag.
+	     *
+	     * @param attr The attribute to check.
+	     *
+	     * @return True if the attribute has the bright bit set, false otherwise.
+	     */
         constexpr bool isBright(Attribute attr)
         {
             return attr & AttributeBrightMask;
         }
 
+        /**
+         * Helper to determine whether an attribute byte from the Spectrum display file includes the Flash flag.
+         *
+         * @param attr The attribute to check.
+         *
+         * @return True if the attribute has the flash bit set, false otherwise.
+         */
         constexpr bool isFlashing(Attribute attr)
         {
             return attr & AttributeFlashMask;
         }
 
+        /**
+         * Helper to extract the ink colour from an attribute byte.
+         *
+         * @param attr The attribute byte.
+         *
+         * @return The ink colour.
+         */
         constexpr Colour inkColour(Attribute attr)
         {
             return static_cast<Colour>(attr & AttributeInkMask);
         }
 
+        /**
+         * Helper to extract the paper colour from an attribute byte.
+         *
+         * @param attr The attribute byte.
+         *
+         * @return The paper colour.
+         */
         constexpr Colour paperColour(Attribute attr)
         {
             return static_cast<Colour>((attr & AttributePaperMask) >> 3);
@@ -98,4 +151,4 @@ namespace Spectrum
 	};
 }
 
-#endif // SPECTRUMDISPLAYDEVICE_H
+#endif // SPECTRUM_DISPLAYDEVICE_H

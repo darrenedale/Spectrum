@@ -118,28 +118,15 @@ namespace Spectrum
         }
 
         /**
-         * Fetch the display memory.
+         * Fetch the Spectrum's display file.
          *
-         * For all models of Spectrum, regardless of the underlying memory model, this method guarantees that the
-         * provided pointer is to a contiguous block of the 6144 bytes in the Spectrum display file. In all cases, the
-         * display file is located at a fixed location and exists entirely within a single memory bank.
+         * For 128k models, the display file returned should honour the current video page setting - if the shadow page
+         * file is active, it should return a span representing the shadow display file (in bank 7), otherwise it should
+         * return a span representing the usual display file in bank 2.
          *
-         * For 128k models, the pointer returned should honour the current video page setting - if the shadow page file
-         * is active, it should return a pointer to that memory (in bank 7), otherwise it should return a pointer to the
-         * usual display file memory (in bank 2).
-         *
-         * @return
+         * @return The current display file.
          */
-        [[nodiscard]] virtual ::Z80::UnsignedByte * displayMemory() const = 0;
-
-        /**
-         * The size of the display memory.
-         *
-         * For all models, this is always 6144.
-         *
-         * @return
-         */
-        [[nodiscard]] virtual int displayMemorySize() const = 0;
+        [[nodiscard]] virtual DisplayFile displayMemory() const = 0;
 
         /**
          * Reset the spectrum.

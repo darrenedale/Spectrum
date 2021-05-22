@@ -28,15 +28,15 @@ Spectrum128k::Spectrum128k()
 : Spectrum128k({}, {})
 {}
 
-UnsignedByte * Spectrum128k::displayMemory() const
+DisplayFile Spectrum128k::displayMemory() const
 {
     assert(memory128());
 
     if (ScreenBuffer::Shadow == m_screenBuffer) {
-        return memory128()->pagePointer(7);
+        return DisplayFile(memory128()->pagePointer(7), DisplayFile::extent);
     }
 
-    return memory128()->pagePointer(5);
+    return DisplayFile(memory128()->pagePointer(5), DisplayFile::extent);
 }
 
 Spectrum128k::~Spectrum128k()
