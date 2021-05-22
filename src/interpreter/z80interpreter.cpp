@@ -8,9 +8,8 @@
  *   the PC to loop through the block (the instructions are assembled and executed, but at most one iteration of the
  *   loop will be executed)
  *
- * TODO:
- * - handle IX+n, IY+n operands
- * - handle port operands
+ * TODO handle IX+n, IY+n operands
+ * TODO handle port operands
  */
 
 #include "z80interpreter.h"
@@ -26,7 +25,7 @@
 #include "../z80/z80.h"
 #include "../util/string.h"
 #include "../util/debug.h"
-#include "../../util/compiler.h"
+#include "../util/compiler.h"
 #include "operand.h"
 
 using namespace Interpreter;
