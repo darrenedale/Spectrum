@@ -12,6 +12,7 @@
 #include "../spectrumplus2a.h"
 #include "../spectrumplus3.h"
 #include "../../util/debug.h"
+#include "../../util/compiler.h"
 
 using namespace Spectrum::Io;
 
@@ -32,7 +33,7 @@ namespace
         Version3_1 = 55,
     };
 
-#pragma clang diagnostic push
+DISABLE_WARNING_PUSH
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
     // several enumerated values are required for the format but never actually used by the reader
     enum class V1MachineType : uint8_t
@@ -79,9 +80,9 @@ namespace
         TC2068,
         TS2068 = 128,
     };
-#pragma clang diagnostic pop
+DISABLE_WARNING_POP
 
-#pragma clang diagnostic push
+DISABLE_WARNING_PUSH
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
     // sound is not currently emulated so this struct is never used but must be present in the format
     struct SoundChipRegisters
@@ -104,7 +105,7 @@ namespace
         UnsignedByte register16;
     };
 
-#pragma clang diagnostic push
+DISABLE_WARNING_PUSH
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
     // this is never used because it's emulator config not machine state
     struct JoystickMapping
@@ -112,7 +113,7 @@ namespace
         UnsignedWord mappings[5];
         UnsignedWord keys[5];
     };
-#pragma clang diagnostic pop
+DISABLE_WARNING_POP
 
 #pragma pack(push, 1)
     // the compiler must not pad this struct otherwise header won't be read from the stream correctly
@@ -390,8 +391,8 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
         registers.pc = z80ToHostByteOrder(header.pcV2);
 
         // for 128k models, page in the appropriate ROM and RAM and set the display buffer and paging disabled flags
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wswitch"
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_SWITCH
         switch (snapshot->model()) {
             case Model::Spectrum128k:
             case Model::SpectrumPlus2:
@@ -418,7 +419,7 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
                 }
                 break;
         }
-#pragma clang diagnostic pop
+DISABLE_WARNING_POP
 
         while (true) {
             in.peek();

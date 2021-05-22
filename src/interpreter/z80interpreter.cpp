@@ -26,6 +26,7 @@
 #include "../z80/z80.h"
 #include "../util/string.h"
 #include "../util/debug.h"
+#include "../../util/compiler.h"
 #include "operand.h"
 
 using namespace Interpreter;
@@ -1108,8 +1109,8 @@ Z80Interpreter::Opcode Z80Interpreter::assembleAND(const Tokens & tokens)
         /* AND A,reg8 */
         UnsignedByte opcode = 0xa0;
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wswitch"     // only interested in the registers that are supported with the AND instruction
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_SWITCH     // only interested in the registers that are supported with the AND instruction
         switch (op1.reg8()) {
             case Register8::A:
                 opcode |= RegbitsA;
@@ -1133,7 +1134,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleAND(const Tokens & tokens)
                 opcode |= RegbitsL;
                 break;
         }
-#pragma clang diagnostic pop
+DISABLE_WARNING_POP
 
         ret.push_back(opcode);
     } else if ((op1.isIndirectReg16() && op1.reg16() == Register16::HL)) {

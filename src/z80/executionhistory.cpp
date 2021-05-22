@@ -4,6 +4,7 @@
 
 #include "executionhistory.h"
 #include "z80.h"
+#include "../util/compiler.h"
 
 using ::Z80::Assembly::AddressingMode;
 using ::Z80::Assembly::Operand;
@@ -134,8 +135,8 @@ OperandValue Z80::ExecutedInstruction::evaluateOperand(const Operand & operand, 
 
         case AddressingMode::Register8:
 #if (defined(__clang__))
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wswitch"     // we're only interested in the 8-bit registers that can be addressed explicitly using register addressing
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_SWITCH     // we're only interested in the 8-bit registers that can be addressed explicitly using register addressing
 #endif
             // TODO for now we're just returning the register's content in all cases, but strictly speaking we should
             //  return the register if it's as destination, the register value if it's as source
@@ -171,13 +172,13 @@ OperandValue Z80::ExecutedInstruction::evaluateOperand(const Operand & operand, 
                     return {.unsignedByte = registersBefore.r};
             }
 #if (defined(__clang__))
-#pragma clang diagnostic pop
+DISABLE_WARNING_POP
 #endif
 
         case AddressingMode::Register16:
 #if (defined(__clang__))
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wswitch"     // we're only interested in the 16-bit registers that can be addressed explicitly using register addressing
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_SWITCH     // we're only interested in the 16-bit registers that can be addressed explicitly using register addressing
 #endif
             // TODO for now we're just returning the register's content in all cases, but strictly speaking we should
             //  return the register if it's as destination, the register value if it's as source
@@ -201,7 +202,7 @@ OperandValue Z80::ExecutedInstruction::evaluateOperand(const Operand & operand, 
                     return {.unsignedWord = registersBefore.iy};
            }
 #if (defined(__clang__))
-#pragma clang diagnostic pop
+DISABLE_WARNING_POP
 #endif
 
         case AddressingMode::Register8Indirect: {
@@ -209,8 +210,8 @@ OperandValue Z80::ExecutedInstruction::evaluateOperand(const Operand & operand, 
             UnsignedByte registerValue = 0;
 
 #if (defined(__clang__))
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wswitch"     // we're only interested in the 8-bit registers that can be addressed explicitly using indirect addressing
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_SWITCH     // we're only interested in the 8-bit registers that can be addressed explicitly using indirect addressing
 #endif
             switch (operand.register8) {
                 case Register8::A:
@@ -244,7 +245,7 @@ OperandValue Z80::ExecutedInstruction::evaluateOperand(const Operand & operand, 
                     registerValue = registersBefore.r;
             }
 #if (defined(__clang__))
-#pragma clang diagnostic pop
+DISABLE_WARNING_POP
 #endif
 
             return {.unsignedWord = static_cast<UnsignedWord>((registersBefore.b << 8) | registerValue)};
@@ -253,8 +254,8 @@ OperandValue Z80::ExecutedInstruction::evaluateOperand(const Operand & operand, 
         case AddressingMode::Register16Indirect: {
             if (asDestination) {
 #if (defined(__clang__))
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wswitch"     // we're only interested in the 16-bit registers that can be addressed explicitly using register indirect addressing
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_SWITCH     // we're only interested in the 16-bit registers that can be addressed explicitly using register indirect addressing
 #endif
                 switch (operand.register16) {
                     case Register16::AF:
@@ -290,7 +291,7 @@ OperandValue Z80::ExecutedInstruction::evaluateOperand(const Operand & operand, 
                         return {.unsignedWord = *reinterpret_cast<const UnsignedWord *>(memoryFragments.indirectSp)};
                 }
 #if (defined(__clang__))
-#pragma clang diagnostic pop
+DISABLE_WARNING_POP
 #endif
             }
         }

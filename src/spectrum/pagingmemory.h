@@ -13,6 +13,7 @@
 #include <cstring>
 #include "pagingmemoryinterface.h"
 #include <array>
+#include "../util/compiler.h"
 #include "../mappablememoryinterface.h"
 #include "../memory.h"
 #include "../z80/types.h"
@@ -489,7 +490,13 @@ namespace Spectrum
 
             // unreachable code
             assert(false);
+
+// suppress warning in release builds - the assertion above ensures this warning isn't present in debug builds, but the assertion is optimised away in release
+// builds so we must explicitly suppress the warning
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_RETURN_TYPE
         }
+DISABLE_WARNING_POP
 
     protected:
         /**

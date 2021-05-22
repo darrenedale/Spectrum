@@ -7,6 +7,7 @@
 #include <iomanip>
 #include "operand.h"
 #include "../z80.h"
+#include "../../util/compiler.h"
 
 using namespace Z80::Assembly;
 
@@ -106,7 +107,11 @@ std::string std::to_string(const AddressingMode & mode)
         case AddressingMode::Bit:
             return "bit";
     }
+
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_RETURN_TYPE
 }
+DISABLE_WARNING_POP
 
 //
 //OperandValue Operand::evaluate(::Z80::Z80 * cpu, bool asDestination) const

@@ -7,6 +7,7 @@
 #include "z80snapshotwriter.h"
 #include "../pagingmemoryinterface.h"
 #include "../../util/debug.h"
+#include "../../util/compiler.h"
 
 using namespace Spectrum::Io;
 using ::Z80::UnsignedWord;
@@ -15,7 +16,7 @@ using ::Z80::hostToZ80ByteOrder;
 
 namespace
 {
-#pragma clang diagnostic push
+DISABLE_WARNING_PUSH
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
     // these are required by the format but many are unused because we don't support all models
     enum class MachineType : uint8_t
@@ -38,7 +39,7 @@ namespace
         TC2068,
         TS2068 = 128,
     };
-#pragma clang diagnostic pop
+DISABLE_WARNING_POP
 
     // this is currently never populated as the sound chip is not currently emulated
     struct SoundChipRegisters
@@ -46,7 +47,7 @@ namespace
         UnsignedByte registers[16];
     };
 
-#pragma clang diagnostic push
+DISABLE_WARNING_PUSH
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
     // this is currently never populated as this is really emulator config rather than part of the machine state
     struct JoystickMapping
@@ -54,9 +55,9 @@ namespace
         UnsignedWord mappings[5];
         UnsignedWord keys[5];
     };
-#pragma clang diagnostic pop
+DISABLE_WARNING_POP
 
-#pragma clang diagnostic push
+DISABLE_WARNING_PUSH
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 #pragma pack(push, 1)
     // the compiler must not pad this struct otherwise header won't be read from the stream correctly
@@ -117,7 +118,7 @@ namespace
         UnsignedByte lastOut0x1ffd;
     };
 #pragma pack(pop)
-#pragma clang diagnostic pop
+DISABLE_WARNING_POP
 }
 
 bool Z80SnapshotWriter::writeTo(std::ostream & out) const
@@ -138,7 +139,10 @@ bool Z80SnapshotWriter::writeTo(std::ostream & out) const
 
     // unreachable code
     assert(false);
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_RETURN_TYPE
 }
+DISABLE_WARNING_POP
 
 bool Z80SnapshotWriter::writeHeader(std::ostream & out) const
 {

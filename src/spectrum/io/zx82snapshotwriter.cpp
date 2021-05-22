@@ -9,6 +9,7 @@
 #include "../spectrum48k.h"
 #include "../../util/endian.h"
 #include "../../util/debug.h"
+#include "../../util/compiler.h"
 
 using namespace Spectrum::Io;
 using ::Z80::InterruptMode;
@@ -23,7 +24,7 @@ namespace
     // the identifier required at the start of the header
     const std::uint32_t Identifier = *reinterpret_cast<const std::uint32_t *>("ZX82");
 
-#pragma clang diagnostic push
+DISABLE_WARNING_PUSH
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
     // these are all the types of data that can be stored in .zx82 files, but we only use Snapshot
     enum class Type : std::uint8_t
@@ -34,7 +35,7 @@ namespace
         Code = 0x03,
         Snapshot = 0x04,
     };
-#pragma clang diagnostic pop
+DISABLE_WARNING_POP
 
     enum class CompressionType : std::uint8_t
     {
@@ -51,7 +52,7 @@ namespace
     };
 
 #pragma pack(push, 1)
-#pragma clang diagnostic push
+DISABLE_WARNING_PUSH
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
     // fileLength, startAddress and arrayName are not used for Snapshot type stream content
     // NOTE all 16-bit values are big endian (MC68000 byte order)
@@ -77,10 +78,10 @@ namespace
         RegisterPair afShadow;
         RegisterPair sp;
         std::uint8_t i;
-#pragma clang diagnostic push
+DISABLE_WARNING_PUSH
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
         std::uint8_t unused;
-#pragma clang diagnostic pop
+DISABLE_WARNING_POP
         std::uint8_t r;
         std::uint8_t iff1;
         RegisterPair pc;
@@ -136,7 +137,7 @@ bool Zx82SnapshotWriter::writeTo(std::ostream & out) const
             .pc = {.word = registers.pc},
     };
 
-#pragma clang diagnostic push
+DISABLE_WARNING_PUSH
 #pragma ide diagnostic ignored "Simplify"
     if constexpr (std::endian::native != std::endian::big) {
         header.iy.word = swapByteOrder(header.iy.word);
@@ -152,7 +153,7 @@ bool Zx82SnapshotWriter::writeTo(std::ostream & out) const
         header.sp.word = swapByteOrder(header.sp.word);
         header.pc.word = swapByteOrder(header.pc.word);
     }
-#pragma clang diagnostic pop
+DISABLE_WARNING_POP
 
     out.write(reinterpret_cast<const std::ostream::char_type *>(&header), sizeof(Header));
 
