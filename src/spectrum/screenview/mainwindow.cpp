@@ -2,12 +2,15 @@
 // Created by darren on 25/02/2021.
 //
 
+#include <fstream>
 #include <QPushButton>
 #include <QLineEdit>
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QFileDialog>
+#include <QMessageBox>
 #include <QStandardPaths>
+#include <QApplication>
 #include "mainwindow.h"
 #include "../qtui/qimagedisplaydevice.h"
 
@@ -48,29 +51,23 @@ MainWindow::MainWindow(QWidget * parent)
     updateScreen();
 }
 
+MainWindow::~MainWindow() = default;
+
 void MainWindow::loadScreen(const QString & fileName)
 {
     m_fileName->setText(fileName);
-    FILE * inFile = std::fopen(fileName.toUtf8().data(), "rb");
+    std::ifstream in(fileName.toStdString());
 
-    if (!inFile) {
-        // TODO notify failed to open
+    if (!in) {
+        QMessageBox::critical(this, QApplication::applicationDisplayName(), tr("The file '%1' could not be opened.").arg(QFileInfo(fileName).fileName()));
         return;
     }
 
-    std::size_t bytesToRead = Spectrum::DisplayFile::extent;
-    auto * buffer = m_screenData.data();
+    in.read(reinterpret_cast<std::ifstream::char_type *>(m_screenData.data()), Spectrum::DisplayFile::extent);
 
-    while (!std::feof(inFile) && 0 < bytesToRead) {
-        auto bytesRead = std::fread(buffer, sizeof(std::uint8_t), bytesToRead, inFile);
-
-        if (0 == bytesRead) {
-            // TODO notify read error
-            return;
-        }
-
-        buffer += bytesRead;
-        bytesToRead -= bytesRead;
+    if (in.fail()) {
+        QMessageBox::critical(this, QApplication::applicationDisplayName(), tr("The file '%1' could not be read.").arg(QFileInfo(fileName).fileName()));
+        return;
     }
 
     updateScreen();
@@ -96,7 +93,6 @@ void MainWindow::chooseScreenFile()
         return;
     }
 
-    // TODO extract path from filename for lastDir
     lastDir = QFileInfo(fileName).absolutePath();
     QSettings settings;
     settings.beginGroup(QStringLiteral("mainwindow"));
@@ -129,5 +125,3 @@ void MainWindow::updateScreen()
     display.setBorder(m_borderColour->colour(), m_borderColour->isBright());
     m_display->setImage(display.image());
 }
-
-MainWindow::~MainWindow() = default;
