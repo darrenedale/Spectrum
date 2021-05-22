@@ -40,7 +40,10 @@ std::string std::to_string(Model model)
 
     // unreachable code
     assert(false);
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_RETURN_TYPE
 }
+DISABLE_WARNING_POP
 
 std::string std::to_string(ScreenBuffer128k bufferType)
 {
@@ -55,7 +58,10 @@ std::string std::to_string(ScreenBuffer128k bufferType)
     // unreachable code - someone has added a buffer type and hasn't updated the function or has type punned an invalid
     // value to a buffer type
     assert(false);
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_RETURN_TYPE
 }
+DISABLE_WARNING_POP
 
 std::string std::to_string(Colour colour)
 {
@@ -88,7 +94,10 @@ std::string std::to_string(Colour colour)
     // unreachable code - someone has added a colour and hasn't updated the function or has type punned an invalid
     // value to a colour
     assert(false);
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_RETURN_TYPE
 }
+DISABLE_WARNING_POP
 
 std::string std::to_string(Spectrum::PagingMode mode)
 {
@@ -103,7 +112,10 @@ std::string std::to_string(Spectrum::PagingMode mode)
     // unreachable code - someone has added a mode and hasn't updated the function or has type punned an invalid
     // value to a mode
     assert (false);
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_RETURN_TYPE
 }
+DISABLE_WARNING_POP
 
 std::string std::to_string(Spectrum::SpecialPagingConfiguration config)
 {
@@ -124,6 +136,8 @@ std::string std::to_string(Spectrum::SpecialPagingConfiguration config)
     // unreachable code - someone has added a config and hasn't updated the function or has type punned an invalid
     // value to a config
     assert (false);
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_RETURN_TYPE
 }
 DISABLE_WARNING_POP
 
