@@ -18,6 +18,7 @@
 #include <QToolTip>
 #include <QTimer>
 #include <QApplication>
+#include "../../util/compiler.h"
 
 // NOTE I think this should be 202002L (publication date) but MSVC has 201907L (feature freeze date)
 #if (!defined(__cpp_lib_concepts) || 201907L > __cpp_lib_concepts)
@@ -557,8 +558,8 @@ namespace Spectrum::QtUi
         bool event(QEvent * ev) override
         {
 #if (defined(__clang__))
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wswitch"     // we're only interested in a subset of event types
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_SWITCH     // we're only interested in a subset of event types
 #endif
             switch (ev->type()) {
                 case QEvent::Type::HoverMove: {
@@ -587,7 +588,7 @@ namespace Spectrum::QtUi
                     break;
             }
 #if (defined(__clang__))
-#pragma clang diagnostic pop
+DISABLE_WARNING_POP
 #endif
             return ViewType::event(ev);
         }

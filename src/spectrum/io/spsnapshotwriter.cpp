@@ -3,6 +3,7 @@
 //
 
 #include "spsnapshotwriter.h"
+#include "../../util/compiler.h"
 
 using namespace Spectrum::Io;
 
@@ -64,17 +65,17 @@ namespace
 
         UnsignedWord sp;            // the stack pointer, Z80 byte order
         UnsignedWord pc;            // the program counter, Z80 byte order
-#pragma clang diagnostic push
+DISABLE_WARNING_PUSH
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
         // reserved by the format for future use and currently unused by this code
         UnsignedWord reserved1;
-#pragma clang diagnostic pop
+DISABLE_WARNING_POP
         UnsignedByte border;
-#pragma clang diagnostic push
+DISABLE_WARNING_PUSH
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
         // reserved by the format for future use and currently unused by this code
         UnsignedByte reserved2;
-#pragma clang diagnostic pop
+DISABLE_WARNING_POP
 
         //   Bit     Description
         //   ------------------------------------------------------------------------

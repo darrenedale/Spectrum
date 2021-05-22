@@ -5,6 +5,7 @@
 #include <cassert>
 #include <iostream>
 #include "./types.h"
+#include "../util/compiler.h"
 
 using Spectrum::Model;
 using Spectrum::Colour;
@@ -12,6 +13,9 @@ using Spectrum::ScreenBuffer128k;
 using Spectrum::SpecialPagingConfiguration;
 using Spectrum::PagingMode;
 
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_NO_RETURN_VALUE     // all the following to_string() functions have assertions to guarantee that the
+                                    // switches cover all code paths
 std::string std::to_string(Model model)
 {
     switch (model) {
@@ -121,6 +125,7 @@ std::string std::to_string(Spectrum::SpecialPagingConfiguration config)
     // value to a config
     assert (false);
 }
+DISABLE_WARNING_POP
 
 std::ostream & Spectrum::operator<<(std::ostream & out, Spectrum::Colour colour)
 {

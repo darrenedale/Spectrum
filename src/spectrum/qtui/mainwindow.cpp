@@ -51,6 +51,7 @@
 #include "../io/snapshotformatguesser.h"
 #include "../io/snapshotreaderfactory.h"
 #include "../io/snapshotwriterfactory.h"
+#include "../../util/compiler.h"
 
 using namespace Spectrum::QtUi;
 using namespace Spectrum::Io;
@@ -178,8 +179,8 @@ namespace
     std::vector<::Spectrum::Keyboard::Key> mapToSpectrumKeys(Qt::Key key)
     {
 #if (defined(__clang__))
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wswitch"     // we're only interested in the keys that map to the Spectrum keyboard
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_SWITCH     // we're only interested in the keys that map to the Spectrum keyboard
 #endif
         // TODO configurable mapping
         switch (key) {
@@ -379,7 +380,7 @@ namespace
                 return {};
         }
 #if (defined(__clang__))
-#pragma clang diagnostic pop
+DISABLE_WARNING_POP
 #endif
     }
 
@@ -393,8 +394,8 @@ namespace
     JoystickMapping mapToSpectrumJoystick(Qt::Key key)
     {
 #if (defined(__clang__))
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wswitch"     // we're only interested in keys that map to the virtual joystick
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_SWITCH     // we're only interested in keys that map to the virtual joystick
 #endif
         switch (key) {
             case Qt::Key::Key_Up:
@@ -413,7 +414,7 @@ namespace
                 return JoystickMapping::Button1;
         }
 #if (defined(__clang__))
-#pragma clang diagnostic pop
+DISABLE_WARNING_POP
 #endif
 
         return JoystickMapping::None;
@@ -1358,8 +1359,8 @@ void MainWindow::rescanGameControllers()
 bool MainWindow::eventFilter(QObject * target, QEvent * event)
 {
 #if (defined(__clang__))
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wswitch"
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_SWITCH
 #endif
     if (&m_displayWidget == target) {
         switch (event->type()) {
@@ -1490,7 +1491,7 @@ bool MainWindow::eventFilter(QObject * target, QEvent * event)
         }
     }
 #if (defined(__clang__))
-#pragma clang diagnostic pop
+DISABLE_WARNING_POP
 #endif
     return false;
 }

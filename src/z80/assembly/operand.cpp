@@ -7,6 +7,7 @@
 #include <iomanip>
 #include "operand.h"
 #include "../z80.h"
+#include "../../util/compiler.h"
 
 using namespace Z80::Assembly;
 
@@ -70,6 +71,8 @@ std::string std::to_string(const Operand & op)
     return out.str();
 }
 
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_NO_RETURN_VALUE
 std::string std::to_string(const AddressingMode & mode)
 {
     switch (mode) {
@@ -106,7 +109,11 @@ std::string std::to_string(const AddressingMode & mode)
         case AddressingMode::Bit:
             return "bit";
     }
+
+    // unreachable code - if we get here an AddressingMode enumerator has been added but not handled above
+    assert(false);
 }
+DISABLE_WARNING_POP
 
 //
 //OperandValue Operand::evaluate(::Z80::Z80 * cpu, bool asDestination) const

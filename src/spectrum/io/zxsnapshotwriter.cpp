@@ -5,6 +5,7 @@
 #include <array>
 #include "zxsnapshotwriter.h"
 #include "../../util/debug.h"
+#include "../../util/compiler.h"
 
 using namespace Spectrum::Io;
 
@@ -14,7 +15,7 @@ using Spectrum::Snapshot;
 
 namespace
 {
-#pragma clang diagnostic push
+DISABLE_WARNING_PUSH
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
     // required for format compatibility but unused
     struct Settings
@@ -25,7 +26,7 @@ namespace
         std::uint16_t setting4;     // apparently always 0x0001
         std::uint16_t setting5;     // apparently always 0x0001
     };
-#pragma clang diagnostic pop
+DISABLE_WARNING_POP
 
     // Updated from http://spectrum-zx.chat.ru/faq/fileform.html
     //    Offset   Size   Description
@@ -53,7 +54,7 @@ namespace
     // the originating emulator to store the registers, etc. (e.g. PC and SP were represented using 32-bit ints)
     //
     // words are typed as uint16_t rather than UnsignedWord to make it clear that they're not in Z80 byte order
-#pragma clang diagnostic push
+DISABLE_WARNING_PUSH
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
     // several members are required for format compatibility but are unused
     struct Header
@@ -91,7 +92,7 @@ namespace
         std::uint16_t interruptMode;    // 0xffff = IM0, 0 = IM1, 1 = IM2
         UnsignedByte unused11[10];      // apparently always all 0x00
     };
-#pragma clang diagnostic pop
+DISABLE_WARNING_POP
 
     constexpr const std::uint16_t MemoryImageOffset = 0x4000;
 
@@ -195,7 +196,7 @@ bool ZxSnapshotWriter::writeTo(std::ostream & out) const
             break;
     }
 
-#pragma clang diagnostic push
+DISABLE_WARNING_PUSH
 #pragma ide diagnostic ignored "Simplify"
     // NOTE this will be diagnosed as unnecessary, depending on the byte order of the host, but the code is required for cross-platform compatibility. its
     // necessity is determined at compile time and will result in no code being generated if the condition is not true
@@ -219,7 +220,7 @@ bool ZxSnapshotWriter::writeTo(std::ostream & out) const
 
         header.interruptMode = swapByteOrder(header.interruptMode);
     }
-#pragma clang diagnostic pop
+DISABLE_WARNING_POP
 
     out.write(reinterpret_cast<const std::ostream::char_type *>(&header), sizeof(Header));
     return !out.bad() && !out.fail();
