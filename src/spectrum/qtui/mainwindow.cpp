@@ -1178,6 +1178,11 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
 {
     ThreadPauser pauser(m_spectrumThread);
 
+    if (!QFileInfo::exists(fileName)) {
+        Application::showNotification(tr("The snapshot file %1 does not exist.").arg(fileName), DefaultNotificationTimeout);
+        return false;
+    }
+
     // NOTE we use a guesser then generate the reader from the format string, rather than using the reader factory directly with the file name, so that we are
     // able to force the format to use
     if (format.isEmpty()) {
@@ -1185,6 +1190,7 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
 
         if (format.isEmpty()) {
             Application::showNotification(tr("The snapshot format for %1 could not be determined.").arg(fileName), DefaultNotificationTimeout);
+            return false;
         }
     }
 
