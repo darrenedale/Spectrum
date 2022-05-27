@@ -38,3 +38,5 @@ icons are licensed under the [LGPL V3](https://www.gnu.org/licenses/lgpl-3.0.htm
 [KDE Visual Design Group](https://community.kde.org/Get_Involved/design) and sources for all the icons used are in the
 `src/spectrum/icons/`. The original sources are maintained at
 [https://github.com/KDE/breeze-icons](https://github.com/KDE/breeze-icons).
+
+This repository is currently a little untidy and needs cleaning up a bit. Apologies ;)
