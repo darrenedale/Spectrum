@@ -5,6 +5,7 @@
 #ifndef SPECTRUM_Z80_H
 #define SPECTRUM_Z80_H
 
+#include <algorithm>
 #include <vector>
 
 #include "../z80/types.h"

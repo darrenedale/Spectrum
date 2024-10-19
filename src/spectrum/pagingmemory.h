@@ -5,6 +5,7 @@
 #ifndef SPECTRUM_PAGINGMEMORY_H
 #define SPECTRUM_PAGINGMEMORY_H
 
+#include <algorithm>
 #include <array>
 #include <vector>
 #include <iostream>

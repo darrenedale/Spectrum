@@ -3,6 +3,7 @@
 //
 
 #include <cassert>
+#include <algorithm>
 #include "memory.h"
 
 namespace Spectrum

@@ -758,7 +758,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleInstruction(const Tokens & tokens
         return Opcode();
     }
 
-    const auto & token = std::move(upper_cased(tokens.front()));
+    const auto token = std::move(upper_cased(tokens.front()));
     
     if (token == "ADC") {
         return assembleADC(tokens);

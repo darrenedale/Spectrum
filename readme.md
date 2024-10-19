@@ -4,6 +4,7 @@ A ZX Spectrum emulator written in C++20.
 
 This is primarily a personal project to explore a few ideas and to see if I could create an emulator from scratch. The
 emulator can emulate most of the popular models of ZX Spectrum:
+
 - Spectrum 16k
 - Spectrum 48k
 - Spectrum 128k
@@ -12,6 +13,7 @@ emulator can emulate most of the popular models of ZX Spectrum:
 - Spectrum +3
 
 and it emulates some external hardware:
+
 - ZX Interface 2 joysticks
 - Kempston joystick
 - Kempston mouse
