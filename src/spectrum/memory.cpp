@@ -2,8 +2,8 @@
 // Created by darren on 23/04/2021.
 //
 
-#include <cassert>
 #include <algorithm>
+#include <cassert>
 #include "memory.h"
 
 namespace Spectrum
