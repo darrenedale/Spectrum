@@ -50,9 +50,9 @@ void TestClass::setupZ80(::Z80::Z80 & cpu) const
     cpu.setIff2(m_initialState.iff2);
 }
 
-void TestClass::setupMemory(UnsignedByte * memory) const
+void TestClass::setupMemory(::Z80::Z80::Memory & memory) const
 {
     for (const auto & block : m_initialState.memory) {
-        std::memcpy(memory + block.address, block.data.data(), block.data.size());
+        memory.writeBytes(block.address, block.data.size(), block.data.data());
     }
 }

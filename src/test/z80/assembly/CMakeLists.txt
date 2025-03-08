@@ -5,6 +5,7 @@ add_executable(
         ../../../z80/assembly/disassembler.cpp
         ../../../z80/assembly/mnemonic.cpp
         ../../../z80/assembly/operand.cpp
+        ../../../z80/types.cpp
 )
 
 set_target_properties(

@@ -32,7 +32,7 @@ namespace Test::Z80
         }
 
         void setupZ80(::Z80::Z80 & cpu) const;
-        void setupMemory(UnsignedByte * memory) const;
+        void setupMemory(::Z80::Z80::Memory & memory) const;
 
         std::size_t tStates() const
         {

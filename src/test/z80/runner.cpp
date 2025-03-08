@@ -8,6 +8,7 @@
 #include <cstring>
 
 #include "runner.h"
+#include "../../z80/types.h"
 
 using namespace Test::Z80;
 
@@ -52,55 +53,55 @@ namespace
         for (const auto & failure : failures) {
             switch (failure.type) {
                 case Expectation::FailureType::AfIncorrect:
-                    std::cout << "- AF register pair incorrect: expected 0x" << formatWord(std::any_cast<::Z80::Z80::UnsignedWord>(failure.expected)) << ", found 0x" << formatWord(std::any_cast<::Z80::Z80::UnsignedWord>(failure.actual)) << ".\n";
+                    std::cout << "- AF register pair incorrect: expected 0x" << formatWord(std::any_cast<::Z80::UnsignedWord>(failure.expected)) << ", found 0x" << formatWord(std::any_cast<::Z80::UnsignedWord>(failure.actual)) << ".\n";
                     break;
 
                 case Expectation::FailureType::BcIncorrect:
-                    std::cout << "- BC register pair incorrect: expected 0x" << formatWord(std::any_cast<::Z80::Z80::UnsignedWord>(failure.expected)) << ", found 0x" << formatWord(std::any_cast<::Z80::Z80::UnsignedWord>(failure.actual)) << ".\n";
+                    std::cout << "- BC register pair incorrect: expected 0x" << formatWord(std::any_cast<::Z80::UnsignedWord>(failure.expected)) << ", found 0x" << formatWord(std::any_cast<::Z80::UnsignedWord>(failure.actual)) << ".\n";
                     break;
 
                 case Expectation::FailureType::DeIncorrect:
-                    std::cout << "- DE register pair incorrect: expected 0x" << formatWord(std::any_cast<::Z80::Z80::UnsignedWord>(failure.expected)) << ", found 0x" << formatWord(std::any_cast<::Z80::Z80::UnsignedWord>(failure.actual)) << ".\n";
+                    std::cout << "- DE register pair incorrect: expected 0x" << formatWord(std::any_cast<::Z80::UnsignedWord>(failure.expected)) << ", found 0x" << formatWord(std::any_cast<::Z80::UnsignedWord>(failure.actual)) << ".\n";
                     break;
 
                 case Expectation::FailureType::HlIncorrect:
-                    std::cout << "- HL register pair incorrect: expected 0x" << formatWord(std::any_cast<::Z80::Z80::UnsignedWord>(failure.expected)) << ", found 0x" << formatWord(std::any_cast<::Z80::Z80::UnsignedWord>(failure.actual)) << ".\n";
+                    std::cout << "- HL register pair incorrect: expected 0x" << formatWord(std::any_cast<::Z80::UnsignedWord>(failure.expected)) << ", found 0x" << formatWord(std::any_cast<::Z80::UnsignedWord>(failure.actual)) << ".\n";
                     break;
 
                 case Expectation::FailureType::IxIncorrect:
-                    std::cout << "- IX register incorrect: expected 0x" << formatWord(std::any_cast<::Z80::Z80::UnsignedWord>(failure.expected)) << ", found 0x" << formatWord(std::any_cast<::Z80::Z80::UnsignedWord>(failure.actual)) << ".\n";
+                    std::cout << "- IX register incorrect: expected 0x" << formatWord(std::any_cast<::Z80::UnsignedWord>(failure.expected)) << ", found 0x" << formatWord(std::any_cast<::Z80::UnsignedWord>(failure.actual)) << ".\n";
                     break;
 
                 case Expectation::FailureType::IyIncorrect:
-                    std::cout << "- IY register incorrect: expected 0x" << formatWord(std::any_cast<::Z80::Z80::UnsignedWord>(failure.expected)) << ", found 0x" << formatWord(std::any_cast<::Z80::Z80::UnsignedWord>(failure.actual)) << ".\n";
+                    std::cout << "- IY register incorrect: expected 0x" << formatWord(std::any_cast<::Z80::UnsignedWord>(failure.expected)) << ", found 0x" << formatWord(std::any_cast<::Z80::UnsignedWord>(failure.actual)) << ".\n";
                     break;
 
                 case Expectation::FailureType::AfShadowIncorrect:
-                    std::cout << "- AF' register pair incorrect: expected 0x" << formatWord(std::any_cast<::Z80::Z80::UnsignedWord>(failure.expected)) << ", found 0x" << formatWord(std::any_cast<::Z80::Z80::UnsignedWord>(failure.actual)) << ".\n";
+                    std::cout << "- AF' register pair incorrect: expected 0x" << formatWord(std::any_cast<::Z80::UnsignedWord>(failure.expected)) << ", found 0x" << formatWord(std::any_cast<::Z80::UnsignedWord>(failure.actual)) << ".\n";
                     break;
 
                 case Expectation::FailureType::BcShadowIncorrect:
-                    std::cout << "- BC' register pair incorrect: expected 0x" << formatWord(std::any_cast<::Z80::Z80::UnsignedWord>(failure.expected)) << ", found 0x" << formatWord(std::any_cast<::Z80::Z80::UnsignedWord>(failure.actual)) << ".\n";
+                    std::cout << "- BC' register pair incorrect: expected 0x" << formatWord(std::any_cast<::Z80::UnsignedWord>(failure.expected)) << ", found 0x" << formatWord(std::any_cast<::Z80::UnsignedWord>(failure.actual)) << ".\n";
                     break;
 
                 case Expectation::FailureType::DeShadowIncorrect:
-                    std::cout << "- DE' register pair incorrect: expected 0x" << formatWord(std::any_cast<::Z80::Z80::UnsignedWord>(failure.expected)) << ", found 0x" << formatWord(std::any_cast<::Z80::Z80::UnsignedWord>(failure.actual)) << ".\n";
+                    std::cout << "- DE' register pair incorrect: expected 0x" << formatWord(std::any_cast<::Z80::UnsignedWord>(failure.expected)) << ", found 0x" << formatWord(std::any_cast<::Z80::UnsignedWord>(failure.actual)) << ".\n";
                     break;
 
                 case Expectation::FailureType::HlShadowIncorrect:
-                    std::cout << "- HL' register pair incorrect: expected 0x" << formatWord(std::any_cast<::Z80::Z80::UnsignedWord>(failure.expected)) << ", found 0x" << formatWord(std::any_cast<::Z80::Z80::UnsignedWord>(failure.actual)) << ".\n";
+                    std::cout << "- HL' register pair incorrect: expected 0x" << formatWord(std::any_cast<::Z80::UnsignedWord>(failure.expected)) << ", found 0x" << formatWord(std::any_cast<::Z80::UnsignedWord>(failure.actual)) << ".\n";
                     break;
 
                 case Expectation::FailureType::MemptrIncorrect:
-                    std::cout << "- MEMPTR register incorrect: expected 0x" << formatWord(std::any_cast<::Z80::Z80::UnsignedWord>(failure.expected)) << ", found 0x" << formatWord(std::any_cast<::Z80::Z80::UnsignedWord>(failure.actual)) << ".\n";
+                    std::cout << "- MEMPTR register incorrect: expected 0x" << formatWord(std::any_cast<::Z80::UnsignedWord>(failure.expected)) << ", found 0x" << formatWord(std::any_cast<::Z80::UnsignedWord>(failure.actual)) << ".\n";
                     break;
 
                 case Expectation::FailureType::IIncorrect:
-                    std::cout << "- I register incorrect: expected 0x" << formatByte(std::any_cast<::Z80::Z80::UnsignedByte>(failure.expected)) << ", found 0x" << formatByte(std::any_cast<::Z80::Z80::UnsignedByte>(failure.actual)) << ".\n";
+                    std::cout << "- I register incorrect: expected 0x" << formatByte(std::any_cast<::Z80::UnsignedByte>(failure.expected)) << ", found 0x" << formatByte(std::any_cast<::Z80::UnsignedByte>(failure.actual)) << ".\n";
                     break;
 
                 case Expectation::FailureType::RIncorrect:
-                    std::cout << "- R register incorrect: expected 0x" << formatByte(std::any_cast<::Z80::Z80::UnsignedByte>(failure.expected)) << ", found 0x" << formatByte(std::any_cast<::Z80::Z80::UnsignedByte>(failure.actual)) << ".\n";
+                    std::cout << "- R register incorrect: expected 0x" << formatByte(std::any_cast<::Z80::UnsignedByte>(failure.expected)) << ", found 0x" << formatByte(std::any_cast<::Z80::UnsignedByte>(failure.actual)) << ".\n";
                     break;
 
                 case Expectation::FailureType::Iff1Incorrect:
@@ -147,7 +148,7 @@ namespace
 }
 
 Runner::Runner(std::string testFileBaseName)
-: Runner(std::move(testFileBaseName), new ::Z80::Z80(new UnsignedByte[65536], 65536))
+: Runner(std::move(testFileBaseName), new ::Z80::Z80(new SimpleMemory(65536)))
 {
     m_borrowedCpu = false;
     m_ioDevice = std::make_unique<TestIoDevice>();
@@ -324,9 +325,9 @@ int Runner::runTest(const TestBattery::TestCase & testCase)
     std::cout << "Test: " << test.name() << "\n";
     std::cout << "------------------------------------------------------------\n";
     cpu().reset();
-    std::memset(cpu().memory(), 0x00, cpu().memorySize());
+    cpu().memory()->clear();
     test.setupZ80(cpu());
-    test.setupMemory(cpu().memory());
+    test.setupMemory(*(cpu().memory()));
 
     std::uint64_t tStates = 0;
 

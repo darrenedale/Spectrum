@@ -14,7 +14,13 @@ add_executable(
         ../../z80/z80.cpp
         ../../z80/registers.cpp
         ../../z80/iodevice.cpp
-        testiodevice.h)
+        ../../z80/types.cpp
+        ../../z80/executionhistory.cpp
+        ../../z80/assembly/mnemonic.cpp
+        ../../z80/assembly/operand.cpp
+        ../../z80/assembly/disassembler.cpp
+        testiodevice.h
+)
 
 set_target_properties(
         z80-test

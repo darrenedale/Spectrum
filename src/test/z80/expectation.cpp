@@ -127,7 +127,7 @@ Expectation::Failures Expectation::checkInterruptMode(Z80Cpu & cpu) const
 Expectation::Failures Expectation::checkMemory(Z80Cpu & cpu) const
 {
     Failures ret;
-    auto * memory = cpu.memory();
+    auto & memory = *(cpu.memory());
     auto blockIdx = 1;
 
     for (const auto & block : m_expectedState.memory) {
