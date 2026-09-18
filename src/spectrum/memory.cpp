@@ -32,7 +32,7 @@ namespace Spectrum
 
     void Memory::unmapMemory(Address startAddress, const Byte * storage)
     {
-        const auto pos =std::find_if(m_mappedMemory.crbegin(), m_mappedMemory.crend(), [startAddress, storage](const MappedMemoryBlock & block) -> bool {
+        const auto pos = std::find_if(m_mappedMemory.crbegin(), m_mappedMemory.crend(), [startAddress, storage](const MappedMemoryBlock & block) -> bool {
             return block.address == startAddress && block.storage == storage;
         });
 
