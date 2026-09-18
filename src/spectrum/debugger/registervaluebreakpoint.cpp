@@ -2,10 +2,14 @@
 // Created by darren on 31/03/2021.
 //
 
-#include <sstream>
 #include <iomanip>
+#include <sstream>
+#include <string>
+
 #include "../basespectrum.h"
 #include "registervaluebreakpoint.h"
+
+using namespace std::string_literals;
 
 using namespace Spectrum::Debugger;
 
@@ -19,7 +23,7 @@ bool RegisterValueBreakpoint::operator==(const Breakpoint & other) const
     return watchedRegister() == rvOther.watchedRegister() && targetValue() == rvOther.targetValue();
 }
 
-bool RegisterValueBreakpoint::check(const Spectrum::BaseSpectrum & spectrum)
+bool RegisterValueBreakpoint::check(const BaseSpectrum & spectrum)
 {
     if (spectrum.z80()->registerValue(watchedRegister()) == targetValue()) {
         notifyObservers();
@@ -31,7 +35,7 @@ bool RegisterValueBreakpoint::check(const Spectrum::BaseSpectrum & spectrum)
 
 std::string RegisterValueBreakpoint::typeName() const
 {
-    return "Register pair value";
+    return "Register pair value"s;
 }
 
 std::string RegisterValueBreakpoint::conditionDescription() const

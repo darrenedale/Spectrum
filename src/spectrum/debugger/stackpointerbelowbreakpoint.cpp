@@ -2,15 +2,19 @@
 // Created by darren on 31/03/2021.
 //
 
-#include <sstream>
 #include <iomanip>
+#include <sstream>
+#include <string>
+
 #include "stackpointerbelowbreakpoint.h"
+
+using namespace std::string_literals;
 
 using namespace Spectrum::Debugger;
 
 std::string StackPointerBelowBreakpoint::typeName() const
 {
-    return "Stack pointer below";
+    return "Stack pointer below"s;
 }
 
 std::string StackPointerBelowBreakpoint::conditionDescription() const
@@ -25,7 +29,7 @@ bool StackPointerBelowBreakpoint::operator==(const Breakpoint & other) const
     return typeid(*this) == typeid(other) && address() == reinterpret_cast<const StackPointerBelowBreakpoint *>(&other)->address();
 }
 
-bool StackPointerBelowBreakpoint::check(const Spectrum::BaseSpectrum & spectrum)
+bool StackPointerBelowBreakpoint::check(const BaseSpectrum & spectrum)
 {
     if (spectrum.z80()->stackPointer() < address()) {
         notifyObservers();

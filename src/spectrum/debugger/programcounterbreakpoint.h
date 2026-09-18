@@ -11,16 +11,12 @@
 
 namespace Spectrum::Debugger
 {
-    /**
-     * Breakpoint that triggers when the PC of the Z80 reaches a particular address.
-     */
+    /** Breakpoint that triggers when the PC of the Z80 reaches a particular address. */
     class ProgramCounterBreakpoint
     : public Breakpoint
     {
     private:
-        /**
-         * Convenience alias for Z80 addresses.
-         */
+        /** Convenience alias for Z80 addresses. */
         using UnsignedWord = ::Z80::UnsignedWord;
 
     public:
@@ -39,21 +35,24 @@ namespace Spectrum::Debugger
          *
          * @return "Program counter"
          */
-        [[nodiscard]] std::string typeName() const override;
+        [[nodiscard]]
+        std::string typeName() const override;
 
         /**
          * A human-readable description of the condition implemented by this breakpoint.
          *
          * @return "PC == 0x<address>"
          */
-        [[nodiscard]] std::string conditionDescription() const override;
+        [[nodiscard]]
+        std::string conditionDescription() const override;
 
         /**
          * The address against which the PC is checked.
          *
          * @return The address.
          */
-        [[nodiscard]] inline UnsignedWord address() const
+        [[nodiscard]]
+        UnsignedWord address() const
         {
             return m_address;
         }
@@ -77,9 +76,7 @@ namespace Spectrum::Debugger
         bool check(const BaseSpectrum & spectrum) override;
 
     private:
-        /**
-         * The address to check against the PC.
-         */
+        /** The address to check against the PC. */
         UnsignedWord m_address;
     };
 }

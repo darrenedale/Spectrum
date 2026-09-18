@@ -10,16 +10,12 @@
 
 namespace Spectrum::Debugger
 {
-    /**
-     * Breakpoint that monitors a 16-bit register pair and triggers when it changes to a target value.
-     */
+    /** Breakpoint that monitors a 16-bit register pair and triggers when it changes to a target value. */
     class RegisterValueBreakpoint
     : public RegisterBreakpoint
     {
     private:
-        /**
-         * Convenience alias for the type of the target value.
-         */
+        /** Convenience alias for the type of the target value. */
         using UnsignedWord = ::Z80::UnsignedWord;
 
     public:
@@ -29,7 +25,7 @@ namespace Spectrum::Debugger
          * @param reg The register to monitor.
          * @param targetValue The target value.
          */
-        RegisterValueBreakpoint(Register16 reg, UnsignedWord targetValue)
+        RegisterValueBreakpoint(const Register16 reg, const UnsignedWord targetValue)
         : RegisterBreakpoint(reg),
           m_targetValue(targetValue)
         {}
@@ -39,21 +35,24 @@ namespace Spectrum::Debugger
          *
          * @return "Register pair value"
          */
-        [[nodiscard]] std::string typeName() const override;
+        [[nodiscard]]
+        std::string typeName() const override;
 
         /**
          * A human-readable description of the breakpoint's condition.
          *
          * @return <register-name> == 0x<value>
          */
-        [[nodiscard]] std::string conditionDescription() const override;
+        [[nodiscard]]
+        std::string conditionDescription() const override;
 
         /**
          * Fetch the target value for the register.
          *
          * @return The value.
          */
-        [[nodiscard]] inline UnsignedWord targetValue() const
+        [[nodiscard]]
+        UnsignedWord targetValue() const
         {
             return m_targetValue;
         }
@@ -80,9 +79,7 @@ namespace Spectrum::Debugger
         bool check(const BaseSpectrum & spectrum) override;
 
     private:
-        /**
-         * The target value for the register.
-         */
+        /** The target value for the register. */
         UnsignedWord m_targetValue;
     };
 }

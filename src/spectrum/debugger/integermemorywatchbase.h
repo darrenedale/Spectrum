@@ -6,7 +6,6 @@
 #define SPECTRUM_DEBUGGER_INTEGERMEMORYWATCHBASE_H
 
 #include "memorywatch.h"
-#include "../../util/endian.h"
 
 namespace Spectrum::Debugger
 {
@@ -20,9 +19,7 @@ namespace Spectrum::Debugger
     : public MemoryWatch
     {
     public:
-        /**
-         * Enumeration of supported display bases.
-         */
+        /** Enumeration of supported display bases. */
         enum class Base
         {
             Hex = 0,
@@ -31,9 +28,7 @@ namespace Spectrum::Debugger
             Binary,
         };
 
-        /**
-         * Convenience alias for the byte order of the watched value.
-         */
+        /** Convenience alias for the byte order of the watched value. */
         using ByteOrder = std::endian;
 
         IntegerMemoryWatchBase(BaseSpectrum::MemoryType * memory, ::Z80::UnsignedWord address)
@@ -49,7 +44,8 @@ namespace Spectrum::Debugger
          *
          * @return The size in bytes.
          */
-        [[nodiscard]] constexpr WatchSize size() const override = 0;
+        [[nodiscard]]
+        constexpr WatchSize size() const override = 0;
 
         /**
          * Fetch the name of the watch type.
@@ -58,21 +54,24 @@ namespace Spectrum::Debugger
          *
          * @return The type.
          */
-        [[nodiscard]] std::string typeName() const override = 0;
+        [[nodiscard]]
+        std::string typeName() const override = 0;
 
         /**
          * Fetch the current display value for the watched memory.
          *
          * @return
          */
-        [[nodiscard]] std::string displayValue() const override = 0;
+        [[nodiscard]]
+        std::string displayValue() const override = 0;
 
         /**
          * Fetch the base in which numbers are displayed.
          *
          * @return The base.
          */
-        [[nodiscard]] Base base() const
+        [[nodiscard]]
+        Base base() const
         {
             return m_base;
         }
@@ -82,7 +81,7 @@ namespace Spectrum::Debugger
          *
          * @param base
          */
-        void setBase(Base base)
+        void setBase(const Base base)
         {
             m_base = base;
         }
@@ -92,7 +91,8 @@ namespace Spectrum::Debugger
          *
          * @return The byte order.
          */
-        [[nodiscard]] ByteOrder byteOrder() const
+        [[nodiscard]]
+        ByteOrder byteOrder() const
         {
             return m_byteOrder;
         }
@@ -102,20 +102,16 @@ namespace Spectrum::Debugger
          *
          * @param order The byte order.
          */
-        void setByteOrder(ByteOrder order)
+        void setByteOrder(const ByteOrder order)
         {
             m_byteOrder = order;
         }
 
     private:
-        /**
-         * The base in which to display the value.
-         */
+        /** The base in which to display the value. */
         Base m_base;
 
-        /**
-         * The byte order to use when interpreting the watched memory as an int.
-         */
+        /** The byte order to use when interpreting the watched memory as an int. */
         ByteOrder m_byteOrder;
     };
 }

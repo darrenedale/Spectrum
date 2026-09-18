@@ -4,15 +4,18 @@
 
 #include <array>
 #include <sstream>
+#include <string>
+
 #include "stringmemorywatch.h"
+
+using namespace std::string_literals;
 
 using namespace Spectrum::Debugger;
 
-StringMemoryWatch::StringMemoryWatch(Spectrum::BaseSpectrum::MemoryType * memory, ::Z80::UnsignedWord address, MemoryWatch::WatchSize size)
+StringMemoryWatch::StringMemoryWatch(BaseSpectrum::MemoryType * memory, const ::Z80::UnsignedWord address, const WatchSize size)
 : MemoryWatch(memory, address),
   m_size(static_cast<std::uint32_t>(size)),
-  m_charset(CharacterEncoding::Spectrum),
-  m_typeName()
+  m_charset(CharacterEncoding::Spectrum)
 {}
 
 std::string StringMemoryWatch::typeName() const
@@ -53,7 +56,7 @@ std::string StringMemoryWatch::displayValue() const
     return out.str();
 }
 
-void StringMemoryWatch::appendSpectrumChar(std::ostream & out, ::Z80::UnsignedByte ch)
+void StringMemoryWatch::appendSpectrumChar(std::ostream & out, const ::Z80::UnsignedByte ch)
 {
     using namespace std::string_literals;
 

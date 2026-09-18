@@ -50,7 +50,8 @@ namespace Spectrum::Debugger
          *
          * @return The size in bytes.
          */
-        [[nodiscard]] constexpr WatchSize size() const override
+        [[nodiscard]]
+        constexpr WatchSize size() const override
         {
             return sizeof(int_t);
         }
@@ -62,7 +63,8 @@ namespace Spectrum::Debugger
          *
          * @return The type.
          */
-        [[nodiscard]] std::string typeName() const override
+        [[nodiscard]]
+        std::string typeName() const override
         {
             static std::unique_ptr<std::string> name = nullptr;
 
@@ -80,7 +82,8 @@ namespace Spectrum::Debugger
          *
          * @return
          */
-        [[nodiscard]] std::string displayValue() const override
+        [[nodiscard]]
+        std::string displayValue() const override
         {
             if constexpr (8 < sizeof(int_t)) {
                 return bigDisplayValue();
@@ -136,7 +139,8 @@ namespace Spectrum::Debugger
          *
          * @return The display value.
          */
-        [[nodiscard]] std::string bigDisplayValue() const
+        [[nodiscard]]
+        std::string bigDisplayValue() const
         {
             std::array<BaseSpectrum::MemoryType::Byte, sizeof(int_t)> buffer;
             memory()->readBytes(address(), sizeof(int_t), buffer.data());

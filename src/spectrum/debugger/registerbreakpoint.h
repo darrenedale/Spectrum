@@ -10,16 +10,12 @@
 
 namespace Spectrum::Debugger
 {
-    /**
-     * Base class for breakpoints that monitor the state of 16-bit register pairs.
-     */
+    /** Base class for breakpoints that monitor the state of 16-bit register pairs. */
     class RegisterBreakpoint
     : public Breakpoint
     {
     protected:
-        /**
-         * Convenience alias for the register type.
-         */
+        /** Convenience alias for the register type. */
         using Register16 = ::Z80::Register16;
 
     public:
@@ -28,7 +24,7 @@ namespace Spectrum::Debugger
          *
          * @param reg The register that is the subject of the breakpoint.
          */
-        explicit RegisterBreakpoint(Register16 reg)
+        explicit RegisterBreakpoint(const Register16 reg)
         : Breakpoint(),
           m_register(reg)
         {}
@@ -40,15 +36,14 @@ namespace Spectrum::Debugger
          *
          * @return The register.
          */
-        [[nodiscard]] inline Register16 watchedRegister() const
+        [[nodiscard]]
+        Register16 watchedRegister() const
         {
             return m_register;
         }
 
     private:
-        /**
-         * The register that is the subject of the breakpoint.
-         */
+        /** The register that is the subject of the breakpoint. */
         Register16 m_register;
     };
 }

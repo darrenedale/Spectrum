@@ -5,8 +5,10 @@
 #ifndef SPECTRUM_DEBUGGER_MEMORYCHANGEDBREAKPOINT_H
 #define SPECTRUM_DEBUGGER_MEMORYCHANGEDBREAKPOINT_H
 
-#include <sstream>
 #include <iomanip>
+#include <optional>
+#include <sstream>
+
 #include "memorybreakpoint.h"
 
 namespace Spectrum::Debugger
@@ -24,9 +26,7 @@ namespace Spectrum::Debugger
     : public MemoryBreakpoint
     {
     public:
-        /**
-         * Import base class constructor(s).
-         */
+        /** Import base class constructor(s). */
         using MemoryBreakpoint::MemoryBreakpoint;
 
         /**
@@ -34,7 +34,8 @@ namespace Spectrum::Debugger
          *
          * @return "Memory value change"
          */
-        [[nodiscard]] std::string typeName() const override
+        [[nodiscard]]
+        std::string typeName() const override
         {
             return "Memory value change";
         }
@@ -44,7 +45,8 @@ namespace Spectrum::Debugger
          *
          * @return "<bit-size>-bit value at address 0x<address> changes"
          */
-        [[nodiscard]] std::string conditionDescription() const override
+        [[nodiscard]]
+        std::string conditionDescription() const override
         {
             std::ostringstream out;
             out << (sizeof(value_t) * 8) << "-bit value at address 0x" << std::hex << std::setfill('0') << std::setw(4) << address() << " changes";
@@ -76,12 +78,12 @@ namespace Spectrum::Debugger
          */
         bool check(const BaseSpectrum & spectrum) override
         {
-            auto * memory = spectrum.memory();
+            const auto * memory = spectrum.memory();
             assert(memory && address() <= memory->addressableSize() - sizeof(value_t));
             auto currentValue = memory->readWord<value_t>(address());
 
             // NOTE the breakpoint never triggers on the first check since we don't know what the memory value was before the breakpoint was created.
-            bool changed = m_lastSeenValue && *m_lastSeenValue != currentValue;
+            const bool changed = m_lastSeenValue && *m_lastSeenValue != currentValue;
             m_lastSeenValue = currentValue;
 
             if (changed) {
@@ -92,9 +94,7 @@ namespace Spectrum::Debugger
         }
 
     private:
-        /**
-         * The last value seen at the memory address being monitored.
-         */
+        /** The last value seen at the memory address being monitored. */
         std::optional<value_t> m_lastSeenValue;
     };
 }

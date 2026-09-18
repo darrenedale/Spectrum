@@ -25,9 +25,7 @@ namespace Spectrum::Debugger
     : public MemoryWatch
     {
     public:
-        /**
-         * Enumeration of supported display charsets.
-         */
+        /** Enumeration of supported display charsets. */
         enum class CharacterEncoding
         {
             Spectrum = 0,
@@ -52,7 +50,8 @@ namespace Spectrum::Debugger
          *
          * @return The type name.
          */
-        [[nodiscard]] std::string typeName() const override;
+        [[nodiscard]]
+        std::string typeName() const override;
 
         /**
          * Fetch the size of the string being watched.
@@ -61,7 +60,8 @@ namespace Spectrum::Debugger
          *
          * @return The size.
          */
-        [[nodiscard]] WatchSize size() const override
+        [[nodiscard]]
+        WatchSize size() const override
         {
             return m_size;
         }
@@ -71,7 +71,7 @@ namespace Spectrum::Debugger
          *
          * @param size The string size.
          */
-        void setSize(WatchSize size)
+        void setSize(const WatchSize size)
         {
             if (m_size != size) {
                 m_size = size;
@@ -84,7 +84,8 @@ namespace Spectrum::Debugger
          *
          * @return The current character encoding.
          */
-        [[nodiscard]] CharacterEncoding characterEncoding() const
+        [[nodiscard]]
+        CharacterEncoding characterEncoding() const
         {
             return m_charset;
         }
@@ -94,7 +95,7 @@ namespace Spectrum::Debugger
          *
          * @param encoding The encoding to use.
          */
-        void setCharacterEncoding(CharacterEncoding encoding)
+        void setCharacterEncoding(const CharacterEncoding encoding)
         {
             m_charset = encoding;
         }
@@ -106,7 +107,8 @@ namespace Spectrum::Debugger
          *
          * @return The display string.
          */
-        [[nodiscard]] std::string displayValue() const override;
+        [[nodiscard]]
+        std::string displayValue() const override;
 
     protected:
         /**
@@ -117,14 +119,10 @@ namespace Spectrum::Debugger
          */
         static void appendSpectrumChar(std::ostream & out, ::Z80::UnsignedByte ch);
 
-        /**
-         * The size in bytes of the string being watched.
-         */
+        /** The size in bytes of the string being watched. */
         WatchSize m_size;
 
-        /**
-         * The character encoding to use when interpreting the watched bytes.
-         */
+        /** The character encoding to use when interpreting the watched bytes. */
         CharacterEncoding m_charset;
 
         /**

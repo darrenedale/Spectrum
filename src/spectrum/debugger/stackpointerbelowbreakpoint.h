@@ -11,16 +11,12 @@
 
 namespace Spectrum::Debugger
 {
-    /**
-     * Breakpoint that triggers when the SP of the Z80 is below a particular address.
-     */
+    /** Breakpoint that triggers when the SP of the Z80 is below a particular address. */
     class StackPointerBelowBreakpoint
     : public Breakpoint
     {
     private:
-        /**
-         * Convenience alias for the type of the trigger SP address.
-         */
+        /** Convenience alias for the type of the trigger SP address. */
         using UnsignedWord = ::Z80::UnsignedWord;
 
     public:
@@ -29,7 +25,7 @@ namespace Spectrum::Debugger
          *
          * @param address The address below which the Sp should trigger the breakpoint.
          */
-        explicit StackPointerBelowBreakpoint(UnsignedWord address)
+        explicit StackPointerBelowBreakpoint(const UnsignedWord address)
         : Breakpoint(),
           m_address(address)
         {}
@@ -39,21 +35,24 @@ namespace Spectrum::Debugger
          *
          * @return "Stack pointer below"
          */
-        [[nodiscard]] std::string typeName() const override;
+        [[nodiscard]]
+        std::string typeName() const override;
 
         /**
          * A human-readable description of the breakpoint's condition.
          *
          * @return "SP <= 0x<value>"
          */
-        [[nodiscard]] std::string conditionDescription() const override;
+        [[nodiscard]]
+        std::string conditionDescription() const override;
 
         /**
          * The address against which the SP is being checked.
          *
          * @return The address.
          */
-        [[nodiscard]] inline ::Z80::UnsignedWord address() const
+        [[nodiscard]]
+        UnsignedWord address() const
         {
             return m_address;
         }
@@ -79,9 +78,7 @@ namespace Spectrum::Debugger
         bool check(const BaseSpectrum & spectrum) override;
 
     private:
-        /**
-         * The address below which SP triggers the breakpoint.
-         */
+        /** The address below which SP triggers the breakpoint. */
         UnsignedWord m_address;
     };
 }

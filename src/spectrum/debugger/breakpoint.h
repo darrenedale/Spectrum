@@ -27,6 +27,8 @@ namespace Spectrum::Debugger
         class Observer
         {
         public:
+            virtual ~Observer() = default;
+
             /**
              * Notify the observer that the observed condition has been met.
              */
@@ -48,14 +50,16 @@ namespace Spectrum::Debugger
          *
          * @return The breakpoint type name.
          */
-        [[nodiscard]] virtual std::string typeName() const = 0;
+        [[nodiscard]]
+        virtual std::string typeName() const = 0;
 
         /**
          * Fetch a human-readable description of the breakpoint condition.
          *
          * @return The description.
          */
-        [[nodiscard]] virtual std::string conditionDescription() const = 0;
+        [[nodiscard]]
+        virtual std::string conditionDescription() const = 0;
 
         /**
          * Check whether a breakpoint is equivalent to another.
@@ -85,14 +89,14 @@ namespace Spectrum::Debugger
          * The provided observer will no longer receive notifications from the breakpoint. The observer is not destroyed. It is safe to provide a pointer to an
          * observer that is not currently observing the breakpoint - in this case the call is a no-op. It is also safe to provide nullptr.
          */
-        void removeObserver(Observer *);
+        void removeObserver(const Observer *);
 
         /**
          * Check whether the provided observer is observing the breakpoint.
          *
          * @return true if it is, false otherwise.
          */
-        bool hasObserver(Observer *) const;
+        bool hasObserver(const Observer *) const;
 
         /**
          * All observers will be removed.

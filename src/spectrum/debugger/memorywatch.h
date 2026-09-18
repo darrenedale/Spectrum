@@ -10,15 +10,11 @@
 
 namespace Spectrum::Debugger
 {
-    /**
-     * Abstract base class for debug watches on Computer memory.
-     */
+    /** Abstract base class for debug watches on Computer memory. */
     class MemoryWatch
     {
     public:
-        /**
-         * Convenience alias for the size, in bytes, of a chunk of watched memory.
-         */
+        /** Convenience alias for the size, in bytes, of a chunk of watched memory. */
         using WatchSize = std::uint32_t;
 
         /**
@@ -37,9 +33,7 @@ namespace Spectrum::Debugger
             assert(address < memory->addressableSize());
         }
 
-        /**
-         * Destructor.
-         */
+        /** Destructor. */
         virtual ~MemoryWatch() = default;
 
         /**
@@ -132,6 +126,7 @@ namespace Spectrum::Debugger
          *
          * @return
          */
+        [[nodiscard]]
         virtual std::string typeName() const = 0;
 
         /**
@@ -139,22 +134,17 @@ namespace Spectrum::Debugger
          *
          * @return The display content.
          */
+        [[nodiscard]]
         virtual std::string displayValue() const = 0;
 
     private:
-        /**
-         * The memory being watched.
-         */
+        /** The memory being watched. */
         BaseSpectrum::MemoryType * m_memory;
 
-        /**
-         * The address of the first byte of memory being watched.
-         */
+        /** The address of the first byte of memory being watched. */
         ::Z80::UnsignedWord m_address;
 
-        /**
-         * The arbitrary label to give to the watch.
-         */
+        /** The arbitrary label to give to the watch. */
         std::string m_label;
     };
 }

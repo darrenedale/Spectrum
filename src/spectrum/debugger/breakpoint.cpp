@@ -4,6 +4,9 @@
 
 #include <algorithm>
 #include <cassert>
+#include <ranges>
+#include <utility>
+
 #include "breakpoint.h"
 
 using namespace Spectrum::Debugger;
@@ -16,7 +19,7 @@ void Breakpoint::notifyObservers()
     }
 }
 
-void Breakpoint::addObserver(Breakpoint::Observer * observer)
+void Breakpoint::addObserver(Observer * observer)
 {
     assert(observer);
     m_observers.push_back(observer);
@@ -27,14 +30,14 @@ void Breakpoint::clearObservers()
     m_observers.clear();
 }
 
-void Breakpoint::removeObserver(Observer * observer)
+void Breakpoint::removeObserver(const Observer * observer)
 {
     if (!observer) {
         return;
     }
 
     while (true) {
-        const auto pos = std::find(m_observers.cbegin(), m_observers.cend(), observer);
+        const auto pos = std::ranges::find(std::as_const(m_observers), observer);
 
         if (pos == m_observers.cend()) {
             break;
@@ -44,7 +47,7 @@ void Breakpoint::removeObserver(Observer * observer)
     }
 }
 
-bool Breakpoint::hasObserver(Observer * observer) const
+bool Breakpoint::hasObserver(const Observer * observer) const
 {
-    return m_observers.cend() != std::find(m_observers.cbegin(), m_observers.cend(), observer);
+    return m_observers.cend() != std::ranges::find(m_observers, observer);
 }

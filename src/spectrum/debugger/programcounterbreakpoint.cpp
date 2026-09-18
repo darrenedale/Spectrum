@@ -4,8 +4,11 @@
 
 #include <sstream>
 #include <iomanip>
+#include <string>
+
 #include "programcounterbreakpoint.h"
 
+using namespace std::string_literals;
 using namespace Spectrum::Debugger;
 
 bool ProgramCounterBreakpoint::check(const BaseSpectrum & spectrum)
@@ -25,12 +28,12 @@ bool ProgramCounterBreakpoint::operator==(const Breakpoint & other) const
 
 std::string ProgramCounterBreakpoint::typeName() const
 {
-    return "Program counter";
+    return "Program counter"s;
 }
 
 std::string ProgramCounterBreakpoint::conditionDescription() const
 {
     std::ostringstream out;
-    out << "PC == 0x" << std::hex << std::setfill('0') << std::setw(4) << address();
+    out << "PC == 0x"s << std::hex << std::setfill('0') << std::setw(4) << address();
     return out.str();
 }

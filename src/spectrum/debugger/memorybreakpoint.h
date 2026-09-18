@@ -28,7 +28,7 @@ namespace Spectrum::Debugger
          *
          * @param address The address that is the subject of the breakpoint.
          */
-        explicit MemoryBreakpoint(UnsignedWord address)
+        explicit MemoryBreakpoint(const UnsignedWord address)
         : Breakpoint(),
           m_address(address)
         {}
@@ -38,7 +38,7 @@ namespace Spectrum::Debugger
          *
          * @return The address.
          */
-        [[nodiscard]] inline UnsignedWord address() const
+        [[nodiscard]] UnsignedWord address() const
         {
             return m_address;
         }
@@ -53,7 +53,7 @@ namespace Spectrum::Debugger
          *
          * @param address
          */
-        inline virtual void setAddress(UnsignedWord address)
+        virtual void setAddress(UnsignedWord address)
         {
             m_address = address;
         }
