@@ -1,4 +1,32 @@
-find_package(Qt5 COMPONENTS Core Gui Widgets Gamepad DBus)
+option(WITH_QT_GAMEPAD "Include support for host gamepads using the QtGamepad module" OFF)
+
+set(
+        SPECTRUM_QT_COMPONENTS
+        Core
+        Gui
+        Widgets
+        DBus
+)
+
+set(
+        SPECTRUM_QT_LIBS
+        Qt::Core
+        Qt::Gui
+        Qt::Widgets
+        Qt::DBus
+)
+
+set(
+        SPECTRUM_QT_GAMEPAD_SOURCES
+)
+
+if (WITH_QT_GAMEPAD)
+    list(APPEND SPECTRUM_QT_COMPONENTS Gamepad)
+    list(APPEND SPECTRUM_QT_LIBS Qt::Gamepad)
+    list(APPEND SPECTRUM_QT_GAMEPAD_SOURCES qtui/gamecontrollerhandler.cpp)
+endif(WITH_QT_GAMEPAD)
+
+find_package(Qt5 COMPONENTS ${SPECTRUM_QT_COMPONENTS})
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -103,7 +131,6 @@ add_executable(
         qtui/spectrumdisplayimagewidget.cpp
         qtui/hexspinbox.cpp
         qtui/dialogue.cpp
-        qtui/gamecontrollerhandler.cpp
         qtui/notification.cpp
         qtui/icons.qrc
         qtui/help.qrc
@@ -126,9 +153,10 @@ add_executable(
         ../util/numeric.h
         ../util/concepts.h
         ../../dist/macos/Spectrum/Spectrum.icns
+        ${SPECTRUM_QT_GAMEPAD_SOURCES}
 )
 
-target_link_libraries(spectrum Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Gamepad Qt5::DBus)
+target_link_libraries(spectrum ${SPECTRUM_QT_LIBS})
 
 set_target_properties(
         spectrum

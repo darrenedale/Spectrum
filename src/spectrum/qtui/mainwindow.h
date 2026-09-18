@@ -17,8 +17,11 @@
 #include "../mouseinterface.h"
 #include "../joystickinterface.h"
 #include "../keyboard.h"
-#include "gamecontrollerhandler.h"
 #include "thread.h"
+
+#if defined(WITH_QT_GAMEPAD)
+#include "gamecontrollerhandler.h"
+#endif
 
 namespace Spectrum
 {
@@ -132,14 +135,14 @@ namespace Spectrum::QtUi
          * @param format Set the save format. If an empty string is provided, the default format (currently .z80) will be used.
          */
         void saveSnapshotToSlot(int slotIndex, QString format = {});
-
+#if (defined(WITH_QT_GAMEPAD))
         /**
          * Rescan the game controllers connected to the host.
          *
          * The controllers menu is re-populated. This is called automatically if a controller is disconnected or a new controller is connected.
          */
         void rescanGameControllers();
-
+#endif
         /**
          * Fetch a read/write reference to the currently running Spectrum.
          *
@@ -474,8 +477,12 @@ namespace Spectrum::QtUi
 
         QTimer m_displayRefreshTimer;
         std::unique_ptr<JoystickInterface> m_joystick;
+
+#if defined(WITH_QT_GAMEPAD)
         GameControllerHandler m_gameControllerHandler;
-        std::unique_ptr<MouseInterface> m_mouse;
+#endif
+
+	    std::unique_ptr<MouseInterface> m_mouse;
 	};
 }
 

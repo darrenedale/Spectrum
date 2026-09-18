@@ -482,7 +482,9 @@ MainWindow::MainWindow(QWidget * parent)
   m_helpWidget(nullptr),
   m_displayRefreshTimer(nullptr),
   m_joystick(std::make_unique<Spectrum::KempstonJoystick>()),
+#if (defined(WITH_QT_GAMEPAD))
   m_gameControllerHandler(m_joystick.get()),
+#endif
   m_mouse(nullptr)
 {
     setWindowTitle(QStringLiteral("Spectrum"));
@@ -547,10 +549,10 @@ MainWindow::MainWindow(QWidget * parent)
     m_joystickInterface2.setToolTip(tr("Emulate a ZX Interface 2 joystick interface."));
     m_joystickNone.setToolTip(tr("Don't emulate any joystick interface."));
     m_gameControllersMenu.setToolTip(tr("Choose which game controller to attach to the emulated Spectrum joystick interface."));
-
+#if (defined(WITH_QT_GAMEPAD))
     rescanGameControllers();
     connect(QGamepadManager::instance(), &QGamepadManager::connectedGamepadsChanged, this, &MainWindow::rescanGameControllers);
-
+#endif
     m_kempstonMouse.setCheckable(true);
     m_kempstonMouse.setChecked(false);
 
@@ -1320,6 +1322,7 @@ void MainWindow::saveSnapshot(const QString & fileName, QString format)
     }
 }
 
+#if (defined(WITH_QT_GAMEPAD))
 void MainWindow::rescanGameControllers()
 {
     // keep this so that we can restore selection after the rescan
@@ -1361,6 +1364,7 @@ void MainWindow::rescanGameControllers()
     action->setCheckable(true);
     action->setChecked(!currentController);
 }
+#endif
 
 bool MainWindow::eventFilter(QObject * target, QEvent * event)
 {
@@ -1396,7 +1400,11 @@ DISABLE_WARNING_SWITCH
                     m_spectrum->setExecutionSpeedConstrained(false);
                     updateStatusBarSpeedWidget();
                     return true;
+#if (defined(WITH_QT_GAMEPAD))
                 } else if (auto joystickMapping = mapToSpectrumJoystick(qtKey); !m_gameControllerHandler.gameController() && m_joystick && JoystickMapping::None != joystickMapping) {
+#else
+                } else if (auto joystickMapping = mapToSpectrumJoystick(qtKey); m_joystick && JoystickMapping::None != joystickMapping) {
+#endif
                     // if there's a joystick interface connected to the emulated spectrum and it's a keyboard-mapped joystick and the keypress matches a key
                     // mapped to the joystick, the joystick swallows the keypress event
                     switch (joystickMapping) {
@@ -1962,43 +1970,79 @@ void MainWindow::modelPlus3Triggered()
 void MainWindow::useKempstonJoystickTriggered()
 {
     m_spectrum->setJoystickInterface(nullptr);
+
+#if (defined(WITH_QT_GAMEPAD))
     m_gameControllerHandler.setJoystick(nullptr);
+#endif
+
     m_joystick = std::make_unique<KempstonJoystick>();
+
+#if (defined(WITH_QT_GAMEPAD))
     m_gameControllerHandler.setJoystick(m_joystick.get());
+#endif
+
     m_spectrum->setJoystickInterface(m_joystick.get());
 }
 
 void MainWindow::useInterfaceTwoJoystickTriggered()
 {
     m_spectrum->setJoystickInterface(nullptr);
+
+#if (defined(WITH_QT_GAMEPAD))
     m_gameControllerHandler.setJoystick(nullptr);
+#endif
+
     m_joystick = std::make_unique<InterfaceTwoJoystick>();
+
+#if (defined(WITH_QT_GAMEPAD))
     m_gameControllerHandler.setJoystick(m_joystick.get());
+#endif
+
     m_spectrum->setJoystickInterface(m_joystick.get());
 }
 
 void MainWindow::useCursorJoystickTriggered()
 {
     m_spectrum->setJoystickInterface(nullptr);
+
+#if (defined(WITH_QT_GAMEPAD))
     m_gameControllerHandler.setJoystick(nullptr);
+#endif
+
     m_joystick = std::make_unique<CursorJoystick>();
+
+#if (defined(WITH_QT_GAMEPAD))
     m_gameControllerHandler.setJoystick(m_joystick.get());
+#endif
+
     m_spectrum->setJoystickInterface(m_joystick.get());
 }
 
 void MainWindow::useFullerJoystickTriggered()
 {
     m_spectrum->setJoystickInterface(nullptr);
+
+#if (defined(WITH_QT_GAMEPAD))
     m_gameControllerHandler.setJoystick(nullptr);
+#endif
+
     m_joystick = std::make_unique<FullerJoystick>();
+
+#if (defined(WITH_QT_GAMEPAD))
     m_gameControllerHandler.setJoystick(m_joystick.get());
+#endif
+
     m_spectrum->setJoystickInterface(m_joystick.get());
 }
 
 void MainWindow::noJoystickTriggered()
 {
     m_spectrum->setJoystickInterface(nullptr);
+
+#if (defined(WITH_QT_GAMEPAD))
     m_gameControllerHandler.setJoystick(nullptr);
+#endif
+
     m_joystick.reset();
 }
 
