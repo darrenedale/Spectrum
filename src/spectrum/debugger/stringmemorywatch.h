@@ -51,7 +51,7 @@ namespace Spectrum::Debugger
          * @return The type name.
          */
         [[nodiscard]]
-        std::string typeName() const override;
+        std::string typeName() const noexcept override;
 
         /**
          * Fetch the size of the string being watched.
@@ -61,7 +61,7 @@ namespace Spectrum::Debugger
          * @return The size.
          */
         [[nodiscard]]
-        WatchSize size() const override
+        WatchSize size() const noexcept override
         {
             return m_size;
         }
@@ -85,7 +85,7 @@ namespace Spectrum::Debugger
          * @return The current character encoding.
          */
         [[nodiscard]]
-        CharacterEncoding characterEncoding() const
+        CharacterEncoding characterEncoding() const noexcept
         {
             return m_charset;
         }
@@ -95,7 +95,7 @@ namespace Spectrum::Debugger
          *
          * @param encoding The encoding to use.
          */
-        void setCharacterEncoding(const CharacterEncoding encoding)
+        void setCharacterEncoding(const CharacterEncoding encoding) noexcept
         {
             m_charset = encoding;
         }
@@ -117,7 +117,7 @@ namespace Spectrum::Debugger
          * @param out The output stream to write to.
          * @param ch The character index.
          */
-        static void appendSpectrumChar(std::ostream & out, ::Z80::UnsignedByte ch);
+        static void appendSpectrumChar(std::ostream & out, ::Z80::UnsignedByte ch) noexcept;
 
         /** The size in bytes of the string being watched. */
         WatchSize m_size;

@@ -25,7 +25,7 @@ void Breakpoint::addObserver(Observer * observer)
     m_observers.push_back(observer);
 }
 
-void Breakpoint::clearObservers()
+void Breakpoint::clearObservers() noexcept
 {
     m_observers.clear();
 }
@@ -47,7 +47,7 @@ void Breakpoint::removeObserver(const Observer * observer)
     }
 }
 
-bool Breakpoint::hasObserver(const Observer * observer) const
+bool Breakpoint::hasObserver(const Observer * observer) const noexcept
 {
     return m_observers.cend() != std::ranges::find(m_observers, observer);
 }

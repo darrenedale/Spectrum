@@ -8,11 +8,14 @@
 #include <QLabel>
 #include <QKeyEvent>
 #include <QRegularExpression>
+#include <QString>
+
 #include "../application.h"
 #include "../widgetupdatesuspender.h"
 #include "memorysearchwidget.h"
 #include "../../../util/debug.h"
 
+// using namespace Qt::Literals::StringLiterals;
 using namespace Spectrum::QtUi::Debugger;
 
 namespace
@@ -107,14 +110,14 @@ QByteArray MemorySearchWidget::stringValue() const
         if (0x00a3 == unicode) {
             // £ U+00a3 Pound Sign
             ret += 96;
-        } else if (0x00a9 == ch) {
+        } else if (QChar(0x00a9) == ch) {
             // © U+00a9 Copyright Sign
             ret += 127;
         } else if (32 <= unicode && 127 > unicode) {
             // ASCII and Spectrum charset equivalence
             ret += static_cast<QByteArray::value_type>(unicode & 0x00ff);
         } else {
-            Util::debug << "unicode codepoint U+" << std::hex << std::setfill('0') << std::setw(4) << unicode << " cannot be represented in the Spectrum charset\n";
+            Util::debug << "unicode codepoint U+" << std::hex << std::setfill('0') << std::setw(4) << static_cast<int>(unicode) << " cannot be represented in the Spectrum charset\n";
             ret += '\0';
         }
     }

@@ -3,42 +3,43 @@
 //
 
 #include <regex>
+#include <string>
+
 #include "operand.h"
 
+using namespace std::string_literals;
 using namespace Interpreter;
 
-void Operand::parse()
+void Operand::parse() noexcept
 {
-    static constexpr const char * DecimalLiteralPattern = "([+-]?(?:[0-9]|[1-9][0-9]+))D?";
-    static constexpr const char * HexLiteralPattern = "\\$([0-9A-F]+)|0X([0-9A-F]+)|([0-9A-F]+)+H";
-    static constexpr const char * OctalLiteralPattern = "([0-7]+)O|0([0-7]+)";
-    static constexpr const char * BinaryLiteralPattern = "%([01]+)|([01]+)B|0B([01]+)";
+    static constexpr const auto * DecimalLiteralPattern = "([+-]?(?:[0-9]|[1-9][0-9]+))D?";
+    static constexpr const auto * HexLiteralPattern = R"(\$([0-9A-F]+)|0X([0-9A-F]+)|([0-9A-F]+)+H)";
+    static constexpr const auto * OctalLiteralPattern = "([0-7]+)O|0([0-7]+)";
+    static constexpr const auto * BinaryLiteralPattern = "%([01]+)|([01]+)B|0B([01]+)";
 
-    static std::regex DecimalLiteralMatcher(std::string("^") + DecimalLiteralPattern + "$");
-    static std::regex HexLiteralMatcher(std::string("^(?:") + HexLiteralPattern + ")$");
-    static std::regex OctalLiteralMatcher(std::string("^(?:") + OctalLiteralPattern + ")$");
-    static std::regex BinaryLiteralMatcher(std::string("^(?:") + BinaryLiteralPattern + ")$");
+    static std::regex DecimalLiteralMatcher("^"s + DecimalLiteralPattern + "$");
+    static std::regex HexLiteralMatcher("^(?:"s + HexLiteralPattern + ")$");
+    static std::regex OctalLiteralMatcher("^(?:"s + OctalLiteralPattern + ")$");
+    static std::regex BinaryLiteralMatcher("^(?:"s + BinaryLiteralPattern + ")$");
 
     // captures: 1 = decimal address; 2, 3, 4 = hex address; 5, 6 = octal address; 7, 8, 9 = binary address
     // only one capture will be populated, the others will have 0 length
-    static std::regex IndirectAddressMatcher(std::string("^\\((?:") + DecimalLiteralPattern + "|" + HexLiteralPattern + "|" + OctalLiteralPattern + "|" + BinaryLiteralPattern + ")\\)$");
+    static std::regex IndirectAddressMatcher("^\\((?:"s + DecimalLiteralPattern + '|' + HexLiteralPattern + '|' + OctalLiteralPattern + '|' + BinaryLiteralPattern + ")\\)$");
 
-    static std::regex IndirectReg8Matcher("^\\(\\s*(B|C|D|E|H|L|A|F|IXH|IXL|IYH|IYL|I|R|B'|C'|D'|E'|H'|L'|A'|F')\\s*\\)$");
-    static std::regex IndirectReg16Matcher("^\\(\\s*(BC|DE|HL|AF|SP|PC|IX|IY|BC'|DE'|HL'|AF')\\s*\\)$");
-    static std::regex IndirectReg16OffsetMatcher("^\\(\\s*(IX|IY)\\s*([+\\-])\\s*([0-9]+|0[0-9]+|[01]+B|0X[0-9A-F]+|[0-9A-F]+H)\\s*\\)$");
+    static std::regex IndirectReg8Matcher(R"(^\(\s*(B|C|D|E|H|L|A|F|IXH|IXL|IYH|IYL|I|R|B'|C'|D'|E'|H'|L'|A'|F')\s*\)$)");
+    static std::regex IndirectReg16Matcher(R"(^\(\s*(BC|DE|HL|AF|SP|PC|IX|IY|BC'|DE'|HL'|AF')\s*\)$)");
+    static std::regex IndirectReg16OffsetMatcher(R"(^\(\s*(IX|IY)\s*([+\-])\s*([0-9]+|0[0-9]+|[01]+B|0X[0-9A-F]+|[0-9A-F]+H)\s*\)$)");
 
     m_type = OperandType::InvalidOperand;
     m_number = 0;
 
     /* number literals */
-    std::smatch match;
-
-    if (std::regex_match(m_string, match, DecimalLiteralMatcher)) {
-        /* decimal number */
+    if (std::smatch match; std::regex_match(m_string, match, DecimalLiteralMatcher)) {
+        // decimal number
         m_type = OperandType::NumberLiteral;
         m_number = std::stoi(match[1]);
     } else if (std::regex_match(m_string, match, OctalLiteralMatcher)) {
-        /* octal number */
+        // octal number
         m_type = OperandType::NumberLiteral;
 
         if (0 < match[1].length()) {
@@ -47,7 +48,7 @@ void Operand::parse()
             m_number = std::stoi(match[2], nullptr, 8);
         }
     } else if (std::regex_match(m_string, match, BinaryLiteralMatcher)) {
-        /* binary number */
+        // binary number
         m_type = OperandType::NumberLiteral;
 
         if (0 < match[1].length()) {
@@ -58,7 +59,7 @@ void Operand::parse()
             m_number = std::stoi(match[3], nullptr, 2);
         }
     } else if (std::regex_match(m_string, match, HexLiteralMatcher)) {
-        /* hex number */
+        // hex number
         m_type = OperandType::NumberLiteral;
 
         if (0 < match[1].length()) {
@@ -214,9 +215,8 @@ void Operand::parse()
         m_condition = ConditionType::Minus;
     } else if (std::regex_match(m_string, match, IndirectReg8Matcher)) {
         m_type = OperandType::IndirectReg8;
-        const auto & reg = match[1];
 
-        if ("B" == reg) {
+        if (const auto & reg = match[1]; "B" == reg) {
             m_reg8 = Register8::B;
         } else if ("C" == reg) {
             m_reg8 = Register8::C;
@@ -263,9 +263,8 @@ void Operand::parse()
         }
     } else if (std::regex_match(m_string, match, IndirectReg16Matcher)) {
         m_type = OperandType::IndirectReg16;
-        const auto & reg = match[1];
 
-        if ("BC" == reg) {
+        if (const auto & reg = match[1]; "BC" == reg) {
             m_reg16 = Register16::BC;
         } else if ("DE" == reg) {
             m_reg16 = Register16::DE;
@@ -292,9 +291,8 @@ void Operand::parse()
         }
     } else if (std::regex_match(m_string, match, IndirectReg16OffsetMatcher)) {
         m_type = OperandType::IndirectReg16WithOffset;
-        const auto & reg = match[1];
 
-        if ("IX" == reg) {
+        if (const auto & reg = match[1]; "IX" == reg) {
             m_reg16 = Register16::IX;
         } else if ("IY" == reg) {
             m_reg16 = Register16::IY;
@@ -302,7 +300,7 @@ void Operand::parse()
             m_type = OperandType::InvalidOperand;
         }
 
-        bool neg = ("-" == match[2]);
+        const auto negate = ("-" == match[2]);
         const auto & offsetMatch = match[3];
         int d;
 
@@ -318,10 +316,11 @@ void Operand::parse()
             d = std::stoi(static_cast<std::string>(offsetMatch), nullptr, 10);
         }
 
-        if (neg) {
+        if (negate) {
             d = 0 - d;
         }
-        if (d < -128 || d > 127) {
+
+        if (-128 > d || 127 < d) {
             m_type = OperandType::InvalidOperand;
         } else {
             m_number = d;

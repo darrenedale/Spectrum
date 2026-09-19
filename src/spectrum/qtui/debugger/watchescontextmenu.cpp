@@ -2,8 +2,10 @@
 // Created by darren on 03/05/2021.
 //
 
+#include <QActionGroup>
 #include <QStringLiteral>
 #include <QClipboard>
+
 #include "watchescontextmenu.h"
 #include "../application.h"
 

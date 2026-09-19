@@ -45,7 +45,7 @@ namespace Spectrum::Debugger
          * @return The size in bytes.
          */
         [[nodiscard]]
-        constexpr WatchSize size() const override = 0;
+        constexpr WatchSize size() const noexcept override = 0;
 
         /**
          * Fetch the name of the watch type.
@@ -55,7 +55,7 @@ namespace Spectrum::Debugger
          * @return The type.
          */
         [[nodiscard]]
-        std::string typeName() const override = 0;
+        std::string typeName() const noexcept override = 0;
 
         /**
          * Fetch the current display value for the watched memory.

@@ -5,11 +5,11 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
-#include <optional>
 #include <array>
-#include <memory>
 #include <cassert>
 #include <cstdint>
+#include <memory>
+#include <optional>
 
 /**
  * An interface for the memory for a computer.
@@ -30,9 +30,9 @@ public:
     using Size = std::uint64_t;
     using Byte = byte_t;
 
-    explicit Memory(Size addressableSize = 0, std::optional<Size> availableSize = {})
-            : m_addressableSize(addressableSize),
-              m_availableSize(availableSize ? *availableSize : addressableSize)
+    explicit Memory(const Size addressableSize = 0, const std::optional<Size> availableSize = {})
+    : m_addressableSize(addressableSize),
+      m_availableSize(availableSize ? *availableSize : addressableSize)
     {}
     Memory(const Memory & other) = delete;
     Memory(Memory && other) = delete;
@@ -85,7 +85,7 @@ public:
      * @param address
      * @return
      */
-    virtual inline Byte readByte(Address address) const
+    virtual Byte readByte(const Address address) const noexcept
     {
         assert(address < addressableSize());
 
@@ -113,7 +113,7 @@ public:
      *
      * @return The buffer.
      */
-    virtual inline Byte * readBytes(Address address, Size count, Byte * buffer) const
+    virtual inline Byte * readBytes(Address address, Size count, Byte * buffer) const noexcept
     {
         assert(address + count <= addressableSize());
 
@@ -176,7 +176,7 @@ public:
      * @param address The address of the first byte in the word to read.
      */
     template<class word_t>
-    inline word_t readWord(Address address) const
+    word_t readWord(const Address address) const
     {
         static_assert(std::is_integral_v<word_t>, "type to read must be an int type");
         static std::array<Byte, sizeof(word_t)> buffer;

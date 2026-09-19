@@ -13,7 +13,7 @@ using namespace std::string_literals;
 
 using namespace Spectrum::Debugger;
 
-bool RegisterValueBreakpoint::operator==(const Breakpoint & other) const
+bool RegisterValueBreakpoint::operator==(const Breakpoint & other) const noexcept
 {
     if (typeid(*this) != typeid(other)) {
         return false;
@@ -23,7 +23,7 @@ bool RegisterValueBreakpoint::operator==(const Breakpoint & other) const
     return watchedRegister() == rvOther.watchedRegister() && targetValue() == rvOther.targetValue();
 }
 
-bool RegisterValueBreakpoint::check(const BaseSpectrum & spectrum)
+bool RegisterValueBreakpoint::check(const BaseSpectrum & spectrum) noexcept
 {
     if (spectrum.z80()->registerValue(watchedRegister()) == targetValue()) {
         notifyObservers();
@@ -33,7 +33,7 @@ bool RegisterValueBreakpoint::check(const BaseSpectrum & spectrum)
     return false;
 }
 
-std::string RegisterValueBreakpoint::typeName() const
+std::string RegisterValueBreakpoint::typeName() const noexcept
 {
     return "Register pair value"s;
 }

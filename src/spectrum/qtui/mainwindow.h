@@ -2,12 +2,14 @@
 #define SPECTRUM_QTUI_MAINWINDOW_H
 
 #include <memory>
+#include <QAction>
+#include <QActionGroup>
 #include <QMainWindow>
 #include <QMenu>
-#include <QAction>
 #include <QSlider>
 #include <QSpinBox>
 #include <QTimer>
+
 #include "qimagedisplaydevice.h"
 #include "debugger/debugwindow.h"
 #include "aboutwidget.h"
@@ -449,14 +451,18 @@ namespace Spectrum::QtUi
         QAction m_monochromeDisplay;
         QAction m_bwDisplay;
 
+        std::unique_ptr<JoystickInterface> m_joystick;
         QAction m_joystickNone;
         QAction m_joystickKempston;
         QAction m_joystickInterface2;
         QAction m_joystickCursor;
         QAction m_joystickFuller;
 
+#if defined(WITH_QT_GAMEPAD)
+        GameControllerHandler m_gameControllerHandler;
         QMenu m_gameControllersMenu;
         QActionGroup m_gameControllersGroup;
+#endif
 
         QAction m_kempstonMouse;
 
@@ -476,11 +482,6 @@ namespace Spectrum::QtUi
         QLabel m_statusBarMHz;
 
         QTimer m_displayRefreshTimer;
-        std::unique_ptr<JoystickInterface> m_joystick;
-
-#if defined(WITH_QT_GAMEPAD)
-        GameControllerHandler m_gameControllerHandler;
-#endif
 
 	    std::unique_ptr<MouseInterface> m_mouse;
 	};

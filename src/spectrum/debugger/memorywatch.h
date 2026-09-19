@@ -25,7 +25,7 @@ namespace Spectrum::Debugger
          * @param memory The memory object to watch.
          * @param address The address to watch.
          */
-        MemoryWatch(BaseSpectrum::MemoryType * memory, ::Z80::UnsignedWord address)
+        MemoryWatch(BaseSpectrum::MemoryType * memory, const ::Z80::UnsignedWord address)
         : m_memory(memory),
           m_address(address)
         {
@@ -41,7 +41,8 @@ namespace Spectrum::Debugger
          *
          * @return The memory.
          */
-        [[nodiscard]] BaseSpectrum::MemoryType * memory() const
+        [[nodiscard]]
+        BaseSpectrum::MemoryType * memory() const noexcept
         {
             return m_memory;
         }
@@ -53,7 +54,7 @@ namespace Spectrum::Debugger
          *
          * @param memory The memory.
          */
-        void setMemory(BaseSpectrum::MemoryType * memory)
+        void setMemory(BaseSpectrum::MemoryType * memory) noexcept
         {
             assert(memory);
             assert(address() < memory->addressableSize());
@@ -65,7 +66,8 @@ namespace Spectrum::Debugger
          *
          * @return The address.
          */
-        [[nodiscard]] ::Z80::UnsignedWord address() const
+        [[nodiscard]]
+        ::Z80::UnsignedWord address() const noexcept
         {
             return m_address;
         }
@@ -77,7 +79,7 @@ namespace Spectrum::Debugger
          *
          * @param address The address.
          */
-        void setAddress(::Z80::UnsignedWord address)
+        void setAddress(const ::Z80::UnsignedWord address)
         {
             assert(address < memory()->addressableSize());
             m_address = address;
@@ -88,7 +90,8 @@ namespace Spectrum::Debugger
          *
          * @return The number of bytes, starting at address().
          */
-        virtual WatchSize size() const = 0;
+        [[nodiscard]]
+        virtual WatchSize size() const noexcept  = 0;
 
         /**
          * The label for the watch.
@@ -97,7 +100,8 @@ namespace Spectrum::Debugger
          *
          * @return The label.
          */
-        [[nodiscard]] const std::string & label() const
+        [[nodiscard]]
+        const std::string & label() const
         {
             return m_label;
         }
@@ -107,7 +111,7 @@ namespace Spectrum::Debugger
          *
          * @param label
          */
-        void setLabel(std::string label)
+        void setLabel(std::string label) noexcept
         {
             m_label = std::move(label);
         }
@@ -127,7 +131,7 @@ namespace Spectrum::Debugger
          * @return
          */
         [[nodiscard]]
-        virtual std::string typeName() const = 0;
+        virtual std::string typeName() const noexcept = 0;
 
         /**
          * Fetch the content to display for the current value of the watched address.

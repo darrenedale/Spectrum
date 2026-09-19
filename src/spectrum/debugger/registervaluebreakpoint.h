@@ -36,7 +36,7 @@ namespace Spectrum::Debugger
          * @return "Register pair value"
          */
         [[nodiscard]]
-        std::string typeName() const override;
+        std::string typeName() const noexcept override;
 
         /**
          * A human-readable description of the breakpoint's condition.
@@ -65,7 +65,7 @@ namespace Spectrum::Debugger
          *
          * @return true if the breakpoints are equivalent, false otherwise.
          */
-        bool operator==(const Breakpoint &) const override;
+        bool operator==(const Breakpoint &) const noexcept override;
 
         /**
          * Check the given Spectrum object state for whether it matches the breakpoint condition.
@@ -76,7 +76,7 @@ namespace Spectrum::Debugger
          *
          * @return true if the Spectrum state meets the breakpoint condition, false otherwise.
          */
-        bool check(const BaseSpectrum & spectrum) override;
+        bool check(const BaseSpectrum & spectrum) noexcept override;
 
     private:
         /** The target value for the register. */

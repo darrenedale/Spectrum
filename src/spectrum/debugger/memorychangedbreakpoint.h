@@ -8,8 +8,11 @@
 #include <iomanip>
 #include <optional>
 #include <sstream>
+#include <string>
 
 #include "memorybreakpoint.h"
+
+using namespace std::string_literals;
 
 namespace Spectrum::Debugger
 {
@@ -35,9 +38,9 @@ namespace Spectrum::Debugger
          * @return "Memory value change"
          */
         [[nodiscard]]
-        std::string typeName() const override
+        std::string typeName() const noexcept override
         {
-            return "Memory value change";
+            return "Memory value change"s;
         }
 
         /**
@@ -62,7 +65,7 @@ namespace Spectrum::Debugger
          *
          * @return True if the two breakpoints are equivalent, false otherwise.
          */
-        bool operator==(const Breakpoint & other) const override
+        bool operator==(const Breakpoint & other) const noexcept override
         {
             return typeid(*this) == typeid(other) && address() == dynamic_cast<const MemoryChangedBreakpoint<value_t> *>(&other)->address();
         }
@@ -76,7 +79,7 @@ namespace Spectrum::Debugger
          *
          * @return true if the memory value has changed, false if not.
          */
-        bool check(const BaseSpectrum & spectrum) override
+        bool check(const BaseSpectrum & spectrum) noexcept override
         {
             const auto * memory = spectrum.memory();
             assert(memory && address() <= memory->addressableSize() - sizeof(value_t));

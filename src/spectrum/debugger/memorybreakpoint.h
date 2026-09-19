@@ -28,7 +28,7 @@ namespace Spectrum::Debugger
          *
          * @param address The address that is the subject of the breakpoint.
          */
-        explicit MemoryBreakpoint(const UnsignedWord address)
+        explicit MemoryBreakpoint(const UnsignedWord address) noexcept
         : Breakpoint(),
           m_address(address)
         {}
@@ -38,7 +38,7 @@ namespace Spectrum::Debugger
          *
          * @return The address.
          */
-        [[nodiscard]] UnsignedWord address() const
+        [[nodiscard]] UnsignedWord address() const noexcept
         {
             return m_address;
         }
@@ -53,15 +53,13 @@ namespace Spectrum::Debugger
          *
          * @param address
          */
-        virtual void setAddress(UnsignedWord address)
+        virtual void setAddress(const UnsignedWord address) noexcept
         {
             m_address = address;
         }
 
     private:
-        /**
-         * The address that is the subject of the breakpoint.
-         */
+        /** The address that is the subject of the breakpoint. */
         UnsignedWord m_address;
     };
 }

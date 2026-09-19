@@ -51,7 +51,7 @@ namespace Spectrum::Debugger
          * @return The size in bytes.
          */
         [[nodiscard]]
-        constexpr WatchSize size() const override
+        constexpr WatchSize size() const noexcept override
         {
             return sizeof(int_t);
         }
@@ -64,7 +64,7 @@ namespace Spectrum::Debugger
          * @return The type.
          */
         [[nodiscard]]
-        std::string typeName() const override
+        std::string typeName() const noexcept override
         {
             static std::unique_ptr<std::string> name = nullptr;
 
@@ -88,7 +88,7 @@ namespace Spectrum::Debugger
             if constexpr (8 < sizeof(int_t)) {
                 return bigDisplayValue();
             } else {
-                auto value = memory()->template readWord<int_t>(address());
+                auto value = memory()->readWord<int_t>(address());
 
                 if constexpr (1 != sizeof(int_t)) {
                     if constexpr (::Z80::HostByteOrder != ::Z80::Z80ByteOrder) {
@@ -144,32 +144,37 @@ namespace Spectrum::Debugger
         {
             std::array<BaseSpectrum::MemoryType::Byte, sizeof(int_t)> buffer;
             memory()->readBytes(address(), sizeof(int_t), buffer.data());
-            std::ostringstream out;
 
             switch (base()) {
                 case Base::Decimal:
-                    return "<bigint decimal display not available>";
+                    return "<bigint decimal display not available>"s;
 
                 case Base::Hex:
                     if (byteOrder() != ::Z80::Z80ByteOrder) {
                         std::reverse(std::begin(buffer), std::end(buffer));
                     }
 
-                    out << std::hex << std::setfill('0') << "0x";
+                    {
+                        std::ostringstream out;
+                        out << std::hex << std::setfill('0') << "0x";
 
-                    for (const auto & byte : buffer) {
-                        out << std::setw(2) << static_cast<std::uint16_t>(byte);
+                        for (const auto & byte : buffer) {
+                            out << std::setw(2) << static_cast<std::uint16_t>(byte);
+                        }
+
+                        return out.str();
                     }
-                    break;
 
                 case Base::Octal:
-                    return "<bigint octal display not available>";
+                    return "<bigint octal display not available>"s;
 
                 case Base::Binary:
-                    return "<bigint binary display not available>";
-            }
+                    return "<bigint binary display not available>"s;
 
-            return out.str();
+                [[unlikely]]
+                default:
+                    assert(nullptr == "Unhandled Base enum case in IntegerMemoryWatch::bigDisplayValue()");
+            }
         }
     };
 }

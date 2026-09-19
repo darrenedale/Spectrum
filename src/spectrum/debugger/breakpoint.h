@@ -29,9 +29,7 @@ namespace Spectrum::Debugger
         public:
             virtual ~Observer() = default;
 
-            /**
-             * Notify the observer that the observed condition has been met.
-             */
+            /** Notify the observer that the observed condition has been met. */
             virtual void notify(Breakpoint *) = 0;
         };
 
@@ -51,7 +49,7 @@ namespace Spectrum::Debugger
          * @return The breakpoint type name.
          */
         [[nodiscard]]
-        virtual std::string typeName() const = 0;
+        virtual std::string typeName() const noexcept = 0;
 
         /**
          * Fetch a human-readable description of the breakpoint condition.
@@ -66,14 +64,14 @@ namespace Spectrum::Debugger
          *
          * @return true if the two breakpoints are equivalent, false if not.
          */
-        virtual bool operator==(const Breakpoint &) const = 0;
+        virtual bool operator==(const Breakpoint &) const noexcept = 0;
 
         /**
          * Check whether the state of the provided Spectrum meets the breakpoint condition.
          *
          * @return true if the breakpoint's condition is met, false otherwise.
          */
-        virtual bool check(const BaseSpectrum &) = 0;
+        virtual bool check(const BaseSpectrum &) noexcept = 0;
 
         /**
          * Add an observer for the breakpoint.
@@ -96,12 +94,10 @@ namespace Spectrum::Debugger
          *
          * @return true if it is, false otherwise.
          */
-        bool hasObserver(const Observer *) const;
+        bool hasObserver(const Observer *) const noexcept;
 
-        /**
-         * All observers will be removed.
-         */
-        void clearObservers();
+        /** All observers will be removed. */
+        void clearObservers() noexcept;
 
     protected:
         /**

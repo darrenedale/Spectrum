@@ -1,4 +1,5 @@
 option(WITH_QT_GAMEPAD "Include support for host gamepads using the QtGamepad module" OFF)
+option(USE_QT5 "Use QT5 instead of QT6" OFF)
 
 set(
         SPECTRUM_QT_COMPONENTS
@@ -26,7 +27,14 @@ if (WITH_QT_GAMEPAD)
     list(APPEND SPECTRUM_QT_GAMEPAD_SOURCES qtui/gamecontrollerhandler.cpp)
 endif(WITH_QT_GAMEPAD)
 
-find_package(Qt5 COMPONENTS ${SPECTRUM_QT_COMPONENTS})
+if (USE_QT5)
+    message(STATUS "Using Qt5")
+    add_compile_definitions(-DUSE_QT5)
+    find_package(Qt5 COMPONENTS ${SPECTRUM_QT_COMPONENTS})
+else (USE_QT5)
+    message(STATUS "Using Qt6")
+    find_package(Qt6 COMPONENTS ${SPECTRUM_QT_COMPONENTS})
+endif(USE_QT5)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -197,7 +205,6 @@ if (APPLE)
     )
 
     target_link_libraries(spectrum "${COREFOUNDATION_FRAMEWORK}")
-
 endif(APPLE)
 
 add_subdirectory(screenview)

@@ -28,8 +28,13 @@ HelpWidget::HelpWidget(QWidget * parent)
     label->setWordWrap(true);
 
     {
-        QFile helpText(":/help/en/help");
-        helpText.open(QIODevice::OpenModeFlag::ReadOnly);
+#if defined(WITH_QT_GAMEPAD)
+        QFile helpText(QStringLiteral(":/help/en/help-with-gamepad"));
+#else
+        QFile helpText(QStringLiteral(":/help/en/help-without-gamepad"));
+#endif
+        const auto helpTextOpened = helpText.open(QIODevice::OpenModeFlag::ReadOnly);
+        assert(helpTextOpened);
         label->setText(QString::fromUtf8(helpText.readAll()).arg(Application::instance()->property("version").toString()));
     }
 
@@ -74,4 +79,3 @@ void HelpWidget::closeEvent(QCloseEvent * ev)
     settings.endGroup();
     QWidget::closeEvent(ev);
 }
-

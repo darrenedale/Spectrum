@@ -153,8 +153,10 @@ namespace Spectrum::QtUi
           m_doubleClickWaitTimer(),
           m_itemActionIconExtent(0),        // properly initialised when show event occurs
           m_itemActionIconSpacing(0),       // properly initialised when show event occurs
-          m_alignment{.horizontal = ItemActionHorizontalAlignment::ViewportRightEdge, .vertical = ItemActionVerticalAlignment::Top}
+          m_alignment()
         {
+            m_alignment.horizontal = ItemActionHorizontalAlignment::ViewportRightEdge;
+            m_alignment.vertical = ItemActionVerticalAlignment::Top;
             m_doubleClickWaitTimer.setSingleShot(true);
             m_doubleClickWaitTimer.setInterval(QApplication::styleHints()->mouseDoubleClickInterval());
 
@@ -164,6 +166,12 @@ namespace Spectrum::QtUi
             ViewType::connect(this, &ViewType::entered, this, &ActionableItemView<ViewType>::onItemEntered);
             ViewType::connect(&m_doubleClickWaitTimer, &QTimer::timeout, this, &ActionableItemView<ViewType>::onItemClicked);
         }
+
+        ActionableItemView(const ActionableItemView &) = delete;
+        ActionableItemView(ActionableItemView &&) = delete;
+
+        ActionableItemView operator=(const ActionableItemView &) = delete;
+        ActionableItemView operator=(ActionableItemView &&) = delete;
 
         /**
          * Destructor.
@@ -563,7 +571,11 @@ DISABLE_WARNING_SWITCH     // we're only interested in a subset of event types
 #endif
             switch (ev->type()) {
                 case QEvent::Type::HoverMove: {
+#if defined(USE_QT5)
                     const auto pos = reinterpret_cast<QHoverEvent *>(ev)->pos();
+#else
+                    const auto pos = reinterpret_cast<QHoverEvent *>(ev)->position();
+#endif
 
                     // there's no view signal for when the mouse leaves a model index, and mouseMoveEvent() does not receive events when the move transitions
                     // from an item to a child widget (e.g. the header view) so we have to handle this case by checking whether the hover move event type (which
@@ -722,10 +734,10 @@ DISABLE_WARNING_POP
             
             auto spacing = 2 * m_itemActionIconSpacing;
             
-            return QRegion({
+            return QRegion(QRect(
                    m_itemActions.front().geometry.adjusted(-spacing, -spacing, spacing, spacing).topLeft(),
                    m_itemActions.back().geometry.adjusted(-spacing, -spacing, spacing, spacing).bottomRight()
-           });
+           ));
         }
 
         /**

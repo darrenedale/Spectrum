@@ -92,82 +92,52 @@ namespace
      *
      * Note the 16K and 48K ROMs are identical.
      */
-    constexpr const char * Default16kRom = "spectrum48.rom";
+    constexpr auto Default16kRom = "spectrum48.rom";
 
-    /**
-     * The name of the default ROM for 48K Spectrum models.
-     */
-    constexpr const char * Default48kRom = "spectrum48.rom";
+    /** The name of the default ROM for 48K Spectrum models. */
+    constexpr auto Default48kRom = "spectrum48.rom";
 
-    /**
-     * The name of the default main ROM for 128K Spectrum models.
-     */
-    constexpr const char * Default128kRom0 = "spectrum128-0.rom";
+    /** The name of the default main ROM for 128K Spectrum models. */
+    constexpr auto Default128kRom0 = "spectrum128-0.rom";
 
-    /**
-     * The name of the default 48K BASIC ROM for 128K Spectrum models.
-     */
-    constexpr const char * Default128kRom1 = "spectrum128-1.rom";
+    /** The name of the default 48K BASIC ROM for 128K Spectrum models. */
+    constexpr auto Default128kRom1 = "spectrum128-1.rom";
 
-    /**
-     * The name of the default main ROM for +2 Spectrum models.
-     */
-    constexpr const char * DefaultPlus2Rom0 = "spectrumplus2-0.rom";
+    /** The name of the default main ROM for +2 Spectrum models. */
+    constexpr auto DefaultPlus2Rom0 = "spectrumplus2-0.rom";
 
-    /**
-     * The name of the default 48K BASIC ROM for +2 Spectrum models.
-     */
-    constexpr const char * DefaultPlus2Rom1 = "spectrumplus2-1.rom";
+    /** The name of the default 48K BASIC ROM for +2 Spectrum models. */
+    constexpr auto DefaultPlus2Rom1 = "spectrumplus2-1.rom";
 
-    /**
-     * The name of the default main ROM for +2a Spectrum models.
-     */
-    constexpr const char * DefaultPlus2aRom0 = "spectrumplus3-0.rom";
+    /** The name of the default main ROM for +2a Spectrum models. */
+    constexpr auto DefaultPlus2aRom0 = "spectrumplus3-0.rom";
 
-    /**
-     * The name of the 128K syntax checker ROM for +2a Spectrum models.
-     */
-    constexpr const char * DefaultPlus2aRom1 = "spectrumplus3-1.rom";
+    /** The name of the 128K syntax checker ROM for +2a Spectrum models. */
+    constexpr auto DefaultPlus2aRom1 = "spectrumplus3-1.rom";
 
-    /**
-     * The name of the +3DOS ROM for +2a Spectrum models.
-     */
-    constexpr const char * DefaultPlus2aRom2 = "spectrumplus3-2.rom";
+    /** The name of the +3DOS ROM for +2a Spectrum models. */
+    constexpr auto DefaultPlus2aRom2 = "spectrumplus3-2.rom";
 
-    /**
-     * The name of the 48K BASIC ROM for +2a Spectrum models.
-     */
-    constexpr const char * DefaultPlus2aRom3 = "spectrumplus3-3.rom";
+    /** The name of the 48K BASIC ROM for +2a Spectrum models. */
+    constexpr auto DefaultPlus2aRom3 = "spectrumplus3-3.rom";
 
-    /**
-     * The name of the default main ROM for +3 Spectrum models.
-     */
-    constexpr const char * DefaultPlus3Rom0 = "spectrumplus3-0.rom";
+    /** The name of the default main ROM for +3 Spectrum models. */
+    constexpr auto DefaultPlus3Rom0 = "spectrumplus3-0.rom";
 
-    /**
-     * The name of the 128K syntax checker ROM for +3 Spectrum models.
-     */
-    constexpr const char * DefaultPlus3Rom1 = "spectrumplus3-1.rom";
+    /** The name of the 128K syntax checker ROM for +3 Spectrum models. */
+    constexpr auto DefaultPlus3Rom1 = "spectrumplus3-1.rom";
 
-    /**
-     * The name of the +3DOS ROM for +3 Spectrum models.
-     */
-    constexpr const char * DefaultPlus3Rom2 = "spectrumplus3-2.rom";
+    /** The name of the +3DOS ROM for +3 Spectrum models. */
+    constexpr auto DefaultPlus3Rom2 = "spectrumplus3-2.rom";
 
-    /**
-     * The name of the 48K BASIC ROM for +3 Spectrum models.
-     */
-    constexpr const char * DefaultPlus3Rom3 = "spectrumplus3-3.rom";
+    /** The name of the 48K BASIC ROM for +3 Spectrum models. */
+    constexpr auto DefaultPlus3Rom3 = "spectrumplus3-3.rom";
 
-    /**
-     * The name of the ROM for Timex TC-2048 models (not yet supported).
-     */
-    constexpr const char * DefaultTc2048Rom = "tc2048.rom";
+    /** The name of the ROM for Timex TC-2048 models (not yet supported). */
+    constexpr auto DefaultTc2048Rom = "tc2048.rom";
 
-    /**
-     * ms to wait for the thread to stop before forcibly terminating it
-     */
-    constexpr const int ThreadStopWaitThreshold = 3000;
+    /** ms to wait for the thread to stop before forcibly terminating it */
+    constexpr int ThreadStopWaitThreshold = 3000;
 
     /**
      * Helper to map a key from a Qt key event to a Spectrum keyboard key combination.
@@ -176,7 +146,7 @@ namespace
      *
      * @return A vector containing the spectrum key combination that represents the Qt key.
      */
-    std::vector<::Spectrum::Keyboard::Key> mapToSpectrumKeys(Qt::Key key)
+    std::vector<Keyboard::Key> mapToSpectrumKeys(const Qt::Key key)
     {
 #if (defined(__clang__))
 DISABLE_WARNING_PUSH
@@ -440,52 +410,51 @@ DISABLE_WARNING_POP
 }
 
 MainWindow::MainWindow(QWidget * parent)
-: QMainWindow(parent),
-  m_spectrum(std::make_unique<Spectrum128k>(
-          Application::romFilePath(Default128kRom0).toStdString(), Application::romFilePath(Default128kRom1).toStdString())
-          ),
-  m_spectrumThread(*m_spectrum),
-  m_display(),
-  m_displayWidget(),
-  m_pokesWidget(),
-  m_load(QIcon::fromTheme(QStringLiteral("document-open"), Application::icon(QStringLiteral("open"))), tr("Load snapshot")),
-  m_save(QIcon::fromTheme(QStringLiteral("document-save"), Application::icon(QStringLiteral("save"))), tr("Save snapshot")),
-  m_recentSnapshots(tr("Recent snapshots")),
-  m_pauseResume(QIcon::fromTheme(QStringLiteral("media-playback-start"), Application::icon(QStringLiteral("resume"))), tr("Start/Pause")),
-  m_model16(tr("Spectrum 16k")),
-  m_model48(tr("Spectrum 48k")),
-  m_model128(tr("Spectrum 128k")),
-  m_modelPlus2(tr("Spectrum +2")),
-  m_modelPlus2a(tr("Spectrum +2a")),
-  m_modelPlus3(tr("Spectrum +3")),
-  m_saveScreenshot(QIcon::fromTheme(QStringLiteral("image"), Application::icon(QStringLiteral("screenshot"))), tr("Screenshot")),
-  m_frameSkipGroup(nullptr),
-  m_colourDisplay(tr("Colour")),
-  m_monochromeDisplay(tr("Monochrome")),
-  m_bwDisplay(tr("Black and White")),
-  m_joystickKempston(tr("Kempston")),
-  m_joystickInterface2(tr("ZX Interface Two")),
-  m_joystickCursor(tr("Cursor")),
-  m_joystickFuller(tr("Fuller")),
-  m_joystickNone(tr("None")),
-  m_gameControllersMenu(tr("Game Controller")),
-  m_gameControllersGroup(nullptr),
-  m_kempstonMouse(tr("Kempston mouse")),
-  m_reset(QIcon::fromTheme(QStringLiteral("start-over"), Application::icon(QStringLiteral("reset"))), tr("Reset")),
-  m_debug(tr("Debug")),
-  m_debugStep(QIcon::fromTheme(QStringLiteral("debug-step-instruction"), Application::icon(QStringLiteral("step"))), tr("Step")),
-  m_refreshScreen(QIcon::fromTheme(QStringLiteral("view-refresh"), Application::icon(QStringLiteral("refresh"))), tr("Refresh screen")),
-  m_emulationSpeedSlider(Qt::Horizontal),
-  m_emulationSpeedSpin(nullptr),
-  m_debugWindow(&m_spectrumThread, this),
-  m_aboutWidget(nullptr),
-  m_helpWidget(nullptr),
-  m_displayRefreshTimer(nullptr),
-  m_joystick(std::make_unique<Spectrum::KempstonJoystick>()),
-#if (defined(WITH_QT_GAMEPAD))
-  m_gameControllerHandler(m_joystick.get()),
+:   QMainWindow(parent),
+      m_spectrum(std::make_unique<Spectrum128k>(
+              Application::romFilePath(Default128kRom0).toStdString(), Application::romFilePath(Default128kRom1).toStdString())
+      ),
+      m_spectrumThread(*m_spectrum),
+      m_load(QIcon::fromTheme(QStringLiteral("document-open"), Application::icon(QStringLiteral("open"))), tr("Load snapshot")),
+      m_save(QIcon::fromTheme(QStringLiteral("document-save"), Application::icon(QStringLiteral("save"))), tr("Save snapshot")),
+      m_recentSnapshots(tr("Recent snapshots")),
+      m_pauseResume(QIcon::fromTheme(QStringLiteral("media-playback-start"), Application::icon(QStringLiteral("resume"))), tr("Start/Pause")),
+      m_model16(tr("Spectrum 16k")),
+      m_model48(tr("Spectrum 48k")),
+      m_model128(tr("Spectrum 128k")),
+      m_modelPlus2(tr("Spectrum +2")),
+      m_modelPlus2a(tr("Spectrum +2a")),
+      m_modelPlus3(tr("Spectrum +3")),
+      m_saveScreenshot(QIcon::fromTheme(QStringLiteral("image"), Application::icon(QStringLiteral("screenshot"))), tr("Screenshot")),
+      m_frameSkipGroup(nullptr),
+      m_colourDisplay(tr("Colour")),
+      m_monochromeDisplay(tr("Monochrome")),
+      m_bwDisplay(tr("Black and White")),
+      m_joystick(std::make_unique<KempstonJoystick>()),
+      m_joystickNone(tr("None")),
+      m_joystickKempston(tr("Kempston")),
+      m_joystickInterface2(tr("ZX Interface Two")),
+      m_joystickCursor(tr("Cursor")),
+      m_joystickFuller(tr("Fuller")),
+#if defined(WITH_QT_GAMEPAD)
+      m_gameControllerHandler(m_joystick.get()),
+      m_gameControllersMenu(tr("Game Controller")),
+      m_gameControllersGroup(nullptr),
 #endif
-  m_mouse(nullptr)
+      m_kempstonMouse(tr("Kempston mouse")),
+      m_reset(QIcon::fromTheme(QStringLiteral("start-over"), Application::icon(QStringLiteral("reset"))), tr("Reset")),
+      m_debug(tr("Debug")),
+      m_debugStep(QIcon::fromTheme(QStringLiteral("debug-step-instruction"), Application::icon(QStringLiteral("step"))), tr("Step")),
+      m_refreshScreen(QIcon::fromTheme(QStringLiteral("view-refresh"), Application::icon(QStringLiteral("refresh"))), tr("Refresh screen")),
+      m_emulationSpeedSlider(Qt::Horizontal),
+      m_emulationSpeedSpin(nullptr),
+      m_debugWindow(&m_spectrumThread, this),
+      m_aboutWidget(nullptr),
+      m_helpWidget(nullptr),
+      m_displayRefreshTimer(nullptr),
+#if (defined(WITH_QT_GAMEPAD))
+#endif
+      m_mouse(nullptr)
 {
     setWindowTitle(QStringLiteral("Spectrum"));
     setMouseTracking(true);
@@ -548,8 +517,8 @@ MainWindow::MainWindow(QWidget * parent)
     m_joystickKempston.setToolTip(tr("Emulate a Kempston joystick interface."));
     m_joystickInterface2.setToolTip(tr("Emulate a ZX Interface 2 joystick interface."));
     m_joystickNone.setToolTip(tr("Don't emulate any joystick interface."));
-    m_gameControllersMenu.setToolTip(tr("Choose which game controller to attach to the emulated Spectrum joystick interface."));
 #if (defined(WITH_QT_GAMEPAD))
+    m_gameControllersMenu.setToolTip(tr("Choose which game controller to attach to the emulated Spectrum joystick interface."));
     rescanGameControllers();
     connect(QGamepadManager::instance(), &QGamepadManager::connectedGamepadsChanged, this, &MainWindow::rescanGameControllers);
 #endif
@@ -587,26 +556,26 @@ MainWindow::MainWindow(QWidget * parent)
 
     m_spectrum->setJoystickInterface(m_joystick.get());
     m_spectrum->setKeyboard(&m_keyboard);
-	m_spectrum->addDisplayDevice(&m_display);
+    m_spectrum->addDisplayDevice(&m_display);
 
     setCentralWidget(&m_displayWidget);
 
-	connect(&m_spectrumThread, &Thread::paused, this, &MainWindow::threadPaused);
-	connect(&m_spectrumThread, &Thread::resumed, this, &MainWindow::threadResumed);
+    connect(&m_spectrumThread, &Thread::paused, this, &MainWindow::threadPaused);
+    connect(&m_spectrumThread, &Thread::resumed, this, &MainWindow::threadResumed);
 
-	// NOTE the context argument is important here since setWindowTitle() is a UI function and must run in the main
-	// thread. With no context the lambda would run in the sender's thread, which in this case is the thread running the
-	// Spectrum not the UI thread; the context ensures the lambda runs in the MainWindow's thread
-	connect(&m_spectrumThread, &Thread::spectrumReset, this, [this]() {
+    // NOTE the context argument is important here since setWindowTitle() is a UI function and must run in the main
+    // thread. With no context the lambda would run in the sender's thread, which in this case is the thread running the
+    // Spectrum not the UI thread; the context ensures the lambda runs in the MainWindow's thread
+    connect(&m_spectrumThread, &Thread::spectrumReset, this, [this]() {
         setWindowTitle(QString::fromStdString(std::to_string(m_spectrum->model())));
     });
 
-	loadSettings();
+    loadSettings();
 
     setAcceptDrops(true);
     connectSignals();
-	m_spectrumThread.start();
-	threadResumed();
+    m_spectrumThread.start();
+    threadResumed();
     updateStatusBarSpeedWidget();
 }
 
@@ -617,6 +586,385 @@ MainWindow::~MainWindow()
     m_spectrum->setKeyboard(nullptr);
     m_spectrum->removeDisplayDevice(&m_display);
     stopThread();
+}
+
+void MainWindow::setModel(Spectrum::Model model)
+{
+    std::unique_ptr<BaseSpectrum> newSpectrum;
+    QString error;
+
+    switch (model) {
+        case Model::Spectrum16k: {
+            if (auto romFile = Application::romFilePath(Default16kRom); romFile.isEmpty()) {
+                error = tr("The ROM file for the %1 is missing.").arg(QString::fromStdString(std::to_string(model)));
+            } else {
+                newSpectrum = std::make_unique<Spectrum16k>(romFile.toStdString());
+                m_model16.setChecked(true);
+            }
+            break;
+        }
+
+        case Model::Spectrum48k: {
+            if (auto romFile = Application::romFilePath(Default48kRom); romFile.isEmpty()) {
+                error = tr("The ROM file for the %1 is missing.").arg(QString::fromStdString(std::to_string(model)));
+            } else {
+                newSpectrum = std::make_unique<Spectrum48k>(romFile.toStdString());
+                m_model48.setChecked(true);
+            }
+            break;
+        }
+
+        case Model::Spectrum128k: {
+            if (auto romFile0 = Application::romFilePath(Default128kRom0); romFile0.isEmpty()) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("first"),
+                                                                         QString::fromStdString(std::to_string(model)));
+            } else if (auto romFile1 = Application::romFilePath(Default128kRom1); romFile1.isEmpty()) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("second"),
+                                                                         QString::fromStdString(std::to_string(model)));
+            } else {
+                newSpectrum = std::make_unique<Spectrum128k>(romFile0.toStdString(), romFile1.toStdString());
+                m_model128.setChecked(true);
+            }
+            break;
+        }
+
+        case Model::SpectrumPlus2:
+            if (auto romFile0 = Application::romFilePath(DefaultPlus2Rom0); romFile0.isEmpty()) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("first"), QString::fromStdString(std::to_string(model)));
+            } else if (auto romFile1 = Application::romFilePath(DefaultPlus2Rom1); romFile1.isEmpty()) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("second"), QString::fromStdString(std::to_string(model)));
+            } else {
+                newSpectrum = std::make_unique<SpectrumPlus2>(romFile0.toStdString(), romFile1.toStdString());
+                m_modelPlus2.setChecked(true);
+            }
+            break;
+
+        case Model::SpectrumPlus2a:
+            if (auto romFile0 = Application::romFilePath(DefaultPlus2aRom0); romFile0.isEmpty()) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("first"), QString::fromStdString(std::to_string(model)));
+            } else if (auto romFile1 = Application::romFilePath(DefaultPlus2aRom1); romFile1.isEmpty()) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("second"), QString::fromStdString(std::to_string(model)));
+            } else if (auto romFile2 = Application::romFilePath(DefaultPlus2aRom2); romFile2.isEmpty()) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("third"), QString::fromStdString(std::to_string(model)));
+            } else if (auto romFile3 = Application::romFilePath(DefaultPlus2aRom3); romFile3.isEmpty()) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("fourth"), QString::fromStdString(std::to_string(model)));
+            } else {
+                newSpectrum = std::make_unique<SpectrumPlus2a>(romFile0.toStdString(), romFile1.toStdString(), romFile2.toStdString(), romFile3.toStdString());
+                m_modelPlus2a.setChecked(true);
+            }
+            break;
+
+        case Model::SpectrumPlus3:
+            if (auto romFile0 = Application::romFilePath(DefaultPlus3Rom0); romFile0.isEmpty()) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("first"), QString::fromStdString(std::to_string(model)));
+            } else if (auto romFile1 = Application::romFilePath(DefaultPlus3Rom1); romFile1.isEmpty()) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("second"), QString::fromStdString(std::to_string(model)));
+            } else if (auto romFile2 = Application::romFilePath(DefaultPlus3Rom2); romFile2.isEmpty()) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("third"), QString::fromStdString(std::to_string(model)));
+            } else if (auto romFile3 = Application::romFilePath(DefaultPlus3Rom3); romFile3.isEmpty()) {
+                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("fourth"), QString::fromStdString(std::to_string(model)));
+            } else {
+                newSpectrum = std::make_unique<SpectrumPlus3>(romFile0.toStdString(), romFile1.toStdString(), romFile2.toStdString(), romFile3.toStdString());
+                m_modelPlus3.setChecked(true);
+            }
+            break;
+    }
+
+    if (!newSpectrum) {
+        assert(!error.isEmpty());
+        Application::showNotification(error, DefaultNotificationTimeout);
+        return;
+    }
+
+    detachSpectrumDevices();
+    bool paused = m_spectrumThread.isPaused();
+    m_displayRefreshTimer.stop();
+    stopThread();
+    m_spectrum = std::move(newSpectrum);
+
+#if (!defined(NDEBUG))
+    m_spectrum->dumpState();
+#endif
+
+    attachSpectrumDevices();
+    m_spectrumThread.setSpectrum(*m_spectrum);
+    m_spectrumThread.start();
+
+    if (paused) {
+        m_spectrumThread.pause();
+    } else {
+        m_displayRefreshTimer.start();
+    }
+
+    refreshSpectrumDisplay();
+    setWindowTitle(QString::fromStdString(std::to_string(m_spectrum->model())));
+}
+
+Spectrum::Model MainWindow::model() const
+{
+    assert(m_spectrum);
+    return m_spectrum->model();
+}
+
+void MainWindow::saveScreenshot(const QString & fileName)
+{
+    ThreadPauser pauser(m_spectrumThread);
+
+    if (fileName.endsWith(QStringLiteral(".scr"), Qt::CaseSensitivity::CaseInsensitive)) {
+        std::ofstream outFile(fileName.toStdString());
+
+        if (!outFile.is_open()) {
+            Util::debug << "Could not open file '" << fileName.toStdString() << "' for writing\n";
+            return;
+        }
+
+        outFile.write(reinterpret_cast<const char *>(m_spectrum->displayMemory().data()), DisplayFile::extent);
+        outFile.close();
+    } else {
+        m_display.image().save(fileName);
+    }
+}
+
+bool MainWindow::loadSnapshot(const QString & fileName, QString format)
+{
+    ThreadPauser pauser(m_spectrumThread);
+
+    if (!QFileInfo::exists(fileName)) {
+        Application::showNotification(tr("The snapshot file %1 does not exist.").arg(fileName), DefaultNotificationTimeout);
+        return false;
+    }
+
+    // NOTE we use a guesser then generate the reader from the format string, rather than using the reader factory directly with the file name, so that we are
+    // able to force the format to use
+    if (format.isEmpty()) {
+        format = guessSnapshotFormat(fileName);
+
+        if (format.isEmpty()) {
+            Application::showNotification(tr("The snapshot format for %1 could not be determined.").arg(fileName), DefaultNotificationTimeout);
+            return false;
+        }
+    }
+
+    const auto reader = SnapshotReaderFactory<
+        SnaSnapshotReader,
+        SpSnapshotReader,
+        Zx82SnapshotReader,
+        ZxSnapshotReader,
+        Z80SnapshotReader
+    >::readerForFormat(format.toStdString());
+
+    if (!reader) {
+        Util::debug << "unrecognised format '" << format.toStdString() << "'\n";
+        Application::showNotification(tr("The snapshot format for %1 could not be determined.").arg(fileName), DefaultNotificationTimeout);
+        return false;
+    }
+
+    reader->setFileName(fileName.toStdString());
+
+    if (!reader->isOpen()) {
+        Util::debug << "Snapshot file '" << fileName.toStdString() << "' could not be opened.\n";
+        Application::showNotification(tr("The snapshot file %1 could not be opened.").arg(fileName), DefaultNotificationTimeout);
+        return false;
+    }
+
+    const auto * snapshot = reader->read();
+
+    if (!snapshot) {
+        Application::showNotification(tr("The snapshot file %1 is not valid.").arg(fileName), DefaultNotificationTimeout);
+        return false;
+    }
+
+    if (bool canApply = m_spectrum->canApplySnapshot(*snapshot); !canApply) {
+        if (snapshot->model() != m_spectrum->model()) {
+            auto dlg = Dialogue(
+                tr("You are currently running a %1 but this snapshot requires a %2.\n\nWould you like to switch models (this will reset the Spectrum)?")
+                .arg(QString::fromStdString(std::to_string(m_spectrum->model())), QString::fromStdString(std::to_string(snapshot->model()))),
+                tr("A different Spectrum model is required")
+            );
+
+            dlg.setIcon(QIcon::fromTheme(QStringLiteral("start-over"), Application::icon(QStringLiteral("reset"))));
+            dlg.addButton(tr("Keep %1").arg(QString::fromStdString(std::to_string(m_spectrum->model()))), QDialogButtonBox::ButtonRole::RejectRole);
+            dlg.addButton(tr("Switch to %1").arg(QString::fromStdString(std::to_string(snapshot->model()))), QDialogButtonBox::ButtonRole::AcceptRole);
+
+            if (QDialog::Accepted != dlg.exec()) {
+                statusBar()->showMessage(
+                    tr("The snapshot file %1 is not compatible with the running Spectrum (it requires a %2).")
+                    .arg(fileName, QString::fromStdString(std::to_string(snapshot->model()))),
+                    DefaultNotificationTimeout
+                );
+                return false;
+            }
+
+            setModel(snapshot->model());
+            canApply = m_spectrum->canApplySnapshot(*snapshot);
+        }
+
+        if (!canApply) {
+            Application::showNotification(
+                tr("The snapshot file %1 cannot be loaded.")
+                .arg(fileName, QString::fromStdString(std::to_string(snapshot->model()))),
+                DefaultNotificationTimeout
+            );
+            return false;
+        }
+    }
+
+    m_spectrum->applySnapshot(*snapshot);
+
+    setWindowTitle(QStringLiteral("%1 | %2").arg(QString::fromStdString(std::to_string(m_spectrum->model())), QFileInfo(fileName).fileName()));
+    m_display.renderFrame(m_spectrum->displayMemory());
+    m_displayWidget.setImage(m_display.image());
+
+    if (QStringLiteral("sna") == format) {
+        // RETN instruction is required to resume execution of the .SNA
+        m_spectrum->z80()->execute(reinterpret_cast<const Z80::UnsignedByte *>("\xed\x45"), true);
+    }
+
+    statusBar()->showMessage(tr("The snapshot file %1 was successfully loaded.").arg(fileName), DefaultNotificationTimeout);
+    return true;
+}
+
+void MainWindow::saveSnapshot(const QString & fileName, QString format)
+{
+    ThreadPauser pauser(m_spectrumThread);
+
+    if (format.isEmpty()) {
+        format = snapshotFormatFromExtension(fileName);
+
+        if (format.isEmpty()) {
+            Application::showNotification(
+                tr("The snapshot format to use could not be determined from the filename %1.").arg(fileName),
+                DefaultNotificationTimeout
+            );
+
+            return;
+        }
+    }
+
+    const std::unique_ptr<SnapshotWriter> writer = SnapshotWriterFactory<
+        Z80SnapshotWriter,
+        SnaSnapshotWriter,
+        SpSnapshotWriter,
+        Zx82SnapshotWriter,
+        ZxSnapshotWriter
+    >::writerForFormat(format.toStdString());
+
+    if (!writer) {
+        Util::debug << "unrecognised format '" << format.toStdString() << "' from filename '" << fileName.toStdString() << "'\n";
+        Application::showNotification(tr("Unrecognised snapshot format %1.").arg(format), DefaultNotificationTimeout);
+    }
+
+    if (QStringLiteral("sna") == format) {
+        // push the current PC onto the stack
+        m_spectrum->z80()->execute(reinterpret_cast<const Z80::UnsignedByte *>("\xcd\x00\x00"), false);
+    }
+
+    writer->setSnapshot(m_spectrum->snapshot());
+
+    if (!writer->writeTo(fileName.toStdString())) {
+        Util::debug << "failed to write snapshot to '" << fileName.toStdString() << "'\n";
+        Application::showNotification(tr("Failed to save snapshot to %1.").arg(fileName), DefaultNotificationTimeout);
+    } else {
+        statusBar()->showMessage(tr("Snapshot successfully saved to %1.").arg(fileName), DefaultNotificationTimeout);
+    }
+
+    if (QStringLiteral("sna") == format) {
+        // pop the PC off the stack
+        m_spectrum->z80()->execute(reinterpret_cast<const Z80::UnsignedByte *>("\xed\x45"), false);
+    }
+}
+
+QString MainWindow::guessSnapshotFormat(const QString & fileName)
+{
+    // NOTE we have to put the Z80 reader at the bottom of the list because it will accept any file where either of bytes 6 and 7 is non-0 and where bit 5 of
+    // byte 12 is set. This is because any such file could be a v1 .z80 snapshot with a compressed memory image. Since snapshots in other formats are likely to
+    // match these criteria, putting the Z80 reader at a higher priority would result in the Z80 reader being chosen incorrectly
+    const auto format = SnapshotFormatGuesser<
+        SnaSnapshotReader,
+        SpSnapshotReader,
+        Zx82SnapshotReader,
+        ZxSnapshotReader,
+        Z80SnapshotReader
+    >::guessFormat(fileName.toStdString());
+
+    if (format) {
+        return QString::fromStdString(*format);
+    }
+
+    return snapshotFormatFromExtension(fileName);
+}
+
+void MainWindow::refreshSpectrumDisplay()
+{
+    // NOTE Qt COW makes this almost cost-free unless we actually render an overlay
+    auto image = m_display.image();
+
+    if (m_debug.isChecked()) {
+        image = image.scaledToWidth(image.width() * 2);
+        auto pen = QColor(*reinterpret_cast<QRgb *>(image.bits()));
+
+        if (pen.lightness() > 128) {
+            pen = Qt::GlobalColor::black;
+        } else {
+            pen = Qt::GlobalColor::white;
+        }
+
+        QPainter painter(&image);
+        QFont font = painter.font();
+        font.setPixelSize(10);
+        font.setFixedPitch(true);
+        painter.setFont(font);
+        painter.setPen(pen);
+        int y = 2;
+        auto & registers = m_spectrum->z80()->registers();
+        QLatin1Char fill('0');
+        painter.drawText(2, y += 10, QStringLiteral("PC: $%1").arg(registers.pc, 4, 16, fill));
+        painter.drawText(2, y += 10, QStringLiteral("SP: $%1").arg(registers.sp, 4, 16, fill));
+        painter.drawText(2, y += 10, QStringLiteral("AF: $%1").arg(registers.af, 4, 16, fill));
+        painter.drawText(2, y += 10, QStringLiteral("BC: $%1").arg(registers.bc, 4, 16, fill));
+        painter.drawText(2, y += 10, QStringLiteral("DE: $%1").arg(registers.de, 4, 16, fill));
+        painter.drawText(2, y + 10, QStringLiteral("HL: $%1").arg(registers.hl, 4, 16, fill));
+        painter.end();
+    }
+
+    if (m_spectrumThread.isPaused()) {
+        QPainter painter(&image);
+        QColor fillColour(0x66, 0x66, 0x66, 0x66);
+        auto width = image.width() / 5;
+        auto height = image.height() / 2;
+        auto x = image.width() / 4;
+        auto y = image.height() / 4;
+        painter.fillRect(x, y, width, height, fillColour);
+        painter.fillRect(image.width() - x - width, y, width, height, fillColour);
+        painter.end();
+    }
+
+    m_displayWidget.setImage(image);
+}
+
+void MainWindow::refreshRecentSnapshots()
+{
+    m_recentSnapshots.clear();
+    const auto & recentSnapshots = spectrumApp->recentSnapshots();
+
+    if (recentSnapshots.empty()) {
+        auto * action = m_recentSnapshots.addAction(tr("No recent snapshots."));
+        action->setEnabled(false);
+    } else {
+        for (const auto & snapshotFile : recentSnapshots) {
+            auto * action = m_recentSnapshots.addAction(QFileInfo(snapshotFile).fileName(), [this, snapshotFile]() {
+                if (loadSnapshot(snapshotFile)) {
+                    // ensure loaded snapshot is top of the list (most recent)
+                    spectrumApp->addRecentSnapshot(snapshotFile);
+                }
+            });
+
+            action->setToolTip(tr("Load %1").arg(snapshotFile));
+        }
+
+        m_recentSnapshots.addSeparator();
+        m_recentSnapshots.addAction(Application::icon(QLatin1String("edit-clear-list"), QLatin1String("clear")), tr("Clear"), spectrumApp, &Application::clearRecentSnapshots);
+    }
 }
 
 void MainWindow::stopThread()
@@ -642,14 +990,14 @@ void MainWindow::stopThread()
 
     if (m_spectrumThread.isRunning()) {
         Util::debug << "forcibly terminating SpectrumThread @" << std::hex
-              << static_cast<void *>(&m_spectrumThread) << "\n";
+            << static_cast<void *>(&m_spectrumThread) << "\n";
         m_spectrumThread.terminate();
     }
 }
 
 void MainWindow::createMenuBar()
 {
-    auto * tempMenuBar = menuBar();
+    // auto * tempMenuBar = menuBar();
     createFileMenu();
     createSpectrumMenu();
     createDisplayMenu();
@@ -678,12 +1026,45 @@ void MainWindow::createFileMenu()
         saveSlotSubMenu->setToolTip(tr("Save a snapshot to a quick-access slot."));
 
         for (int slotIndex = 1; slotIndex <= 5; ++slotIndex) {
+#if defined(USE_QT5)
             loadSlotSubMenu->addAction(tr("Slot %1").arg(slotIndex), [this, slotIndex]() {
                 loadSnapshotFromSlot(slotIndex);
             }, QKeySequence(tr("F%1").arg(slotIndex)));
             saveSlotSubMenu->addAction(tr("Slot %1").arg(slotIndex), [this, slotIndex]() {
                 saveSnapshotToSlot(slotIndex, QStringLiteral("z80"));
             }, QKeySequence(tr("Shift+F%1").arg(slotIndex)));
+            // loadSlotSubMenu->addAction(
+            //     tr("Slot %1").arg(slotIndex),
+            //     [this, slotIndex]() {
+            //         loadSnapshotFromSlot(slotIndex);
+            //     },
+            //     QKeySequence(tr("F%1").arg(slotIndex)),
+            // );
+            //
+            // saveSlotSubMenu->addAction(
+            //     tr("Slot %1").arg(slotIndex),
+            //     [this, slotIndex]() {
+            //         saveSnapshotToSlot(slotIndex, QStringLiteral("z80"));
+            //     },
+            //     QKeySequence(tr("Shift+F%1").arg(slotIndex)),
+            // );
+#else
+            loadSlotSubMenu->addAction(
+                tr("Slot %1").arg(slotIndex),
+                QKeySequence(tr("F%1").arg(slotIndex)),
+                [this, slotIndex]() {
+                    loadSnapshotFromSlot(slotIndex);
+                }
+            );
+
+            saveSlotSubMenu->addAction(
+                tr("Slot %1").arg(slotIndex),
+                QKeySequence(tr("Shift+F%1").arg(slotIndex)),
+                [this, slotIndex]() {
+                    saveSnapshotToSlot(slotIndex, QStringLiteral("z80"));
+                }
+            );
+#endif
         }
     }
 
@@ -715,7 +1096,9 @@ void MainWindow::createSpectrumMenu()
     subMenu->addAction(&m_joystickFuller);
     subMenu->addAction(&m_joystickNone);
 
+#if defined(WITH_QT_GAMEPAD)
     menu->addMenu(&m_gameControllersMenu);
+#endif
 
     menu->addAction(&m_kempstonMouse);
     menu->addSeparator();
@@ -743,10 +1126,10 @@ void MainWindow::createDisplayMenu()
         subMenu->addSeparator();
 
         std::array<const char *, 4> labels = {
-                "Skip every other frame (25fps)",
-                "Skip every third frame (~33fps)",
-                "Skip every fourth frame (37.5fps)",
-                "Skip every fifth frame (40fps)",
+            "Skip every other frame (25fps)",
+            "Skip every third frame (~33fps)",
+            "Skip every fourth frame (37.5fps)",
+            "Skip every fifth frame (40fps)",
         };
 
         for (auto skip = 0; skip < 4; ++skip) {
@@ -884,442 +1267,66 @@ void MainWindow::createStatusBar()
 
 void MainWindow::connectSignals()
 {
-	connect(&m_emulationSpeedSlider, &QSlider::valueChanged, &m_emulationSpeedSpin, &QSpinBox::setValue);
-	connect(&m_emulationSpeedSpin, qOverload<int>(&QSpinBox::valueChanged), &m_emulationSpeedSlider, &QSlider::setValue);
+    connect(&m_emulationSpeedSlider, &QSlider::valueChanged, &m_emulationSpeedSpin, &QSpinBox::setValue);
+    connect(&m_emulationSpeedSpin, qOverload<int>(&QSpinBox::valueChanged), &m_emulationSpeedSlider, &QSlider::setValue);
 
-	connect(&m_emulationSpeedSlider, &QSlider::valueChanged, this, &MainWindow::emulationSpeedChanged);
+    connect(&m_emulationSpeedSlider, &QSlider::valueChanged, this, &MainWindow::emulationSpeedChanged);
 
-	connect(&m_load, &QAction::triggered, this, &MainWindow::loadSnapshotTriggered);
-	connect(&m_save, &QAction::triggered, this, &MainWindow::saveSnapshotTriggered);
-	connect(spectrumApp, &Application::recentSnapshotsChanged, this, &MainWindow::refreshRecentSnapshots);
+    connect(&m_load, &QAction::triggered, this, &MainWindow::loadSnapshotTriggered);
+    connect(&m_save, &QAction::triggered, this, &MainWindow::saveSnapshotTriggered);
+    connect(spectrumApp, &Application::recentSnapshotsChanged, this, &MainWindow::refreshRecentSnapshots);
 
-	connect(&m_pauseResume, &QAction::triggered, this, &MainWindow::pauseResumeTriggered);
-	connect(&m_reset, &QAction::triggered, &m_spectrumThread, &Thread::reset);
+    connect(&m_pauseResume, &QAction::triggered, this, &MainWindow::pauseResumeTriggered);
+    connect(&m_reset, &QAction::triggered, &m_spectrumThread, &Thread::reset);
 
-	connect(&m_model16, &QAction::triggered, this, &MainWindow::model16Triggered);
-	connect(&m_model48, &QAction::triggered, this, &MainWindow::model48Triggered);
-	connect(&m_model128, &QAction::triggered, this, &MainWindow::model128Triggered);
-	connect(&m_modelPlus2, &QAction::triggered, this, &MainWindow::modelPlus2Triggered);
-	connect(&m_modelPlus2a, &QAction::triggered, this, &MainWindow::modelPlus2aTriggered);
-	connect(&m_modelPlus3, &QAction::triggered, this, &MainWindow::modelPlus3Triggered);
+    connect(&m_model16, &QAction::triggered, this, &MainWindow::model16Triggered);
+    connect(&m_model48, &QAction::triggered, this, &MainWindow::model48Triggered);
+    connect(&m_model128, &QAction::triggered, this, &MainWindow::model128Triggered);
+    connect(&m_modelPlus2, &QAction::triggered, this, &MainWindow::modelPlus2Triggered);
+    connect(&m_modelPlus2a, &QAction::triggered, this, &MainWindow::modelPlus2aTriggered);
+    connect(&m_modelPlus3, &QAction::triggered, this, &MainWindow::modelPlus3Triggered);
 
-	connect(&m_joystickKempston, &QAction::triggered, this, &MainWindow::useKempstonJoystickTriggered);
-	connect(&m_joystickInterface2, &QAction::triggered, this, &MainWindow::useInterfaceTwoJoystickTriggered);
-	connect(&m_joystickCursor, &QAction::triggered, this, &MainWindow::useCursorJoystickTriggered);
-	connect(&m_joystickFuller, &QAction::triggered, this, &MainWindow::useFullerJoystickTriggered);
-	connect(&m_joystickNone, &QAction::triggered, this, &MainWindow::noJoystickTriggered);
+    connect(&m_joystickKempston, &QAction::triggered, this, &MainWindow::useKempstonJoystickTriggered);
+    connect(&m_joystickInterface2, &QAction::triggered, this, &MainWindow::useInterfaceTwoJoystickTriggered);
+    connect(&m_joystickCursor, &QAction::triggered, this, &MainWindow::useCursorJoystickTriggered);
+    connect(&m_joystickFuller, &QAction::triggered, this, &MainWindow::useFullerJoystickTriggered);
+    connect(&m_joystickNone, &QAction::triggered, this, &MainWindow::noJoystickTriggered);
 
-	connect(&m_kempstonMouse, &QAction::triggered, this, &MainWindow::kempstonMouseToggled);
+    connect(&m_kempstonMouse, &QAction::triggered, this, &MainWindow::kempstonMouseToggled);
 
-	connect(&m_debug, &QAction::triggered, this, &MainWindow::debugTriggered);
-	connect(&m_debugStep, &QAction::triggered, this, &MainWindow::stepTriggered);
-	connect(&m_saveScreenshot, &QAction::triggered, this, &MainWindow::saveScreenshotTriggered);
-	connect(&m_refreshScreen, &QAction::triggered, this, &MainWindow::refreshSpectrumDisplay);
+    connect(&m_debug, &QAction::triggered, this, &MainWindow::debugTriggered);
+    connect(&m_debugStep, &QAction::triggered, this, &MainWindow::stepTriggered);
+    connect(&m_saveScreenshot, &QAction::triggered, this, &MainWindow::saveScreenshotTriggered);
+    connect(&m_refreshScreen, &QAction::triggered, this, &MainWindow::refreshSpectrumDisplay);
 
-	connect(&m_colourDisplay, &QAction::toggled, [this](bool colour) {
-	    if (colour) {
+    connect(&m_colourDisplay, &QAction::toggled, [this](bool colour) {
+        if (colour) {
             m_display.setColour();
-	    }
-	});
+        }
+    });
 
-	connect(&m_monochromeDisplay, &QAction::toggled, [this](bool mono) {
-	    if (mono) {
+    connect(&m_monochromeDisplay, &QAction::toggled, [this](bool mono) {
+        if (mono) {
             m_display.setMonochrome();
-	    }
-	});
+        }
+    });
 
-	connect(&m_bwDisplay, &QAction::toggled, [this](bool bw) {
-	    if (bw) {
+    connect(&m_bwDisplay, &QAction::toggled, [this](bool bw) {
+        if (bw) {
             m_display.setBlackAndWhite();
-	    }
-	});
+        }
+    });
 
-	connect(&m_pokesWidget, &CheatsView::applyCheatRequested, [this](const PokeDefinition & poke) {
-	    // TODO check if poke has any user-provided values
-	    poke.apply(*m_spectrum);
-	    statusBar()->showMessage(tr("%1 poke activated.").arg(QString::fromStdString(poke.name())));
-	});
+    connect(&m_pokesWidget, &CheatsView::applyCheatRequested, [this](const PokeDefinition & poke) {
+        // TODO check if poke has any user-provided values
+        poke.apply(*m_spectrum);
+        statusBar()->showMessage(tr("%1 poke activated.").arg(QString::fromStdString(poke.name())));
+    });
 
-	connect(&m_pokesWidget, &CheatsView::undoCheatRequested, [this](const PokeDefinition & poke) {
-	    poke.undo(*m_spectrum);
+    connect(&m_pokesWidget, &CheatsView::undoCheatRequested, [this](const PokeDefinition & poke) {
+        poke.undo(*m_spectrum);
         statusBar()->showMessage(tr("%1 poke deactivated.").arg(QString::fromStdString(poke.name())));
-	});
-}
-
-void MainWindow::refreshSpectrumDisplay()
-{
-    // NOTE Qt COW makes this almost cost-free unless we actually render an overlay
-    auto image = m_display.image();
-
-    if (m_debug.isChecked()) {
-        image = image.scaledToWidth(image.width() * 2);
-        auto pen = QColor(*reinterpret_cast<QRgb *>(image.bits()));
-
-        if (pen.lightness() > 128) {
-            pen = Qt::GlobalColor::black;
-        } else {
-            pen = Qt::GlobalColor::white;
-        }
-
-        QPainter painter(&image);
-        QFont font = painter.font();
-        font.setPixelSize(10);
-        font.setFixedPitch(true);
-        painter.setFont(font);
-        painter.setPen(pen);
-        int y = 2;
-        auto & registers = m_spectrum->z80()->registers();
-        QLatin1Char fill('0');
-        painter.drawText(2, y += 10, QStringLiteral("PC: $%1").arg(registers.pc, 4, 16, fill));
-        painter.drawText(2, y += 10, QStringLiteral("SP: $%1").arg(registers.sp, 4, 16, fill));
-        painter.drawText(2, y += 10, QStringLiteral("AF: $%1").arg(registers.af, 4, 16, fill));
-        painter.drawText(2, y += 10, QStringLiteral("BC: $%1").arg(registers.bc, 4, 16, fill));
-        painter.drawText(2, y += 10, QStringLiteral("DE: $%1").arg(registers.de, 4, 16, fill));
-        painter.drawText(2, y + 10, QStringLiteral("HL: $%1").arg(registers.hl, 4, 16, fill));
-        painter.end();
-    }
-
-    if (m_spectrumThread.isPaused()) {
-        QPainter painter(&image);
-        QColor fillColour(0x66, 0x66, 0x66, 0x66);
-        auto width = image.width() / 5;
-        auto height = image.height() / 2;
-        auto x = image.width() / 4;
-        auto y = image.height() / 4;
-        painter.fillRect(x, y, width, height, fillColour);
-        painter.fillRect(image.width() - x - width, y, width, height, fillColour);
-        painter.end();
-    }
-
-    m_displayWidget.setImage(image);
-}
-
-void MainWindow::refreshRecentSnapshots()
-{
-    m_recentSnapshots.clear();
-    const auto & recentSnapshots = spectrumApp->recentSnapshots();
-
-    if (recentSnapshots.empty()) {
-        auto * action = m_recentSnapshots.addAction(tr("No recent snapshots."));
-        action->setEnabled(false);
-    } else {
-        for (const auto & snapshotFile : recentSnapshots) {
-            auto * action = m_recentSnapshots.addAction(QFileInfo(snapshotFile).fileName(), [this, snapshotFile]() {
-                if (loadSnapshot(snapshotFile)) {
-                    // ensure loaded snapshot is top of the list (most recent)
-                    spectrumApp->addRecentSnapshot(snapshotFile);
-                }
-            });
-
-            action->setToolTip(tr("Load %1").arg(snapshotFile));
-        }
-
-        m_recentSnapshots.addSeparator();
-        m_recentSnapshots.addAction(Application::icon(QLatin1String("edit-clear-list"), QLatin1String("clear")), tr("Clear"), spectrumApp, &Application::clearRecentSnapshots);
-    }
-}
-
-Spectrum::Model MainWindow::model() const
-{
-    assert(m_spectrum);
-    return m_spectrum->model();
-}
-
-void MainWindow::setModel(Spectrum::Model model)
-{
-    std::unique_ptr<BaseSpectrum> newSpectrum;
-    QString error;
-
-    switch (model) {
-        case Model::Spectrum16k: {
-            if (auto romFile = Application::romFilePath(Default16kRom); romFile.isEmpty()) {
-                error = tr("The ROM file for the %1 is missing.").arg(QString::fromStdString(std::to_string(model)));
-            } else {
-                newSpectrum = std::make_unique<Spectrum16k>(romFile.toStdString());
-                m_model16.setChecked(true);
-            }
-            break;
-        }
-
-        case Model::Spectrum48k: {
-            if (auto romFile = Application::romFilePath(Default48kRom); romFile.isEmpty()) {
-                error = tr("The ROM file for the %1 is missing.").arg(QString::fromStdString(std::to_string(model)));
-            } else {
-                newSpectrum = std::make_unique<Spectrum48k>(romFile.toStdString());
-                m_model48.setChecked(true);
-            }
-            break;
-        }
-
-        case Model::Spectrum128k: {
-            if (auto romFile0 = Application::romFilePath(Default128kRom0); romFile0.isEmpty()) {
-                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("first"),
-                                                                         QString::fromStdString(std::to_string(model)));
-            } else if (auto romFile1 = Application::romFilePath(Default128kRom1); romFile1.isEmpty()) {
-                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("second"),
-                                                                         QString::fromStdString(std::to_string(model)));
-            } else {
-                newSpectrum = std::make_unique<Spectrum128k>(romFile0.toStdString(), romFile1.toStdString());
-                m_model128.setChecked(true);
-            }
-            break;
-        }
-
-        case Model::SpectrumPlus2:
-            if (auto romFile0 = Application::romFilePath(DefaultPlus2Rom0); romFile0.isEmpty()) {
-                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("first"), QString::fromStdString(std::to_string(model)));
-            } else if (auto romFile1 = Application::romFilePath(DefaultPlus2Rom1); romFile1.isEmpty()) {
-                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("second"), QString::fromStdString(std::to_string(model)));
-            } else {
-                newSpectrum = std::make_unique<SpectrumPlus2>(romFile0.toStdString(), romFile1.toStdString());
-                m_modelPlus2.setChecked(true);
-            }
-            break;
-
-        case Model::SpectrumPlus2a:
-            if (auto romFile0 = Application::romFilePath(DefaultPlus2aRom0); romFile0.isEmpty()) {
-                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("first"), QString::fromStdString(std::to_string(model)));
-            } else if (auto romFile1 = Application::romFilePath(DefaultPlus2aRom1); romFile1.isEmpty()) {
-                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("second"), QString::fromStdString(std::to_string(model)));
-            } else if (auto romFile2 = Application::romFilePath(DefaultPlus2aRom2); romFile2.isEmpty()) {
-                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("third"), QString::fromStdString(std::to_string(model)));
-            } else if (auto romFile3 = Application::romFilePath(DefaultPlus2aRom3); romFile3.isEmpty()) {
-                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("fourth"), QString::fromStdString(std::to_string(model)));
-            } else {
-                newSpectrum = std::make_unique<SpectrumPlus2a>(romFile0.toStdString(), romFile1.toStdString(), romFile2.toStdString(), romFile3.toStdString());
-                m_modelPlus2a.setChecked(true);
-            }
-            break;
-
-        case Model::SpectrumPlus3:
-            if (auto romFile0 = Application::romFilePath(DefaultPlus2aRom0); romFile0.isEmpty()) {
-                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("first"), QString::fromStdString(std::to_string(model)));
-            } else if (auto romFile1 = Application::romFilePath(DefaultPlus2aRom1); romFile1.isEmpty()) {
-                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("second"), QString::fromStdString(std::to_string(model)));
-            } else if (auto romFile2 = Application::romFilePath(DefaultPlus2aRom2); romFile2.isEmpty()) {
-                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("third"), QString::fromStdString(std::to_string(model)));
-            } else if (auto romFile3 = Application::romFilePath(DefaultPlus2aRom3); romFile3.isEmpty()) {
-                error = tr("The %1 ROM file for the %2 is missing.").arg(tr("fourth"), QString::fromStdString(std::to_string(model)));
-            } else {
-                newSpectrum = std::make_unique<SpectrumPlus3>(romFile0.toStdString(), romFile1.toStdString(), romFile2.toStdString(), romFile3.toStdString());
-                m_modelPlus3.setChecked(true);
-            }
-            break;
-    }
-
-    if (!newSpectrum) {
-        assert(!error.isEmpty());
-        Application::showNotification(error, DefaultNotificationTimeout);
-        return;
-    }
-
-    detachSpectrumDevices();
-    bool paused = m_spectrumThread.isPaused();
-    m_displayRefreshTimer.stop();
-    stopThread();
-    m_spectrum = std::move(newSpectrum);
-
-#if (!defined(NDEBUG))
-    m_spectrum->dumpState();
-#endif
-
-    attachSpectrumDevices();
-    m_spectrumThread.setSpectrum(*m_spectrum);
-    m_spectrumThread.start();
-
-    if (paused) {
-        m_spectrumThread.pause();
-    } else {
-        m_displayRefreshTimer.start();
-    }
-
-    refreshSpectrumDisplay();
-    setWindowTitle(QString::fromStdString(std::to_string(m_spectrum->model())));
-}
-
-void MainWindow::saveScreenshot(const QString & fileName)
-{
-    ThreadPauser pauser(m_spectrumThread);
-
-    if (fileName.endsWith(QStringLiteral(".scr"), Qt::CaseSensitivity::CaseInsensitive)) {
-        std::ofstream outFile(fileName.toStdString());
-
-        if (!outFile.is_open()) {
-            Util::debug << "Could not open file '" << fileName.toStdString() << "' for writing\n";
-            return;
-        }
-
-        outFile.write(reinterpret_cast<const char *>(m_spectrum->displayMemory().data()), DisplayFile::extent);
-        outFile.close();
-    } else {
-        m_display.image().save(fileName);
-    }
-}
-
-QString MainWindow::guessSnapshotFormat(const QString & fileName)
-{
-    // NOTE we have to put the Z80 reader at the bottom of the list because it will accept any file where either of bytes 6 and 7 is non-0 and where bit 5 of
-    // byte 12 is set. This is because any such file could be a v1 .z80 snapshot with a compressed memory image. Since snapshots in other formats are likely to
-    // match these criteria, putting the Z80 reader at a higher priority would result in the Z80 reader being chosen incorrectly
-    auto format = SnapshotFormatGuesser<
-            SnaSnapshotReader,
-            SpSnapshotReader,
-            Zx82SnapshotReader,
-            ZxSnapshotReader,
-            Z80SnapshotReader
-            >::guessFormat(fileName.toStdString());
-
-    if (format) {
-        return QString::fromStdString(*format);
-    }
-
-    return snapshotFormatFromExtension(fileName);
-}
-
-bool MainWindow::loadSnapshot(const QString & fileName, QString format)
-{
-    ThreadPauser pauser(m_spectrumThread);
-
-    if (!QFileInfo::exists(fileName)) {
-        Application::showNotification(tr("The snapshot file %1 does not exist.").arg(fileName), DefaultNotificationTimeout);
-        return false;
-    }
-
-    // NOTE we use a guesser then generate the reader from the format string, rather than using the reader factory directly with the file name, so that we are
-    // able to force the format to use
-    if (format.isEmpty()) {
-        format = guessSnapshotFormat(fileName);
-
-        if (format.isEmpty()) {
-            Application::showNotification(tr("The snapshot format for %1 could not be determined.").arg(fileName), DefaultNotificationTimeout);
-            return false;
-        }
-    }
-
-    auto reader = SnapshotReaderFactory<
-            SnaSnapshotReader,
-            SpSnapshotReader,
-            Zx82SnapshotReader,
-            ZxSnapshotReader,
-            Z80SnapshotReader
-            >::readerForFormat(format.toStdString());
-
-    if (!reader) {
-        Util::debug << "unrecognised format '" << format.toStdString() << "'\n";
-        Application::showNotification(tr("The snapshot format for %1 could not be determined.").arg(fileName), DefaultNotificationTimeout);
-        return false;
-    }
-
-    reader->setFileName(fileName.toStdString());
-
-    if (!reader->isOpen()) {
-        Util::debug << "Snapshot file '" << fileName.toStdString() << "' could not be opened.\n";
-        Application::showNotification(tr("The snapshot file %1 could not be opened.").arg(fileName), DefaultNotificationTimeout);
-        return false;
-    }
-
-    const auto * snapshot = reader->read();
-
-    if (!snapshot) {
-        Application::showNotification(tr("The snapshot file %1 is not valid.").arg(fileName), DefaultNotificationTimeout);
-        return false;
-    }
-
-    if (bool canApply = m_spectrum->canApplySnapshot(*snapshot); !canApply) {
-        if (snapshot->model() != m_spectrum->model()) {
-            auto dlg = Dialogue(
-                    tr("You are currently running a %1 but this snapshot requires a %2.\n\nWould you like to switch models (this will reset the Spectrum)?")
-                            .arg(QString::fromStdString(std::to_string(m_spectrum->model())), QString::fromStdString(std::to_string(snapshot->model()))),
-                    tr("A different Spectrum model is required")
-                );
-
-            dlg.setIcon(QIcon::fromTheme(QStringLiteral("start-over"), Application::icon(QStringLiteral("reset"))));
-            dlg.addButton(tr("Keep %1").arg(QString::fromStdString(std::to_string(m_spectrum->model()))), QDialogButtonBox::ButtonRole::RejectRole);
-            dlg.addButton(tr("Switch to %1").arg(QString::fromStdString(std::to_string(snapshot->model()))), QDialogButtonBox::ButtonRole::AcceptRole);
-
-            if (QDialog::Accepted != dlg.exec()) {
-                statusBar()->showMessage(
-                        tr("The snapshot file %1 is not compatible with the running Spectrum (it requires a %2).")
-                                .arg(fileName, QString::fromStdString(std::to_string(snapshot->model()))),
-                        DefaultNotificationTimeout
-                );
-                return false;
-            }
-
-            setModel(snapshot->model());
-            canApply = m_spectrum->canApplySnapshot(*snapshot);
-        }
-
-        if (!canApply) {
-            Application::showNotification(
-                    tr("The snapshot file %1 cannot be loaded.")
-                            .arg(fileName, QString::fromStdString(std::to_string(snapshot->model()))),
-                    DefaultNotificationTimeout
-            );
-            return false;
-        }
-    }
-
-    m_spectrum->applySnapshot(*snapshot);
-
-    setWindowTitle(QStringLiteral("%1 | %2").arg(QString::fromStdString(std::to_string(m_spectrum->model())), QFileInfo(fileName).fileName()));
-    m_display.renderFrame(m_spectrum->displayMemory());
-    m_displayWidget.setImage(m_display.image());
-
-    if (QStringLiteral("sna") == format) {
-        // RETN instruction is required to resume execution of the .SNA
-        m_spectrum->z80()->execute(reinterpret_cast<const Z80::UnsignedByte *>("\xed\x45"), true);
-    }
-
-    statusBar()->showMessage(tr("The snapshot file %1 was successfully loaded.").arg(fileName), DefaultNotificationTimeout);
-    return true;
-}
-
-void MainWindow::saveSnapshot(const QString & fileName, QString format)
-{
-    ThreadPauser pauser(m_spectrumThread);
-
-    if (format.isEmpty()) {
-        format = snapshotFormatFromExtension(fileName);
-
-        if (format.isEmpty()) {
-            Application::showNotification(tr("The snapshot format to use could not be determined from the filename %1.").arg(fileName),
-                                          DefaultNotificationTimeout);
-            return;
-        }
-    }
-
-    std::unique_ptr<SnapshotWriter> writer = SnapshotWriterFactory<
-            Z80SnapshotWriter,
-            SnaSnapshotWriter,
-            SpSnapshotWriter,
-            Zx82SnapshotWriter,
-            ZxSnapshotWriter
-            >::writerForFormat(format.toStdString());
-
-    if (!writer) {
-        Util::debug << "unrecognised format '" << format.toStdString() << "' from filename '" << fileName.toStdString() << "'\n";
-        Application::showNotification(tr("Unrecognised snapshot format %1.").arg(format), DefaultNotificationTimeout);
-    }
-
-    if (QStringLiteral("sna") == format) {
-        // push the current PC onto the stack
-        m_spectrum->z80()->execute(reinterpret_cast<const Z80::UnsignedByte *>("\xcd\x00\x00"), false);
-    }
-
-    writer->setSnapshot(m_spectrum->snapshot());
-
-    if (!writer->writeTo(fileName.toStdString())) {
-        Util::debug << "failed to write snapshot to '" << fileName.toStdString() << "'\n";
-        Application::showNotification(tr("Failed to save snapshot to %1.").arg(fileName), DefaultNotificationTimeout);
-    } else {
-        statusBar()->showMessage(tr("Snapshot successfully saved to %1.").arg(fileName), DefaultNotificationTimeout);
-    }
-
-    if (QStringLiteral("sna") == format) {
-        // pop the PC off the stack
-        m_spectrum->z80()->execute(reinterpret_cast<const Z80::UnsignedByte *>("\xed\x45"), false);
-    }
+    });
 }
 
 #if (defined(WITH_QT_GAMEPAD))
@@ -1526,24 +1533,21 @@ void MainWindow::loadSettings()
 
     m_emulationSpeedSlider.setValue(speed);
 
-    {
-        auto joystick = settings.value(QStringLiteral("joystick1Interface")).toString();
-
-        if (QStringLiteral("kempston") == joystick) {
-            m_joystickKempston.setChecked(true);
-            useKempstonJoystickTriggered();
-        } else if (QStringLiteral("zxinterfacetwo") == joystick) {
-            m_joystickInterface2.setChecked(true);
-            useInterfaceTwoJoystickTriggered();
-        } else if (QStringLiteral("cursor") == joystick) {
-            m_joystickCursor.setChecked(true);
-            useCursorJoystickTriggered();
-        } else {
-            m_joystickNone.setChecked(true);
-            noJoystickTriggered();
-        }
+    if (const auto joystick = settings.value(QStringLiteral("joystick1Interface")).toString(); QStringLiteral("kempston") == joystick) {
+        m_joystickKempston.setChecked(true);
+        useKempstonJoystickTriggered();
+    } else if (QStringLiteral("zxinterfacetwo") == joystick) {
+        m_joystickInterface2.setChecked(true);
+        useInterfaceTwoJoystickTriggered();
+    } else if (QStringLiteral("cursor") == joystick) {
+        m_joystickCursor.setChecked(true);
+        useCursorJoystickTriggered();
+    } else {
+        m_joystickNone.setChecked(true);
+        noJoystickTriggered();
     }
 
+#if defined(WITH_QT_GAMEPAD)
     {
         auto controller = settings.value(QStringLiteral("joystick1Controller")).toString();
         bool found = false;
@@ -1569,46 +1573,36 @@ void MainWindow::loadSettings()
             keyboardControllerAction->setChecked(true);
         }
     }
+#endif
 
-    {
-        auto mouseType = settings.value(QStringLiteral("mouseInterface")).toString();
-
-        if (QStringLiteral("kempston") == mouseType) {
-            m_kempstonMouse.setChecked(true);
-            kempstonMouseToggled(true);
-        } else {
-            m_kempstonMouse.setChecked(false);
-            kempstonMouseToggled(false);
-        }
+    if (const auto mouseType = settings.value(QStringLiteral("mouseInterface")).toString(); QStringLiteral("kempston") == mouseType) {
+        m_kempstonMouse.setChecked(true);
+        kempstonMouseToggled(true);
+    } else {
+        m_kempstonMouse.setChecked(false);
+        kempstonMouseToggled(false);
     }
 
-    {
-        auto model = settings.value(QStringLiteral("model")).toString();
-
-        if (QStringLiteral("16k") == model) {
-            setModel(Model::Spectrum16k);
-        } else if(QStringLiteral("48k") == model) {
-            setModel(Model::Spectrum48k);
-        } else if(QStringLiteral("128k") == model) {
-            setModel(Model::Spectrum128k);
-        } else if(QStringLiteral("+2") == model) {
-            setModel(Model::SpectrumPlus2);
-        } else if(QStringLiteral("+2a") == model) {
-            setModel(Model::SpectrumPlus2a);
-        } else if(QStringLiteral("+3") == model) {
-            setModel(Model::SpectrumPlus3);
-        }
+    if (const auto model = settings.value(QStringLiteral("model")).toString(); QStringLiteral("16k") == model) {
+        setModel(Model::Spectrum16k);
+    } else if(QStringLiteral("48k") == model) {
+        setModel(Model::Spectrum48k);
+    } else if(QStringLiteral("128k") == model) {
+        setModel(Model::Spectrum128k);
+    } else if(QStringLiteral("+2") == model) {
+        setModel(Model::SpectrumPlus2);
+    } else if(QStringLiteral("+2a") == model) {
+        setModel(Model::SpectrumPlus2a);
+    } else if(QStringLiteral("+3") == model) {
+        setModel(Model::SpectrumPlus3);
     }
 
     if (const auto frameSkipSetting = settings.value(QStringLiteral("frameSkip")); frameSkipSetting.canConvert<int>()) {
-        auto frameSkip = frameSkipSetting.value<int>();
+        const auto frameSkip = frameSkipSetting.value<int>();
         bool found = false;
-        QAction * keyboardControllerAction = nullptr;
 
         for (auto * const action : m_frameSkipGroup.actions()) {
-            auto actionFrameSkip = action->data().value<int>();
-
-            if (actionFrameSkip == frameSkip) {
+            if (const auto actionFrameSkip = action->data().value<int>(); actionFrameSkip == frameSkip) {
                 action->setChecked(true);
                 action->trigger();
                 found = true;
@@ -1657,6 +1651,7 @@ void MainWindow::saveSettings()
         settings.setValue(QStringLiteral("joystick1Interface"), joystickType);
     }
 
+#if defined(WITH_QT_GAMEPAD)
     {
         QString controller;
 
@@ -1673,6 +1668,7 @@ void MainWindow::saveSettings()
             settings.setValue(QStringLiteral("joystick1Controller"), controller);
         }
     }
+#endif
 
     {
         QString mouseType;

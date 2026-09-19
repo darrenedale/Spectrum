@@ -11,7 +11,7 @@
 using namespace std::string_literals;
 using namespace Spectrum::Debugger;
 
-bool ProgramCounterBreakpoint::check(const BaseSpectrum & spectrum)
+bool ProgramCounterBreakpoint::check(const BaseSpectrum & spectrum) noexcept
 {
     if (spectrum.z80()->pc() == m_address) {
         notifyObservers();
@@ -21,12 +21,12 @@ bool ProgramCounterBreakpoint::check(const BaseSpectrum & spectrum)
     return false;
 }
 
-bool ProgramCounterBreakpoint::operator==(const Breakpoint & other) const
+bool ProgramCounterBreakpoint::operator==(const Breakpoint & other) const noexcept
 {
     return typeid(*this) == typeid(other) && address() == dynamic_cast<const ProgramCounterBreakpoint *>(&other)->address();
 }
 
-std::string ProgramCounterBreakpoint::typeName() const
+std::string ProgramCounterBreakpoint::typeName() const noexcept
 {
     return "Program counter"s;
 }

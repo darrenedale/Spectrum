@@ -28,9 +28,7 @@ namespace Interpreter
     class Z80Interpreter
     {
     public:
-        /**
-         * Enumeration of supported number literal formats.
-         */
+        /** Enumeration of supported number literal formats. */
         enum NumberFormat
         {
             HexFormat = 0x01,
@@ -49,9 +47,7 @@ namespace Interpreter
          */
         explicit Z80Interpreter(std::unique_ptr<Z80Cpu> cpu);
 
-        /**
-         * Destructor.
-         */
+        /** Destructor. */
         virtual ~Z80Interpreter();
 
         /**
@@ -59,7 +55,8 @@ namespace Interpreter
          *
          * @return true if the interpreter has a non-null Z80, false otherwise.
          */
-        [[nodiscard]] bool hasCpu() const;
+        [[nodiscard]]
+        bool hasCpu() const noexcept;
 
         /**
          * Fetch the interpreter's CPU.
@@ -68,7 +65,8 @@ namespace Interpreter
          *
          * @return The CPU, or nullptr if the interpreter does not have one.
          */
-        [[nodiscard]] Z80Cpu * cpu() const;
+        [[nodiscard]]
+        Z80Cpu * cpu() const noexcept;
 
         /**
          * Set the interpreter's CPU.
@@ -77,7 +75,7 @@ namespace Interpreter
          *
          * @param cpu The CPU to set.
          */
-        void setCpu(std::unique_ptr<Z80Cpu> cpu);
+        void setCpu(std::unique_ptr<Z80Cpu> cpu) noexcept;
 
         /**
          * Run the interpreter.
@@ -86,7 +84,7 @@ namespace Interpreter
          *
          * A REPL is started. The function returns when the user quits the REPL.
          */
-        void run();
+        void run() noexcept;
 
         /**
          * Convenience function to start an interpreter with a given CPU.
@@ -95,7 +93,7 @@ namespace Interpreter
          *
          * @param cpu The CPU to use the run the interpreter.
          */
-        static void run(std::unique_ptr<Z80Cpu> cpu);
+        static void run(std::unique_ptr<Z80Cpu> cpu) noexcept;
 
     protected:
         /**
@@ -121,7 +119,7 @@ namespace Interpreter
          *
          * @return The input.
          */
-        std::string readInput();
+        std::string readInput() noexcept;
 
         /**
          * Tokenise a string of input into a token stream.
@@ -130,94 +128,66 @@ namespace Interpreter
          * 
          * @return The set of tokens.
          */
-        static Tokens tokenise(const std::string & input);
+        static Tokens tokenise(const std::string & input) noexcept;
 
         // returns true if the interpreter should continue running, false if it should exit.
-        bool handleInput(const std::string & input);
+        bool handleInput(const std::string & input) noexcept;
 
         /**
          * Dispatcher for .dot commands.
          *
          * @param tokens The stream of tokens read from the initial input.
          */
-        void handleDotCommand(const Tokens & tokens);
+        void handleDotCommand(const Tokens & tokens) noexcept;
 
-        /**
-         * Helper to execute the .help command.
-         */
-        void dotHelp() const;
+        /** Helper to execute the .help command. */
+        void dotHelp() const noexcept;
 
-        /**
-         * Helper to execute the .showopcodes command.
-         */
-        void dotShowOpcodes();
+        /** Helper to execute the .showopcodes command. */
+        void dotShowOpcodes() noexcept;
 
-        /**
-         * Helper to execute the .hideopcodes command.
-         */
-        void dotHideOpcodes();
+        /** Helper to execute the .hideopcodes command. */
+        void dotHideOpcodes() noexcept;
 
-        /**
-         * Helper to execute the .showcosts command.
-         */
-        void dotShowCosts();
+        /** Helper to execute the .showcosts command. */
+        void dotShowCosts() noexcept;
 
-        /**
-         * Helper to execute the .hidecosts command.
-         */
-        void dotHideCosts();
+        /** Helper to execute the .hidecosts command. */
+        void dotHideCosts() noexcept;
 
-        /**
-         * Helper to execute the .autoflags command.
-         */
-        void dotAutoShowFlags(const Tokens & tokens);
+        /** Helper to execute the .autoflags command. */
+        void dotAutoShowFlags(const Tokens & tokens) noexcept;
 
-        /**
-         * Helper to execute the .status command.
-         */
-        void dotStatus() const;
+        /** Helper to execute the .status command. */
+        void dotStatus() const noexcept;
 
-        /**
-         * Helper to execute the .flags/.dumpflags command.
-         */
-        void dotDumpFlags() const;
+        /** Helper to execute the .flags/.dumpflags command. */
+        void dotDumpFlags() const noexcept;
 
-        /**
-         * Helper to execute the .ram/.dumpram command.
-         */
-        void dotDumpMemory(const Tokens & tokens) const;
+        /** Helper to execute the .ram/.dumpram command. */
+        void dotDumpMemory(const Tokens & tokens) const noexcept;
 
-        /**
-         * Helper to execute the .ram/.dumpram command.
-         */
-        void dotDumpMemory(int low, int len = 16) const;
+        /** Helper to execute the .ram/.dumpram command. */
+        void dotDumpMemory(int low, int len = 16) const noexcept;
 
-        /**
-         * Helper to execute the .regs/.dumpregisters command.
-         */
-        void dotDumpRegisters() const;
+        /** Helper to execute the .regs/.dumpregisters command. */
+        void dotDumpRegisters() const noexcept;
 
-        /**
-         * Helper to execute the .rv/.regvalue/.registervalue command.
-         */
-        void dotRegisterValue(const Tokens & tokens) const;
+        /** Helper to execute the .rv/.regvalue/.registervalue command. */
+        void dotRegisterValue(const Tokens & tokens) const noexcept;
 
-        /**
-         * Helper to execute the .rv/.regvalue/.registervalue command.
-         */
-        void dotRegisterValue(Register8 reg, const NumberFormats & fmt = AllFormats) const;
+        /** Helper to execute the .rv/.regvalue/.registervalue command. */
+        void dotRegisterValue(Register8 reg, const NumberFormats & fmt = AllFormats) const noexcept;
 
-        /**
-         * Helper to execute the .rv/.regvalue/.registervalue command.
-         */
-        void dotRegisterValue(Register16 reg, const NumberFormats & fmt = AllFormats) const;
+        /** Helper to execute the .rv/.regvalue/.registervalue command. */
+        void dotRegisterValue(Register16 reg, const NumberFormats & fmt = AllFormats) const noexcept;
 
         /**
          * Helper to run a single instruction on the Z80 CPU.
          * 
          * @param opcode The instruction to run.
          */
-        void runOpcode(const Opcode & opcode);
+        void runOpcode(const Opcode & opcode) noexcept;
 
         /**
          * Helper to dispatch a token stream for assembly.
@@ -226,7 +196,7 @@ namespace Interpreter
          * 
          * @return The assembled machine code.
          */
-        static Opcode assembleInstruction(const Tokens & tokens);
+        static Opcode assembleInstruction(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble an ADC instruction.
@@ -235,7 +205,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleADC(const Tokens & tokens);
+        static Opcode assembleADC(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble an ADC instruction.
@@ -244,7 +214,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleADD(const Tokens & tokens);
+        static Opcode assembleADD(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble an AND instruction.
@@ -253,7 +223,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleAND(const Tokens & tokens);
+        static Opcode assembleAND(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a BIT instruction.
@@ -262,7 +232,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleBIT(const Tokens & tokens);
+        static Opcode assembleBIT(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a CALL instruction.
@@ -271,7 +241,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleCALL(const Tokens & tokens);
+        static Opcode assembleCALL(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a CCF instruction.
@@ -280,7 +250,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleCCF(const Tokens & tokens);
+        static Opcode assembleCCF(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a CP instruction.
@@ -289,7 +259,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleCP(const Tokens & tokens);
+        static Opcode assembleCP(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a CPD instruction.
@@ -298,7 +268,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleCPD(const Tokens & tokens);
+        static Opcode assembleCPD(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a CPDR instruction.
@@ -307,7 +277,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleCPDR(const Tokens & tokens);
+        static Opcode assembleCPDR(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a CPI instruction.
@@ -316,7 +286,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleCPI(const Tokens & tokens);
+        static Opcode assembleCPI(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a CPIR instruction.
@@ -325,7 +295,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleCPIR(const Tokens & tokens);
+        static Opcode assembleCPIR(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a CPL instruction.
@@ -334,7 +304,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleCPL(const Tokens & tokens);
+        static Opcode assembleCPL(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a DAA instruction.
@@ -343,7 +313,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleDAA(const Tokens & tokens);
+        static Opcode assembleDAA(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a DEC instruction.
@@ -352,7 +322,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleDEC(const Tokens & tokens);
+        static Opcode assembleDEC(const Tokens & tokens) noexcept;
         /**
          * Helper to assemble a DI instruction.
          * 
@@ -361,7 +331,7 @@ namespace Interpreter
          * @return The machine code.
          */
 
-        static Opcode assembleDI(const Tokens & tokens);
+        static Opcode assembleDI(const Tokens & tokens) noexcept;
         /**
          * Helper to assemble a DJNZ instruction.
          * 
@@ -370,7 +340,7 @@ namespace Interpreter
          * @return The machine code.
          */
 
-        static Opcode assembleDJNZ(const Tokens & tokens);
+        static Opcode assembleDJNZ(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble an EI instruction.
@@ -379,7 +349,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleEI(const Tokens & tokens);
+        static Opcode assembleEI(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble an EX instruction.
@@ -388,7 +358,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleEX(const Tokens & tokens);
+        static Opcode assembleEX(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble an EXX instruction.
@@ -397,7 +367,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleEXX(const Tokens & tokens);
+        static Opcode assembleEXX(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a HALT instruction.
@@ -406,7 +376,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleHALT(const Tokens & tokens);
+        static Opcode assembleHALT(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble an IM instruction.
@@ -415,7 +385,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleIM(const Tokens & tokens);
+        static Opcode assembleIM(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble an IN instruction.
@@ -424,7 +394,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleIN(const Tokens & tokens);
+        static Opcode assembleIN(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble an INC instruction.
@@ -433,7 +403,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleINC(const Tokens & tokens);
+        static Opcode assembleINC(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble an IND instruction.
@@ -442,7 +412,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleIND(const Tokens & tokens);
+        static Opcode assembleIND(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble an INDR instruction.
@@ -451,7 +421,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleINDR(const Tokens & tokens);
+        static Opcode assembleINDR(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble an INI instruction.
@@ -460,7 +430,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleINI(const Tokens & tokens);
+        static Opcode assembleINI(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble an INIR instruction.
@@ -469,7 +439,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleINIR(const Tokens & tokens);
+        static Opcode assembleINIR(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a JP instruction.
@@ -478,7 +448,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleJP(const Tokens & tokens);
+        static Opcode assembleJP(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a JR instruction.
@@ -487,7 +457,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleJR(const Tokens & tokens);
+        static Opcode assembleJR(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a LD instruction.
@@ -496,7 +466,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleLD(const Tokens & tokens);
+        static Opcode assembleLD(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a LDD instruction.
@@ -505,7 +475,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleLDD(const Tokens & tokens);
+        static Opcode assembleLDD(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a LDDR instruction.
@@ -514,7 +484,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleLDDR(const Tokens & tokens);
+        static Opcode assembleLDDR(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a LDI instruction.
@@ -523,7 +493,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleLDI(const Tokens & tokens);
+        static Opcode assembleLDI(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a LDIR instruction.
@@ -532,7 +502,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleLDIR(const Tokens & tokens);
+        static Opcode assembleLDIR(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a NEG instruction.
@@ -541,7 +511,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleNEG(const Tokens & tokens);
+        static Opcode assembleNEG(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a NOP instruction.
@@ -550,7 +520,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleNOP(const Tokens & tokens);
+        static Opcode assembleNOP(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble an OR instruction.
@@ -559,7 +529,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleOR(const Tokens & tokens);
+        static Opcode assembleOR(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble an OUT instruction.
@@ -568,7 +538,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleOUT(const Tokens & tokens);
+        static Opcode assembleOUT(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble an OUTD instruction.
@@ -577,7 +547,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleOUTD(const Tokens & tokens);
+        static Opcode assembleOUTD(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble an OTDR instruction.
@@ -586,7 +556,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleOTDR(const Tokens & tokens);
+        static Opcode assembleOTDR(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble an OUTI instruction.
@@ -595,7 +565,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleOUTI(const Tokens & tokens);
+        static Opcode assembleOUTI(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble an OTIR instruction.
@@ -604,7 +574,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleOTIR(const Tokens & tokens);
+        static Opcode assembleOTIR(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a POP instruction.
@@ -613,7 +583,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assemblePOP(const Tokens & tokens);
+        static Opcode assemblePOP(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a PUSH instruction.
@@ -622,7 +592,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assemblePUSH(const Tokens & tokens);
+        static Opcode assemblePUSH(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a RES instruction.
@@ -631,7 +601,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleRES(const Tokens & tokens);
+        static Opcode assembleRES(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a RET instruction.
@@ -640,7 +610,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleRET(const Tokens & tokens);
+        static Opcode assembleRET(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a RETI instruction.
@@ -649,7 +619,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleRETI(const Tokens & tokens);
+        static Opcode assembleRETI(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a RETN instruction.
@@ -658,7 +628,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleRETN(const Tokens & tokens);
+        static Opcode assembleRETN(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a RLA instruction.
@@ -667,7 +637,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleRLA(const Tokens & tokens);
+        static Opcode assembleRLA(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a RL instruction.
@@ -676,7 +646,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleRL(const Tokens & tokens);
+        static Opcode assembleRL(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a RLCA instruction.
@@ -685,7 +655,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleRLCA(const Tokens & tokens);
+        static Opcode assembleRLCA(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a RLC instruction.
@@ -694,7 +664,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleRLC(const Tokens & tokens);
+        static Opcode assembleRLC(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a RLD instruction.
@@ -703,7 +673,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleRLD(const Tokens & tokens);
+        static Opcode assembleRLD(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a RRA instruction.
@@ -712,7 +682,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleRRA(const Tokens & tokens);
+        static Opcode assembleRRA(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a RR instruction.
@@ -721,7 +691,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleRR(const Tokens & tokens);
+        static Opcode assembleRR(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a RRCA instruction.
@@ -730,7 +700,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleRRCA(const Tokens & tokens);
+        static Opcode assembleRRCA(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a RRC instruction.
@@ -739,7 +709,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleRRC(const Tokens & tokens);
+        static Opcode assembleRRC(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a RRD instruction.
@@ -748,7 +718,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleRRD(const Tokens & tokens);
+        static Opcode assembleRRD(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a RST instruction.
@@ -757,7 +727,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleRST(const Tokens & tokens);
+        static Opcode assembleRST(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a SBC instruction.
@@ -766,7 +736,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleSBC(const Tokens & tokens);
+        static Opcode assembleSBC(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a SCF instruction.
@@ -775,7 +745,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleSCF(const Tokens & tokens);
+        static Opcode assembleSCF(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a SET instruction.
@@ -784,7 +754,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleSET(const Tokens & tokens);
+        static Opcode assembleSET(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a SLA instruction.
@@ -793,7 +763,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleSLA(const Tokens & tokens);
+        static Opcode assembleSLA(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a SRA instruction.
@@ -802,7 +772,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleSRA(const Tokens & tokens);
+        static Opcode assembleSRA(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a SLL instruction.
@@ -811,7 +781,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleSLL(const Tokens & tokens);
+        static Opcode assembleSLL(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a SRL instruction.
@@ -820,7 +790,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleSRL(const Tokens & tokens);
+        static Opcode assembleSRL(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a SUB instruction.
@@ -829,7 +799,7 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleSUB(const Tokens & tokens);
+        static Opcode assembleSUB(const Tokens & tokens) noexcept;
 
         /**
          * Helper to assemble a XOR instruction.
@@ -838,27 +808,19 @@ namespace Interpreter
          * 
          * @return The machine code.
          */
-        static Opcode assembleXOR(const Tokens & tokens);
+        static Opcode assembleXOR(const Tokens & tokens) noexcept;
 
     private:
-        /**
-         * The Z80 CPU that is used to execute instructions.
-         */
+        /** The Z80 CPU that is used to execute instructions. */
         std::unique_ptr<Z80Cpu> m_cpu;
         
-        /**
-         * Whether the assembled machine code should be output for each instruction executed.
-         */
+        /** Whether the assembled machine code should be output for each instruction executed. */
         bool m_showOpcodes;
 
-        /**
-         * Whether the t-state cost and byte size should be output for each instruction executed.
-         */
+        /** Whether the t-state cost and byte size should be output for each instruction executed. */
         bool m_showInstructionCost;
         
-        /**
-         * Whether or not the flags should be output after each instruction executed.
-         */
+        /** Whether or not the flags should be output after each instruction executed. */
         bool m_autoShowFlags;
     };
 }

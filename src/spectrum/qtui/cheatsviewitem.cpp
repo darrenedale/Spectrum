@@ -19,7 +19,7 @@ CheatsViewItem::CheatsViewItem(const QString & name, QString  uuid, QWidget * pa
     auto * layout = new QHBoxLayout();
     layout->addWidget(new QLabel(name), 10);
     layout->setSpacing(0);
-    layout->setMargin(0);
+    layout->setContentsMargins(0, 0, 0, 0);
 
     m_onOff.setAutoRaise(true);
     m_onOff.setCheckable(true);

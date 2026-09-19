@@ -6,14 +6,13 @@
 #define INTERPRETER_OPERAND_H
 
 #include <string>
+
 #include "../z80/types.h"
 #include "../util/string.h"
 
 namespace Interpreter
 {
-    /**
-     * Discriminated union representing a single operand for a Z80 instruction.
-     */
+    /** Discriminated union representing a single operand for a Z80 instruction. */
     class Operand
     {
         using UnsignedByte = Z80::UnsignedByte;
@@ -24,9 +23,7 @@ namespace Interpreter
         using Register16 = Z80::Register16;
 
     public:
-        /**
-         * Enumeration of the possible operand types.
-         */
+        /** Enumeration of the possible operand types. */
         enum class OperandType
         {
             InvalidOperand = 0,
@@ -41,9 +38,7 @@ namespace Interpreter
             Port
         };
 
-        /**
-         * Enumeration of the possible condition types.
-         */
+        /** Enumeration of the possible condition types. */
         enum class ConditionType
         {
             InvalidCondition = 0,
@@ -70,7 +65,7 @@ namespace Interpreter
          *
          * @param op The operand string.
          */
-        inline explicit Operand(const std::string & op)
+        explicit Operand(const std::string & op) noexcept
         : m_string(std::move(Util::upper_cased(Util::trimmed(op)))),
           m_type(OperandType::InvalidOperand),
           m_number(0)
@@ -83,7 +78,8 @@ namespace Interpreter
          *
          * @return The operand type.
          */
-        [[nodiscard]] inline OperandType type() const
+        [[nodiscard]]
+        OperandType type() const noexcept
         {
             return m_type;
         }
@@ -95,9 +91,15 @@ namespace Interpreter
          *
          * @return true if it's valid, false otherwise.
          */
-        [[nodiscard]] inline bool isValid() const
+        [[nodiscard]]
+        bool isValid() const noexcept
         {
-            return m_type != OperandType::InvalidOperand && (m_type != OperandType::Condition || m_condition != ConditionType::InvalidCondition);
+            return
+                OperandType::InvalidOperand != m_type
+                && (
+                    OperandType::Condition != m_type
+                    || ConditionType::InvalidCondition != m_condition
+                );
         }
 
         /**
@@ -105,7 +107,8 @@ namespace Interpreter
          *
          * @return true if it's a byte or a word, false otherwise.
          */
-        [[nodiscard]] inline bool isNumber() const
+        [[nodiscard]]
+        bool isNumber() const noexcept
         {
             return isByte() || isWord();
         }
@@ -115,7 +118,8 @@ namespace Interpreter
          *
          * @return true if it's one of the 8-bit or 16-bit registers, false otherwise.
          */
-        [[nodiscard]] inline bool isRegister() const
+        [[nodiscard]]
+        bool isRegister() const noexcept
         {
             return isReg16() || isReg8();
         }
@@ -125,9 +129,10 @@ namespace Interpreter
          *
          * @return true if it's one of the 16-bit registers, false otherwise.
          */
-        [[nodiscard]] inline bool isReg16() const
+        [[nodiscard]]
+        bool isReg16() const noexcept
         {
-            return m_type == OperandType::Register16;
+            return OperandType::Register16 == m_type;
         }
 
         /**
@@ -135,9 +140,10 @@ namespace Interpreter
          *
          * @return true if it's one of the 8-bit registers, false otherwise.
          */
-        [[nodiscard]] inline bool isReg8() const
+        [[nodiscard]]
+        bool isReg8() const noexcept
         {
-            return m_type == OperandType::Register8;
+            return OperandType::Register8 == m_type;
         }
 
         /**
@@ -145,9 +151,10 @@ namespace Interpreter
          *
          * @return true if it's a bit index in one of the Z80 bit-handling instructions, false otherwise.
          */
-        [[nodiscard]] inline bool isBitIndex() const
+        [[nodiscard]]
+        bool isBitIndex() const noexcept
         {
-            return m_type == OperandType::NumberLiteral && m_number >= 0 && m_number <= 7;
+            return OperandType::NumberLiteral == m_type && 0 <= m_number && 7 >= m_number;
         }
 
         /**
@@ -155,9 +162,10 @@ namespace Interpreter
          *
          * @return true if it's a byte literal, false otherwise.
          */
-        [[nodiscard]] inline bool isByte() const
+        [[nodiscard]]
+        bool isByte() const noexcept
         {
-            return m_type == OperandType::NumberLiteral && m_number >= 0 && m_number <= 256;
+            return OperandType::NumberLiteral == m_type && 0 <= m_number && 256 >= m_number;
         }
 
         /**
@@ -165,9 +173,10 @@ namespace Interpreter
          *
          * @return true if it's a signed byte literal, false otherwise.
          */
-        [[nodiscard]] inline bool isSignedByte() const
+        [[nodiscard]]
+        bool isSignedByte() const noexcept
         {
-            return m_type == OperandType::NumberLiteral && m_number >= -128 && m_number <= 127;
+            return OperandType::NumberLiteral == m_type && -128 <= m_number && 127 >= m_number;
         }
 
         /**
@@ -175,9 +184,10 @@ namespace Interpreter
          *
          * @return true if it's a 16-bit word literal, false otherwise.
          */
-        [[nodiscard]] inline bool isWord() const
+        [[nodiscard]]
+        bool isWord() const noexcept
         {
-            return m_type == OperandType::NumberLiteral && m_number >= 0 && m_number <= 65535;
+            return OperandType::NumberLiteral == m_type && 0 <= m_number && 65535 >= m_number;
         }
 
         /**
@@ -185,9 +195,10 @@ namespace Interpreter
          *
          * @return true if it's a 16-bit signed word literal, false otherwise.
          */
-        [[nodiscard]] inline bool isSignedWord() const
+        [[nodiscard]]
+        bool isSignedWord() const noexcept
         {
-            return m_type == OperandType::NumberLiteral && m_number >= -32767 && m_number <= 32768;
+            return OperandType::NumberLiteral == m_type && -32767 <= m_number && 32768 >= m_number;
         }
 
         /**
@@ -195,7 +206,8 @@ namespace Interpreter
          *
          * @return true if it's an offset for use with a Z80 index register instruction, false otherwise.
          */
-        [[nodiscard]] inline bool isOffset() const
+        [[nodiscard]]
+        bool isOffset() const noexcept
         {
             return isSignedByte();
         }
@@ -205,9 +217,10 @@ namespace Interpreter
          *
          * @return true if it's an indirect address literal, false otherwise.
          */
-        [[nodiscard]] inline bool isIndirectAddress() const
+        [[nodiscard]]
+        bool isIndirectAddress() const noexcept
         {
-            return m_type == OperandType::IndirectAddress;
+            return OperandType::IndirectAddress == m_type;
         }
 
         /**
@@ -215,9 +228,10 @@ namespace Interpreter
          *
          * @return true if it's an indirect 16-bit register pair, false otherwise.
          */
-        [[nodiscard]] inline bool isIndirectReg16() const
+        [[nodiscard]]
+        bool isIndirectReg16() const noexcept
         {
-            return m_type == OperandType::IndirectReg16;
+            return OperandType::IndirectReg16 == m_type;
         }
 
         /**
@@ -225,9 +239,10 @@ namespace Interpreter
          *
          * @return true if it's an indirect 16-bit index register pair with an offset, false otherwise.
          */
-        [[nodiscard]] inline bool isIndirectReg16WithOffset() const
+        [[nodiscard]]
+        bool isIndirectReg16WithOffset() const noexcept
         {
-            return m_type == OperandType::IndirectReg16WithOffset;
+            return OperandType::IndirectReg16WithOffset == m_type;
         }
 
         /**
@@ -235,9 +250,10 @@ namespace Interpreter
          *
          * @return true if it's an indirect 8-bit register, false otherwise.
          */
-        [[nodiscard]] inline bool isIndirectReg8() const
+        [[nodiscard]]
+        bool isIndirectReg8() const noexcept
         {
-            return m_type == OperandType::IndirectReg8;
+            return OperandType::IndirectReg8 == m_type;
         }
 
         /**
@@ -245,10 +261,14 @@ namespace Interpreter
          *
          * @return true if it's a Z80 condition code, false otherwise.
          */
-        [[nodiscard]] inline bool isCondition() const
+        [[nodiscard]]
+        bool isCondition() const noexcept
         {
-            /* "C" can be either a register or the condition Carry, so while it is stored internally as RegC, report it externally as the C condition also */
-            return m_type == OperandType::Condition || (m_type == OperandType::Register8 && m_reg8 == Register8::C);
+            /*
+             * "C" can be either a register or the condition Carry, so while it is stored internally as RegC, report it
+             * externally as the C condition also
+             */
+            return OperandType::Condition == m_type || (OperandType::Register8 == m_type && Register8::C == m_reg8);
         }
 
         /**
@@ -256,9 +276,10 @@ namespace Interpreter
          *
          * @return true if it's a port number, false otherwise.
          */
-        [[nodiscard]] inline bool isPort() const
+        [[nodiscard]]
+        bool isPort() const noexcept
         {
-            return m_type == OperandType::Port;
+            return OperandType::Port == m_type;
         }
 
         /**
@@ -266,7 +287,8 @@ namespace Interpreter
          *
          * @return The condition type. This is undefined if the operand is not a condition type.
          */
-        [[nodiscard]] inline ConditionType condition() const
+        [[nodiscard]]
+        ConditionType condition() const noexcept
         {
             return m_condition;
         }
@@ -276,7 +298,8 @@ namespace Interpreter
          *
          * @return The string representation of the operand.
          */
-        [[nodiscard]] inline const std::string & string() const
+        [[nodiscard]]
+        const std::string & string() const noexcept
         {
             return m_string;
         }
@@ -288,7 +311,8 @@ namespace Interpreter
          *
          * @return The string representation of the operand.
          */
-        [[nodiscard]] inline const std::string & operand() const
+        [[nodiscard]]
+        const std::string & operand() const noexcept
         {
             return m_string;
         }
@@ -298,7 +322,8 @@ namespace Interpreter
          *
          * @return The index if the operand is a bit index, undefined otherwise.
          */
-        [[nodiscard]] inline UnsignedByte bitIndex() const
+        [[nodiscard]]
+        UnsignedByte bitIndex() const noexcept
         {
             return static_cast<UnsignedByte>(m_number & 0x07);
         }
@@ -308,7 +333,8 @@ namespace Interpreter
          *
          * @return The value if the operand is a byte literal, undefined otherwise.
          */
-        [[nodiscard]] inline UnsignedByte byte() const
+        [[nodiscard]]
+        UnsignedByte byte() const noexcept
         {
             return static_cast<UnsignedByte>(m_number & 0xff);
         }
@@ -318,7 +344,8 @@ namespace Interpreter
          *
          * @return The value if the operand is a 16-bit word literal, undefined otherwise.
          */
-        [[nodiscard]] inline UnsignedWord word() const
+        [[nodiscard]]
+        UnsignedWord word() const noexcept
         {
             return static_cast<UnsignedWord>(m_number & 0xffff);
         }
@@ -328,7 +355,8 @@ namespace Interpreter
          *
          * @return The value if the operand is a signed byte literal, undefined otherwise.
          */
-        [[nodiscard]] inline SignedByte signedByte() const
+        [[nodiscard]]
+        SignedByte signedByte() const noexcept
         {
             return static_cast<SignedByte>(m_number & 0xff);
         }
@@ -338,7 +366,8 @@ namespace Interpreter
          *
          * @return The value if the operand is a signed 16-bit word literal, undefined otherwise.
          */
-        [[nodiscard]] inline SignedWord signedWord() const
+        [[nodiscard]]
+        SignedWord signedWord() const noexcept
         {
             return static_cast<SignedWord>(m_number & 0xffff);
         }
@@ -348,7 +377,8 @@ namespace Interpreter
          *
          * @return The offset if the operand is an offset for use with an index register instruction, undefined otherwise.
          */
-        [[nodiscard]] inline SignedByte offset() const
+        [[nodiscard]]
+        SignedByte offset() const noexcept
         {
             return signedByte();
         }
@@ -358,7 +388,8 @@ namespace Interpreter
          *
          * @return The low byte of the value if the operand is a 16-bit word literal, undefined otherwise.
          */
-        [[nodiscard]] inline UnsignedByte wordLowByte() const
+        [[nodiscard]]
+        UnsignedByte wordLowByte() const noexcept
         {
             return word() & 0x00ff;
         }
@@ -368,9 +399,10 @@ namespace Interpreter
          *
          * @return The high byte of the value if the operand is a 16-bit word literal, undefined otherwise.
          */
-        [[nodiscard]]  inline UnsignedByte wordHighByte() const
+        [[nodiscard]]
+        UnsignedByte wordHighByte() const noexcept
         {
-            return ((word() & 0xff00) >> 8);
+            return (word() & 0xff00) >> 8;
         }
 
         /**
@@ -378,7 +410,8 @@ namespace Interpreter
          *
          * @return The register pair if the operand is a 16-bit register pair, undefined otherwise.
          */
-        [[nodiscard]]  inline Z80::Register16 reg16() const
+        [[nodiscard]]
+        Z80::Register16 reg16() const noexcept
         {
             return m_reg16;
         }
@@ -388,7 +421,8 @@ namespace Interpreter
          *
          * @return The register if the operand is an 8-bit register, undefined otherwise.
          */
-        [[nodiscard]]  inline Z80::Register8 reg8() const
+        [[nodiscard]]
+        Z80::Register8 reg8() const noexcept
         {
             return m_reg8;
         }
@@ -398,20 +432,17 @@ namespace Interpreter
          *
          * @return The address if the operand is an address, undefined otherwise.
          */
-        [[nodiscard]]  inline UnsignedWord address() const
+        [[nodiscard]]
+        UnsignedWord address() const noexcept
         {
             return static_cast<UnsignedWord>(m_number & 0xffff);
         }
 
     private:
-        /**
-         * Helper to parse the string representation of the operand.
-         */
-        void parse();
+        /** Helper to parse the string representation of the operand. */
+        void parse() noexcept;
 
-        /**
-         * The original string representation of the operand.
-         */
+        /** The original string representation of the operand. */
         std::string m_string;
 
         /**
@@ -424,23 +455,18 @@ namespace Interpreter
         union
         {
             /**
-             * The number if the operand is a numeric literal of some kind. This includes ports, addresses, bit indexes, etc.
+             * The number if the operand is a numeric literal of some kind. This includes ports, addresses, bit indexes,
+             * etc.
              */
             int m_number;
 
-            /**
-             * The register pair, if the operand is a 16-bit register pair.
-             */
+            /** The register pair, if the operand is a 16-bit register pair. */
             Z80::Register16 m_reg16;
 
-            /**
-             * The register, if the operand is an 8-bit register.
-             */
+            /** The register, if the operand is an 8-bit register. */
             Z80::Register8 m_reg8;
 
-            /**
-             * The condition type if the operand is a Z80 condition code.
-             */
+            /** The condition type if the operand is a Z80 condition code. */
             ConditionType m_condition;
         };
     };

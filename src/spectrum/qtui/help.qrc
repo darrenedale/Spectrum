@@ -1,5 +1,6 @@
 <RCC>
 <qresource prefix="/help/en" >
-    <file alias="help">help-en.md</file>
+    <file alias="help-with-gamepad">help-en-gamepad.md</file>
+    <file alias="help-without-gamepad">help-en-no-gamepad.md</file>
 </qresource>
 </RCC>

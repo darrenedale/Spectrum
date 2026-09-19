@@ -36,7 +36,7 @@ namespace Spectrum::Debugger
          * @return "Program counter"
          */
         [[nodiscard]]
-        std::string typeName() const override;
+        std::string typeName() const noexcept override;
 
         /**
          * A human-readable description of the condition implemented by this breakpoint.
@@ -64,7 +64,7 @@ namespace Spectrum::Debugger
          *
          * @return true if the two breakpoints are equivalent, false otherwise.
          */
-        bool operator==(const Breakpoint &) const override;
+        bool operator==(const Breakpoint &) const noexcept override;
 
         /**
          * Check the given Spectrum object state to see whether its PC has reached the address.
@@ -73,7 +73,7 @@ namespace Spectrum::Debugger
          *
          * @return true if the Spectrum's PC is at the address, false otherwise.
          */
-        bool check(const BaseSpectrum & spectrum) override;
+        bool check(const BaseSpectrum & spectrum) noexcept override;
 
     private:
         /** The address to check against the PC. */

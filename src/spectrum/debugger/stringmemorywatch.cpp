@@ -18,7 +18,7 @@ StringMemoryWatch::StringMemoryWatch(BaseSpectrum::MemoryType * memory, const ::
   m_charset(CharacterEncoding::Spectrum)
 {}
 
-std::string StringMemoryWatch::typeName() const
+std::string StringMemoryWatch::typeName() const noexcept
 {
     if (m_typeName.empty()) {
         std::ostringstream out;
@@ -56,7 +56,7 @@ std::string StringMemoryWatch::displayValue() const
     return out.str();
 }
 
-void StringMemoryWatch::appendSpectrumChar(std::ostream & out, const ::Z80::UnsignedByte ch)
+void StringMemoryWatch::appendSpectrumChar(std::ostream & out, const ::Z80::UnsignedByte ch) noexcept
 {
     using namespace std::string_literals;
 
