@@ -1,9 +1,9 @@
 #include <cassert>
 #include <fstream>
 #include "spectrumplus2a.h"
-#include "memoryplus2a.h"
+#include "memory/memoryplus2a.h"
 #include "basespectrum.h"
-#include "displaydevice.h"
+#include "devices/displaydevice.h"
 #include "snapshot.h"
 
 using namespace Spectrum;
@@ -11,7 +11,7 @@ using namespace Spectrum;
 using ::Z80::UnsignedByte;
 
 SpectrumPlus2a::SpectrumPlus2a(const std::string & romFile0, const std::string & romFile1, const std::string & romFile2, const std::string & romFile3)
-: BaseSpectrum(std::make_unique<MemoryPlus2a>()),
+: BaseSpectrum(std::make_unique<Memory::MemoryPlus2a>()),
   m_pager(*this),
   m_screenBuffer(ScreenBuffer::Normal),
   m_romFiles{romFile0, romFile1, romFile2, romFile3}
@@ -100,7 +100,7 @@ void SpectrumPlus2a::applySnapshot(const Snapshot & snapshot)
     applySnapshotCpuState(snapshot);
 
     for (auto * display : displayDevices()) {
-        display->setBorder(snapshot.border);
+        display->setBorder(snapshot.border, false);
     }
 
     setScreenBuffer(snapshot.screenBuffer);
@@ -112,6 +112,6 @@ void SpectrumPlus2a::applySnapshot(const Snapshot & snapshot)
     memory->setSpecialPagingConfiguration(snapshot.specialPagingConfig);
 
     for (int page = 0; page < 8; ++page) {
-        memory->writeToPage(page, snapshotMemory->pagePointer(page), MemoryPlus2a::PageSize);
+        memory->writeToPage(page, snapshotMemory->pagePointer(page), Memory::MemoryPlus2a::PageSize, {});
     }
 }

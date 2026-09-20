@@ -6,7 +6,7 @@
 #define SPECTRUM_SPECTRUMPLUS3_H
 
 #include "spectrumplus2a.h"
-#include "memoryplus3.h"
+#include "memory/memoryplus3.h"
 
 namespace Spectrum
 {
@@ -19,7 +19,7 @@ namespace Spectrum
     : public SpectrumPlus2a
     {
     public:
-        using MemoryType = MemoryPlus3;
+        using MemoryType = Memory::MemoryPlus3;
 
         /**
          * Import base class constructors.
@@ -36,7 +36,8 @@ namespace Spectrum
          *
          * @return always Model::SpectrumPlus3.
          */
-        [[nodiscard]] inline constexpr Model model() const override
+        [[nodiscard]]
+        constexpr Model model() const noexcept override
         {
             return Model::SpectrumPlus3;
         }

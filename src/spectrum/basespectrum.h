@@ -5,19 +5,28 @@
 #ifndef SPECTRUM_BASESPECTRUM_H
 #define SPECTRUM_BASESPECTRUM_H
 
+#if(!defined(NDEBUG))
 #include <ostream>
+#endif
+
 #include <memory>
-#include "../computer.h"
-#include "z80.h"
+
+#include "memory/SimpleSpectrumMemory.h"
 #include "types.h"
+#include "z80.h"
+#include "../computer.h"
 
 namespace Spectrum
 {
-    class DisplayDevice;
-    class Keyboard;
-    class JoystickInterface;
-    class MouseInterface;
     class Snapshot;
+
+    namespace Devices
+    {
+        class DisplayDevice;
+        class JoystickInterface;
+        class Keyboard;
+        class MouseInterface;
+    }
 
     /**
      * Abstract base class for models of Spectrum.
@@ -26,8 +35,8 @@ namespace Spectrum
     : public Computer<::Z80::UnsignedByte>
     {
     public:
-        using MemoryType = Memory<::Z80::UnsignedByte>;
-        using DisplayDevices = std::vector<DisplayDevice *>;
+        using MemoryType = ::Memory<::Z80::UnsignedByte>;
+        using DisplayDevices = std::vector<Devices::DisplayDevice *>;
 
         /**
          * Destroy the Spectrum.
@@ -41,13 +50,15 @@ namespace Spectrum
          *
          * @return
          */
-        [[nodiscard]] virtual Model model() const = 0;
+        [[nodiscard]]
+        virtual Model model() const noexcept = 0;
 
         /**
          * Create a snapshot from the Spectrum.
          * @return
          */
-        [[nodiscard]] virtual std::unique_ptr<Snapshot> snapshot() const = 0;
+        [[nodiscard]]
+        virtual std::unique_ptr<Snapshot> snapshot() const = 0;
 
         /**
          * Check whether a snapshot can be applied to a Spectrum.
@@ -55,7 +66,8 @@ namespace Spectrum
          * @param snapshot The Snapshot to check.
          * @return true if the snapshot can be applied to this Spectrum, false otherwise.
          */
-        [[nodiscard]] virtual bool canApplySnapshot(const Snapshot & snapshot) = 0;
+        [[nodiscard]]
+        virtual bool canApplySnapshot(const Snapshot & snapshot) = 0;
 
         /**
          * Convenience overload to check whether a snapshot pointer can be applied to a Spectrum.
@@ -65,7 +77,8 @@ namespace Spectrum
          * @param snapshot The pointer to the snapshot to check. Must not be nullptr.
          * @return true if the snapshot can be applied to this Spectrum, false otherwise.
          */
-        [[nodiscard]] virtual bool canApplySnapshot(const Snapshot * snapshot)
+        [[nodiscard]]
+        virtual bool canApplySnapshot(const Snapshot * snapshot)
         {
             assert(snapshot);
             return canApplySnapshot(*snapshot);
@@ -99,7 +112,8 @@ namespace Spectrum
          *
          * @return
          */
-        [[nodiscard]] inline Z80 * z80() const
+        [[nodiscard]]
+        Z80 * z80() const noexcept
         {
             return dynamic_cast<Z80 *>(cpu());
         }
@@ -112,7 +126,8 @@ namespace Spectrum
          *
          * @return
          */
-        [[nodiscard]] inline int interruptCounter() const
+        [[nodiscard]]
+        int interruptCounter() const noexcept
         {
             return m_interruptTStateCounter;
         }
@@ -126,7 +141,8 @@ namespace Spectrum
          *
          * @return The current display file.
          */
-        [[nodiscard]] virtual DisplayFile displayMemory() const = 0;
+        [[nodiscard]]
+        virtual DisplayFile displayMemory() const = 0;
 
         /**
          * Reset the spectrum.
@@ -158,7 +174,7 @@ namespace Spectrum
          *
          * @param percent
          */
-        void setExecutionSpeed(int percent)
+        void setExecutionSpeed(const int percent) noexcept
         {
             m_executionSpeed = (percent / 100.0);
         }
@@ -169,9 +185,9 @@ namespace Spectrum
          * Note that this does not automatically turn on constrained speed - if speed is not currently constrained
          * you also need to call setExecutionSpeedConstrained().
          *
-         * @param percent
+         * @param ratio Multiplier by which to increase (or decrease) relative to the stock 3.5Mhz speed.
          */
-        void setExecutionSpeed(double ratio)
+        void setExecutionSpeed(const double ratio) noexcept
         {
             m_executionSpeed = ratio;
         }
@@ -183,7 +199,7 @@ namespace Spectrum
          *
          * @return
          */
-        [[nodiscard]] double executionSpeed() const
+        [[nodiscard]] double executionSpeed() const noexcept
         {
             return m_executionSpeed;
         }
@@ -195,7 +211,7 @@ namespace Spectrum
          *
          * @return
          */
-        [[nodiscard]] int executionSpeedPercent() const
+        [[nodiscard]] int executionSpeedPercent() const noexcept
         {
             return static_cast<int>(m_executionSpeed * 100);
         }
@@ -205,9 +221,10 @@ namespace Spectrum
          *
          * If not set, it will run as fast as the host CPU will allow.
          *
-         * @param constraint
+         * @param constrain Whether or not to constrain the execution speed to the stock speed * multiplier. When not
+         * constrained, the emulation will run as fast as it can on the host hardware.
          */
-        void setExecutionSpeedConstrained(bool constrain)
+        void setExecutionSpeedConstrained(const bool constrain) noexcept
         {
             m_constrainExecutionSpeed = constrain;
         }
@@ -217,7 +234,8 @@ namespace Spectrum
          *
          * @return
          */
-        [[nodiscard]] bool executionSpeedConstrained() const
+        [[nodiscard]]
+        bool executionSpeedConstrained() const noexcept
         {
             return m_constrainExecutionSpeed;
         }
@@ -235,7 +253,7 @@ namespace Spectrum
          *
          * @param dev
          */
-        void addDisplayDevice(DisplayDevice * dev);
+        void addDisplayDevice(Devices::DisplayDevice * dev);
 
         /**
          * Remove a display device from the Spectrum.
@@ -244,14 +262,15 @@ namespace Spectrum
          * NOOP.
          * @param dev
          */
-        void removeDisplayDevice(DisplayDevice * dev);
+        void removeDisplayDevice(Devices::DisplayDevice * dev);
 
         /**
          * Fetch an immutable vector of all the display devices attached to the Spectrum.
          *
          * @return
          */
-        [[nodiscard]] const DisplayDevices & displayDevices() const
+        [[nodiscard]]
+        const DisplayDevices & displayDevices() const noexcept
         {
             return m_displayDevices;
         }
@@ -267,7 +286,7 @@ namespace Spectrum
          *
          * @param keyboard
          */
-        void setKeyboard(Keyboard * keyboard);
+        void setKeyboard(Devices::Keyboard * keyboard);
 
         /**
          * Set the joystick interface for the spectrum.
@@ -276,26 +295,23 @@ namespace Spectrum
          * appropriate time and to ensure that the Spectrum does not retain a reference to a joystick interface that has
          * been destroyed.
          *
-         * It is safe to provide a null joystick interface if you just want to remove the existing joystick interface from
-         * the Spectrum.
-         *
-         * @param keyboard
+         * It is safe to provide a null joystick interface if you just want to remove the existing joystick interface
+         * from the Spectrum.
          */
-        void setJoystickInterface(JoystickInterface *);
+        void setJoystickInterface(Devices::JoystickInterface *);
 
         /**
          * Set the mouse interface for the spectrum.
          *
-         * The mouse interface is borrowed, not owned. It is the caller's responsibility to ensure it is destroyed at the
-         * appropriate time and to ensure that the Spectrum does not retain a reference to a mouse interface that has
+         * The mouse interface is borrowed, not owned. It is the caller's responsibility to ensure it is destroyed at
+         * the appropriate time and to ensure that the Spectrum does not retain a reference to a mouse interface that
+         * has
          * been destroyed.
          *
          * It is safe to provide a null mouse interface if you just want to remove the existing mouse interface from
          * the Spectrum.
-         *
-         * @param mouse
          */
-        void setMouseInterface(MouseInterface *);
+        void setMouseInterface(Devices::MouseInterface *);
 
         /**
          * Fetch the current keyboard device for the Spectrum.
@@ -303,7 +319,8 @@ namespace Spectrum
          * This can be null if no keyboard has been attached.
          * @return
          */
-        [[nodiscard]] Keyboard * keyboard() const
+        [[nodiscard]]
+        Devices::Keyboard * keyboard() const noexcept
         {
             return m_keyboard;
         }
@@ -314,14 +331,13 @@ namespace Spectrum
          * This can be null if no joystick interface has been attached.
          * @return
          */
-        [[nodiscard]] JoystickInterface * joystickInterface() const
+        [[nodiscard]]
+        Devices::JoystickInterface * joystickInterface() const noexcept
         {
             return m_joystick;
         }
 
-        /**
-         * Ask all connected display devices to redraw the Spectrum display.
-         */
+        /** Ask all connected display devices to redraw the Spectrum display. */
         inline void refreshDisplays() const;
 
 #if(!defined(NDEBUG))
@@ -360,9 +376,9 @@ namespace Spectrum
         int m_interruptTStateCounter;
         bool m_constrainExecutionSpeed;
         DisplayDevices m_displayDevices;
-        Keyboard * m_keyboard;
-        JoystickInterface * m_joystick;
-        MouseInterface * m_mouse;
+        Devices::Keyboard * m_keyboard;
+        Devices::JoystickInterface * m_joystick;
+        Devices::MouseInterface * m_mouse;
     };
 }
 

@@ -6,20 +6,19 @@
 #include <iostream>
 #include <iomanip>
 
-#include "../../../z80/types.h"
 #include "../../../z80/assembly/disassembler.h"
 
 using namespace Z80;
-using namespace Z80::Assembly;
+using namespace ::Z80::Assembly;
 
-constexpr const int ErrNoRomFile = 1;
-constexpr const int ErrRomFileReadError = 2;
-constexpr const int ErrInvalidInstructionCount = 2;
+constexpr int ErrNoRomFile = 1;
+constexpr int ErrRomFileReadError = 2;
+constexpr int ErrInvalidInstructionCount = 2;
 
 int main(int argc, char ** argv)
 {
     auto * memory = new SimpleMemory(0x4000);
-    const char * romFileName = "spectrum48.rom";
+    const auto * romFileName = "spectrum48.rom";
     int maxInstructions = -1;
 
     if (argc > 1) {
@@ -59,7 +58,7 @@ int main(int argc, char ** argv)
         for (const auto & mnemonic : disassembler.disassembleFrom(address, maxInstructions)) {
             std::cout << "0x" << std::setw(4) << address
                       << " : "
-                      << std::to_string(mnemonic)
+                      << to_string(mnemonic)
                       << "            [";
 
             bool first = true;
@@ -83,7 +82,7 @@ int main(int argc, char ** argv)
 
             std::cout << "0x" << std::setw(4) << disassembler.address()
                 << " : "
-                << std::to_string(disassembler.nextMnemonic())
+                << to_string(disassembler.nextMnemonic())
                 << "            [";
 
             bool first = true;

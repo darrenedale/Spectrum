@@ -6,15 +6,13 @@
 
 using namespace Spectrum;
 
-using BaseZ80 = ::Z80::Z80;
-
 Spectrum::Z80::Z80(MemoryType * memory)
-: BaseZ80(memory)
+: CoreZ80Cpu(memory)
 {}
 
-::Z80::InstructionCost Spectrum::Z80::execute(const UnsignedByte *instruction, bool doPc)
+CoreZ80::InstructionCost Spectrum::Z80::execute(const UnsignedByte *instruction, const bool doPc)
 {
-    auto cost = BaseZ80::execute(instruction, doPc);
+    const auto cost = CoreZ80Cpu::execute(instruction, doPc);
     notifyObservers(m_instructionObservers);
     return cost;
 }
@@ -22,11 +20,11 @@ Spectrum::Z80::Z80(MemoryType * memory)
 int Spectrum::Z80::handleInterrupt()
 {
     notifyObservers(m_interruptObservers);
-    return BaseZ80::handleInterrupt();
+    return CoreZ80Cpu::handleInterrupt();
 }
 
 void Spectrum::Z80::handleNmi()
 {
     notifyObservers(m_nmiObservers);
-    BaseZ80::handleNmi();
+    CoreZ80Cpu::handleNmi();
 }

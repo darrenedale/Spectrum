@@ -233,7 +233,7 @@ namespace
                     auto operandIdx = 1;
 
                     for (const auto & operand : mnemonic->operands) {
-                        operands = operands % "<br>" % tr("Operand %1").arg(operandIdx) % ": " % QString::fromStdString(std::to_string(operand)) % " [" % QString::fromStdString(std::to_string(operand.mode)) % ' ' % tr("addressing") % ']';
+                        operands = operands % "<br>" % tr("Operand %1").arg(operandIdx) % ": " % QString::fromStdString(to_string(operand)) % " [" % QString::fromStdString(to_string(operand.mode)) % ' ' % tr("addressing") % ']';
                         ++operandIdx;
                     }
 
@@ -244,7 +244,7 @@ namespace
                         "%4<br>"                    // operands
                         "Size: %5 %6</p>"
                     ).arg(mnemonic->address, 4, 16, QLatin1Char('0'))
-                    .arg(QString::fromStdString(std::to_string(*mnemonic)), QString::fromStdString(std::to_string(mnemonic->instruction)), operands)
+                    .arg(QString::fromStdString(to_string(*mnemonic)), QString::fromStdString(to_string(mnemonic->instruction)), operands)
                     .arg(static_cast<std::uint16_t>(mnemonic->size))
                     .arg(1 == mnemonic->size ? tr("byte") : tr("bytes")));
                 }
@@ -292,7 +292,7 @@ namespace
 
                 textRect.moveLeft(Margin + m_addressWidth + gutter);
                 textRect.setWidth(m_mnemonicWidth);
-                painter.drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, QString::fromStdString(std::to_string(mnemonic)));
+                painter.drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, QString::fromStdString(to_string(mnemonic)));
 
                 if (showPcIndicator && mnemonic.address == pc) {
                     painter.setPen(defaultPen);

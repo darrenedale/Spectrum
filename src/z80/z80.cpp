@@ -1047,7 +1047,7 @@ Z80::InstructionCost Z80::Z80::execute(const UnsignedByte * instruction, bool do
 //        Util::debug << std::hex << std::setfill('0');
 //        Util::debug << "\nStack changed by instruction at 0x" << std::setw(4) << historyEntry.registersBefore.pc << "\n";
 //        auto mnemonic = Assembly::Disassembler::disassembleOne(instruction);
-//        Util::debug << "  Instruction: " << std::to_string(mnemonic) << "\n";
+//        Util::debug << "  Instruction: " << to_string(mnemonic) << "\n";
 //        Util::debug << "  Machine code:";
 //
 //        for (int idx = 0; idx < mnemonic.size; ++idx) {
@@ -6109,7 +6109,7 @@ void Z80::Z80::dumpExecutionHistory(int entries, std::ostream & out) const
         out << "\n----------------------------------------------------------------------\n";
         out << "#" << std::dec << std::setw(0) << instructionIndex << " (@ 0x"
             << std::hex << std::setfill('0') << std::setw(4) << entry->registersBefore.pc << ")\n"
-            << std::to_string(mnemonic) << "          [" << std::hex << std::setfill('0');
+            << to_string(mnemonic) << "          [" << std::hex << std::setfill('0');
         
         for (auto byteIndex = 0; byteIndex < mnemonic.size; ++byteIndex) {
             if (0 < byteIndex) {
@@ -6121,7 +6121,7 @@ void Z80::Z80::dumpExecutionHistory(int entries, std::ostream & out) const
         
         out << "]\n";
 
-        out << std::to_string(mnemonic.instruction) << ' ';
+        out << to_string(mnemonic.instruction) << ' ';
 
         for (auto operandIndex = 0; operandIndex < mnemonic.operands.size(); ++operandIndex) {
             auto operandValue = entry->evaluateOperand(mnemonic.operands[operandIndex], 0 == operandIndex);

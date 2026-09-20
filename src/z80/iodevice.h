@@ -20,6 +20,7 @@ namespace Z80
          * @param port
          * @return
          */
+        [[nodiscard]]
         virtual bool checkReadPort(UnsignedWord port) const = 0;
 
         /**
@@ -28,6 +29,7 @@ namespace Z80
          * @param port
          * @return
          */
+        [[nodiscard]]
         virtual bool checkWritePort(UnsignedWord port) const = 0;
 
         /**

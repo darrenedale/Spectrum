@@ -5,7 +5,7 @@
 #include <iostream>
 #include <array>
 #include "z80snapshotwriter.h"
-#include "../pagingmemoryinterface.h"
+#include "../memory/pagingmemoryinterface.h"
 #include "../../util/debug.h"
 #include "../../util/compiler.h"
 
@@ -274,7 +274,7 @@ bool Z80SnapshotWriter::write128kModel(std::ostream & out) const
         return false;
     }
 
-    const auto * memory = dynamic_cast<const PagingMemoryInterface *>(snapshot().memory());
+    const auto * memory = dynamic_cast<const Memory::PagingMemoryInterface *>(snapshot().memory());
     assert(memory);
     auto pages = memory->pageCount();
 
@@ -360,7 +360,7 @@ std::vector<::Z80::UnsignedByte> Z80SnapshotWriter::compressMemory(const ::Z80::
     return ret;
 }
 
-bool Z80SnapshotWriter::writeMemoryPage(std::ostream & out, const ::Z80::UnsignedByte * memory, PagingMemoryInterface::PageNumber pageNumber)
+bool Z80SnapshotWriter::writeMemoryPage(std::ostream & out, const ::Z80::UnsignedByte * memory, Memory::PagingMemoryInterface::PageNumber pageNumber)
 {
     // NOTE memory pages are ALWAYS 16kb in size
     auto compressed = compressMemory(memory, 0x4000);

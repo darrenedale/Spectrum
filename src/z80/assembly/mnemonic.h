@@ -5,8 +5,9 @@
 #ifndef SPECTRUM_MEMONIC_H
 #define SPECTRUM_MEMONIC_H
 
-#include <vector>
 #include <string>
+#include <vector>
+
 #include "operand.h"
 #include "../types.h"
 
@@ -35,12 +36,9 @@ namespace Z80::Assembly
         std::vector<Operand> operands;
         UnsignedByte size = 1;                  // size in bytes of the instruction
     };
-}
 
-namespace std
-{
-    std::string to_string(const Z80::Assembly::Instruction &);
-    std::string to_string(const Z80::Assembly::Mnemonic &);
+    std::string to_string(const Instruction &);
+    std::string to_string(const Mnemonic &);
 }
 
 #endif //SPECTRUM_MEMONIC_H

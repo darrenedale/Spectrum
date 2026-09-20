@@ -33,7 +33,6 @@ namespace Spectrum::Debugger
             assert(address < memory->addressableSize());
         }
 
-        /** Destructor. */
         virtual ~MemoryWatch() = default;
 
         /**

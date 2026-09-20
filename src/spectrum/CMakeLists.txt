@@ -42,125 +42,133 @@ set(CMAKE_AUTORCC ON)
 
 add_executable(
         spectrum
-        main.cpp
+
         basespectrum.cpp
+        main.cpp
+        pokedefinition.cpp
+        snapshot.cpp
+        spectrum128k.cpp
         spectrum16k.cpp
         spectrum48k.cpp
-        spectrum128k.cpp
         spectrumplus2.cpp
         spectrumplus2a.cpp
         spectrumplus3.cpp
-        pagingmemoryinterface.h
-        pagingmemory.h
-        memory.cpp
-        memory128k.cpp
-        memoryplus2.h
-        memoryplus2a.cpp
-        memoryplus3.h
-        pagingdevice128k.cpp
-        pagingdeviceplus2a.cpp
-        z80.cpp
-        keyboard.cpp
-        joystickinterface.cpp
-        kempstonjoystick.cpp
-        interfacetwojoystick.cpp
-        cursorjoystick.cpp
-        mouseinterface.cpp
-        fullerjoystick.cpp
-        kempstonmouse.cpp
-        displaydevice.h
-        snapshot.cpp
-        pokedefinition.cpp
         types.cpp
-        io/snapshotreader.cpp
-        io/snapshotwriter.cpp
-        io/z80snapshotreader.cpp
-        io/snasnapshotreader.cpp
-        io/spsnapshotreader.cpp
-        io/zxsnapshotreader.cpp
-        io/zx82snapshotreader.cpp
-        io/z80snapshotwriter.cpp
-        io/snasnapshotwriter.cpp
-        io/spsnapshotwriter.cpp
-        io/zx82snapshotwriter.cpp
-        io/zxsnapshotwriter.cpp
-        io/snapshotformatmatcher.h
-        io/snapshotformatguesser.h
-        io/snapshotreaderfactory.h
-        io/snapshotwriterclass.h
-        io/snapshotwriterfactory.h
-        io/pokfilereader.cpp
+        z80.cpp
+
         debugger/breakpoint.cpp
-        debugger/programcounterbreakpoint.cpp
-        debugger/stackpointerbelowbreakpoint.cpp
+        debugger/integermemorywatch.h
+        debugger/integermemorywatchbase.h
         debugger/memorybreakpoint.h
         debugger/memorychangedbreakpoint.h
+        debugger/memorywatch.h
+        debugger/programcounterbreakpoint.cpp
         debugger/registerbreakpoint.h
         debugger/registervaluebreakpoint.cpp
-        debugger/memorywatch.h
-        debugger/integermemorywatchbase.h
-        debugger/integermemorywatch.h
+        debugger/stackpointerbelowbreakpoint.cpp
         debugger/stringmemorywatch.cpp
-        qtui/application.cpp
-        qtui/mainwindow.cpp
+
+        devices/cursorjoystick.cpp
+        devices/displaydevice.h
+        devices/fullerjoystick.cpp
+        devices/interfacetwojoystick.cpp
+        devices/joystickinterface.cpp
+        devices/kempstonjoystick.cpp
+        devices/kempstonmouse.cpp
+        devices/keyboard.cpp
+        devices/mouseinterface.cpp
+        devices/pagingdevice128k.cpp
+        devices/pagingdeviceplus2a.cpp
+
+        io/pokfilereader.cpp
+        io/snapshotformatguesser.h
+        io/snapshotformatmatcher.h
+        io/snapshotreader.cpp
+        io/snapshotreaderfactory.h
+        io/snapshotwriter.cpp
+        io/snapshotwriterclass.h
+        io/snapshotwriterfactory.h
+        io/snasnapshotreader.cpp
+        io/snasnapshotwriter.cpp
+        io/spsnapshotreader.cpp
+        io/spsnapshotwriter.cpp
+        io/z80snapshotreader.cpp
+        io/z80snapshotwriter.cpp
+        io/zx82snapshotreader.cpp
+        io/zx82snapshotwriter.cpp
+        io/zxsnapshotreader.cpp
+        io/zxsnapshotwriter.cpp
+
+        memory/SimpleSpectrumMemory.cpp
+        memory/memory128k.cpp
+        memory/memoryplus2.h
+        memory/memoryplus2a.cpp
+        memory/memoryplus3.h
+        memory/pagingmemory.h
+        memory/pagingmemoryinterface.h
+
         qtui/aboutwidget.cpp
-        qtui/helpwidget.cpp
+        qtui/actionableitemview.h
+        qtui/actionbar.cpp
+        qtui/application.cpp
         qtui/cheatsview.cpp
         qtui/cheatsviewitem.cpp
-        qtui/thread.cpp
-        qtui/actionableitemview.h
+        qtui/debugger/breakpointscontextmenu.cpp
+        qtui/debugger/breakpointsmodel.cpp
+        qtui/debugger/breakpointsview.cpp
         qtui/debugger/debugwindow.cpp
+        qtui/debugger/disassemblywidget.cpp
+        qtui/debugger/flagswidget.cpp
+        qtui/debugger/interruptwidget.cpp
+        qtui/debugger/keyboardmonitorwidget.cpp
+        qtui/debugger/memorycontextmenu.cpp
+        qtui/debugger/memorysearchwidget.cpp
+        qtui/debugger/memorywidget.cpp
+        qtui/debugger/programpointerswidget.cpp
         qtui/debugger/registerswidget.cpp
         qtui/debugger/shadowregisterswidget.cpp
-        qtui/debugger/interruptwidget.cpp
-        qtui/debugger/programpointerswidget.cpp
-        qtui/memoryview.cpp
-        qtui/debugger/memorywidget.cpp
-        qtui/debugger/memorysearchwidget.cpp
-        qtui/debugger/watchesview.cpp
-        qtui/debugger/watchesmodel.cpp
-        qtui/debugger/breakpointsview.cpp
-        qtui/debugger/breakpointsmodel.cpp
         qtui/debugger/watchescontextmenu.cpp
-        qtui/debugger/breakpointscontextmenu.cpp
-        qtui/debugger/memorycontextmenu.cpp
+        qtui/debugger/watchesmodel.cpp
+        qtui/debugger/watchesview.cpp
+        qtui/dialogue.cpp
+        qtui/help.qrc
+        qtui/helpwidget.cpp
+        qtui/hexspinbox.cpp
         qtui/hexspinboxdelegate.cpp
+        qtui/icons.qrc
+        qtui/imagewidget.cpp
+        qtui/mainwindow.cpp
+        qtui/memoryview.cpp
+        qtui/notification.cpp
         qtui/pokewidget.cpp
         qtui/pokewidget.h
         qtui/qimagedisplaydevice.cpp
         qtui/registerpairwidget.cpp
-        qtui/debugger/flagswidget.cpp
-        qtui/debugger/disassemblywidget.cpp
-        qtui/threadpauser.h
-        qtui/debugger/keyboardmonitorwidget.cpp
-        qtui/imagewidget.cpp
-        qtui/actionbar.cpp
-        qtui/widgetupdatesuspender.h
         qtui/spectrumdisplayimagewidget.cpp
-        qtui/hexspinbox.cpp
-        qtui/dialogue.cpp
-        qtui/notification.cpp
-        qtui/icons.qrc
-        qtui/help.qrc
+        qtui/thread.cpp
+        qtui/threadpauser.h
+        qtui/widgetupdatesuspender.h
+
+        ../../dist/macos/Spectrum/Spectrum.icns
         ../computer.h
         ../cpu.cpp
-        ../simplememory.h
         ../memory.h
-        ../z80/z80.cpp
+        ../simplememory.h
+        ../util/concepts.h
+        ../util/crc32.h
+        ../util/debug.h
+        ../util/endian.h
+        ../util/numeric.h
+        ../z80/assembly/disassembler.cpp
+        ../z80/assembly/mnemonic.cpp
+        ../z80/assembly/operand.cpp
         ../z80/executionhistory.cpp
         ../z80/iodevice.cpp
         ../z80/registers.cpp
         ../z80/registers.h
-        ../z80/assembly/disassembler.cpp
-        ../z80/assembly/mnemonic.cpp
-        ../z80/assembly/operand.cpp
         ../z80/types.cpp
-        ../util/crc32.h
-        ../util/endian.h
-        ../util/debug.h
-        ../util/numeric.h
-        ../util/concepts.h
-        ../../dist/macos/Spectrum/Spectrum.icns
+        ../z80/z80.cpp
+
         ${SPECTRUM_QT_GAMEPAD_SOURCES}
 )
 

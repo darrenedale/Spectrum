@@ -467,7 +467,7 @@ DISABLE_WARNING_POP
                 case Model::SpectrumPlus3:
                     // in Z80 files page #0 is represented by 0x03, page #1 by 0x04, etc. up to page#7 by 0x0a
                     page -= 3;
-                    pageMemory = dynamic_cast<PagingMemoryInterface *>(memory.get())->pagePointer(page);
+                    pageMemory = dynamic_cast<Memory::PagingMemoryInterface *>(memory.get())->pagePointer(page);
                     break;
 
                 default:

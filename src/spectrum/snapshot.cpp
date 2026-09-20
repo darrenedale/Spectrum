@@ -3,11 +3,11 @@
 //
 
 #include "snapshot.h"
-#include "displaydevice.h"
+#include "devices/displaydevice.h"
 #include "spectrum48k.h"
 
+using Z80::InterruptMode;
 using namespace Spectrum;
-using InterruptMode = ::Z80::InterruptMode;
 
 Snapshot::Snapshot(Model model)
 : Snapshot({}, nullptr)
@@ -142,7 +142,7 @@ Snapshot & Snapshot::operator=(Snapshot && other) noexcept
 std::ostream & Spectrum::operator<<(std::ostream & out, const Snapshot & snap)
 {
     out << "Snapshot\n--------\n"
-        << "  Model: " << std::to_string(snap.model()) << '\n'
+        << "  Model: " << to_string(snap.model()) << '\n'
         << "  Registers:\n"
         << std::hex << std::setfill('0')
         << "    AF   = 0x" << std::setw(4) << snap.registers().af << '\n'
@@ -174,7 +174,7 @@ std::ostream & Spectrum::operator<<(std::ostream & out, const Snapshot & snap)
         << "    PC   = 0x" << std::setw(4) << snap.registers().pc << '\n'
         << "    SP   = 0x" << std::setw(4) << snap.registers().sp << '\n'
         << "  Interrupts:\n"
-        << "    IM   = " << std::to_string(snap.im) << '\n'
+        << "    IM   = " << to_string(snap.im) << '\n'
         << "    IFF1 = " << (snap.iff1 ? '1' : '0') << '\n'
         << "    IFF2 = " << (snap.iff2 ? '1' : '0') << '\n'
         << "  Display:\n"

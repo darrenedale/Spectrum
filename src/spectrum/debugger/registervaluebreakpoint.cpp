@@ -41,6 +41,6 @@ std::string RegisterValueBreakpoint::typeName() const noexcept
 std::string RegisterValueBreakpoint::conditionDescription() const
 {
     std::ostringstream out;
-    out << std::to_string(watchedRegister()) << " == 0x" << std::hex << std::setfill('0') << std::setw(4) << targetValue();
+    out << to_string(watchedRegister()) << " == 0x" << std::hex << std::setfill('0') << std::setw(4) << targetValue();
     return out.str();
 }

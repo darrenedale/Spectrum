@@ -47,7 +47,6 @@ namespace Interpreter
          */
         explicit Z80Interpreter(std::unique_ptr<Z80Cpu> cpu);
 
-        /** Destructor. */
         virtual ~Z80Interpreter();
 
         /**

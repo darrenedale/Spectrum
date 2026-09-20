@@ -58,12 +58,9 @@ namespace Z80::Assembly
             ::Z80::UnsignedByte bit;
         };
     };
-}
 
-namespace std
-{
-    std::string to_string(const ::Z80::Assembly::Operand &);
-    std::string to_string(const ::Z80::Assembly::AddressingMode &);
+    std::string to_string(const Operand &);
+    std::string to_string(const AddressingMode &);
 }
 
 #endif //Z80_ASSEMBLY_OPERAND_H

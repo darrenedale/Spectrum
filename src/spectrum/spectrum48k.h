@@ -7,7 +7,7 @@
 
 #include <string>
 #include "basespectrum.h"
-#include "memory.h"
+#include "memory/SimpleSpectrumMemory.h"
 
 namespace Spectrum
 {
@@ -24,8 +24,9 @@ namespace Spectrum
     : public BaseSpectrum
     {
     public:
-        using MemoryType = Spectrum::Memory;
-        static constexpr const int DisplayMemoryOffset = 0x4000;
+        using MemoryType = Spectrum::Memory::SimpleSpectrumMemory;
+
+	        static constexpr int DisplayMemoryOffset = 0x4000;
 
         /**
          * Default constructor.
@@ -57,7 +58,8 @@ namespace Spectrum
          *
          * @return Always Model::Spectrum48k.
          */
-        [[nodiscard]] inline constexpr Model model() const override
+        [[nodiscard]]
+	    constexpr Model model() const noexcept override
         {
             return Model::Spectrum48k;
         }
@@ -67,7 +69,8 @@ namespace Spectrum
          *
          * @return A new snapshot.
          */
-        [[nodiscard]] std::unique_ptr<Snapshot> snapshot() const override;
+        [[nodiscard]]
+	    std::unique_ptr<Snapshot> snapshot() const override;
 
         /**
          * Check whether a snapshot can be applied to a 48K Spectrum.
@@ -77,7 +80,8 @@ namespace Spectrum
          * @param snapshot The Snapshot to check.
          * @return true if the snapshot can be applied to this Spectrum, false otherwise.
          */
-        [[nodiscard]] bool canApplySnapshot(const Snapshot &snapshot) override;
+        [[nodiscard]]
+	    bool canApplySnapshot(const Snapshot &snapshot) override;
 
         /**
          * Apply the provided snapshot to this Spectrum.

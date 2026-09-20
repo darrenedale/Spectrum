@@ -2,10 +2,10 @@
 #include <fstream>
 #include <chrono>
 #include <thread>
-#include "displaydevice.h"
-#include "joystickinterface.h"
-#include "mouseinterface.h"
-#include "keyboard.h"
+#include "devices/displaydevice.h"
+#include "devices/joystickinterface.h"
+#include "devices/mouseinterface.h"
+#include "devices/keyboard.h"
 #include "z80.h"
 #include "snapshot.h"
 
@@ -107,7 +107,7 @@ namespace Spectrum
         }
     }
 
-    void BaseSpectrum::setKeyboard(Keyboard * keyboard)
+    void BaseSpectrum::setKeyboard(Devices::Keyboard * keyboard)
     {
         auto * cpu = z80();
 
@@ -122,7 +122,7 @@ namespace Spectrum
         }
     }
 
-    void BaseSpectrum::setJoystickInterface(JoystickInterface * joystick)
+    void BaseSpectrum::setJoystickInterface(Devices::JoystickInterface * joystick)
     {
         auto * cpu = z80();
 
@@ -137,7 +137,7 @@ namespace Spectrum
         }
     }
 
-    void BaseSpectrum::setMouseInterface(MouseInterface * mouse)
+    void BaseSpectrum::setMouseInterface(Devices::MouseInterface * mouse)
     {
         auto * cpu = z80();
 
@@ -152,7 +152,7 @@ namespace Spectrum
         }
     }
 
-    void BaseSpectrum::addDisplayDevice(DisplayDevice * dev)
+    void BaseSpectrum::addDisplayDevice(Devices::DisplayDevice * dev)
     {
         assert(dev);
         m_displayDevices.push_back(dev);
@@ -163,7 +163,7 @@ namespace Spectrum
         }
     }
 
-    void BaseSpectrum::removeDisplayDevice(DisplayDevice * dev)
+    void BaseSpectrum::removeDisplayDevice(Devices::DisplayDevice * dev)
     {
         const auto pos = std::find(m_displayDevices.begin(), m_displayDevices.end(), dev);
 

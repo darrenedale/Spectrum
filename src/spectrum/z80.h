@@ -6,6 +6,7 @@
 #define SPECTRUM_Z80_H
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "../z80/types.h"
@@ -13,17 +14,22 @@
 
 namespace Spectrum
 {
+    namespace CoreZ80 = Z80;
+    using CoreZ80Cpu = CoreZ80::Z80;
+
+    // TODO consider using unique pointers for observer storage
     class Z80
-    : public ::Z80::Z80
+    : public CoreZ80Cpu
     {
     public:
-        using UnsignedByte = ::Z80::UnsignedByte;
-        using InstructionCost = ::Z80::InstructionCost;
+        using UnsignedByte = CoreZ80::UnsignedByte;
+        using InstructionCost = CoreZ80::InstructionCost;
 
         class Observer
         {
-        public:
-            virtual void notify(Z80 * cpu) = 0;
+            public:
+                virtual ~Observer() = default;
+                virtual void notify(Z80 * cpu) = 0;
         };
 
         explicit Z80(MemoryType * memory);
@@ -31,32 +37,32 @@ namespace Spectrum
 
         InstructionCost execute(const UnsignedByte *instruction, bool doPc) override;
 
-        inline void addInstructionObserver(Observer * observer)
+        void addInstructionObserver(Observer * observer)
         {
             addObserver(m_instructionObservers, observer);
         }
 
-        inline void removeInstructionObserver(Observer * observer)
+        void removeInstructionObserver(Observer * observer)
         {
             removeObserver(m_instructionObservers, observer);
         }
 
-        inline void addNmiObserver(Observer * observer)
+        void addNmiObserver(Observer * observer)
         {
             addObserver(m_nmiObservers, observer);
         }
 
-        inline void removeNmiObserver(Observer * observer)
+        void removeNmiObserver(Observer * observer)
         {
             removeObserver(m_nmiObservers, observer);
         }
 
-        inline void addInterruptObserver(Observer * observer)
+        void addInterruptObserver(Observer * observer)
         {
             addObserver(m_interruptObservers, observer);
         }
 
-        inline void removeInterruptObserver(Observer * observer)
+        void removeInterruptObserver(Observer * observer)
         {
             removeObserver(m_interruptObservers, observer);
         }
@@ -70,7 +76,7 @@ namespace Spectrum
 
         static void addObserver(Observers & observers, Observer * observer)
         {
-            if (observers.cend() != std::find(observers.cbegin(), observers.cend(), observer)) {
+            if (observers.cend() != std::ranges::find(std::as_const(observers), observer)) {
                 // already observing
                 return;
             }
@@ -80,7 +86,7 @@ namespace Spectrum
 
         static void removeObserver(Observers & observers, Observer * observer)
         {
-            auto observerIterator = std::find(observers.cbegin(), observers.cend(), observer);
+            const auto observerIterator = std::ranges::find(std::as_const(observers), observer);
 
             if (observers.cend() == observerIterator) {
                 // not one of our observers

@@ -32,16 +32,12 @@ public:
       m_storage(this->availableSize(), 0)
     {}
 
-    SimpleMemory(const Memory<byte_t, address_t, size_t> &) = delete;
-    SimpleMemory(Memory<byte_t, address_t, size_t> &&) = delete;
-    void operator=(const Memory<byte_t, address_t, size_t> &) = delete;
-    void operator=(Memory<byte_t, address_t, size_t> &&) = delete;
+    explicit SimpleMemory(const Memory<byte_t, address_t, size_t> &) = delete;
+    explicit SimpleMemory(Memory<byte_t, address_t, size_t> &&) = delete;
     ~SimpleMemory() override = default;
 
-    /**
-     * Set all installed memory to 0 bytes.
-     */
-    void clear() override
+    /** Set all installed memory to 0 bytes. */
+    void clear() noexcept override
     {
         std::memset(m_storage.data(), 0, this->availableSize());
     }
@@ -64,7 +60,7 @@ protected:
      * @param address
      * @return
      */
-    virtual inline Byte * mapAddress(Address address) const override
+    Byte * mapAddress(Address address) const override
     {
         return const_cast<Byte *>(m_storage.data()) + address;
     }

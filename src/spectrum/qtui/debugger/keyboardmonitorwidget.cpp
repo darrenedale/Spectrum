@@ -6,7 +6,7 @@
 
 #include "keyboardmonitorwidget.h"
 #include "../../spectrum48k.h"
-#include "../../keyboard.h"
+#include "../../devices/keyboard.h"
 
 using namespace Spectrum::QtUi::Debugger;
 
@@ -233,52 +233,52 @@ void KeyboardMonitorWidget::updateStateDisplay()
         m_space.setChecked(false);
     } else {
         auto * keyboard = m_spectrum->keyboard();
-        m_1.setChecked(keyboard->keyState(Keyboard::Key::Num1));
-        m_2.setChecked(keyboard->keyState(Keyboard::Key::Num2));
-        m_3.setChecked(keyboard->keyState(Keyboard::Key::Num3));
-        m_4.setChecked(keyboard->keyState(Keyboard::Key::Num4));
-        m_5.setChecked(keyboard->keyState(Keyboard::Key::Num5));
+        m_1.setChecked(keyboard->keyState(Devices::Keyboard::Key::Num1));
+        m_2.setChecked(keyboard->keyState(Devices::Keyboard::Key::Num2));
+        m_3.setChecked(keyboard->keyState(Devices::Keyboard::Key::Num3));
+        m_4.setChecked(keyboard->keyState(Devices::Keyboard::Key::Num4));
+        m_5.setChecked(keyboard->keyState(Devices::Keyboard::Key::Num5));
 
-        m_6.setChecked(keyboard->keyState(Keyboard::Key::Num6));
-        m_7.setChecked(keyboard->keyState(Keyboard::Key::Num7));
-        m_8.setChecked(keyboard->keyState(Keyboard::Key::Num8));
-        m_9.setChecked(keyboard->keyState(Keyboard::Key::Num9));
-        m_0.setChecked(keyboard->keyState(Keyboard::Key::Num0));
+        m_6.setChecked(keyboard->keyState(Devices::Keyboard::Key::Num6));
+        m_7.setChecked(keyboard->keyState(Devices::Keyboard::Key::Num7));
+        m_8.setChecked(keyboard->keyState(Devices::Keyboard::Key::Num8));
+        m_9.setChecked(keyboard->keyState(Devices::Keyboard::Key::Num9));
+        m_0.setChecked(keyboard->keyState(Devices::Keyboard::Key::Num0));
 
-        m_q.setChecked(keyboard->keyState(Keyboard::Key::Q));
-        m_w.setChecked(keyboard->keyState(Keyboard::Key::W));
-        m_e.setChecked(keyboard->keyState(Keyboard::Key::E));
-        m_r.setChecked(keyboard->keyState(Keyboard::Key::R));
-        m_t.setChecked(keyboard->keyState(Keyboard::Key::T));
+        m_q.setChecked(keyboard->keyState(Devices::Keyboard::Key::Q));
+        m_w.setChecked(keyboard->keyState(Devices::Keyboard::Key::W));
+        m_e.setChecked(keyboard->keyState(Devices::Keyboard::Key::E));
+        m_r.setChecked(keyboard->keyState(Devices::Keyboard::Key::R));
+        m_t.setChecked(keyboard->keyState(Devices::Keyboard::Key::T));
 
-        m_y.setChecked(keyboard->keyState(Keyboard::Key::Y));
-        m_u.setChecked(keyboard->keyState(Keyboard::Key::U));
-        m_i.setChecked(keyboard->keyState(Keyboard::Key::I));
-        m_o.setChecked(keyboard->keyState(Keyboard::Key::O));
-        m_p.setChecked(keyboard->keyState(Keyboard::Key::P));
+        m_y.setChecked(keyboard->keyState(Devices::Keyboard::Key::Y));
+        m_u.setChecked(keyboard->keyState(Devices::Keyboard::Key::U));
+        m_i.setChecked(keyboard->keyState(Devices::Keyboard::Key::I));
+        m_o.setChecked(keyboard->keyState(Devices::Keyboard::Key::O));
+        m_p.setChecked(keyboard->keyState(Devices::Keyboard::Key::P));
 
-        m_a.setChecked(keyboard->keyState(Keyboard::Key::A));
-        m_s.setChecked(keyboard->keyState(Keyboard::Key::S));
-        m_d.setChecked(keyboard->keyState(Keyboard::Key::D));
-        m_f.setChecked(keyboard->keyState(Keyboard::Key::F));
-        m_g.setChecked(keyboard->keyState(Keyboard::Key::G));
+        m_a.setChecked(keyboard->keyState(Devices::Keyboard::Key::A));
+        m_s.setChecked(keyboard->keyState(Devices::Keyboard::Key::S));
+        m_d.setChecked(keyboard->keyState(Devices::Keyboard::Key::D));
+        m_f.setChecked(keyboard->keyState(Devices::Keyboard::Key::F));
+        m_g.setChecked(keyboard->keyState(Devices::Keyboard::Key::G));
 
-        m_h.setChecked(keyboard->keyState(Keyboard::Key::H));
-        m_j.setChecked(keyboard->keyState(Keyboard::Key::J));
-        m_k.setChecked(keyboard->keyState(Keyboard::Key::K));
-        m_l.setChecked(keyboard->keyState(Keyboard::Key::L));
-        m_enter.setChecked(keyboard->keyState(Keyboard::Key::Enter));
+        m_h.setChecked(keyboard->keyState(Devices::Keyboard::Key::H));
+        m_j.setChecked(keyboard->keyState(Devices::Keyboard::Key::J));
+        m_k.setChecked(keyboard->keyState(Devices::Keyboard::Key::K));
+        m_l.setChecked(keyboard->keyState(Devices::Keyboard::Key::L));
+        m_enter.setChecked(keyboard->keyState(Devices::Keyboard::Key::Enter));
 
-        m_capsShift.setChecked(keyboard->keyState(Keyboard::Key::CapsShift));
-        m_z.setChecked(keyboard->keyState(Keyboard::Key::Z));
-        m_x.setChecked(keyboard->keyState(Keyboard::Key::X));
-        m_c.setChecked(keyboard->keyState(Keyboard::Key::C));
-        m_v.setChecked(keyboard->keyState(Keyboard::Key::V));
+        m_capsShift.setChecked(keyboard->keyState(Devices::Keyboard::Key::CapsShift));
+        m_z.setChecked(keyboard->keyState(Devices::Keyboard::Key::Z));
+        m_x.setChecked(keyboard->keyState(Devices::Keyboard::Key::X));
+        m_c.setChecked(keyboard->keyState(Devices::Keyboard::Key::C));
+        m_v.setChecked(keyboard->keyState(Devices::Keyboard::Key::V));
 
-        m_b.setChecked(keyboard->keyState(Keyboard::Key::B));
-        m_n.setChecked(keyboard->keyState(Keyboard::Key::N));
-        m_m.setChecked(keyboard->keyState(Keyboard::Key::M));
-        m_symbolShift.setChecked(keyboard->keyState(Keyboard::Key::SymbolShift));
-        m_space.setChecked(keyboard->keyState(Keyboard::Key::Space));
+        m_b.setChecked(keyboard->keyState(Devices::Keyboard::Key::B));
+        m_n.setChecked(keyboard->keyState(Devices::Keyboard::Key::N));
+        m_m.setChecked(keyboard->keyState(Devices::Keyboard::Key::M));
+        m_symbolShift.setChecked(keyboard->keyState(Devices::Keyboard::Key::SymbolShift));
+        m_space.setChecked(keyboard->keyState(Devices::Keyboard::Key::Space));
     }
 }

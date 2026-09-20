@@ -6,10 +6,7 @@
 #include "mnemonic.h"
 #include "../../util/debug.h"
 
-
-using namespace Z80::Assembly;
-
-std::string std::to_string(const Instruction & instruction)
+std::string Z80::Assembly::to_string(const Instruction & instruction)
 {
     switch (instruction) {
         case Instruction::LD:
@@ -311,7 +308,7 @@ std::string std::to_string(const Instruction & instruction)
     abort();
 }
 
-std::string std::to_string(const Mnemonic & mnemonic)
+std::string Z80::Assembly::to_string(const Mnemonic & mnemonic)
 {
     std::ostringstream out;
     out << to_string(mnemonic.instruction);

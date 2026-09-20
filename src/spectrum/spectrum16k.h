@@ -7,7 +7,7 @@
 
 #include <string>
 #include "basespectrum.h"
-#include "memory.h"
+#include "memory/SimpleSpectrumMemory.h"
 
 namespace Spectrum
 {
@@ -24,8 +24,8 @@ namespace Spectrum
     : public BaseSpectrum
     {
     public:
-        using MemoryType = Spectrum::Memory;
-        static constexpr const int DisplayMemoryOffset = 0x4000;
+        using MemoryType = Spectrum::Memory::SimpleSpectrumMemory;
+        static constexpr int DisplayMemoryOffset = 0x4000;
 
         /**
          * Default constructor.
@@ -61,7 +61,8 @@ namespace Spectrum
          *
          * @return
          */
-        [[nodiscard]] inline constexpr Model model() const override
+        [[nodiscard]]
+        constexpr Model model() const noexcept override
         {
             return Model::Spectrum16k;
         }
@@ -106,10 +107,10 @@ namespace Spectrum
         /**
          * Load the given file as a ROM image into the low 16kb of the address space.
          *
-         * @param romFile
+         * @param romFilePath
          * @return
          */
-        bool loadRom(const std::string & romFile);
+        bool loadRom(const std::string & romFilePath);
 
         /**
          * Reloads the ROM image from disk.

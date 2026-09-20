@@ -6,8 +6,8 @@
 #define SPECTRUM_SPECTRUM128K_H
 
 #include "basespectrum.h"
-#include "memory128k.h"
-#include "pagingdevice128k.h"
+#include "memory/memory128k.h"
+#include "devices/pagingdevice128k.h"
 
 namespace Spectrum
 {
@@ -31,7 +31,7 @@ namespace Spectrum
     : public BaseSpectrum
     {
     public:
-        using MemoryType = Memory128k;
+        using MemoryType = Memory::Memory128k;
         using ScreenBuffer = ScreenBuffer128k;
 
         /**
@@ -41,9 +41,7 @@ namespace Spectrum
          */
         Spectrum128k();
 
-        /**
-         * Initialise a new Spectrum128k with ROM images loaded from disk.
-         */
+        /** Initialise a new Spectrum128k with ROM images loaded from disk. */
         Spectrum128k(const std::string & romFile0, const std::string & romFile1);
 
         // Spectrum128k instances can't be copy or move constructed or assigned
@@ -58,7 +56,8 @@ namespace Spectrum
          *
          * @return Always Model::Spectrum128k.
          */
-        [[nodiscard]] inline constexpr Model model() const override
+        [[nodiscard]]
+        constexpr Model model() const noexcept override
         {
             return Model::Spectrum128k;
         }
@@ -68,7 +67,8 @@ namespace Spectrum
          *
          * @return A snapshot, or nullptr if the snapshot could not be taken.
          */
-        [[nodiscard]] std::unique_ptr<Snapshot> snapshot() const override;
+        [[nodiscard]]
+        std::unique_ptr<Snapshot> snapshot() const override;
 
         /**
          * Check whether a snapshot can be applied to a 128K Spectrum.
@@ -79,7 +79,8 @@ namespace Spectrum
          * @param snapshot The Snapshot to check.
          * @return true if the snapshot can be applied to this Spectrum, false otherwise.
          */
-        [[nodiscard]] bool canApplySnapshot(const Snapshot &snapshot) override;
+        [[nodiscard]]
+        bool canApplySnapshot(const Snapshot &snapshot) override;
 
         /**
          * Apply the provided snapshot to this Spectrum.
@@ -97,14 +98,16 @@ namespace Spectrum
          *
          * @return The Spectrum's current display file memory.
          */
-        [[nodiscard]] DisplayFile displayMemory() const override;
+        [[nodiscard]]
+        DisplayFile displayMemory() const override;
 
         /**
          * Determine which screen buffer is currently active.
          *
          * @return
          */
-        [[nodiscard]] inline ScreenBuffer screenBuffer() const
+        [[nodiscard]]
+        ScreenBuffer screenBuffer() const noexcept
         {
             return m_screenBuffer;
         }
@@ -117,7 +120,7 @@ namespace Spectrum
          *
          * @param buffer
          */
-        inline void setScreenBuffer(ScreenBuffer buffer)
+        void setScreenBuffer(const ScreenBuffer buffer) noexcept
         {
             m_screenBuffer = buffer;
         }
@@ -130,7 +133,8 @@ namespace Spectrum
          *
          * @return A pointer to the Spectrum128KPagingDevice.
          */
-        [[nodiscard]] inline const PagingDevice128k * pager() const
+        [[nodiscard]]
+        const Devices::PagingDevice128k * pager() const noexcept
         {
             return &m_pager;
         }
@@ -143,7 +147,8 @@ namespace Spectrum
          *
          * @return A pointer to the Spectrum128KPagingDevice.
          */
-        [[nodiscard]] inline PagingDevice128k * pager()
+        [[nodiscard]]
+        Devices::PagingDevice128k * pager() noexcept
         {
             return &m_pager;
         }
@@ -171,25 +176,20 @@ namespace Spectrum
          *
          * @return
          */
-        [[nodiscard]] inline Memory128k * memory128() const
+        [[nodiscard]]
+        Memory::Memory128k * memory128() const noexcept
         {
-            return dynamic_cast<Memory128k *>(memory());
+            return dynamic_cast<Memory::Memory128k *>(memory());
         }
 
     private:
-        /**
-         * The device instance to handle memory paging.
-         */
-        PagingDevice128k m_pager;
+        /** The device instance to handle memory paging. */
+        Devices::PagingDevice128k m_pager;
 
-        /**
-         * The current screen buffer.
-         */
+        /** The current screen buffer. */
         ScreenBuffer m_screenBuffer;
 
-        /**
-         * The file names of the two ROM images.
-         */
+        /** The file names of the two ROM images. */
         std::string m_romFiles[2];
     };
 }

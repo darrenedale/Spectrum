@@ -4,8 +4,12 @@
 
 #include <cassert>
 #include <iostream>
+#include <string>
+
 #include "./types.h"
 #include "../util/compiler.h"
+
+using namespace std::string_literals;
 
 using Spectrum::Model;
 using Spectrum::Colour;
@@ -16,7 +20,7 @@ using Spectrum::PagingMode;
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_NO_RETURN_VALUE     // all the following to_string() functions have assertions to guarantee that the
                                     // switches cover all code paths
-std::string std::to_string(Model model)
+std::string Spectrum::to_string(const Model model)
 {
     switch (model) {
         case Model::Spectrum16k:
@@ -45,7 +49,7 @@ DISABLE_WARNING_RETURN_TYPE
 }
 DISABLE_WARNING_POP
 
-std::string std::to_string(ScreenBuffer128k bufferType)
+std::string Spectrum::to_string(const ScreenBuffer128k bufferType)
 {
     switch (bufferType) {
         case ScreenBuffer128k::Shadow:
@@ -63,7 +67,7 @@ DISABLE_WARNING_RETURN_TYPE
 }
 DISABLE_WARNING_POP
 
-std::string std::to_string(Colour colour)
+std::string Spectrum::to_string(const Colour colour)
 {
     switch (colour) {
         case Colour::Black:
@@ -99,7 +103,7 @@ DISABLE_WARNING_RETURN_TYPE
 }
 DISABLE_WARNING_POP
 
-std::string std::to_string(Spectrum::PagingMode mode)
+std::string Spectrum::to_string(const PagingMode mode)
 {
     switch (mode) {
         case PagingMode::Normal:
@@ -117,7 +121,7 @@ DISABLE_WARNING_RETURN_TYPE
 }
 DISABLE_WARNING_POP
 
-std::string std::to_string(Spectrum::SpecialPagingConfiguration config)
+std::string Spectrum::to_string(const SpecialPagingConfiguration config)
 {
     switch (config) {
         case SpecialPagingConfiguration::Config1:
@@ -141,32 +145,32 @@ DISABLE_WARNING_RETURN_TYPE
 }
 DISABLE_WARNING_POP
 
-std::ostream & Spectrum::operator<<(std::ostream & out, Spectrum::Colour colour)
+std::ostream & Spectrum::operator<<(std::ostream & out, const Colour colour)
 {
-    out << std::to_string(colour);
+    out << to_string(colour);
     return out;
 }
 
-std::ostream & Spectrum::operator<<(std::ostream & out, Spectrum::Model model)
+std::ostream & Spectrum::operator<<(std::ostream & out, const Model model)
 {
-    out << std::to_string(model);
+    out << to_string(model);
     return out;
 }
 
-std::ostream & Spectrum::operator<<(std::ostream & out, Spectrum::ScreenBuffer128k bufferType)
+std::ostream & Spectrum::operator<<(std::ostream & out, const ScreenBuffer128k bufferType)
 {
-    out << std::to_string(bufferType);
+    out << to_string(bufferType);
     return out;
 }
 
-std::ostream & Spectrum::operator<<(std::ostream & out, Spectrum::PagingMode mode)
+std::ostream & Spectrum::operator<<(std::ostream & out, const PagingMode mode)
 {
-    out << std::to_string(mode);
+    out << to_string(mode);
     return out;
 }
 
-std::ostream & Spectrum::operator<<(std::ostream & out, Spectrum::SpecialPagingConfiguration config)
+std::ostream & Spectrum::operator<<(std::ostream & out, const SpecialPagingConfiguration config)
 {
-    out << std::to_string(config);
+    out << to_string(config);
     return out;
 }

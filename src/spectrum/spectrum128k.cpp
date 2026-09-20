@@ -1,17 +1,18 @@
 #include <cassert>
 #include <fstream>
-#include "spectrum128k.h"
-#include "memory128k.h"
+
 #include "basespectrum.h"
-#include "displaydevice.h"
+#include "memory/memory128k.h"
 #include "snapshot.h"
+#include "spectrum128k.h"
+#include "devices/displaydevice.h"
 
 using namespace Spectrum;
 
 using ::Z80::UnsignedByte;
 
 Spectrum128k::Spectrum128k(const std::string & romFile0, const std::string & romFile1)
-: BaseSpectrum(std::make_unique<Memory128k>()),
+: BaseSpectrum(std::make_unique<Memory::Memory128k>()),
   m_pager(*this),
   m_screenBuffer(ScreenBuffer::Normal),
   m_romFiles{romFile0, romFile1}
@@ -94,7 +95,7 @@ void Spectrum128k::applySnapshot(const Snapshot & snapshot)
     applySnapshotCpuState(snapshot);
 
     for (auto * display : displayDevices()) {
-        display->setBorder(snapshot.border);
+        display->setBorder(snapshot.border, false);
     }
 
     setScreenBuffer(snapshot.screenBuffer);
@@ -104,6 +105,6 @@ void Spectrum128k::applySnapshot(const Snapshot & snapshot)
     memory->pageRam(snapshot.pagedBankNumber);
 
     for (int page = 0; page < 8; ++page) {
-        memory->writeToPage(page, snapshotMemory->pagePointer(page), Memory128k::PageSize);
+        memory->writeToPage(page, snapshotMemory->pagePointer(page), Memory::Memory128k::PageSize, {});
     }
 }

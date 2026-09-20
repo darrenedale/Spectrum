@@ -7,7 +7,7 @@
 
 #include <memory>
 #include <QGamepad>
-#include "../joystickinterface.h"
+#include "../devices/joystickinterface.h"
 
 namespace Spectrum::QtUi
 {

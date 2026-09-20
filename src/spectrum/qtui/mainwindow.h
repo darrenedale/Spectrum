@@ -16,9 +16,9 @@
 #include "helpwidget.h"
 #include "spectrumdisplayimagewidget.h"
 #include "cheatsview.h"
-#include "../mouseinterface.h"
-#include "../joystickinterface.h"
-#include "../keyboard.h"
+#include "../devices/mouseinterface.h"
+#include "../devices/joystickinterface.h"
+#include "../devices/keyboard.h"
 #include "thread.h"
 
 #if defined(WITH_QT_GAMEPAD)
@@ -424,7 +424,7 @@ namespace Spectrum::QtUi
         std::unique_ptr<BaseSpectrum> m_spectrum;
         QString m_lastPokeLoadDir;
         Thread m_spectrumThread;
-        Keyboard m_keyboard;
+        Devices::Keyboard m_keyboard;
         QImageDisplayDevice m_display;
         SpectrumDisplayImageWidget m_displayWidget;
         CheatsView m_pokesWidget;
@@ -451,7 +451,7 @@ namespace Spectrum::QtUi
         QAction m_monochromeDisplay;
         QAction m_bwDisplay;
 
-        std::unique_ptr<JoystickInterface> m_joystick;
+        std::unique_ptr<Devices::JoystickInterface> m_joystick;
         QAction m_joystickNone;
         QAction m_joystickKempston;
         QAction m_joystickInterface2;
@@ -483,7 +483,7 @@ namespace Spectrum::QtUi
 
         QTimer m_displayRefreshTimer;
 
-	    std::unique_ptr<MouseInterface> m_mouse;
+	    std::unique_ptr<Devices::MouseInterface> m_mouse;
 	};
 }
 

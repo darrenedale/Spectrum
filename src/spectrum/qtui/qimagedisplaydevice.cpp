@@ -154,7 +154,7 @@ void QImageDisplayDevice::renderFrame(const DisplayFile & displayMemory)
     }
 }
 
-void QImageDisplayDevice::setBorder(Colour colour, bool bright)
+void QImageDisplayDevice::setBorder(Colour colour, const bool bright) noexcept
 {
     m_border = colour;
 
@@ -165,7 +165,7 @@ void QImageDisplayDevice::setBorder(Colour colour, bool bright)
         idx += 8;
     }
 
-    auto fill = QBrush(colourMap[idx]);
+    const auto fill = QBrush(colourMap[idx]);
     painter.fillRect(0, 0, Width + BorderSize + BorderSize, BorderSize, fill);
     painter.fillRect(0, BorderSize, BorderSize, Height, fill);
     painter.fillRect(Width + BorderSize, BorderSize, BorderSize, Height, fill);
@@ -173,7 +173,7 @@ void QImageDisplayDevice::setBorder(Colour colour, bool bright)
     painter.end();
 }
 
-Spectrum::Colour QImageDisplayDevice::border() const
+Spectrum::Colour QImageDisplayDevice::border() const noexcept
 {
     return m_border;
 }

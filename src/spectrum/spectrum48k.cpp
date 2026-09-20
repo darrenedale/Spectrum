@@ -1,12 +1,12 @@
 #include <fstream>
 #include "spectrum48k.h"
 #include "snapshot.h"
-#include "displaydevice.h"
+#include "devices/displaydevice.h"
 
 using namespace Spectrum;
 
 Spectrum48k::Spectrum48k(const std::string & romFile)
-: BaseSpectrum(std::make_unique<Spectrum::Memory>())
+: BaseSpectrum(std::make_unique<Spectrum::Memory::SimpleSpectrumMemory>())
 {
     loadRom(romFile);
 }
@@ -19,7 +19,7 @@ Spectrum48k::~Spectrum48k() = default;
 
 bool Spectrum48k::loadRom(const std::string & fileName)
 {
-    static constexpr const std::size_t RomFileSize = 0x4000;
+    static constexpr std::size_t RomFileSize = 0x4000;
     std::ifstream inFile(fileName, std::ios::binary | std::ios::in);
 
     if (!inFile) {
@@ -62,7 +62,7 @@ void Spectrum48k::applySnapshot(const Snapshot & snapshot)
     applySnapshotCpuState(snapshot);
 
     for (auto * display : displayDevices()) {
-        display->setBorder(snapshot.border);
+        display->setBorder(snapshot.border, false);
     }
 
     memory()->writeBytes(0x4000, 0x10000 - 0x4000, snapshot.memory()->pointerTo(0x4000));

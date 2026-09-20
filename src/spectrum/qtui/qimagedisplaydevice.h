@@ -3,10 +3,13 @@
 
 #include <cstdint>
 #include <QRgb>
-#include "../displaydevice.h"
+
+#include "../devices/displaydevice.h"
 
 namespace Spectrum::QtUi
 {
+    using Devices::DisplayDevice;
+
     /**
      * A Spectrum display device that renders the Spectrum display file to a QImage.
      *
@@ -58,12 +61,12 @@ namespace Spectrum::QtUi
          *
          * @return The border colour.
          */
-        [[nodiscard]] Colour border() const override;
+        [[nodiscard]] Colour border() const noexcept override;
 
         /**
          * Set the border colour for the display.
          */
-        void setBorder(Colour, bool = false) override;
+        void setBorder(Colour, bool) noexcept override;
 
         /**
          * Request the display to be redrawn.

@@ -11,7 +11,7 @@
 
 using namespace Z80::Assembly;
 
-std::string std::to_string(const Operand & op)
+std::string Z80::Assembly::to_string(const Operand & op)
 {
     std::ostringstream out;
 
@@ -73,7 +73,7 @@ std::string std::to_string(const Operand & op)
 
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_NO_RETURN_VALUE
-std::string std::to_string(const AddressingMode & mode)
+std::string Z80::Assembly::to_string(const AddressingMode & mode)
 {
     switch (mode) {
         case AddressingMode::Immediate:
@@ -111,6 +111,7 @@ std::string std::to_string(const AddressingMode & mode)
     }
 
     // unreachable code - if we get here an AddressingMode enumerator has been added but not handled above
+    [[unlikely]]
     assert(false);
 }
 DISABLE_WARNING_POP

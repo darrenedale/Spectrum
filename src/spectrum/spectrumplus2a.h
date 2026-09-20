@@ -6,8 +6,8 @@
 #define SPECTRUM_SPECTRUMPLUS2A_H
 
 #include "basespectrum.h"
-#include "memoryplus2a.h"
-#include "pagingdeviceplus2a.h"
+#include "memory/memoryplus2a.h"
+#include "devices/pagingdeviceplus2a.h"
 
 namespace Spectrum
 {
@@ -31,7 +31,7 @@ namespace Spectrum
     : public BaseSpectrum
     {
     public:
-        using MemoryType = MemoryPlus2a;
+        using MemoryType = Memory::MemoryPlus2a;
         using ScreenBuffer = ScreenBuffer128k;
 
         /**
@@ -64,7 +64,8 @@ namespace Spectrum
          *
          * @return
          */
-        [[nodiscard]] inline constexpr Model model() const override
+        [[nodiscard]]
+        constexpr Model model() const noexcept override
         {
             return Model::SpectrumPlus2a;
         }
@@ -123,7 +124,7 @@ namespace Spectrum
          *
          * @param buffer
          */
-        inline void setScreenBuffer(ScreenBuffer buffer)
+        void setScreenBuffer(const ScreenBuffer buffer)
         {
             m_screenBuffer = buffer;
         }
@@ -136,7 +137,8 @@ namespace Spectrum
          *
          * @return A pointer to the SpectrumPlus2aPagingDevice.
          */
-        [[nodiscard]] inline const PagingDevicePlus2a * pager() const
+        [[nodiscard]]
+        const Devices::PagingDevicePlus2a * pager() const noexcept
         {
             return &m_pager;
         }
@@ -149,7 +151,8 @@ namespace Spectrum
          *
          * @return A pointer to the SpectrumPlus2aPagingDevice.
          */
-        [[nodiscard]] inline PagingDevicePlus2a * pager()
+        [[nodiscard]]
+        Devices::PagingDevicePlus2a * pager() noexcept
         {
             return &m_pager;
         }
@@ -177,20 +180,17 @@ namespace Spectrum
          *
          * @return
          */
-        [[nodiscard]] inline MemoryPlus2a * memoryPlus2a() const
+        [[nodiscard]]
+        Memory::MemoryPlus2a * memoryPlus2a() const
         {
-            return dynamic_cast<MemoryPlus2a *>(memory());
+            return dynamic_cast<Memory::MemoryPlus2a *>(memory());
         }
 
     private:
-        /**
-         * The device instance to handle memory paging.
-         */
-        PagingDevicePlus2a m_pager;
+        /** The device instance to handle memory paging. */
+        Devices::PagingDevicePlus2a m_pager;
 
-        /**
-         * The current screen buffer.
-         */
+        /** The current screen buffer. */
         ScreenBuffer m_screenBuffer;
 
         /**

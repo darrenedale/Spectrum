@@ -128,34 +128,21 @@ namespace Spectrum
      * @return
      */
     std::ostream & operator<<(std::ostream & out, SpecialPagingConfiguration config);
-}
 
-namespace std
-{
-    /**
-     * Fetch a human-readable string representation of a Spectrum colour.
-     */
-    std::string to_string(Spectrum::Colour colour);
+    /** Fetch a human-readable string representation of a Spectrum colour. */
+    std::string to_string(Colour colour);
 
-    /**
-     * Fetch a human-readable string representation of a Spectrum model type.
-     */
-    std::string to_string(Spectrum::Model model);
+    /** Fetch a human-readable string representation of a Spectrum model type. */
+    std::string to_string(Model model);
 
-    /**
-     * Fetch a human-readable string representation of a Spectrum screen buffer type.
-     */
-    std::string to_string(Spectrum::ScreenBuffer128k);
+    /** Fetch a human-readable string representation of a Spectrum screen buffer type. */
+    std::string to_string(ScreenBuffer128k);
 
-    /**
-     * Fetch a human-readable string representation of a Spectrum +2a/+3 paging mode.
-     */
-    std::string to_string(Spectrum::PagingMode);
+    /** Fetch a human-readable string representation of a Spectrum +2a/+3 paging mode. */
+    std::string to_string(PagingMode);
 
-    /**
-     * Fetch a human-readable string representation of a Spectrum +2a/+3 special paging mode configuration.
-     */
-    std::string to_string(Spectrum::SpecialPagingConfiguration);
+    /** Fetch a human-readable string representation of a Spectrum +2a/+3 special paging mode configuration. */
+    std::string to_string(SpecialPagingConfiguration);
 }
 
 #endif //SPECTRUM_TYPES_H

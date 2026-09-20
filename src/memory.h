@@ -36,8 +36,8 @@ public:
     {}
     Memory(const Memory & other) = delete;
     Memory(Memory && other) = delete;
-    void operator=(const Memory<byte_t, address_t, size_t> &) = delete;
-    void operator=(Memory<byte_t, address_t, size_t> &&) = delete;
+    virtual void operator=(const Memory<byte_t, address_t, size_t> &) = delete;
+    virtual void operator=(Memory<byte_t, address_t, size_t> &&) = delete;
     virtual ~Memory() = default;
 
     /**
@@ -45,7 +45,8 @@ public:
      *
      * @return
      */
-    inline Size addressableSize() const
+    [[nodiscard]]
+    Size addressableSize() const noexcept
     {
         return m_addressableSize;
     }
@@ -55,14 +56,13 @@ public:
      *
      * @return
      */
-    inline Size availableSize() const
+    [[nodiscard]]
+    Size availableSize() const noexcept
     {
         return m_availableSize;
     }
 
-    /**
-     * Set all memory to 0 bytes.
-     */
+    /** Set all memory to 0 bytes. */
     virtual void clear()
     {
         for (Address address = 0; address < addressableSize(); ++address) {
@@ -113,7 +113,7 @@ public:
      *
      * @return The buffer.
      */
-    virtual inline Byte * readBytes(Address address, Size count, Byte * buffer) const noexcept
+    virtual Byte * readBytes(Address address, Size count, Byte * buffer) const noexcept
     {
         assert(address + count <= addressableSize());
 
@@ -130,9 +130,10 @@ public:
      * Writes to valid addresses beyond the installed memory are no-ops.
      *
      * @param address
+     * @param byte
      * @return
      */
-    virtual inline void writeByte(Address address, Byte byte)
+    virtual void writeByte(const Address address, const Byte byte) noexcept
     {
         assert(address < addressableSize());
 
@@ -157,7 +158,7 @@ public:
      * @param count The number of bytes.
      * @param bytes The bytes to write to the memory.
      */
-    virtual inline void writeBytes(Address address, Size count, const Byte * bytes)
+    virtual void writeBytes(Address address, Size count, const Byte * bytes) noexcept
     {
         assert(address + count <= addressableSize());
 
@@ -197,7 +198,7 @@ public:
      * @param word
      */
     template<class word_t>
-    inline void writeWord(Address address, word_t word) const
+    void writeWord(Address address, word_t word) const
     {
         static_assert(std::is_integral_v<word_t>, "type to write must be an int type");
         assert(address <= addressableSize() - sizeof(word_t));
@@ -213,7 +214,8 @@ public:
      * @param address
      * @return
      */
-    inline std::uint16_t read16(Address address) const
+    [[nodiscard]]
+    std::uint16_t read16(const Address address) const
     {
         return readWord<std::uint16_t>(address);
     }
@@ -224,7 +226,8 @@ public:
      * @param address
      * @return
      */
-    inline std::uint32_t read32(Address address) const
+    [[nodiscard]]
+    std::uint32_t read32(const Address address) const
     {
         return readWord<std::uint32_t>(address);
     }
@@ -235,7 +238,8 @@ public:
      * @param address
      * @return
      */
-    inline std::uint64_t read64(Address address) const
+    [[nodiscard]]
+    std::uint64_t read64(const Address address) const
     {
         return readWord<std::uint64_t>(address);
     }
@@ -244,9 +248,11 @@ public:
      * The caller is responsible for ensuring the address is in bounds.
      *
      * @param address
+     * @param word
      * @return
      */
-    inline std::uint16_t write16(Address address, std::uint16_t word) const
+    [[nodiscard]]
+    std::uint16_t write16(const Address address, const std::uint16_t word) const
     {
         return writeWord<std::uint16_t>(address, word);
     }
@@ -255,9 +261,11 @@ public:
      * The caller is responsible for ensuring the address is in bounds.
      *
      * @param address
+     * @param word
      * @return
      */
-    inline std::uint32_t write32(Address address, std::uint32_t word) const
+    [[nodiscard]]
+    std::uint32_t write32(const Address address, const std::uint32_t word) const
     {
         return writeWord<std::uint32_t>(address, word);
     }
@@ -265,10 +273,12 @@ public:
     /**
      * The caller is responsible for ensuring the address is in bounds.
      *
-     * @param address
+     * @param address The address of the first of the bytes to write.
+     * @param word The value to write.
      * @return
      */
-    inline std::uint64_t write64(Address address, std::uint64_t word) const
+    [[nodiscard]]
+    std::uint64_t write64(const Address address, const std::uint64_t word) const
     {
         return writeWord<std::uint64_t>(address, word);
     }
@@ -291,7 +301,8 @@ public:
      * @param address
      * @return
      */
-    inline const Byte * pointerTo(Address address) const
+    [[nodiscard]]
+    const Byte * pointerTo(const Address address) const
     {
         return mapAddress(address);
     }
@@ -312,7 +323,8 @@ public:
      * @param address
      * @return
      */
-    inline Byte * pointerTo(Address address)
+    [[nodiscard]]
+    Byte * pointerTo(const Address address)
     {
         return mapAddress(address);
     }
@@ -323,7 +335,8 @@ public:
      * @param address
      * @return
      */
-    [[nodiscard]] inline Byte operator[](Address address) const
+    [[nodiscard]]
+    Byte operator[](const Address address) const
     {
         return *mapAddress(address);
     }
@@ -334,7 +347,7 @@ public:
      * @param offset
      * @return
      */
-    inline Byte * operator+(Address offset)
+    Byte * operator+(const Address offset)
     {
         return pointerTo(offset);
     }
@@ -350,7 +363,7 @@ protected:
      * @param address
      * @return
      */
-    virtual inline Byte * mapAddress(Address address) const = 0;
+    virtual Byte * mapAddress(Address address) const = 0;
 
 private:
     // maximum addressable space in the memory represented

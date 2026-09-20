@@ -2,9 +2,7 @@
 // Created by darren on 17/03/2021.
 //
 
-#include <iostream>
 #include <iomanip>
-#include <cstring>
 
 #include "disassembler.h"
 #include "../opcodes.h"
@@ -13,15 +11,15 @@
 
 using namespace Z80::Assembly;
 
-using Register8 = ::Z80::Register8;
-using Register16 = ::Z80::Register16;
-using UnsignedWord = ::Z80::UnsignedWord;
-using UnsignedByte = ::Z80::UnsignedByte;
-using SignedByte = ::Z80::SignedByte;
+using Z80::Register8;
+using Z80::Register16;
+using Z80::UnsignedWord;
+using Z80::UnsignedByte;
+using Z80::SignedByte;
 
 namespace
 {
-    UnsignedWord readUnsignedWord(const Z80::UnsignedByte * memory)
+    UnsignedWord readUnsignedWord(const UnsignedByte * memory)
     {
         return (static_cast<UnsignedWord>(*memory) & 0x00ff) | ((static_cast<UnsignedWord>(*(memory + 1)) & 0x00ff) << 8);
     }
@@ -33,11 +31,9 @@ namespace
      * @param address
      * @param machineCode
      */
-    void fetchInstructionMachineCode(::Z80::Z80::MemoryType * memory, int address, UnsignedByte machineCode[4])
+    void fetchInstructionMachineCode(const Z80::Z80::MemoryType * memory, const int address, UnsignedByte machineCode[4])
     {
-        auto bytesAvailable = memory->addressableSize() - address;
-
-        if (bytesAvailable < 4) {
+        if (auto bytesAvailable = memory->addressableSize() - address; bytesAvailable < 4) {
             memory->readBytes(address, bytesAvailable, machineCode);
             memory->readBytes(0, 4 - bytesAvailable, machineCode + bytesAvailable);
         } else {
@@ -83,7 +79,7 @@ Mnemonic Disassembler::nextMnemonic()
     return mnemonic;
 }
 
-Mnemonic Disassembler::disassembleOne(const ::Z80::UnsignedByte * machineCode)
+Mnemonic Disassembler::disassembleOne(const UnsignedByte * machineCode)
 {
     switch (*machineCode) {
         case 0xcb:
@@ -103,7 +99,7 @@ Mnemonic Disassembler::disassembleOne(const ::Z80::UnsignedByte * machineCode)
     }
 }
 
-Mnemonic Disassembler::disassembleOnePlain(const ::Z80::UnsignedByte * machineCode)
+Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
 {
     switch (*machineCode) {
         case Z80__PLAIN__NOP:                // 0x00
@@ -2484,7 +2480,7 @@ Mnemonic Disassembler::disassembleOnePlain(const ::Z80::UnsignedByte * machineCo
     };
 }
 
-Mnemonic Disassembler::disassembleOneCb(const ::Z80::UnsignedByte * machineCode)
+Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
 {
     // NOTE all 0xcb prefix opcodes are this size
     static constexpr const UnsignedByte OpcodeSize = 2;
@@ -4995,7 +4991,7 @@ Mnemonic Disassembler::disassembleOneCb(const ::Z80::UnsignedByte * machineCode)
     };
 }
 
-Mnemonic Disassembler::disassembleOneEd(const ::Z80::UnsignedByte * machineCode)
+Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
 {
     switch (*machineCode)
     {
@@ -5850,7 +5846,7 @@ Mnemonic Disassembler::disassembleOneEd(const ::Z80::UnsignedByte * machineCode)
     };
 }
 
-Mnemonic Disassembler::disassembleOneDdOrFd(Register16 reg, const ::Z80::UnsignedByte * machineCode)
+Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const UnsignedByte * machineCode)
 {
     switch (*machineCode) {
         case Z80__DD_OR_FD__INC__INDIRECT_IX_d_OR_IY_d:                // 0x34
