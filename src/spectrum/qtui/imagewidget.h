@@ -19,12 +19,13 @@ namespace Spectrum
         explicit ImageWidget(QImage, QWidget * parent = nullptr);
         ~ImageWidget() override;
 
-        [[nodiscard]] inline const QImage & image() const
+        [[nodiscard]]
+        const QImage & image() const
         {
             return m_image;
         }
 
-        inline QImage & image()
+        QImage & image()
         {
             return m_image;
         }
@@ -33,22 +34,24 @@ namespace Spectrum
 
         void setKeepAspectRatio(bool keep);
 
-        inline void keepAspectRatio()
+        void keepAspectRatio()
         {
             setKeepAspectRatio(true);
         }
 
-        inline void ignoreAspectRatio()
+        void ignoreAspectRatio()
         {
             setKeepAspectRatio(false);
         }
 
-        [[nodiscard]] inline bool aspectRatioKept() const
+        [[nodiscard]]
+        bool aspectRatioKept() const
         {
             return m_keepAspectRatio;
         }
 
-        [[nodiscard]] inline bool aspectRatioIgnored() const
+        [[nodiscard]]
+        bool aspectRatioIgnored() const
         {
             return !aspectRatioKept();
         }
@@ -61,6 +64,7 @@ namespace Spectrum
          *
          * @return The render rectangle.
          */
+        [[nodiscard]]
         QRect renderRect() const;
 
         void resizeEvent(QResizeEvent *) override;

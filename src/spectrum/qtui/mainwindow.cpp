@@ -423,6 +423,7 @@ MainWindow::MainWindow(QWidget * parent)
       m_modelPlus2a(tr("Spectrum +2a")),
       m_modelPlus3(tr("Spectrum +3")),
       m_saveScreenshot(QIcon::fromTheme(QStringLiteral("image"), Application::icon(QStringLiteral("screenshot"))), tr("Screenshot")),
+      m_displayScaleGroup(nullptr),
       m_frameSkipGroup(nullptr),
       m_colourDisplay(tr("Colour")),
       m_monochromeDisplay(tr("Monochrome")),
@@ -1109,7 +1110,30 @@ void MainWindow::createDisplayMenu()
     menu->addAction(&m_saveScreenshot);
     menu->addSeparator();
 
-    auto * subMenu = menu->addMenu(tr("Frame Skip"));
+    auto * subMenu = menu->addMenu(tr("Display size"));
+
+    {
+        const std::array<const char *, 4> labels = {
+            "Actual size (256 x 192 px)",
+            "Double (512 x 384 px)",
+            "x3 (768 x 576 px)",
+            "x4 (1204 x 768 px)",
+        };
+
+        for (auto scale = 0; scale < labels.size(); ++scale) {
+            auto * action = subMenu->addAction(tr(labels[scale]), [this, scale = scale + 1]() {
+                std::cout << "Scale to be set to x" << (scale + 1) << "\n";
+            });
+
+            action->setData(scale + 1);
+            action->setCheckable(true);
+            action->setChecked(false);
+            m_displayScaleGroup.addAction(action);
+        }
+
+    }
+
+    subMenu = menu->addMenu(tr("Frame Skip"));
 
     {
         auto * action = subMenu->addAction(tr("Don't skip, render every frame"), [this]() {
@@ -1122,14 +1146,14 @@ void MainWindow::createDisplayMenu()
         m_frameSkipGroup.addAction(action);
         subMenu->addSeparator();
 
-        std::array<const char *, 4> labels = {
+        const std::array<const char *, 4> labels = {
             "Skip every other frame (25fps)",
             "Skip every third frame (~33fps)",
             "Skip every fourth frame (37.5fps)",
             "Skip every fifth frame (40fps)",
         };
 
-        for (auto skip = 0; skip < 4; ++skip) {
+        for (auto skip = 0; skip < labels.size(); ++skip) {
             action = subMenu->addAction(tr(labels[skip]), [this, skip = skip + 1]() {
                 m_display.setFrameSkip(skip);
             });

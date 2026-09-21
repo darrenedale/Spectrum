@@ -9,9 +9,9 @@ using namespace Spectrum::QtUi;
 
 QPoint SpectrumDisplayImageWidget::mapToSpectrum(const QPoint & pos) const
 {
-    auto rect = renderRect();
-    auto xRatio = static_cast<double>(rect.width()) / QImageDisplayDevice::fullWidth();
-    auto yRatio = static_cast<double>(rect.height()) / QImageDisplayDevice::fullHeight();
+    const auto rect = renderRect();
+    const auto xRatio = static_cast<double>(rect.width()) / QImageDisplayDevice::fullWidth();
+    const auto yRatio = static_cast<double>(rect.height()) / QImageDisplayDevice::fullHeight();
     double x = pos.x();
     double y = pos.y();
 

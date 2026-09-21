@@ -11,9 +11,9 @@ using namespace Spectrum::QtUi;
 
 namespace
 {
-    constexpr const int DefaultRefreshRate = 50;
+    constexpr int DefaultRefreshRate = 50;
 
-    constexpr const QRgb colourMap[16] = {
+    constexpr QRgb colourMap[16] = {
             qRgb(0x00, 0x00, 0x00),
             qRgb(0x00, 0x00, 0xcd),
             qRgb(0xcd, 0x00, 0x00),
@@ -33,7 +33,7 @@ namespace
             qRgb(0xff, 0xff, 0xff)
     };
 
-    constexpr const QRgb monochromeMap[16] = {
+    constexpr QRgb monochromeMap[16] = {
             qRgb(0x00, 0x00, 0x00),
             qRgb(0x1d, 0x1d, 0x1d),
             qRgb(0x3a, 0x3a, 0x3a),
@@ -54,7 +54,7 @@ namespace
     };
 }
 
-QImageDisplayDevice::QImageDisplayDevice(int frameSkip)
+QImageDisplayDevice::QImageDisplayDevice(const int frameSkip)
 : m_image(fullWidth(), fullHeight(), QImage::Format_ARGB32),
   m_border(Colour::White),
   m_frameCounter(0),
@@ -80,7 +80,7 @@ void QImageDisplayDevice::redrawDisplay(const DisplayFile & displayMemory)
 
 void QImageDisplayDevice::renderFrame(const DisplayFile & displayMemory)
 {
-    bool flashInvert = m_frameCounter & 0x10;
+    const bool flashInvert = m_frameCounter & 0x10;
     auto * data = reinterpret_cast<QRgb *>(image().bits());
 
     if (ColourMode::BlackAndWhite == m_colourMode) {
@@ -88,9 +88,9 @@ void QImageDisplayDevice::renderFrame(const DisplayFile & displayMemory)
         for (std::uint8_t y = 0; y < Height; ++y) {
             for (std::uint8_t xByte = 0; xByte < 32; ++xByte) {
                 // address translation algorithm: https://zxasm.wordpress.com/2016/05/28/zx-spectrum-screen-memory-layout/
-                std::uint8_t yBits = (y & 0b11000000) | ((y & 0b00111000) >> 3) | ((y & 0b00000111) << 3);
-                std::uint16_t addr = static_cast<std::uint16_t>(xByte & 0b00011111) | (static_cast<std::uint16_t>(yBits) << 5);
-                std::uint8_t attr = displayMemory[AttributesOffset + static_cast<std::size_t>(std::floor(y / 8)) * 32 + xByte];
+                const std::uint8_t yBits = (y & 0b11000000) | ((y & 0b00111000) >> 3) | ((y & 0b00000111) << 3);
+                const std::uint16_t addr = static_cast<std::uint16_t>(xByte & 0b00011111) | (static_cast<std::uint16_t>(yBits) << 5);
+                const std::uint8_t attr = displayMemory[AttributesOffset + static_cast<std::size_t>(std::floor(y / 8)) * 32 + xByte];
                 std::uint8_t mask = 0b10000000;
                 QRgb ink = m_bwForeground;
                 QRgb paper = m_bwBackground;
@@ -118,9 +118,9 @@ void QImageDisplayDevice::renderFrame(const DisplayFile & displayMemory)
             for (std::uint8_t xByte = 0; xByte < 32; ++xByte) {
                 // address translation algorithm: https://zxasm.wordpress.com/2016/05/28/zx-spectrum-screen-memory-layout/
                 std::uint8_t yBits = (y & 0b11000000) | ((y & 0b00111000) >> 3) | ((y & 0b00000111) << 3);
-                std::uint16_t addr =
+                const std::uint16_t addr =
                         static_cast<std::uint16_t>(xByte & 0b00011111) | (static_cast<std::uint16_t>(yBits) << 5);
-                std::uint8_t attr = displayMemory[AttributesOffset + static_cast<std::size_t>(std::floor(y / 8)) * 32 +
+                const std::uint8_t attr = displayMemory[AttributesOffset + static_cast<std::size_t>(std::floor(y / 8)) * 32 +
                                                   xByte];
                 std::uint8_t mask = 0b10000000;
                 std::size_t colourIndex;
