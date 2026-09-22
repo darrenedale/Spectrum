@@ -12,7 +12,7 @@ ImageWidget::ImageWidget(QWidget * parent)
 {
 }
 
-ImageWidget::ImageWidget(QImage image, QWidget * parent )
+ImageWidget::ImageWidget(QImage image, QWidget * parent)
 : QWidget(parent),
   m_image(std::move(image)),
   m_keepAspectRatio(true)
@@ -40,7 +40,7 @@ void ImageWidget::paintEvent(QPaintEvent *)
     painter.end();
 }
 
-void ImageWidget::setKeepAspectRatio(bool keep)
+void ImageWidget::setKeepAspectRatio(const bool keep)
 {
     m_keepAspectRatio = keep;
     update();
@@ -54,17 +54,18 @@ QRect ImageWidget::renderRect() const
     int h = height();
 
     if (m_keepAspectRatio) {
-        auto imageRatio = static_cast<float>(m_image.width()) / static_cast<float>(m_image.height());
-        auto widgetRatio = static_cast<float>(width()) / static_cast<float>(height());
-
-        if (imageRatio > widgetRatio) {
+        if (
+            const auto imageRatio = static_cast<float>(m_image.width()) / static_cast<float>(m_image.height()),
+            widgetRatio = static_cast<float>(width()) / static_cast<float>(height());
+            imageRatio > widgetRatio
+        ) {
             // image ratio is wider than widget ratio, adjust top
-            auto scale = static_cast<float>(width()) / static_cast<float>(m_image.width());
+            const auto scale = static_cast<float>(width()) / static_cast<float>(m_image.width());
             h = static_cast<int>(static_cast<float>(m_image.height()) * scale);
             y += (height() - h) / 2;
         } else {
             // image ratio is taller than widget ratio, adjust left
-            auto scale = static_cast<float>(height()) / static_cast<float>(m_image.height());
+            const auto scale = static_cast<float>(height()) / static_cast<float>(m_image.height());
             w = static_cast<int>(static_cast<float>(m_image.width()) * scale);
             x += (width() - w) / 2;
         }

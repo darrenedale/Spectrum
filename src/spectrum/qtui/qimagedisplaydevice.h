@@ -20,10 +20,8 @@ namespace Spectrum::QtUi
 	:   public DisplayDevice
 	{
     public:
-	    /**
-	     * The number of pixels in the image to use for the border.
-	     */
-        static constexpr const int BorderSize = 32;
+	    /** The number of pixels in the image to use for the border. */
+        static constexpr int BorderSize = 32;
 
         /**
 	     * Initialise a new display device.

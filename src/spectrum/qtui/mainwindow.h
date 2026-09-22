@@ -268,6 +268,13 @@ namespace Spectrum::QtUi
          */
 	    void dropEvent(QDropEvent *) override;
 
+        /**
+         * Handler for when the window is resized by the user.
+         *
+         * Deselects any previously selected display scale action.
+         */
+        void resizeEvent(QResizeEvent* event) override;
+
 	    /**
 	     * Helper to force a re-rendering of the Spectrum display to the UI.
 	     */
@@ -446,6 +453,7 @@ namespace Spectrum::QtUi
         QAction m_modelPlus3;
 
         QAction m_saveScreenshot;
+        QActionGroup m_displayScaleGroup;
         QActionGroup m_frameSkipGroup;
         QAction m_colourDisplay;
         QAction m_monochromeDisplay;

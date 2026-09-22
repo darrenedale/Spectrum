@@ -24,7 +24,11 @@ namespace Spectrum::Devices
     : public BaseZ80::IODevice
 	{
     public:
-        /**
+	    // The dimensions of the usable area of the Spectrum display
+	    static constexpr int Width = 256;
+	    static constexpr int Height = 192;
+
+	    /**
          * Display devices are output-only devices.
          *
          * @param port
@@ -98,8 +102,6 @@ namespace Spectrum::Devices
 	    using Attribute = std::uint8_t;
 
 	    // some useful constants for the default Spectrum DisplayFile
-	    static constexpr int Width = 256;
-	    static constexpr int Height = 192;
 	    static constexpr int AttributesOffset = 0x1800;
 	    static constexpr int AttributeInkMask = 0b00000111;
 	    static constexpr int AttributePaperMask = 0b00111000;
