@@ -1125,7 +1125,7 @@ void MainWindow::createDisplayMenu()
             "Actual size (256 x 192)",
             "x2 (512 x 384)",
             "x3 (768 x 576)",
-            "x4 (1204 x 768)",
+            "x4 (1024 x 768)",
         };
 
         m_displayScaleGroup.setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);
