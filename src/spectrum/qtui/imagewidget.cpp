@@ -56,7 +56,7 @@ QRect ImageWidget::renderRect() const
     if (m_keepAspectRatio) {
         if (
             const auto imageRatio = static_cast<float>(m_image.width()) / static_cast<float>(m_image.height()),
-            widgetRatio = static_cast<float>(width()) / static_cast<float>(height());
+            widgetRatio = static_cast<float>(w) / static_cast<float>(h);
             imageRatio > widgetRatio
         ) {
             // image ratio is wider than widget ratio, adjust top
