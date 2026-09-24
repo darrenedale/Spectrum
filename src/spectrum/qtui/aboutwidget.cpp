@@ -70,7 +70,16 @@ AboutWidget::~AboutWidget() = default;
 void AboutWidget::showEvent(QShowEvent * ev)
 {
     QSettings settings;
-    settings.beginGroup(QStringLiteral("aboutWindow"));
+
+// We prefix the group name rather than nesting groups because we save as .ini files, and .ini files don't support group
+// nesting, so Qt prefixes each setting with the full sub-group path using \ as a separator. It doesn't matter much here
+// because only Qt will read these main window settings, but with core emulator settings and potential other UIs we want
+// the config file to be parseable without having to handle the Qt-isms
+#if defined(USE_QT_5)
+    settings.beginGroup(QStringLiteral("qt5-aboutwindow"));
+#else
+    settings.beginGroup(QStringLiteral("qt6-aboutwindow"));
+#endif
 
     if (const auto size = settings.value(QStringLiteral("size")); size.canConvert<QSize>()) {
         auto geom = geometry();
@@ -85,7 +94,13 @@ void AboutWidget::showEvent(QShowEvent * ev)
 void AboutWidget::closeEvent(QCloseEvent * ev)
 {
     QSettings settings;
-    settings.beginGroup(QStringLiteral("aboutWindow"));
+
+#if defined(USE_QT_5)
+    settings.beginGroup(QStringLiteral("qt5-aboutwindow"));
+#else
+    settings.beginGroup(QStringLiteral("qt6-aboutwindow"));
+#endif
+
     settings.setValue(QStringLiteral("size"), size());
     settings.endGroup();
     QWidget::closeEvent(ev);

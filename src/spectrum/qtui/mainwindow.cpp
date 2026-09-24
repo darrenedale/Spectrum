@@ -1562,7 +1562,17 @@ void MainWindow::loadSettings()
 {
     QSettings settings;
     bool ok;
-    settings.beginGroup("mainwindow");
+
+// We prefix the group name rather than nesting groups because we save as .ini files, and .ini files don't support group
+// nesting, so Qt prefixes each setting with the full sub-group path using \ as a separator. It doesn't matter much here
+// because only Qt will read these main window settings, but with core emulator settings and potential other UIs we want
+// the config file to be parseable without having to handle the Qt-isms
+#if defined(USE_QT_5)
+    settings.beginGroup(QStringLiteral("qt5-mainwindow"));
+#else
+    settings.beginGroup(QStringLiteral("qt6-mainwindow"));
+#endif
+
     m_lastSnapshotLoadDir = settings.value(QStringLiteral("lastSnapshotLoadDir")).toString();
     m_lastScreenshotDir = settings.value(QStringLiteral("lastScreenshotDir")).toString();
     m_lastPokeLoadDir = settings.value(QStringLiteral("lastPokeLoadDir")).toString();
@@ -1667,7 +1677,17 @@ void MainWindow::loadSettings()
 void MainWindow::saveSettings()
 {
     QSettings settings;
-    settings.beginGroup(QStringLiteral("mainwindow"));
+
+// We prefix the group name rather than nesting groups because we save as .ini files, and .ini files don't support group
+// nesting, so Qt prefixes each setting with the full sub-group path using \ as a separator. It doesn't matter much here
+// because only Qt will read these main window settings, but with core emulator settings and potential other UIs we want
+// the config file to be parseable without having to handle the Qt-isms
+#if defined(USE_QT_5)
+    settings.beginGroup(QStringLiteral("qt5-mainwindow"));
+#else
+    settings.beginGroup(QStringLiteral("qt6-mainwindow"));
+#endif
+
     settings.setValue(QStringLiteral("position"), pos());
     settings.setValue(QStringLiteral("size"), size());
     settings.setValue(QStringLiteral("lastSnapshotLoadDir"), m_lastSnapshotLoadDir);
@@ -1769,8 +1789,6 @@ void MainWindow::saveSettings()
             break;
         }
     }
-
-    settings.endGroup();
 }
 
 void MainWindow::showEvent(QShowEvent * ev)
