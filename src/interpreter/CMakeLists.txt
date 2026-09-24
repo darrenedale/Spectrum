@@ -19,5 +19,5 @@ target_link_libraries(z80interpreter readline)
 set_target_properties(
         z80interpreter
         PROPERTIES
-        CXX_STANDARD 20
+        CXX_STANDARD 26
 )

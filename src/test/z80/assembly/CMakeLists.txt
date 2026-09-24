@@ -11,5 +11,5 @@ add_executable(
 set_target_properties(
         z80-disassembler
         PROPERTIES
-        CXX_STANDARD 20
+        CXX_STANDARD 26
 )

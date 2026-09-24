@@ -13,7 +13,7 @@ add_executable(
 set_target_properties(
         screenview
         PROPERTIES
-        CXX_STANDARD 20
+        CXX_STANDARD 26
 )
 
 if (APPLE)

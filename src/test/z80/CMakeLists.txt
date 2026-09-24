@@ -25,5 +25,5 @@ add_executable(
 set_target_properties(
         z80-test
         PROPERTIES
-        CXX_STANDARD 20
+        CXX_STANDARD 26
 )
