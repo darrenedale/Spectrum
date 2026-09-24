@@ -1118,7 +1118,7 @@ void MainWindow::createDisplayMenu()
     menu->addAction(&m_saveScreenshot);
     menu->addSeparator();
 
-    auto * subMenu = menu->addMenu(tr("Display size"));
+    auto * subMenu = menu->addMenu(tr("Display Size"));
 
     {
         constexpr std::array<const char *, 4> labels = {
