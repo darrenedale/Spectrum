@@ -41,12 +41,12 @@ bool SnaSnapshotWriter::writeTo(std::ostream & out) const
     auto * memory = snap.memory();
 
     if (!memory) {
-        Util::debug << "Snapshot is incomplete (no memory)\n";
+        Util::debug("Snapshot is incomplete (no memory)");
         return false;
     }
 
     if (Model::Spectrum48k != snap.model()) {
-        Util::debug << "Only Spectrum 48k snapshots are currently supported by the SNA file writer\n";
+        Util::debug("Only Spectrum 48k snapshots are currently supported by the SNA file writer");
         return false;
     }
 
@@ -73,7 +73,7 @@ bool SnaSnapshotWriter::writeTo(std::ostream & out) const
     out.write(reinterpret_cast<std::ostream::char_type *>(&header), sizeof(Header));
     
     if (out.bad()) {
-        Util::debug << "error writing .sna header\n";
+        Util::debug("error writing .sna header");
         return false;
     }
 

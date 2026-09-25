@@ -88,7 +88,7 @@ namespace
 const Spectrum::Snapshot * SpSnapshotReader::read() const
 {
     if (!isOpen()) {
-        Util::debug << "Input stream is not open.\n";
+        Util::debug("Input stream is not open.");
         return nullptr;
     }
 
@@ -101,14 +101,14 @@ const Spectrum::Snapshot * SpSnapshotReader::read() const
     in.read(reinterpret_cast<std::ifstream::char_type *>(&header), sizeof(header));
 
     if (in.fail()) {
-        Util::debug << "Error reading SP header from stream\n";
+        Util::debug("Error reading SP header from stream");
         return nullptr;
     }
 
     // validate header
     if (*reinterpret_cast<const std::uint16_t *>("SP") !=
         *reinterpret_cast<const std::uint16_t *>(header.signature)) {
-        Util::debug << "Not an SP file.";
+        Util::debug("Not an SP file.");
         return nullptr;
     }
 
@@ -117,17 +117,12 @@ const Spectrum::Snapshot * SpSnapshotReader::read() const
     header.baseAddress = z80ToHostByteOrder(header.baseAddress);
 
     if (0x0000ffff < static_cast<int>(header.baseAddress) + header.length - 1) {
-        Util::debug << std::hex << std::setfill('0');
-        Util::debug << "Program extends beyond upper bounds of RAM (0x" << std::setw(4) << header.baseAddress << " + "
-                  << std::dec << header.length << ") > 0xffff\n";
+        Util::debug("Program extends beyond upper bounds of RAM ({:#04x} + {}) > 0xffff", header.baseAddress, header.length);
 #if (!defined(ndebug))
-        Util::debug << "Base address: 0x" << std::hex << std::setw(4) << header.baseAddress << "\n";
-        Util::debug << "Length      : " << std::dec << header.length << " bytes\n";
-        Util::debug << "End address : 0x" << std::hex << std::setw(5)
-                  << (static_cast<std::uint32_t>(header.baseAddress) + header.length) << "\n";
-        Util::debug << "Program extends beyond upper bounds of RAM (0x" << std::setw(4) << header.baseAddress << " + "
-                  << std::dec << header.length << ") > 0xffff\n";
-        Util::debug << std::setfill(' ');
+        Util::debug("Base address: {:#04x}", header.baseAddress);
+        Util::debug("Length      : {} bytes", header.length);
+        Util::debug("End address : {:#05x}", static_cast<std::uint32_t>(header.baseAddress) + header.length);
+        Util::debug("Program extends beyond upper bounds of RAM ({:#04x} + {}) > 0xffff", header.baseAddress, header.length);
 #endif
         return nullptr;
     }
@@ -179,7 +174,7 @@ const Spectrum::Snapshot * SpSnapshotReader::read() const
     in.read(reinterpret_cast<std::istream::char_type *>(memory->pointerTo(0) + header.baseAddress), header.length);
 
     if (in.fail()) {
-        Util::debug << "Error reading program from stream\n";
+        Util::debug("Error reading program from stream");
         return nullptr;
     }
 
