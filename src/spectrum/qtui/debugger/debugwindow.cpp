@@ -311,7 +311,13 @@ void DebugWindow::closeEvent(QCloseEvent * ev)
 {
     m_thread->spectrum().z80()->removeInstructionObserver(&m_cpuObserver);
     QSettings settings;
-    settings.beginGroup(QStringLiteral("debugWindow"));
+
+#if defined(USE_QT_5)
+    settings.beginGroup(QStringLiteral("qt5-debugwindow"));
+#else
+    settings.beginGroup(QStringLiteral("qt6-debugwindow"));
+#endif
+
     settings.setValue(QStringLiteral("position"), pos());
     settings.setValue(QStringLiteral("size"), size());
     settings.setValue(QStringLiteral("windowState"), saveState());
@@ -324,7 +330,17 @@ void DebugWindow::showEvent(QShowEvent * event)
     m_thread->spectrum().z80()->addInstructionObserver(&m_cpuObserver);
 
     QSettings settings;
-    settings.beginGroup(QStringLiteral("debugWindow"));
+
+// We prefix the group name rather than nesting groups because we save as .ini files, and .ini files don't support group
+// nesting, so Qt prefixes each setting with the full sub-group path using \ as a separator. It doesn't matter much here
+// because only Qt will read these main window settings, but with core emulator settings and potential other UIs we want
+// the config file to be parseable without having to handle the Qt-isms
+#if defined(USE_QT_5)
+    settings.beginGroup(QStringLiteral("qt5-debugwindow"));
+#else
+    settings.beginGroup(QStringLiteral("qt6-debugwindow"));
+#endif
+
     setGeometry({settings.value(QStringLiteral("position")).toPoint(), settings.value(QStringLiteral("size")).toSize()});
     restoreState(settings.value(QStringLiteral("windowState")).toByteArray());
     settings.endGroup();

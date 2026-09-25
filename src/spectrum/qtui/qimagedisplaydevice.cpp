@@ -1,9 +1,10 @@
-#include <cmath>
-#include <iostream>
 #include <chrono>
+#include <cmath>
+
 #include <QImage>
 #include <QRgb>
 #include <QPainter>
+
 #include "qimagedisplaydevice.h"
 #include "../../util/debug.h"
 
