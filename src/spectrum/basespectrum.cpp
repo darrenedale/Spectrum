@@ -11,10 +11,8 @@
 
 namespace
 {
-    /**
-     * The default Z80 clock speed for a Spectrum.
-     */
-    const int DefaultClockSpeed = 3500000;
+    /** The default Z80 clock speed for a Spectrum. */
+    constexpr int DefaultClockSpeed = 3500000;
 }
 
 namespace Spectrum
