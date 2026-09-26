@@ -81,12 +81,13 @@ namespace Spectrum
             m_pokes.push_back(std::move(poke));
         }
 
-        void addPoke(::Z80::UnsignedWord address, ::Z80::UnsignedByte bytes...)
+        template<std::same_as<::Z80::UnsignedByte> T, std::same_as<::Z80::UnsignedByte>... Ts>
+        void addPoke(::Z80::UnsignedWord address, T && byte, Ts &&... bytes)
         {
-            m_pokes.push_back({.address = address, .bytes = {bytes}});
+            m_pokes.push_back({.address = address, .bytes = {byte, bytes...}});
         }
 
-        void addPoke(::Z80::UnsignedWord address, std::vector<std::optional<::Z80::UnsignedByte>> bytes)
+        void addPoke(const ::Z80::UnsignedWord address, std::vector<std::optional<::Z80::UnsignedByte>> bytes)
         {
             m_pokes.push_back({.address = address, .bytes = std::move(bytes)});
         }
@@ -113,7 +114,7 @@ namespace Spectrum
          */
         void undo(BaseSpectrum::MemoryType & memory) const;
 
-        void undo(BaseSpectrum & spectrum) const
+        void undo(const BaseSpectrum & spectrum) const
         {
             assert(spectrum.memory());
             return undo(*(spectrum.memory()));
@@ -128,4 +129,4 @@ namespace Spectrum
     };
 }
 
-#endif //SPECTRUM_POKEDEFINITION_H
+#endif // SPECTRUM_POKEDEFINITION_H

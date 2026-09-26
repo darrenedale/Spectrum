@@ -45,12 +45,7 @@ namespace
     constexpr const int MemoryImageOffset = 0x4000;
 }
 
-/**
- * The snapshot MUST have at least a 64kb memory image.
- *
- * @param snapshot
- * @return
- */
+/** The snapshot MUST have at least a 64kb memory image. */
 const Spectrum::Snapshot * SnaSnapshotReader::read() const
 {
     if (!isOpen()) {
@@ -129,7 +124,6 @@ bool SnaSnapshotReader::couldBeSnapshot(std::istream & in)
 bool SnaSnapshotReader::couldBeSnapshot(const std::string & fileName)
 {
     if (49179 != std::filesystem::file_size(fileName)) {
-        Util::debug << ".zx snapshots are always 49179 bytes in size.\n";
         return false;
     }
 

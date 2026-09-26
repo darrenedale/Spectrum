@@ -142,6 +142,9 @@ namespace
     /** Regular expression to extract the extension from a snapshot filename. */
     const auto SnapshotExtensionRegularExpression = QRegularExpression("^.*\\.([a-zA-Z0-9_-]+)$");
 
+    /** Regular expression to extract the extension from a snapshot filter from the file dialogue. */
+    const auto SnapshotFilterExtensionRegularExpression = QRegularExpression(R"(^.*\(\*\.([a-zA-Z0-9_-]+)\)$)");
+
     /**
      * Helper to map a key from a Qt key event to a Spectrum keyboard key combination.
      *
@@ -151,10 +154,8 @@ namespace
      */
     std::vector<Keyboard::Key> mapToSpectrumKeys(const Qt::Key key)
     {
-#if (defined(__clang__))
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_SWITCH     // we're only interested in the keys that map to the Spectrum keyboard
-#endif
         // TODO configurable mapping
         switch (key) {
             case Qt::Key::Key_Backspace:
@@ -352,9 +353,7 @@ DISABLE_WARNING_SWITCH     // we're only interested in the keys that map to the 
             default:
                 return {};
         }
-#if (defined(__clang__))
 DISABLE_WARNING_POP
-#endif
     }
 
     /**
@@ -366,10 +365,8 @@ DISABLE_WARNING_POP
      */
     JoystickMapping mapToSpectrumJoystick(Qt::Key key)
     {
-#if (defined(__clang__))
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_SWITCH     // we're only interested in keys that map to the virtual joystick
-#endif
         switch (key) {
             case Qt::Key::Key_Up:
                 return JoystickMapping::Up;
@@ -386,9 +383,7 @@ DISABLE_WARNING_SWITCH     // we're only interested in keys that map to the virt
             case Qt::Key::Key_Control:
                 return JoystickMapping::Button1;
         }
-#if (defined(__clang__))
 DISABLE_WARNING_POP
-#endif
 
         return JoystickMapping::None;
     }
@@ -1416,10 +1411,8 @@ void MainWindow::rescanGameControllers()
 
 bool MainWindow::eventFilter(QObject * target, QEvent * event)
 {
-#if (defined(__clang__))
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_SWITCH
-#endif
     if (&m_displayWidget == target) {
         switch (event->type()) {
             case QEvent::Type::MouseMove:
@@ -1552,9 +1545,7 @@ DISABLE_WARNING_SWITCH
                 break;
         }
     }
-#if (defined(__clang__))
 DISABLE_WARNING_POP
-#endif
     return false;
 }
 
@@ -1957,7 +1948,7 @@ void MainWindow::loadSnapshotTriggered()
     auto format = lastFilter;
 
     if (!format.isEmpty()) {
-        if (auto matches = QRegularExpression(R"(^.*\(\*\.([a-zA-Z0-9_-]+)\)$)").match(format); matches.hasMatch()) {
+        if (const auto matches = SnapshotFilterExtensionRegularExpression.match(format); matches.hasMatch()) {
             format = matches.captured(1).toLower();
         } else {
             format.clear();
@@ -2127,7 +2118,7 @@ void MainWindow::kempstonMouseToggled(bool on)
     }
 }
 
-void MainWindow::emulationSpeedChanged(int speed)
+void MainWindow::emulationSpeedChanged(const int speed)
 {
     if (0 == speed) {
         m_spectrum->setExecutionSpeedConstrained(false);
@@ -2147,7 +2138,7 @@ void MainWindow::updateStatusBarSpeedWidget()
         m_statusBarEmulationSpeed.setText(tr("%1%").arg("∞"));    // infinity
     }
 
-    auto mhz = m_spectrum->z80()->clockSpeedMHz();
+    const auto mhz = m_spectrum->z80()->clockSpeedMHz();
     int precision = 2;
     auto tmpMhz = mhz;
 

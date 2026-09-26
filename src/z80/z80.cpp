@@ -1069,7 +1069,7 @@ Z80::InstructionCost Z80::Z80::execute(const UnsignedByte * instruction, bool do
 //    }
 #endif
 
-return cost;
+    return cost;
 }
 
 void Z80::Z80::handleNmi()
@@ -1132,10 +1132,10 @@ int Z80::Z80::handleInterrupt()
             // routine
             m_registers.pc = peekUnsignedHostWord(static_cast<UnsignedWord>(m_registers.i) << 8 | (m_interruptData & 0xfe));
             return 19;
-            break;
     }
 
     // should never happen
+    [[unlikely]]
     throw InvalidInterruptMode(static_cast<UnsignedByte>(m_interruptMode));
 }
 
@@ -1152,8 +1152,8 @@ int Z80::Z80::fetchExecuteCycle()
 	static UnsignedByte machineCode[4];
 
 	int tStates = 0;
-    // the Z80 defers a pending interrupt by one instruction after EI to allow for a RET to be executed - EI instruction handling code sets this to ensure the
-    // interrupt is delayed
+    // the Z80 defers a pending interrupt by one instruction after EI to allow for a RET to be executed - EI instruction
+    // handling code sets this to ensure the interrupt is delayed
     m_delayInterruptOneInstruction = false;
 
 	if (m_halted) {

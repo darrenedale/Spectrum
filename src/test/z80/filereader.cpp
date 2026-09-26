@@ -183,7 +183,7 @@ bool FileReader::readRegisterPairs(State & state)
 bool FileReader::readRegistersFlagsTStates(State & state, std::size_t & tStates)
 {
     assert(isOpen());
-    auto line = readLine();
+    const auto line = readLine();
 
     if (!line) {
         return false;
@@ -216,7 +216,7 @@ bool FileReader::readRegistersFlagsTStates(State & state, std::size_t & tStates)
     }
 
     for (auto & property : {&state.iff1, &state.iff2,}) {
-        char byte = in.get();
+        const char byte = static_cast<char>(in.get());
 
         if (' ' != in.get()) {
             std::cerr << "Invalid delimiter in registers/flags/t-states line\n";
@@ -240,7 +240,7 @@ bool FileReader::readRegistersFlagsTStates(State & state, std::size_t & tStates)
         return false;
     }
 
-    auto im = parseInterruptMode(byte);
+    const auto im = parseInterruptMode(byte);
 
     if (!im) {
         std::cerr << "Failed parsing interrupt mode in registers/flags/t-states line\n";
@@ -304,7 +304,7 @@ std::optional<std::vector<MemoryBlock>> FileReader::readMemoryBlocks()
 std::optional<MemoryBlock> FileReader::readMemoryBlock()
 {
     assert(isOpen());
-    auto line = readLine();
+    const auto line = readLine();
 
     if (!line) {
         return {};
@@ -365,5 +365,5 @@ std::optional<MemoryBlock> FileReader::readMemoryBlock()
         return {};
     }
 
-    return std::make_optional<MemoryBlock>({*address, std::move(data)});
+    return std::make_optional(MemoryBlock{.address = *address, .data = std::move(data)});
 }
