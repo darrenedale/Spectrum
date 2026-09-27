@@ -998,7 +998,7 @@ Z80::InstructionCost Z80::Z80::execute(const UnsignedByte * instruction, bool do
     // cost is always assigned in the switch() so we don't need to initialise it here
     InstructionCost cost;
 
-#if (!defined(NDEBUG))
+#if !defined(NDEBUG) && defined(DEBUG_EXECUTION_HISTORY)
 	ExecutedInstruction historyEntry(instruction, this);
 #endif
 
@@ -1041,7 +1041,7 @@ Z80::InstructionCost Z80::Z80::execute(const UnsignedByte * instruction, bool do
         m_registers.pc += cost.size;
     }
 
-#if (!defined(NDEBUG))
+#if !defined(NDEBUG) && defined(DEBUG_EXECUTION_HISTORY)
 	historyEntry.registersAfter = registers();
     m_executionHistory.add(std::move(historyEntry));
 
@@ -6145,7 +6145,7 @@ void Z80::Z80::dumpState(std::ostream & out) const
         << std::dec << std::setfill(' ');
 }
 
-#if defined(DEBUG_INSTRUCTION_HISTORY)
+#if defined(DEBUG_EXECUTION_HISTORY)
 void Z80::Z80::dumpExecutionHistory(const int entries, std::ostream & out) const
 {
     auto entry = m_executionHistory.newest();

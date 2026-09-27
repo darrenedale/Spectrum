@@ -1,6 +1,6 @@
 option(WITH_QT_GAMEPAD "Include support for host gamepads using the QtGamepad module" OFF)
 option(USE_QT5 "Use QT5 instead of QT6" OFF)
-option(DEBUG_INSTRUCTION_HISTORY "Compile with instruction history capture in debug builds" OFF)
+option(DEBUG_EXECUTION_HISTORY "Compile with capture of execution history in debug builds (this has a significant performance impact)" OFF)
 
 set(
         SPECTRUM_QT_COMPONENTS
@@ -22,6 +22,10 @@ set(
         SPECTRUM_QT_GAMEPAD_SOURCES
 )
 
+set(
+        EXECUTION_HISTORY_SOURCES
+)
+
 if (WITH_QT_GAMEPAD)
     list(APPEND SPECTRUM_QT_COMPONENTS Gamepad)
     list(APPEND SPECTRUM_QT_LIBS Qt::Gamepad)
@@ -37,9 +41,15 @@ else (USE_QT5)
     find_package(Qt6 COMPONENTS ${SPECTRUM_QT_COMPONENTS})
 endif(USE_QT5)
 
-if (DEBUG_INSTRUCTION_HISTORY)
-    add_compile_definitions(-DDEBUG_INSTRUCTION_HISTORY)
-endif (DEBUG_INSTRUCTION_HISTORY)
+if (DEBUG_EXECUTION_HISTORY)
+    if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
+        message(STATUS "Building with execution history capture (this has a significant performance impact)")
+        add_compile_definitions(-DDEBUG_EXECUTION_HISTORY)
+        list(APPEND EXECUTION_HISTORY_SOURCES ../z80/executionhistory.cpp)
+    else ()
+        message(WARNING "DEBUG_EXECUTION_HISTORY option has no effect for build types other than Debug")
+    endif ()
+endif (DEBUG_EXECUTION_HISTORY)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -166,7 +176,6 @@ add_executable(
         ../z80/assembly/disassembler.cpp
         ../z80/assembly/mnemonic.cpp
         ../z80/assembly/operand.cpp
-        ../z80/executionhistory.cpp
         ../z80/iodevice.cpp
         ../z80/registers.cpp
         ../z80/registers.h
@@ -174,6 +183,7 @@ add_executable(
         ../z80/z80.cpp
 
         ${SPECTRUM_QT_GAMEPAD_SOURCES}
+        ${EXECUTION_HISTORY_SOURCES}
         ../util/assert.h
 )
 

@@ -14,7 +14,7 @@
 #include "../simplememory.h"
 #include "../util/assert.h"
 
-#if !defined(NDEBUG) && defined(DEBUG_INSTRUCTION_HISTORY)
+#if !defined(NDEBUG) && defined(DEBUG_EXECUTION_HISTORY)
 #include "executionhistory.h"
 #endif
 
@@ -1391,10 +1391,10 @@ namespace Z80
             // write details about the current state of the CPU
             void dumpState(std::ostream & out = std::cout) const;
 
+#if defined(DEBUG_EXECUTION_HISTORY)
             // write details about the N most recently executed instructions
             void dumpExecutionHistory(int entries, std::ostream & out = std::cout) const;
 
-#if defined(DEBUG_INSTRUCTION_HISTORY)
         private:
             // a ring buffer with the 10000 most recently executed instructions
             ExecutionHistory<10000> m_executionHistory;
