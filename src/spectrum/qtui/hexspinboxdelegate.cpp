@@ -2,8 +2,11 @@
 // Created by darren on 03/05/2021.
 //
 
-#include "hexspinboxdelegate.h"
+#include <print>
+
 #include "hexspinbox.h"
+#include "hexspinboxdelegate.h"
+#include "../../util/assert.h"
 
 using namespace Spectrum::QtUi;
 
@@ -24,9 +27,9 @@ QWidget * HexSpinBoxDelegate::createEditor(QWidget * parent, const QStyleOptionV
 
 void HexSpinBoxDelegate::setEditorData(QWidget * editor, const QModelIndex & index) const
 {
-    assert(editor);
+    sp_assert(editor, "null editor provided to HexSpinBoxDelegate::setEditorData");
     bool ok;
-    auto value = index.data(Qt::ItemDataRole::EditRole).toInt(&ok);
+    const auto value = index.data(Qt::ItemDataRole::EditRole).toInt(&ok);
 
     if (ok) {
         qobject_cast<HexSpinBox *>(editor)->setValue(value);
@@ -38,10 +41,9 @@ void HexSpinBoxDelegate::setEditorData(QWidget * editor, const QModelIndex & ind
 
 void HexSpinBoxDelegate::setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & idx) const
 {
-    assert(model);
-    auto * hexWidget = qobject_cast<HexSpinBox *>(editor);
+    sp_assert(model, "null model provided to HexSpinBoxDelegate::setModelData");
 
-    if (hexWidget) {
+    if (const auto * hexWidget = qobject_cast<HexSpinBox *>(editor)) {
         model->setData(idx, hexWidget->value(), Qt::ItemDataRole::EditRole);
         return;
     }

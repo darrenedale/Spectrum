@@ -87,12 +87,12 @@ namespace Spectrum::QtUi::Debugger
          * Labels and addresses of watches can be edited. If the watch is a String watch, the length of the observed string can also be edited.
          *
          * @param idx The index of the watch to edit. The column must be either the Label, Address or Type column.
-         * @param value The value to set for the label.
+         * @param data The value to set for the label.
          * @param role The data role. Only the Edit role is accepted.
          *
          * @return true if the data was set, false otherwise.
          */
-        bool setData(const QModelIndex & idx, const QVariant & value, int role = Qt::ItemDataRole::EditRole) override;
+        bool setData(const QModelIndex & idx, const QVariant & data, int role = Qt::ItemDataRole::EditRole) override;
 
         /**
          * Provide the flags for an item.

@@ -145,4 +145,32 @@ namespace Spectrum
     std::string to_string(SpecialPagingConfiguration);
 }
 
+/**
+ * Formatter for all the enums, based on the to_string() implementation for each.
+ * @tparam T must be one of the enum types in the Spectrum namespace defined in src/spectrum/types.h.
+ */
+template<typename T>
+requires std::is_same_v<T, Spectrum::Colour> || std::is_same_v<T, Spectrum::Model> || std::is_same_v<T, Spectrum::ScreenBuffer128k> || std::is_same_v<T, Spectrum::PagingMode> || std::is_same_v<T, Spectrum::SpecialPagingConfiguration>
+struct std::formatter<T>
+{
+    template<class ParseContext>
+    constexpr ParseContext::iterator parse(ParseContext& context)
+    {
+        auto it = context.begin();
+
+        if (it != context.end() && *it != '}')
+        {
+            throw std::format_error("invalid format args");
+        }
+
+        return it;
+    }
+
+    template<class FormatContext>
+    FormatContext::iterator format(const T & value, FormatContext & context) const
+    {
+        return std::ranges::copy(to_string(value), context.out()).out;
+    }
+};
+
 #endif //SPECTRUM_TYPES_H

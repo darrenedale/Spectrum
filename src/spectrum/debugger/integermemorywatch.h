@@ -6,15 +6,21 @@
 #define SPECTRUM_DEBUGGER_INTEGERMEMORYWATCH_H
 
 #include <bit>
-#include <sstream>
 #include <iomanip>
+#include <print>
+#include <sstream>
 #include <string>
+
 #include "integermemorywatchbase.h"
+#include "../../util/assert.h"
 #include "../../util/endian.h"
 #include "../../util/numeric.h"
 
 namespace Spectrum::Debugger
 {
+
+    using namespace std::string_literals;
+
     template<class T>
     concept IntegerMemoryWatchType = std::is_integral_v<T>;
 
@@ -173,7 +179,7 @@ namespace Spectrum::Debugger
 
                 [[unlikely]]
                 default:
-                    assert(nullptr == "Unhandled Base enum case in IntegerMemoryWatch::bigDisplayValue()");
+                    sp_assert(false, "Unhandled Base enum case in IntegerMemoryWatch::bigDisplayValue()");
             }
         }
     };

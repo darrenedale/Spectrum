@@ -15,20 +15,22 @@
 #include "z80interpreter.h"
 
 #include <algorithm>
-#include <cassert>
 #include <charconv>
 #include <cmath>
+#include <cstdio>
 #include <iomanip>
 #include <iostream>
 #include <numeric>
+#include <print>
+#include <regex>
 #include <readline/history.h>
 #include <readline/readline.h>
-#include <regex>
 
 #include "../z80/z80.h"
-#include "../util/string.h"
-#include "../util/debug.h"
+#include "../util/assert.h"
 #include "../util/compiler.h"
+#include "../util/debug.h"
+#include "../util/string.h"
 #include "operand.h"
 
 using namespace Interpreter;
@@ -89,7 +91,7 @@ void Z80Interpreter::setCpu(std::unique_ptr<Z80Cpu> cpu) noexcept
 
 void Z80Interpreter::run() noexcept
 {
-    assert(hasCpu());
+    sp_assert(hasCpu(), "interpreter has no CPU");
     std::cout << "Z80 interpreter\nDarren Edale, 2021\n\nType \".help\" for help.\n\n";
     std::cout << m_cpu->clockSpeedMHz() << "MHz Z80 CPU, " << m_cpu->memorySize() << " bytes of RAM\n";
 
@@ -370,7 +372,7 @@ void Z80Interpreter::dotDumpFlags() const noexcept
 
 void Z80Interpreter::dotDumpMemory(const Tokens & tokens) const noexcept
 {
-    assert(!tokens.empty());
+    sp_assert(!tokens.empty(), "missing tokens for dumping memory");
     int low = 0;
     int len = 16;
 
@@ -421,7 +423,7 @@ void Z80Interpreter::dotDumpMemory(const Tokens & tokens) const noexcept
 
 void Z80Interpreter::dotDumpMemory(const int low, const int len) const noexcept
 {
-    assert(m_cpu);
+    sp_assert(m_cpu, "detected null cpu in Z80Interpreter::dotDumpMemory()");
 
     if (low < 0) {
         std::cout << "can't display memory below address 0";
@@ -583,8 +585,8 @@ void Z80Interpreter::dotRegisterValue(const Tokens & tokens) const noexcept
 
 void Z80Interpreter::dotRegisterValue(const Register8 reg, const NumberFormats & fmt) const noexcept
 {
-    assert(m_cpu);
-    UnsignedByte v = m_cpu->registerValue(reg);
+    sp_assert(m_cpu, "detected null cpu in Z80Interpreter::dotRegisterValue()");
+   UnsignedByte v = m_cpu->registerValue(reg);
 
     switch (reg) {
         case Register8::A:
@@ -684,8 +686,8 @@ void Z80Interpreter::dotRegisterValue(const Register8 reg, const NumberFormats &
 
 void Z80Interpreter::dotRegisterValue(const Register16 reg, const NumberFormats & fmt) const noexcept
 {
-    assert(m_cpu);
-    UnsignedWord v = m_cpu->registerValue(reg);
+    sp_assert(m_cpu, "found null cpu in Z80Interpreter::dotRegisterValue()");
+    const UnsignedWord v = m_cpu->registerValue(reg);
 
     switch (reg) {
         case Register16::AF:
@@ -1130,7 +1132,7 @@ DISABLE_WARNING_SWITCH     // only interested in the registers that are supporte
                 break;
                 
             default:
-                assert(nullptr == "Invalid 8-bit register for AND instruction not handled in case statement");
+                sp_assert(false, "8-bit register {} for AND instruction not handled in Z80Interpreter::assembleADD()", op1.reg8());
         }
 DISABLE_WARNING_POP
 

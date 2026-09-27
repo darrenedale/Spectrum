@@ -3,8 +3,9 @@
 //
 
 #include "snapshot.h"
-#include "devices/displaydevice.h"
 #include "spectrum48k.h"
+#include "devices/displaydevice.h"
+#include "../util/assert.h"
 
 using Z80::InterruptMode;
 using namespace Spectrum;
@@ -202,7 +203,7 @@ std::ostream & Spectrum::operator<<(std::ostream & out, const Snapshot & snap)
         }
 
         auto * memory = dynamic_cast<const Memory::PagingMemoryInterface *>(snap.memory());
-        assert(memory);
+        sp_assert(memory, "snapshot for 128k/+2/+3 has missing or invalid memory in operator<<()");
 
         for (std::uint8_t page = 0; page < 8; ++page) {
             out << "  Page " << std::dec << static_cast<std::uint16_t>(page) << " checksum: 0x" << std::setw(8)

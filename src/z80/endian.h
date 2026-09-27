@@ -12,7 +12,7 @@ namespace Z80
 {
     using Util::swapByteOrder;
 
-    inline constexpr UnsignedWord z80ToHostByteOrder(UnsignedWord value)
+    constexpr UnsignedWord z80ToHostByteOrder(const UnsignedWord value) noexcept
     {
         if constexpr (Z80ByteOrder == HostByteOrder) {
             return value;
@@ -21,7 +21,7 @@ namespace Z80
         return swapByteOrder(value);
     }
 
-    inline constexpr UnsignedWord hostToZ80ByteOrder(UnsignedWord value)
+    constexpr UnsignedWord hostToZ80ByteOrder(const UnsignedWord value) noexcept
     {
         if constexpr (Z80ByteOrder == HostByteOrder) {
             return value;

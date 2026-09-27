@@ -1,6 +1,8 @@
 
-#include <iostream>
 #include <iomanip>
+#include <iostream>
+#include <print>
+
 #include <QLineEdit>
 #include <QGroupBox>
 #include <QHBoxLayout>
@@ -12,20 +14,22 @@
 #include <QMenu>
 #include <QClipboard>
 #include <QSettings>
-#include "debugwindow.h"
-#include "../thread.h"
-#include "../application.h"
-#include "../registerpairwidget.h"
-#include "../hexspinboxdelegate.h"
-#include "watchescontextmenu.h"
+
 #include "breakpointscontextmenu.h"
+#include "debugwindow.h"
+#include "watchescontextmenu.h"
+#include "../application.h"
+#include "../hexspinboxdelegate.h"
+#include "../registerpairwidget.h"
+#include "../thread.h"
 #include "../../spectrum48k.h"
-#include "../../../util/debug.h"
 #include "../../debugger/programcounterbreakpoint.h"
 #include "../../debugger/stackpointerbelowbreakpoint.h"
 #include "../../debugger/memorychangedbreakpoint.h"
 #include "../../debugger/integermemorywatch.h"
 #include "../../debugger/stringmemorywatch.h"
+#include "../../../util/assert.h"
+#include "../../../util/debug.h"
 
 using namespace Spectrum::QtUi::Debugger;
 using ::Z80::InterruptMode;
@@ -235,7 +239,7 @@ void DebugWindow::connectWidgets()
     connect(&m_navigateToSp, &QAction::triggered, this, &DebugWindow::locateStackPointerInDisassembly);
     connect(&m_navigateToSp, &QAction::triggered, this, &DebugWindow::locateStackPointerInMemory);
     connect(&m_breakpointAtStackTop, &QAction::triggered, [this]() {
-        auto addr = m_pointers.registerValue(Register16::SP);
+        const auto addr = m_pointers.registerValue(Register16::SP);
 
         if (addr > 0xffff - 2) {
             Util::debug << "Can't set a breakpoint at address on top of stack - stack is currently < 2 bytes in size\n";
@@ -250,48 +254,48 @@ void DebugWindow::connectWidgets()
     connect(&m_watches, &QWidget::customContextMenuRequested, this, &DebugWindow::watchesContextMenuRequested);
     connect(&m_breakpoints, &QWidget::customContextMenuRequested, this, &DebugWindow::breakpointsContextMenuRequested);
 
-    connect(&m_poke, &PokeWidget::pokeClicked, [this](::Z80::UnsignedWord address, ::Z80::UnsignedByte value) -> void {
+    connect(&m_poke, &PokeWidget::pokeClicked, [this](const ::Z80::UnsignedWord address, const ::Z80::UnsignedByte value) -> void {
         m_thread->spectrum().memory()->writeByte(address, value);
         updateStateDisplay();
     });
 
-    connect(&m_registers, &RegistersWidget::registerChanged, [this](::Z80::Register16 reg, ::Z80::UnsignedWord value) {
-        assert(m_thread);
+    connect(&m_registers, &RegistersWidget::registerChanged, [this](const ::Z80::Register16 reg, const ::Z80::UnsignedWord value) {
+        sp_assert(m_thread, "detected null thread in lambda attached to RegistersWidget::registerChanged signal in DebuWindow");
         auto * cpu = m_thread->spectrum().z80();
-        assert(cpu);
+        sp_assert(cpu, "null CPU found in lambda attached to RegistersWidget::interruptModeChanged signal in DebuWindow");
         cpu->setRegisterValue(reg, value);
     });
 
-    connect(&m_shadowRegisters, &ShadowRegistersWidget::registerChanged, [this](::Z80::Register16 reg, ::Z80::UnsignedWord value) {
-        assert(m_thread);
+    connect(&m_shadowRegisters, &ShadowRegistersWidget::registerChanged, [this](const ::Z80::Register16 reg, const ::Z80::UnsignedWord value) {
+        sp_assert(m_thread, "detected null thread in lambda attached to ShadowRegistersWidget::registerChanged signal in DebuWindow");
         auto * cpu = m_thread->spectrum().z80();
-        assert(cpu);
+        sp_assert(cpu, "null CPU found in lambda attached to ShadowRegistersWidget::interruptModeChanged signal in DebuWindow");
         cpu->setRegisterValue(reg, value);
     });
 
-    connect(&m_pointers, &ProgramPointersWidget::registerChanged, [this](::Z80::Register16 reg, ::Z80::UnsignedWord value) {
-        assert(m_thread);
+    connect(&m_pointers, &ProgramPointersWidget::registerChanged, [this](const ::Z80::Register16 reg, const ::Z80::UnsignedWord value) {
+        sp_assert(m_thread, "detected null thread in lambda attached to ProgramPointersWidget::registerChanged signal in DebuWindow");
         auto * cpu = m_thread->spectrum().z80();
-        assert(cpu);
+        sp_assert(cpu, "null CPU found in lambda attached to ProgramPointersWidget::interruptModeChanged signal in DebuWindow");
         cpu->setRegisterValue(reg, value);
     });
 
-    connect(&m_interrupts, &InterruptWidget::registerChanged, [this](::Z80::Register8 reg, ::Z80::UnsignedByte value) {
-        assert(m_thread);
+    connect(&m_interrupts, &InterruptWidget::registerChanged, [this](const ::Z80::Register8 reg, const ::Z80::UnsignedByte value) {
+        sp_assert(m_thread, "detected null thread in lambda attached to InterruptWidget::registerChanged signal in DebuWindow");
         auto * cpu = m_thread->spectrum().z80();
-        assert(cpu);
+        sp_assert(cpu, "null CPU found in lambda attached to InterruptWidget::registerChanged signal in DebuWindow");
         cpu->setRegisterValue(reg, value);
     });
 
-    connect(&m_interrupts, &InterruptWidget::interruptModeChanged, [this](::Z80::InterruptMode mode) {
-        assert(m_thread);
+    connect(&m_interrupts, &InterruptWidget::interruptModeChanged, [this](const ::Z80::InterruptMode mode) {
+        sp_assert(m_thread, "detected null thread in lambda attached to InterruptWidget::interruptModeChanged signal in DebuWindow");
         auto * cpu = m_thread->spectrum().z80();
-        assert(cpu);
+        sp_assert(cpu, "null CPU found in lambda attached to InterruptWidget::interruptModeChanged signal in DebuWindow");
         cpu->setInterruptMode(mode);
     });
 
     // memory widget context menu
-    connect(&m_memoryMenu, &MemoryContextMenu::poke, [this](::Z80::UnsignedWord address) {
+    connect(&m_memoryMenu, &MemoryContextMenu::poke, [this](const ::Z80::UnsignedWord address) {
         m_poke.setAddress(address);
         m_poke.setValue(m_thread->spectrum().memory()->readByte(address));
         m_poke.focusValue();
@@ -302,7 +306,7 @@ void DebugWindow::connectWidgets()
     connect(&m_memoryMenu, &MemoryContextMenu::breakOnByteChange, this, &DebugWindow::breakOnMemoryChange<::Z80::UnsignedByte>);
     connect(&m_memoryMenu, &MemoryContextMenu::watchWord, this, &DebugWindow::watchIntegerMemoryAddress<::Z80::UnsignedWord>);
     connect(&m_memoryMenu, &MemoryContextMenu::watchByte, this, &DebugWindow::watchIntegerMemoryAddress<::Z80::UnsignedByte>);
-    connect(&m_memoryMenu, &MemoryContextMenu::watchString, [this](::Z80::UnsignedWord address) {
+    connect(&m_memoryMenu, &MemoryContextMenu::watchString, [this](const ::Z80::UnsignedWord address) {
         watchStringMemoryAddress(address);
     });
 }
@@ -350,9 +354,9 @@ void DebugWindow::showEvent(QShowEvent * event)
 
 void DebugWindow::updateStateDisplay()
 {
-    assert(m_thread);
+    sp_assert(m_thread, "detected null thread in DebugWindow::updateStateDisplay");
 	auto * cpu = m_thread->spectrum().z80();
-	assert(cpu);
+    sp_assert(cpu, "null CPU found in DebugWindow::updateStateDisplay");
 	auto & registers = cpu->registers();
 	m_registers.setRegisters(registers);
 	m_shadowRegisters.setRegisters(registers);
@@ -376,7 +380,7 @@ void DebugWindow::updateStateDisplay()
 
 void DebugWindow::pauseResumeTriggered()
 {
-    assert(m_thread);
+    sp_assert(m_thread, "detected null thread in DebugWindow::pauseResumeTriggered()");
 
     if (m_thread->isPaused()) {
         m_thread->resume();
@@ -387,7 +391,7 @@ void DebugWindow::pauseResumeTriggered()
 
 void DebugWindow::stepTriggered()
 {
-    assert(m_thread);
+    sp_assert(m_thread, "detected null thread in DebugWindow::stepTriggered");
     m_thread->step();
 }
 
@@ -445,14 +449,14 @@ void DebugWindow::threadSpectrumChanged()
     }
 }
 
-void DebugWindow::setProgramCounterBreakpointTriggered(UnsignedWord addr)
+void DebugWindow::setProgramCounterBreakpointTriggered(const UnsignedWord address)
 {
-    if (0 > addr || 0xffff < addr) {
-        Util::debug << "invalid breakpoint address: " << std::hex << std::setfill('0') << std::setw(4) << addr << std::dec << std::setfill(' ') << "\n";
+    if (0 > address || 0xffff < address) {
+        Util::debug << "invalid breakpoint address: " << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << "\n";
         return;
     }
 
-    breakAtProgramCounter(addr);
+    breakAtProgramCounter(address);
 }
 
 void DebugWindow::breakAtProgramCounter(UnsignedWord address)
@@ -569,7 +573,7 @@ void DebugWindow::programCounterBreakpointTriggered(UnsignedWord address)
 
 }
 
-void DebugWindow::memoryChangeBreakpointTriggered(UnsignedWord address)
+void DebugWindow::memoryChangeBreakpointTriggered(const UnsignedWord address)
 {
     showStatusMessage(tr("Monitored memory location modified: 0x%1.").arg(address, 4, 16, QLatin1Char('0')));
     show();
@@ -578,7 +582,7 @@ void DebugWindow::memoryChangeBreakpointTriggered(UnsignedWord address)
     m_memoryWidget.scrollToAddress(address);
 }
 
-void DebugWindow::stackPointerBelowBreakpointTriggered(::Z80::UnsignedWord address)
+void DebugWindow::stackPointerBelowBreakpointTriggered(const ::Z80::UnsignedWord address)
 {
     showStatusMessage(tr("Stack pointer is below 0x%1.").arg(address, 4, 16, QLatin1Char('0')));
     show();
@@ -597,7 +601,7 @@ void DebugWindow::watchStringMemoryAddress(::Z80::UnsignedWord address, std::opt
         length = std::min(10, static_cast<int>(memory->addressableSize() - address));
     }
 
-    assert(0 < *length && address + *length < memory->addressableSize());
+    sp_assert(0 < *length && address + *length < memory->addressableSize(), "string watch with address {:#04x} and length {} would exceed extent of addressable memory", address, *length);
     m_watchesModel.addWatch(std::make_unique<StringMemoryWatch>(memory, address, static_cast<MemoryWatch::WatchSize>(*length)));
 }
 

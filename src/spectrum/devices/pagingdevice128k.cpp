@@ -2,11 +2,15 @@
 // Created by darren on 06/04/2021.
 //
 
+#include <print>
+
 #include "pagingdevice128k.h"
-#include "../memory/memory128k.h"
 #include "../spectrum128k.h"
+#include "../memory/memory128k.h"
+#include "../../util/assert.h"
 
 using namespace Spectrum::Devices;
+
 using ::Z80::UnsignedWord;
 using ::Z80::UnsignedByte;
 
@@ -37,7 +41,7 @@ void PagingDevice128k::writeByte(const UnsignedWord port, const UnsignedByte val
     }
 
     auto * memory = dynamic_cast<Memory::Memory128k *>(spectrum().memory());
-    assert(memory);
+    sp_assert(memory, "detected null memory in Spectrum::Devices::PagingDevice128k::writeByte()");
 
     // ram bank to page is in bits 0-2
     memory->pageRam(value & RamBankMask);

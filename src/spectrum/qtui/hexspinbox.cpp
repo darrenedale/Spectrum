@@ -2,7 +2,7 @@
 // Created by darren on 04/03/2021.
 //
 
-#include <cassert>
+#include <print>
 
 #include <QStringBuilder>
 #include <QRegularExpression>
@@ -10,6 +10,7 @@
 #include <QToolTip>
 
 #include "hexspinbox.h"
+#include "../../util/assert.h"
 
 using namespace Spectrum;
 
@@ -17,7 +18,7 @@ HexSpinBox::HexSpinBox(QWidget * parent)
 : HexSpinBox(4, QLatin1Char('0'), parent)
 {}
 
-HexSpinBox::HexSpinBox(int digits, QWidget * parent)
+HexSpinBox::HexSpinBox(const int digits, QWidget * parent)
 : HexSpinBox(digits, QLatin1Char('0'), parent)
 {}
 
@@ -30,7 +31,7 @@ HexSpinBox::HexSpinBox(int digits, const QChar & fillChar, QWidget * parent)
   m_digits(digits),
   m_fill(fillChar)
 {
-    assert(0 < digits);
+    sp_assert(0 < digits, "digits < 1 provided to Spectrum::HexSpinBox::HexSpinBox");
     setPrefix(QStringLiteral("0x"));
     setMinimum(0);
 
@@ -46,9 +47,9 @@ HexSpinBox::HexSpinBox(int digits, const QChar & fillChar, QWidget * parent)
 
 HexSpinBox::~HexSpinBox() = default;
 
-void HexSpinBox::setDigits(int digits)
+void HexSpinBox::setDigits(const int digits)
 {
-    assert(0 < digits);
+    sp_assert(0 < digits, "digits < 1 provided to Spectrum::HexSpinBox::setDigits");
 
     if (digits == m_digits) {
         return;
@@ -75,7 +76,7 @@ bool HexSpinBox::event(QEvent * event)
     return QSpinBox::event(event);
 }
 
-QString HexSpinBox::textFromValue(int value) const
+QString HexSpinBox::textFromValue(const int value) const
 {
     return QStringLiteral("%1").arg(value, digits(), 16, fillChar());
 }
@@ -83,7 +84,7 @@ QString HexSpinBox::textFromValue(int value) const
 int HexSpinBox::valueFromText(const QString & text) const
 {
     const QRegularExpression matcher(QStringLiteral("^\\s*") % QRegularExpression::escape(prefix()) % "\\s*([a-fA-F0-9]+)\\s*$");
-    auto match = matcher.match(text);
+    const auto match = matcher.match(text);
 
     if (!match.hasMatch()) {
         return 0;
@@ -102,8 +103,7 @@ void HexSpinBox::setFillChar(const QChar & ch)
     update();
 }
 
-QValidator::State HexSpinBox::validate(QString & text, int & pos) const
+QValidator::State HexSpinBox::validate(QString &, int &) const
 {
     return QValidator::Acceptable;
 }
-

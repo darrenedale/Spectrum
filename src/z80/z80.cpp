@@ -12,15 +12,16 @@
  * TODO there is definitely an issue with stack handling, this is what is causing chuckie egg to fail, and is a likely
  *  candidate for any snapshot that fails with a reset back to the ROM
  */
-#include <iostream>
 #include <iomanip>
-#include <cassert>
+#include <iostream>
+#include <print>
 
-#include "z80.h"
 #include "iodevice.h"
 #include "invalidopcode.h"
 #include "invalidinterruptmode.h"
 #include "opcodes.h"
+#include "z80.h"
+#include "../util/assert.h"
 #include "../util/debug.h"
 
 #if !defined(NDEBUG)
@@ -951,54 +952,57 @@ void Z80::Z80::reset()
 	m_registers.reset();
 }
 
-void Z80::Z80::pokeHostWord(MemoryType::Address addr, UnsignedWord value)
+void Z80::Z80::pokeHostWord(const MemoryType::Address addr, UnsignedWord value)
 {
-    assert(memory() && 0 <= addr && memory()->addressableSize() > (addr + 1));
+    sp_assert(memory() && 0 <= addr && memory()->addressableSize() > (addr + 1), "null memory or invalid address {:#04x} poking host word", addr);
 
 	value = hostToZ80ByteOrder(value);
-    memory()->writeBytes(addr, 2, reinterpret_cast<UnsignedByte *>(&value));
+    memory()->writeBytes(addr, 2, reinterpret_cast<const UnsignedByte *>(&value));
 }
 
-void Z80::Z80::pokeZ80Word(MemoryType::Address addr, UnsignedWord value)
+void Z80::Z80::pokeZ80Word(const MemoryType::Address addr, const UnsignedWord value)
 {
-    assert(memory() && 0 <= addr && memory()->addressableSize() > (addr + 1));
-    memory()->writeBytes(addr, 2, reinterpret_cast<UnsignedByte *>(&value));
+    sp_assert(memory() && 0 <= addr && memory()->addressableSize() > (addr + 1), "null memory or invalid address {:#04x} poking Z80 word", addr);
+    memory()->writeBytes(addr, 2, reinterpret_cast<const UnsignedByte *>(&value));
 }
 
-void Z80::Z80::pokeUnsigned(MemoryType::Address addr, UnsignedByte value)
+void Z80::Z80::pokeUnsigned(const MemoryType::Address addr, const UnsignedByte value)
 {
-    assert(memory() && 0 <= addr && memory()->addressableSize() > addr);
+    sp_assert(memory() && 0 <= addr && memory()->addressableSize() > addr, "null memory or invalid address {:#04x} poking unsigned byte", addr);
     memory()->writeByte(addr, value);
 }
 
-UnsignedWord Z80::Z80::peekUnsignedHostWord(MemoryType::Address addr) const
+UnsignedWord Z80::Z80::peekUnsignedHostWord(const MemoryType::Address addr) const
 {
-    assert(memory() && 0 <= addr && memory()->addressableSize() > (addr + 1));
+    sp_assert(memory() && 0 <= addr && memory()->addressableSize() > (addr + 1), "null memory or invalid address {:#04x} peeking host word", addr);
 
-    if (HostByteOrder == Z80ByteOrder) {
+    if constexpr (HostByteOrder == Z80ByteOrder) {
         return (*memory())[addr + 1] << 8 | (*memory())[addr];
     }
 
     return ((*memory())[addr] << 8) | (*memory())[addr + 1];
 }
 
-UnsignedWord Z80::Z80::peekUnsignedZ80Word(MemoryType::Address addr) const
+UnsignedWord Z80::Z80::peekUnsignedZ80Word(const MemoryType::Address addr) const
 {
-    assert(memory() && 0 <= addr && memory()->addressableSize() > (addr + 1));
+    sp_assert(memory() && 0 <= addr && memory()->addressableSize() > (addr + 1), "null memory or invalid address {:#04x} peeking Z80 word", addr);
 
     return (*memory())[addr + 1] << 8 | (*memory())[addr];
 }
 
 Z80::InstructionCost Z80::Z80::execute(const UnsignedByte * instruction, bool doPc)
 {
-	assert(instruction);
+	sp_assert(instruction, "null instruction passed to Z80::Z80::execute");
     ++m_registers.r;
+
+    // cost is always assigned in the switch() so we don't need to initialise it here
     InstructionCost cost;
 
 #if (!defined(NDEBUG))
-	// ExecutedInstruction historyEntry(instruction, this);
+	ExecutedInstruction historyEntry(instruction, this);
 #endif
-	switch (*instruction) {
+
+    switch (*instruction) {
 		case Z80__PLAIN__PREFIX__CB:
             ++m_registers.r;
 			// no 0xcb instructions modify PC directly so this method never needs to forcibly suppress update of the PC
@@ -1038,8 +1042,8 @@ Z80::InstructionCost Z80::Z80::execute(const UnsignedByte * instruction, bool do
     }
 
 #if (!defined(NDEBUG))
-	// historyEntry.registersAfter = registers();
- //    m_executionHistory.add(std::move(historyEntry));
+	historyEntry.registersAfter = registers();
+    m_executionHistory.add(std::move(historyEntry));
 
     // expensive debug code to monitor changes to the stack pointer. only enable when specifically building to examine
     // stack changes
@@ -1154,7 +1158,7 @@ int Z80::Z80::handleInterrupt()
 
                 [[unlikely]]
                 default:
-                    assert(nullptr == "invalid interrupt vector in interrupt mode IM0");
+                    sp_assert(false, "invalid interrupt vector {} in interrupt mode IM0", m_interruptData);
                     break;
             }
 
@@ -1206,9 +1210,7 @@ int Z80::Z80::fetchExecuteCycle()
         // TODO R register?
         tStates = PlainOpcodeTStates[Z80__PLAIN__NOP];
     } else {
-        auto bytesAvailable = memory()->addressableSize() - m_registers.pc;
-
-        if (bytesAvailable < 4) {
+        if (const auto bytesAvailable = memory()->addressableSize() - m_registers.pc; bytesAvailable < 4) {
             memory()->readBytes(m_registers.pc, bytesAvailable, machineCode);
             memory()->readBytes(0, 4 - bytesAvailable, machineCode + bytesAvailable);
         } else {
@@ -5969,7 +5971,7 @@ Z80::InstructionCost Z80::Z80::executeDdcbOrFdcbInstruction(UnsignedWord & reg, 
 	};
 }
 
-UnsignedWord Z80::Z80::registerValue(Register16 reg) const
+UnsignedWord Z80::Z80::registerValue(const Register16 reg) const noexcept
 {
 	switch (reg) {
         case Register16::AF: return m_registers.af;
@@ -5989,7 +5991,7 @@ UnsignedWord Z80::Z80::registerValue(Register16 reg) const
 	return 0;
 }
 
-UnsignedWord Z80::Z80::registerValueZ80(Register16 reg) const
+UnsignedWord Z80::Z80::registerValueZ80(const Register16 reg) const noexcept
 {
 	switch (reg) {
         case Register16::AF: return hostToZ80ByteOrder(m_registers.af);
@@ -6009,7 +6011,7 @@ UnsignedWord Z80::Z80::registerValueZ80(Register16 reg) const
 	return 0;
 }
 
-UnsignedByte Z80::Z80::registerValue(Register8 reg) const
+UnsignedByte Z80::Z80::registerValue(const Register8 reg) const noexcept
 {
 	switch (reg) {
 		case Register8::A: return m_registers.a;
@@ -6041,7 +6043,7 @@ UnsignedByte Z80::Z80::registerValue(Register8 reg) const
 	return 0;
 }
 
-void Z80::Z80::setRegisterValue(Register16 reg, UnsignedWord value)
+void Z80::Z80::setRegisterValue(const Register16 reg, const UnsignedWord value) noexcept
 {
 	switch (reg) {
         case Register16::AF: m_registers.af = value; break;
@@ -6059,7 +6061,7 @@ void Z80::Z80::setRegisterValue(Register16 reg, UnsignedWord value)
 	}
 }
 
-void Z80::Z80::setRegisterValueZ80(Register16 reg, UnsignedWord value)
+void Z80::Z80::setRegisterValueZ80(const Register16 reg, const UnsignedWord value) noexcept
 {
 	switch (reg) {
         case Register16::AF: m_registers.af = z80ToHostByteOrder(value); break;
@@ -6077,7 +6079,7 @@ void Z80::Z80::setRegisterValueZ80(Register16 reg, UnsignedWord value)
 	}
 }
 
-void Z80::Z80::setRegisterValue(Register8 reg, UnsignedByte value)
+void Z80::Z80::setRegisterValue(const Register8 reg, const UnsignedByte value) noexcept
 {
 	switch (reg) {
 		case Register8::A: m_registers.a = value; break;
@@ -6144,7 +6146,7 @@ void Z80::Z80::dumpState(std::ostream & out) const
 }
 
 #if defined(DEBUG_INSTRUCTION_HISTORY)
-void Z80::Z80::dumpExecutionHistory(int entries, std::ostream & out) const
+void Z80::Z80::dumpExecutionHistory(const int entries, std::ostream & out) const
 {
     auto entry = m_executionHistory.newest();
     out << "\n======================================================================\n";

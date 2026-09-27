@@ -2,8 +2,6 @@
 // Created by darren on 25/02/2021.
 //
 
-#include <cassert>
-#include <QStatusBar>
 #include <QIcon>
 #include <QStringBuilder>
 #include <QtGlobal>
@@ -11,9 +9,11 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QSettings>
+
 #include "mainwindow.h"
 #include "application.h"
 #include "notification.h"
+#include "../../util/assert.h"
 
 #if (defined(Q_OS_MAC))
 #include <CoreFoundation/CoreFoundation.h>
@@ -23,10 +23,8 @@ using namespace Spectrum::QtUi;
 
 namespace
 {
-    /**
-     * The maximum size of the recent snapshots list.
-     */
-    constexpr const int maxRecentSnapshots = 5;
+    /** The maximum size of the recent snapshots list. */
+    constexpr int maxRecentSnapshots = 5;
 }
 
 Application * Application::m_instance = nullptr;
@@ -35,7 +33,7 @@ Application::Application(int & argc, char ** argv)
 : QApplication(argc, argv),
   m_mainWindow(nullptr)
 {
-    assert(!m_instance);
+    sp_assert(!m_instance, "attempt to create second instance of Spectrum::QtUi::Application::Application");
     m_instance = this;
     setWindowIcon(icon(QStringLiteral("app")));
 
@@ -53,7 +51,8 @@ Application::Application(int & argc, char ** argv)
 
     loadRecentSnapshots();
 
-    // we must initialise this after the application name etc. have been set because the main window constructor depends on some of these properties
+    // we must initialise this after the application name etc. have been set because the main window constructor depends
+    // on some of these properties
     m_mainWindow = std::make_unique<MainWindow>();
     m_mainWindow->show();
 }
@@ -93,7 +92,7 @@ QIcon Application::icon(const QString & name, ThemeType type)
     }
 }
 
-QIcon Application::icon(const QString & systemThemeName, const QString & name, Application::ThemeType type)
+QIcon Application::icon(const QString & systemThemeName, const QString & name, const Application::ThemeType type)
 {
     return QIcon::fromTheme(systemThemeName, icon(name, type));
 }
@@ -113,7 +112,7 @@ void Application::addRecentSnapshot(QString fileName)
     // we store and compare based on absolute paths to avoid duplicates
     fileName = QFileInfo(fileName).absoluteFilePath();
 
-    auto pos = std::find_if(m_recentSnapshots.begin(), m_recentSnapshots.end(), [&fileName] (const auto & recentSnapshot) -> bool {
+    const auto pos = std::ranges::find_if(m_recentSnapshots, [&fileName] (const auto & recentSnapshot) -> bool {
         return QFileInfo(recentSnapshot).absoluteFilePath() == fileName;
     });
 
@@ -138,7 +137,7 @@ void Application::removeRecentSnapshot(QString fileName)
 {
     fileName = QFileInfo(fileName).absoluteFilePath();
 
-    auto pos = std::find_if(m_recentSnapshots.begin(), m_recentSnapshots.end(), [&fileName] (const auto & recentSnapshot) -> bool {
+    const auto pos = std::ranges::find_if(m_recentSnapshots, [&fileName] (const auto & recentSnapshot) -> bool {
         return QFileInfo(recentSnapshot).absoluteFilePath() == fileName;
     });
 
@@ -167,14 +166,14 @@ void Application::loadRecentSnapshots()
     settings.endGroup();
     const auto snapshots = vSnapshots.value<QStringList>();
     m_recentSnapshots.clear();
-    std::copy(snapshots.cbegin(), snapshots.cend(), std::back_inserter(m_recentSnapshots));
+    std::ranges::copy(snapshots, std::back_inserter(m_recentSnapshots));
     Q_EMIT recentSnapshotsChanged(m_recentSnapshots);
 }
 
 void Application::saveRecentSnapshots() const
 {
     QStringList snapshots;
-    std::copy(m_recentSnapshots.cbegin(), m_recentSnapshots.cend(), std::back_inserter(snapshots));
+    std::ranges::copy(m_recentSnapshots, std::back_inserter(snapshots));
 
     QSettings settings;
     settings.beginGroup(QLatin1String("application"));

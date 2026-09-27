@@ -134,9 +134,9 @@ namespace Spectrum::QtUi
          *
          * @param frameSkip The number of frames to skip. Must be >= 0.
          */
-        void setFrameSkip(int frameSkip)
+        void setFrameSkip(const int frameSkip)
         {
-            assert (0 <= frameSkip);
+            sp_assert(0 <= frameSkip, "invalid frame skip provided to QImageDisplayDevice::setFrameSkip()");
             m_frameSkip = frameSkip + 1;
         }
 

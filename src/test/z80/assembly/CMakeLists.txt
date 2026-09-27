@@ -6,6 +6,7 @@ add_executable(
         ../../../z80/assembly/mnemonic.cpp
         ../../../z80/assembly/operand.cpp
         ../../../z80/types.cpp
+        ../../../util/assert.h
 )
 
 set_target_properties(
