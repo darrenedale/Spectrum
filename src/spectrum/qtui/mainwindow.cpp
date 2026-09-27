@@ -1995,7 +1995,7 @@ void MainWindow::saveSnapshotTriggered()
     auto format = lastFilter;
 
     if (!format.isEmpty()) {
-        if (auto matches = QRegularExpression(R"(^.*\(\*\.([a-zA-Z0-9_-]+)\)$)").match(format); matches.hasMatch()) {
+        if (auto matches = SnapshotFilterExtensionRegularExpression.match(format); matches.hasMatch()) {
             format = matches.captured(1).toLower();
         } else {
             format.clear();

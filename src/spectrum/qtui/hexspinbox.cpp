@@ -14,6 +14,12 @@
 
 using namespace Spectrum;
 
+namespace
+{
+    /** Regular expression to match a hex value in a string. */
+    const auto HexValueRegularExpression = QRegularExpression(QStringLiteral("^\\s*0x\\s*([a-fA-F0-9]+)\\s*$"));
+}
+
 HexSpinBox::HexSpinBox(QWidget * parent)
 : HexSpinBox(4, QLatin1Char('0'), parent)
 {}
@@ -83,8 +89,7 @@ QString HexSpinBox::textFromValue(const int value) const
 
 int HexSpinBox::valueFromText(const QString & text) const
 {
-    const QRegularExpression matcher(QStringLiteral("^\\s*") % QRegularExpression::escape(prefix()) % "\\s*([a-fA-F0-9]+)\\s*$");
-    const auto match = matcher.match(text);
+    const auto match = HexValueRegularExpression.match(text);
 
     if (!match.hasMatch()) {
         return 0;
