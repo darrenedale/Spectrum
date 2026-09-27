@@ -2,9 +2,12 @@
 // Created by darren on 06/04/2021.
 //
 
+#include <print>
+
+#include "pagingdeviceplus2a.h"
 #include "../spectrumplus2a.h"
 #include "../memory/memoryplus2a.h"
-#include "pagingdeviceplus2a.h"
+#include "../../util/assert.h"
 
 #if (!defined(NDEBUG))
 #include <iostream>
@@ -58,7 +61,7 @@ namespace
 
 PagingDevicePlus2a::~PagingDevicePlus2a() = default;
 
-void PagingDevicePlus2a::writeByte(UnsignedWord port, UnsignedByte value)
+void PagingDevicePlus2a::writeByte(const UnsignedWord port, const UnsignedByte value)
 {
     if (!pagingEnabled()) {
         return;
@@ -74,7 +77,7 @@ void PagingDevicePlus2a::writeByte(UnsignedWord port, UnsignedByte value)
 void PagingDevicePlus2a::writePort7ffd(const ::Z80::UnsignedByte value)
 {
     auto * memory = dynamic_cast<Memory::MemoryPlus2a *>(spectrum().memory());
-    assert(memory);
+    sp_assert(memory, "null memory detected in Spectrum::Devices::PagingDevicePlus2a::writePort7ffd()");
 
     // ram bank to page is in bits 0-2
 //    auto ramBank = static_cast<SpectrumPlus2aMemory::BankNumber>(value & RamBankMask);
@@ -96,9 +99,9 @@ void PagingDevicePlus2a::writePort7ffd(const ::Z80::UnsignedByte value)
 void PagingDevicePlus2a::writePort1ffd(const ::Z80::UnsignedByte value)
 {
     auto * memory = dynamic_cast<Memory::MemoryPlus2a *>(spectrum().memory());
-    assert(memory);
+    sp_assert(memory, "null memory detected in Spectrum::Devices::PagingDevicePlus2a::writePort1ffd()");
 
-    auto pagingMode = (value & PagingModeMask ? PagingMode::Special : PagingMode::Normal);
+    const auto pagingMode = (value & PagingModeMask ? PagingMode::Special : PagingMode::Normal);
     memory->setPagingMode(pagingMode);
 
     if (pagingMode == PagingMode::Special) {
@@ -106,7 +109,7 @@ void PagingDevicePlus2a::writePort1ffd(const ::Z80::UnsignedByte value)
         memory->setSpecialPagingConfiguration(static_cast<SpecialPagingConfiguration>((value & SpecialPagingConfigurationMask) >> SpecialPagingConfigurationShift));
     } else {
         // rom number high bit is in bit 2; low bit is retained from current ROM
-        auto rom = static_cast<Memory::MemoryPlus2a::RomNumber>(
+        const auto rom = static_cast<Memory::MemoryPlus2a::RomNumber>(
                 ((value & RomNumberHighMask) >> (RomNumberHighBit - 1))
                 | (static_cast<std::uint8_t>(memory->currentRom()) & 0x01)
             );

@@ -12,6 +12,7 @@ add_executable(
         z80interpreter.cpp
         operand.cpp
         main.cpp
+        ../util/assert.h
 )
 
 target_link_libraries(z80interpreter readline)

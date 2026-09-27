@@ -7,16 +7,17 @@
 
 #include <algorithm>
 #include <array>
-#include <cassert>
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <print>
 #include <vector>
 
 #include "pagingmemoryinterface.h"
 #include "../../memory.h"
 #include "../../util/compiler.h"
 #include "../../mappablememoryinterface.h"
+#include "../../util/assert.h"
 #include "../../z80/types.h"
 
 namespace Spectrum::Memory
@@ -39,467 +40,468 @@ namespace Spectrum::Memory
       public PagingMemoryInterface,
       public MappableMemoryInterface<::Z80::UnsignedByte>
     {
-        // must have at least one ROM and six pages of RAM - why 6? because page #5 is always mapped to 0x4000 - 0x7fff so that page must be present
+        // must have at least one ROM and six pages of RAM - why 6? because page #5 is always mapped to 0x4000 - 0x7fff
+        // so that page must be present
         static_assert(0 < NumRoms);
         static_assert(6 < NumPages);
 
-    public:
-        /** Convenience constant for the size of a ROM. */
-        static constexpr int RomSize = 0x4000;
+        public:
+            /** Convenience constant for the size of a ROM. */
+            static constexpr int RomSize = 0x4000;
 
-        /** Convenience constant for the number of ROMs available in the memory model. */
-        static constexpr int RomCount = NumRoms;
+            /** Convenience constant for the number of ROMs available in the memory model. */
+            static constexpr int RomCount = NumRoms;
 
-        /** Convenience constant for the number of pages of RAM available in the memory model. */
-        static constexpr int PageCount = NumPages;
+            /** Convenience constant for the number of pages of RAM available in the memory model. */
+            static constexpr int PageCount = NumPages;
 
-        /** Convenience alias for the internal storage type. */
-        using PageStorage = std::array<Byte, PageSize>;
+            /** Convenience alias for the internal storage type. */
+            using PageStorage = std::array<Byte, PageSize>;
 
-        /** Convenience alias for a ROM number. */
-        using RomNumber = int;
+            /** Convenience alias for a ROM number. */
+            using RomNumber = int;
 
-        /**
-         * Initialise a new PagingMemory object.
-         *
-         * @param addressableSize Size of the address space, defaults to 64kb (16-bit Z80 address space).
-         */
-        explicit PagingMemory(const Size addressableSize = 0x10000)
-        : Memory(addressableSize, {}),
-          m_romNumber(0),
-          m_roms(),
-          m_pagedRam(0),
-          m_ramPages()
-        {}
+            /**
+             * Initialise a new PagingMemory object.
+             *
+             * @param addressableSize Size of the address space, defaults to 64kb (16-bit Z80 address space).
+             */
+            explicit PagingMemory(const Size addressableSize = 0x10000)
+            : Memory(addressableSize, {}),
+              m_romNumber(0),
+              m_roms(),
+              m_pagedRam(0),
+              m_ramPages()
+            {}
 
-        /** Copy construction is disabled. */
-        PagingMemory(const PagingMemory &) = delete;
+            /** Copy construction is disabled. */
+            PagingMemory(const PagingMemory &) = delete;
 
-        /** Move construction is disabled. */
-        PagingMemory(PagingMemory &&) = delete;
+            /** Move construction is disabled. */
+            PagingMemory(PagingMemory &&) = delete;
 
-        /** Copy assignment is disabled. */
-        void operator=(const PagingMemory &) = delete;
+            /** Copy assignment is disabled. */
+            void operator=(const PagingMemory &) = delete;
 
-        /** Move assignment is disabled. */
-        void operator=(PagingMemory &&) = delete;
+            /** Move assignment is disabled. */
+            void operator=(PagingMemory &&) = delete;
 
-        ~PagingMemory() override = default;
+            ~PagingMemory() override = default;
 
-        [[nodiscard]]
-        std::unique_ptr<Memory> clone() const override = 0;
+            [[nodiscard]]
+            std::unique_ptr<Memory> clone() const override = 0;
 
-        /**
-         * Fetch the number of ROMs the memory has available.
-         *
-         * @return
-         */
-        [[nodiscard]]
-        constexpr RomNumber romCount() const noexcept
-        {
-            return RomCount;
-        }
-
-        /**
-         * Fetch the number of RAM pages the memory has available.
-         *
-         * @return
-         */
-        [[nodiscard]]
-        constexpr PageNumber pageCount() const noexcept override
-        {
-            return PageCount;
-        }
-
-        /**
-         * Clear the memory.
-         *
-         * All ROMs and all pages are filled with 0 bytes.
-         */
-        void clear() override
-        {
-            for (auto & rom : m_roms) {
-                rom.fill(0);
+            /**
+             * Fetch the number of ROMs the memory has available.
+             *
+             * @return
+             */
+            [[nodiscard]]
+            constexpr RomNumber romCount() const noexcept
+            {
+                return RomCount;
             }
 
-            for (auto & page : m_ramPages) {
-                page.fill(0);
-            }
-        }
-
-        /**
-         * Determine the currently paged-in ROM.
-         *
-         * This is only relevant if the paging mode is Normal. In Special paging mode, the ROM is not used.
-         *
-         * @return
-         */
-        [[nodiscard]]
-        RomNumber currentRom() const noexcept
-        {
-            return m_romNumber;
-        }
-
-        /**
-         * Determine the currently paged-in RAM page.
-         *
-         * This is only relevant if the paging mode is Normal. In Special paging mode, the paged-in pages are determined
-         * by the special paging mode configuration.
-         *
-         * @return
-         */
-        [[nodiscard]]
-        PageNumber currentRamPage() const noexcept
-        {
-            return m_pagedRam;
-        }
-
-        /**
-         * Page in the specified ROM.
-         *
-         * The specified ROM will be paged in when the paging mode is Normal. While the paging mode is Special the
-         * configured special paging setup will be in effect.
-         *
-         * @param rom
-         */
-        void pageRom(const RomNumber rom) noexcept
-        {
-            assert(0 <= rom && rom < RomCount);
-            m_romNumber = rom;
-        }
-
-        /**
-         * Page in the specified RAM page.
-         *
-         * The specified page will be paged in when the paging mode is Normal. While the paging mode is Special the
-         * configured special paging setup will be in effect.
-         *
-         * @param page
-         */
-        void pageRam(const PageNumber page) noexcept
-        {
-            assert(0 <= page && page < PageCount);
-            m_pagedRam = page;
-        }
-
-        /**
-         * Fetch a const pointer to the fist byte in the specified page of RAM.
-         *
-         * @return
-         */
-        [[nodiscard]]
-        const Byte * pagePointer(PageNumber page) const noexcept override
-        {
-            assert(0 <= page && page < PageCount);
-            return m_ramPages[page].data();
-        }
-
-        /**
-         * Fetch a pointer to the fist byte in the specified page of RAM.
-         *
-         * @return
-         */
-        Byte * pagePointer(PageNumber page) noexcept override
-        {
-            assert(0 <= page && page < PageCount);
-            return m_ramPages[page].data();
-        }
-
-        /**
-         * Fetch a const pointer to the fist byte in the currently paged-in page of RAM.
-         *
-         * @return
-         */
-        [[nodiscard]]
-        const Byte * currentRamPagePointer() const noexcept
-        {
-            return pagePointer(currentRamPage());
-        }
-
-        /**
-         * Fetch a pointer to the fist byte in the currently paged-in page of RAM.
-         *
-         * @return
-         */
-        Byte * currentRamPagePointer() noexcept
-        {
-            return pagePointer(currentRamPage());
-        }
-
-        /**
-         * Fetch a const pointer to the fist byte in the specified ROM.
-         *
-         * @return
-         */
-        [[nodiscard]]
-        const Byte * romPointer(RomNumber rom) const noexcept
-        {
-            return m_roms[rom].data();
-        }
-
-        /**
-         * Fetch a pointer to the fist byte in the specified ROM.
-         *
-         * @return
-         */
-        Byte * romPointer(RomNumber rom) noexcept
-        {
-            return m_roms[rom].data();
-        }
-
-        /**
-        * Fetch a const pointer to the fist byte in the currently paged-in ROM.
-        *
-        * @return
-        */
-        [[nodiscard]]
-        const Byte * currentRomPointer() const noexcept
-        {
-            return romPointer(currentRom());
-        }
-
-        /**
-         * Fetch a pointer to the fist byte in the currently paged-in ROM.
-         *
-         * @return
-         */
-        Byte * currentRomPointer() noexcept
-        {
-            return romPointer(currentRom());
-        }
-        
-        /**
-         * Load the content of a file into the specified ROM.
-         *
-         * @param fileName The file containing the ROM image.
-         * @param rom The ROM number to load into. Must be 0 <= rom < RomCount.
-         * @return
-         */
-        bool loadRom(const std::string & fileName, RomNumber rom = 0)
-        {
-            assert(0 <= rom && rom < RomCount);
-            std::ifstream in(fileName, std::ios::binary | std::ios::in);
-
-            if (!in) {
-                std::cerr << "failed to open ROM image file \"" << fileName << "\"\n";
-                return false;
+            /**
+             * Fetch the number of RAM pages the memory has available.
+             *
+             * @return
+             */
+            [[nodiscard]]
+            constexpr PageNumber pageCount() const noexcept override
+            {
+                return PageCount;
             }
 
-            in.read(reinterpret_cast<std::ifstream::char_type *>(m_roms[rom].data()), RomSize);
+            /**
+             * Clear the memory.
+             *
+             * All ROMs and all pages are filled with 0 bytes.
+             */
+            void clear() override
+            {
+                for (auto & rom : m_roms) {
+                    rom.fill(0);
+                }
 
-            if (in.fail() && !in.eof()) {
-                std::cerr << "failed to read ROM image file \"" << fileName << "\"\n";
-                return false;
+                for (auto & page : m_ramPages) {
+                    page.fill(0);
+                }
             }
 
-            return true;
-        }
+            /**
+             * Determine the currently paged-in ROM.
+             *
+             * This is only relevant if the paging mode is Normal. In Special paging mode, the ROM is not used.
+             *
+             * @return
+             */
+            [[nodiscard]]
+            RomNumber currentRom() const noexcept
+            {
+                return m_romNumber;
+            }
 
-        /**
-         * Read directly from a specified memory page.
-         *
-         * Useful when writing snapshots, for example.
-         *
-         * @param page The page to read from. Must be 0 <= page < PageCount.
-         * @param buffer The buffer into which to read the data. Must be big enough to hold size bytes.
-         * @param size The number of bytes to read. Defaults to a full page. Must not extend beyond the size of a page.
-         * @param offset The offset into the page at which to start reading. Defaults to the first byte in the page.
-         */
-        void readFromPage(PageNumber page, Byte * buffer, const std::optional<::Z80::UnsignedWord> size, const std::optional<::Z80::UnsignedWord> offset) const override
-        {
-            const ::Z80::UnsignedWord readSize = size.value_or(PageSize);
-            const ::Z80::UnsignedWord readOffset = offset.value_or(0);
-            assert(0 <= page && page < PageCount);
-            assert(readOffset + readSize <= PageSize);
-            std::memcpy(buffer, m_ramPages[page].data() + readOffset, readSize);
-        }
+            /**
+             * Determine the currently paged-in RAM page.
+             *
+             * This is only relevant if the paging mode is Normal. In Special paging mode, the paged-in pages are determined
+             * by the special paging mode configuration.
+             *
+             * @return
+             */
+            [[nodiscard]]
+            PageNumber currentRamPage() const noexcept
+            {
+                return m_pagedRam;
+            }
 
-        /**
-         * Write directly into a specified memory page.
-         *
-         * Useful when reading snapshots, for example.
-         *
-         * @param page The page to write to. Must be 0 <= page < PageCount.
-         * @param data The data to write
-         * @param size The number of bytes to write. Defaults to a full page. Must not extend beyond the size of a page.
-         * @param offset The offset into the page at which to start writing. Defaults to the first byte in the page.
-         */
-        void writeToPage(PageNumber page, const Byte * data, const std::optional<::Z80::UnsignedWord> size, const std::optional<::Z80::UnsignedWord> offset) override
-        {
-            const ::Z80::UnsignedWord writeSize = size.value_or(PageSize);
-            const ::Z80::UnsignedWord writeOffset = offset.value_or(0);
-            assert(0 <= page && page < PageCount);
-            assert(writeOffset + writeSize <= PageSize);
-            std::memcpy(m_ramPages[page].data() + writeOffset, data, writeSize);
-        }
+            /**
+             * Page in the specified ROM.
+             *
+             * The specified ROM will be paged in when the paging mode is Normal. While the paging mode is Special the
+             * configured special paging setup will be in effect.
+             *
+             * @param rom
+             */
+            void pageRom(const RomNumber rom) noexcept
+            {
+                sp_assert(0 <= rom && rom < RomCount, "invalid rom number {} in Spectrum::Memory::PagingMemory::pageRom (there are {} roms)", rom, RomCount);
+                m_romNumber = rom;
+            }
 
-        /**
-         * Map an arbitrary block of memory into the address space starting at a given address.
-         *
-         * It is legitimate to map the same block to several different addresses, map different blocks to the same address, map overlapping blocks or even to
-         * map the same block to the same address multiple times. Conflicts between mappings are resolved by assuming the latest mapping takes precedence. If
-         * a block is mapped to the same address multiple times it must be unmapped the same number of times as it is mapped to become fully unmapped.
-         *
-         * The fist byte of the block of storage will appear at address, the second byte at address + 1 and so on up to address + size - 1.
-         *
-         * @param startAddress Where to map the storage. It must be within the addressable range of the memory.
-         * @param storage The block of storage to map. It must not be nullptr, and must contain at least size bytes.
-         * @param size The size of the block to map. It must not extend beyond the addressable range of the memory.
-         */
-        void mapMemory(Address startAddress, unsigned char * storage, Size size) override
-        {
-            assert(storage);
-            assert(startAddress < addressableSize());
-            assert(startAddress + size <= addressableSize());
+            /**
+             * Page in the specified RAM page.
+             *
+             * The specified page will be paged in when the paging mode is Normal. While the paging mode is Special the
+             * configured special paging setup will be in effect.
+             *
+             * @param page
+             */
+            void pageRam(const PageNumber page) noexcept
+            {
+                sp_assert(0 <= page && page < PageCount, "invalid page number {} in Spectrum::Memory::PagingMemory::pageRam (there are {} pages)", page, PageCount);
+                m_pagedRam = page;
+            }
 
-            m_mappedMemory.emplace_back(MappedMemoryBlock{
-                    .address = startAddress,
-                    .size = size,
-                    .storage = storage,
-            });
-        }
+            /**
+             * Fetch a const pointer to the fist byte in the specified page of RAM.
+             *
+             * @return
+             */
+            [[nodiscard]]
+            const Byte * pagePointer(PageNumber page) const noexcept override
+            {
+                sp_assert(0 <= page && page < PageCount, "invalid page number {} in Spectrum::Memory::PagingMemory::pagePointer (there are {} pages)", page, PageCount);
+                return m_ramPages[page].data();
+            }
 
-        /**
-         * Unmap a block of memory from a given address.
-         *
-         * If a block has been mapped to the same address multiple times, unmapping will remove
-         * the most recent mapping of that block to the address. Previous mappings of the block to the same address will remain in place. If the block is mapped
-         * to other addresses, these mappings will also remain in place, as will any other blocks that are currently mapped to the same address.
-         *
-         * It is an error to attempt to unmap a block that is not mapped. (It follows that it is also an error to attempt to unmap a nullptr block.)
-         * Check isMapped() if your code is not sure.
-         *
-         * @param startAddress The address of the mapping to remove. It must be within the addressable range of the memory.
-         * @param storage The block of storage to unmap.
-         */
-        void unmapMemory(Address startAddress, const Byte * storage) override
-        {
-            const auto pos = std::find_if(m_mappedMemory.crbegin(), m_mappedMemory.crend(), [startAddress, storage](const MappedMemoryBlock & block) -> bool {
-                return block.address == startAddress && block.storage == storage;
-            });
+            /**
+             * Fetch a pointer to the fist byte in the specified page of RAM.
+             *
+             * @return
+             */
+            Byte * pagePointer(PageNumber page) noexcept override
+            {
+                sp_assert(0 <= page && page < PageCount, "invalid page number {} in Spectrum::Memory::PagingMemory::pagePointer (there are {} pages)", page, PageCount);
+                return m_ramPages[page].data();
+            }
 
-            assert(pos != m_mappedMemory.crend());
-            m_mappedMemory.erase(pos.base());
-        }
+            /**
+             * Fetch a const pointer to the fist byte in the currently paged-in page of RAM.
+             *
+             * @return
+             */
+            [[nodiscard]]
+            const Byte * currentRamPagePointer() const noexcept
+            {
+                return pagePointer(currentRamPage());
+            }
 
-        /**
-         * Check whether a given block of memory is mapped into a given address.
-         *
-         * @param startAddress The address to check.
-         * @param storage The block of storage to check.
-         *
-         * @return
-         */
-        bool isMapped(Address startAddress, const Byte * storage)
-        {
-            return storage && startAddress < addressableSize() && m_mappedMemory.cend() != std::find_if(m_mappedMemory.cbegin(), m_mappedMemory.cend(), [startAddress, storage](const MappedMemoryBlock & block) -> bool {
-                return block.address == startAddress && block.storage == storage;
-            });
-        }
+            /**
+             * Fetch a pointer to the fist byte in the currently paged-in page of RAM.
+             *
+             * @return
+             */
+            Byte * currentRamPagePointer() noexcept
+            {
+                return pagePointer(currentRamPage());
+            }
 
-    protected:
-        /** The (emulated) address of the first byte of ROM. */
-        static constexpr const ::Z80::UnsignedWord RomBase = 0x0000;
+            /**
+             * Fetch a const pointer to the fist byte in the specified ROM.
+             *
+             * @return
+             */
+            [[nodiscard]]
+            const Byte * romPointer(RomNumber rom) const noexcept
+            {
+                return m_roms[rom].data();
+            }
 
-        /** The (emulated) address of the last byte of ROM. */
-        static constexpr const ::Z80::UnsignedWord RomTop = RomBase + RomSize - 1;
+            /**
+             * Fetch a pointer to the fist byte in the specified ROM.
+             *
+             * @return
+             */
+            Byte * romPointer(RomNumber rom) noexcept
+            {
+                return m_roms[rom].data();
+            }
 
-        /** The (emulated) address of the first byte of pageable RAM. */
-        static constexpr const ::Z80::UnsignedWord PagedRamBase = 0xc000;
+            /**
+            * Fetch a const pointer to the fist byte in the currently paged-in ROM.
+            *
+            * @return
+            */
+            [[nodiscard]]
+            const Byte * currentRomPointer() const noexcept
+            {
+                return romPointer(currentRom());
+            }
 
-        /** The (emulated) address of the last byte of pageable RAM. */
-        static constexpr const ::Z80::UnsignedWord PagedRamTop = PagedRamBase + PageSize - 1;
+            /**
+             * Fetch a pointer to the fist byte in the currently paged-in ROM.
+             *
+             * @return
+             */
+            Byte * currentRomPointer() noexcept
+            {
+                return romPointer(currentRom());
+            }
 
-        /** The (emulated) address of the first byte of the fixed location of RAM page 5. */
-        static constexpr const ::Z80::UnsignedWord Page5Base = 0x4000;
+            /**
+             * Load the content of a file into the specified ROM.
+             *
+             * @param fileName The file containing the ROM image.
+             * @param rom The ROM number to load into. Must be 0 <= rom < RomCount.
+             * @return
+             */
+            bool loadRom(const std::string & fileName, RomNumber rom = 0)
+            {
+                sp_assert(0 <= rom && rom < RomCount, "invalid rom number {} in Spectrum::Memory::PagingMemory::pagePointer (there are {} roms)", rom, RomCount);
+                std::ifstream in(fileName, std::ios::binary | std::ios::in);
 
-        /** The (emulated) address of the last byte of the fixed location of RAM page 5. */
-        static constexpr const ::Z80::UnsignedWord Page5Top = Page5Base + PageSize - 1;
+                if (!in) {
+                    std::cerr << "failed to open ROM image file \"" << fileName << "\"\n";
+                    return false;
+                }
 
-        /** The (emulated) address of the first byte of the fixed location of RAM page 2. */
-        static constexpr const ::Z80::UnsignedWord Page2Base = 0x8000;
+                in.read(reinterpret_cast<std::ifstream::char_type *>(m_roms[rom].data()), RomSize);
 
-        /** The (emulated) address of the last byte of the fixed location of RAM page 2. */
-        static constexpr const ::Z80::UnsignedWord Page2Top = Page2Base + PageSize - 1;
+                if (in.fail() && !in.eof()) {
+                    std::cerr << "failed to read ROM image file \"" << fileName << "\"\n";
+                    return false;
+                }
 
-        /**
-         * Map an emulated memory address to a physical address inside one of the ROMs/RAM banks.
-         *
-         * The default implementation follows the paging scheme outlined in the class docs above. If any arbitrary mappings have been made (e.g. ZX Interface 1
-         * ROM), these take precedence, and if multiple mappings overlap the address, the most recent mapping takes precedence.
-         *
-         * @param address The emulated address to map. Must not exceed the address space.
-         *
-         * @return
-         */
+                return true;
+            }
+
+            /**
+             * Read directly from a specified memory page.
+             *
+             * Useful when writing snapshots, for example.
+             *
+             * @param page The page to read from. Must be 0 <= page < PageCount.
+             * @param buffer The buffer into which to read the data. Must be big enough to hold size bytes.
+             * @param size The number of bytes to read. Defaults to a full page. Must not extend beyond the size of a page.
+             * @param offset The offset into the page at which to start reading. Defaults to the first byte in the page.
+             */
+            void readFromPage(PageNumber page, Byte * buffer, const std::optional<::Z80::UnsignedWord> size, const std::optional<::Z80::UnsignedWord> offset) const override
+            {
+                const ::Z80::UnsignedWord readSize = size.value_or(PageSize);
+                const ::Z80::UnsignedWord readOffset = offset.value_or(0);
+                sp_assert(0 <= page && page < PageCount, "invalid page number {} in Spectrum::Memory::PagingMemory::readFromPage (there are {} pages)", page, PageCount);
+                sp_assert(readOffset + readSize <= PageSize, "reading {} bytes from offset {:#016x} would read beyond the extent of the page's address space", readSize, readOffset);
+                std::memcpy(buffer, m_ramPages[page].data() + readOffset, readSize);
+            }
+
+            /**
+             * Write directly into a specified memory page.
+             *
+             * Useful when reading snapshots, for example.
+             *
+             * @param page The page to write to. Must be 0 <= page < PageCount.
+             * @param data The data to write
+             * @param size The number of bytes to write. Defaults to a full page. Must not extend beyond the size of a page.
+             * @param offset The offset into the page at which to start writing. Defaults to the first byte in the page.
+             */
+            void writeToPage(PageNumber page, const Byte * data, const std::optional<::Z80::UnsignedWord> size, const std::optional<::Z80::UnsignedWord> offset) override
+            {
+                const ::Z80::UnsignedWord writeSize = size.value_or(PageSize);
+                const ::Z80::UnsignedWord writeOffset = offset.value_or(0);
+                sp_assert(0 <= page && page < PageCount, "invalid page number {} in Spectrum::Memory::PagingMemory::writeToPage (there are {} pages)", page, PageCount);
+                sp_assert(writeOffset + writeSize <= PageSize, "writing {} bytes from offset {:#016x} would write beyond the extent of the page's address space", writeSize, writeOffset);
+                std::memcpy(m_ramPages[page].data() + writeOffset, data, writeSize);
+            }
+
+            /**
+             * Map an arbitrary block of memory into the address space starting at a given address.
+             *
+             * It is legitimate to map the same block to several different addresses, map different blocks to the same address, map overlapping blocks or even to
+             * map the same block to the same address multiple times. Conflicts between mappings are resolved by assuming the latest mapping takes precedence. If
+             * a block is mapped to the same address multiple times it must be unmapped the same number of times as it is mapped to become fully unmapped.
+             *
+             * The fist byte of the block of storage will appear at address, the second byte at address + 1 and so on up to address + size - 1.
+             *
+             * @param startAddress Where to map the storage. It must be within the addressable range of the memory.
+             * @param storage The block of storage to map. It must not be nullptr, and must contain at least size bytes.
+             * @param size The size of the block to map. It must not extend beyond the addressable range of the memory.
+             */
+            void mapMemory(Address startAddress, unsigned char * storage, Size size) override
+            {
+                sp_assert(storage, "null storage provided to Spectrum::Memory::PagingMemory::mapMemory");
+                sp_assert(startAddress < addressableSize(), "mapping start address {:#016x} is beyond the memory's address space", startAddress);
+                sp_assert(startAddress + size <= addressableSize(), "mapping {} bytes from start address {:#016x} would extend beyond the extent of the memory's address space", size, startAddress);
+
+                m_mappedMemory.emplace_back(MappedMemoryBlock{
+                        .address = startAddress,
+                        .size = size,
+                        .storage = storage,
+                });
+            }
+
+            /**
+             * Unmap a block of memory from a given address.
+             *
+             * If a block has been mapped to the same address multiple times, unmapping will remove
+             * the most recent mapping of that block to the address. Previous mappings of the block to the same address will remain in place. If the block is mapped
+             * to other addresses, these mappings will also remain in place, as will any other blocks that are currently mapped to the same address.
+             *
+             * It is an error to attempt to unmap a block that is not mapped. (It follows that it is also an error to attempt to unmap a nullptr block.)
+             * Check isMapped() if your code is not sure.
+             *
+             * @param startAddress The address of the mapping to remove. It must be within the addressable range of the memory.
+             * @param storage The block of storage to unmap.
+             */
+            void unmapMemory(Address startAddress, const Byte * storage) override
+            {
+                const auto pos = std::find_if(m_mappedMemory.crbegin(), m_mappedMemory.crend(), [startAddress, storage](const MappedMemoryBlock & block) -> bool {
+                    return block.address == startAddress && block.storage == storage;
+                });
+
+                sp_assert(pos != m_mappedMemory.crend(), "mapped block staring at {:#016x} with host storage at {:#016x} not found", startAddress, reinterpret_cast<const std::uintptr_t>(storage));
+                m_mappedMemory.erase(pos.base());
+            }
+
+            /**
+             * Check whether a given block of memory is mapped into a given address.
+             *
+             * @param startAddress The address to check.
+             * @param storage The block of storage to check.
+             *
+             * @return
+             */
+            bool isMapped(Address startAddress, const Byte * storage)
+            {
+                return storage && startAddress < addressableSize() && m_mappedMemory.cend() != std::find_if(m_mappedMemory.cbegin(), m_mappedMemory.cend(), [startAddress, storage](const MappedMemoryBlock & block) -> bool {
+                    return block.address == startAddress && block.storage == storage;
+                });
+            }
+
+        protected:
+            /** The (emulated) address of the first byte of ROM. */
+            static constexpr ::Z80::UnsignedWord RomBase = 0x0000;
+
+            /** The (emulated) address of the last byte of ROM. */
+            static constexpr ::Z80::UnsignedWord RomTop = RomBase + RomSize - 1;
+
+            /** The (emulated) address of the first byte of pageable RAM. */
+            static constexpr ::Z80::UnsignedWord PagedRamBase = 0xc000;
+
+            /** The (emulated) address of the last byte of pageable RAM. */
+            static constexpr ::Z80::UnsignedWord PagedRamTop = PagedRamBase + PageSize - 1;
+
+            /** The (emulated) address of the first byte of the fixed location of RAM page 5. */
+            static constexpr ::Z80::UnsignedWord Page5Base = 0x4000;
+
+            /** The (emulated) address of the last byte of the fixed location of RAM page 5. */
+            static constexpr ::Z80::UnsignedWord Page5Top = Page5Base + PageSize - 1;
+
+            /** The (emulated) address of the first byte of the fixed location of RAM page 2. */
+            static constexpr ::Z80::UnsignedWord Page2Base = 0x8000;
+
+            /** The (emulated) address of the last byte of the fixed location of RAM page 2. */
+            static constexpr ::Z80::UnsignedWord Page2Top = Page2Base + PageSize - 1;
+
+            /**
+             * Map an emulated memory address to a physical address inside one of the ROMs/RAM banks.
+             *
+             * The default implementation follows the paging scheme outlined in the class docs above. If any arbitrary mappings have been made (e.g. ZX Interface 1
+             * ROM), these take precedence, and if multiple mappings overlap the address, the most recent mapping takes precedence.
+             *
+             * @param address The emulated address to map. Must not exceed the address space.
+             *
+             * @return
+             */
 // suppress warning in release builds - the assertion ensures this warning isn't present in debug builds, but the assertion is optimised away in release
 // builds so we must explicitly suppress the warning
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_NO_RETURN_VALUE
-        [[nodiscard]]
-        Byte * mapAddress(Address address) const override
-        {
-            assert(address <= 0xffff);
+            [[nodiscard]]
+            Byte * mapAddress(Address address) const override
+            {
+                sp_assert(address <= 0xffff, "address {:#04x} is beyond the extent of the memory's address space", address);
 
-            // check if the requested address is in a mapped memory block
-            if (!m_mappedMemory.empty()) {
-                // search mapped blocks in reverse - most recently mapped blocks take precedence
-                const auto pos = std::find_if(m_mappedMemory.crbegin(), m_mappedMemory.crend(), [address](const MappedMemoryBlock & block) -> bool {
-                    return block.address <= address && block.address + block.size > address;
-                });
+                // check if the requested address is in a mapped memory block
+                if (!m_mappedMemory.empty()) {
+                    // search mapped blocks in reverse - most recently mapped blocks take precedence
+                    const auto pos = std::find_if(m_mappedMemory.crbegin(), m_mappedMemory.crend(), [address](const MappedMemoryBlock & block) -> bool {
+                        return block.address <= address && block.address + block.size > address;
+                    });
 
-                if (pos != m_mappedMemory.crend()) {
-                    return pos->storage + address - pos->address;
+                    if (pos != m_mappedMemory.crend()) {
+                        return pos->storage + address - pos->address;
+                    }
                 }
-            }
 
-            // otherwise, map it according to the current paging state
-            if (address <= RomTop) {
-                return const_cast<Byte *>(currentRomPointer() + address);
-            }
+                // otherwise, map it according to the current paging state
+                if (address <= RomTop) {
+                    return const_cast<Byte *>(currentRomPointer() + address);
+                }
 
-            if (address >= PagedRamBase) {
-                return const_cast<Byte *>(currentRamPagePointer() + address - PagedRamBase);
-            }
+                if (address >= PagedRamBase) {
+                    return const_cast<Byte *>(currentRamPagePointer() + address - PagedRamBase);
+                }
 
-            if (address >= Page2Base) {
-                return const_cast<Byte *>(m_ramPages[2].data() + address - Page2Base);
-            }
+                if (address >= Page2Base) {
+                    return const_cast<Byte *>(m_ramPages[2].data() + address - Page2Base);
+                }
 
-            if (address >= Page5Base) {
-                return const_cast<Byte *>(m_ramPages[5].data() + address - Page5Base);
-            }
+                if (address >= Page5Base) {
+                    return const_cast<Byte *>(m_ramPages[5].data() + address - Page5Base);
+                }
 
-            // unreachable code
-            [[unlikely]]
-            assert(false);
-        }
+                // unreachable code
+                [[unlikely]]
+                sp_assert(false, "reached unreachable code in Spectrum::Memory::PagingMemory::mapAddress");
+            }
 DISABLE_WARNING_POP
 
-        /** Helper data structure to track a mapped block of memory. */
-        struct MappedMemoryBlock {
-            Address address;
-            Size size;
-            Byte * storage;
-        };
+            /** Helper data structure to track a mapped block of memory. */
+            struct MappedMemoryBlock {
+                Address address;
+                Size size;
+                Byte * storage;
+            };
 
-        /** Type alias for the storage of the mapped memory block index. */
-        using MappedMemory = std::vector<MappedMemoryBlock>;
+            /** Type alias for the storage of the mapped memory block index. */
+            using MappedMemory = std::vector<MappedMemoryBlock>;
 
-        /** The currently paged-in ROM. */
-        RomNumber m_romNumber;
+            /** The currently paged-in ROM. */
+            RomNumber m_romNumber;
 
-        /** Storage for the ROMs. */
-        std::array<PageStorage, RomCount> m_roms;
+            /** Storage for the ROMs. */
+            std::array<PageStorage, RomCount> m_roms;
 
-        /** The currently paged-in RAM page. */
-        PageNumber m_pagedRam;
+            /** The currently paged-in RAM page. */
+            PageNumber m_pagedRam;
 
-        /** Storage for the RAM pages. */
-        std::array<PageStorage, PageCount> m_ramPages;
+            /** Storage for the RAM pages. */
+            std::array<PageStorage, PageCount> m_ramPages;
 
-        /** Index of mapped memory. */
-        MappedMemory m_mappedMemory;
+            /** Index of mapped memory. */
+            MappedMemory m_mappedMemory;
     };
 }
 

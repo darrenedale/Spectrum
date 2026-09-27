@@ -1,9 +1,12 @@
-#include <iostream>
-#include <iomanip>
 #include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <print>
+
+#include "snapshot.h"
 #include "spectrum16k.h"
 #include "devices/displaydevice.h"
-#include "snapshot.h"
+#include "../util/assert.h"
 
 using namespace Spectrum;
 
@@ -21,7 +24,7 @@ Spectrum16k::~Spectrum16k() = default;
 
 bool Spectrum16k::loadRom(const std::string & romFilePath)
 {
-    static constexpr const std::size_t RomFileSize = 0x4000;
+    static constexpr std::size_t RomFileSize = 0x4000;
     std::ifstream inFile(romFilePath, std::ios::binary | std::ios::in);
 
     if (!inFile) {
@@ -57,8 +60,8 @@ bool Spectrum16k::canApplySnapshot(const Snapshot & snapshot)
 
 void Spectrum16k::applySnapshot(const Snapshot & snapshot)
 {
-    assert(snapshot.model() == model());
-    assert(dynamic_cast<const MemoryType *>(snapshot.memory()));
+    sp_assert(snapshot.model() == model(), "detected Spectrum model mismatch in Spectrum::Spectrum16k::applySnapshot()");
+    sp_assert(dynamic_cast<const MemoryType *>(snapshot.memory()), "found incompatible snapshot memory in Spectrum::Spectrum16k::applySnapshot()");
 
     reset();
     applySnapshotCpuState(snapshot);

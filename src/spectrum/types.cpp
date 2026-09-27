@@ -2,11 +2,12 @@
 // Created by darren on 07/04/2021.
 //
 
-#include <cassert>
 #include <iostream>
+#include <print>
 #include <string>
 
 #include "./types.h"
+#include "../util/assert.h"
 #include "../util/compiler.h"
 
 using namespace std::string_literals;
@@ -43,7 +44,8 @@ std::string Spectrum::to_string(const Model model)
     }
 
     // unreachable code
-    assert(false);
+    [[unlikely]]
+    sp_assert(false, "unreachable code reached in Spectrum::to_string(Model)");
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_RETURN_TYPE
 }
@@ -61,7 +63,8 @@ std::string Spectrum::to_string(const ScreenBuffer128k bufferType)
 
     // unreachable code - someone has added a buffer type and hasn't updated the function or has type punned an invalid
     // value to a buffer type
-    assert(false);
+    [[unlikely]]
+    sp_assert(false, "unreachable code reached in Spectrum::to_string(Spectrum::ScreenBuffer128k)");
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_RETURN_TYPE
 }
@@ -97,7 +100,8 @@ std::string Spectrum::to_string(const Colour colour)
 
     // unreachable code - someone has added a colour and hasn't updated the function or has type punned an invalid
     // value to a colour
-    assert(false);
+    [[unlikely]]
+    sp_assert(false, "unreachable code reached in Spectrum::to_string(Spectrum::Colour)");
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_RETURN_TYPE
 }
@@ -115,8 +119,9 @@ std::string Spectrum::to_string(const PagingMode mode)
 
     // unreachable code - someone has added a mode and hasn't updated the function or has type punned an invalid
     // value to a mode
-    assert (false);
-DISABLE_WARNING_PUSH
+    [[unlikely]]
+    sp_assert(false, "unreachable code reached in Spectrum::to_string(Spectrum::PagingMode)");
+    DISABLE_WARNING_PUSH
 DISABLE_WARNING_RETURN_TYPE
 }
 DISABLE_WARNING_POP
@@ -139,8 +144,9 @@ std::string Spectrum::to_string(const SpecialPagingConfiguration config)
 
     // unreachable code - someone has added a config and hasn't updated the function or has type punned an invalid
     // value to a config
-    assert (false);
-DISABLE_WARNING_PUSH
+    [[unlikely]]
+    sp_assert(false, "unreachable code reached in Spectrum::to_string(Spectrum::SpecialPagingConfiguration)");
+    DISABLE_WARNING_PUSH
 DISABLE_WARNING_RETURN_TYPE
 }
 DISABLE_WARNING_POP

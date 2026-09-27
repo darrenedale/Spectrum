@@ -80,7 +80,7 @@ namespace Spectrum
         [[nodiscard]]
         virtual bool canApplySnapshot(const Snapshot * snapshot)
         {
-            assert(snapshot);
+            sp_assert(snapshot, "null snapshot detected in Spectrum::BaseSpectrum::canApplySnapshot()");
             return canApplySnapshot(*snapshot);
         }
 
@@ -103,7 +103,7 @@ namespace Spectrum
          */
         virtual void applySnapshot(const Snapshot * snapshot)
         {
-            assert (snapshot);
+            sp_assert(snapshot, "null snapshot detected in Spectrum::BaseSpectrum::applySnapshot");
             applySnapshot(*snapshot);
         }
 

@@ -8,6 +8,7 @@ add_executable(
         ../qtui/qimagedisplaydevice.cpp
         ../qtui/imagewidget.cpp
         ../../z80/iodevice.cpp
+        ../../util/assert.h
 )
 
 set_target_properties(

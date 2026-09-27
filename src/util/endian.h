@@ -16,8 +16,8 @@ namespace Util
      * @return
      */
     template<typename int_t>
-    constexpr inline std::enable_if_t<std::is_integral_v<int_t> && 2 == sizeof(int_t), int_t>
-    swapByteOrder(int_t value)
+    constexpr std::enable_if_t<std::is_integral_v<int_t> && 2 == sizeof(int_t), int_t>
+    swapByteOrder(int_t value) noexcept
     {
         return ((value & 0x00ff) << 8) | ((value & 0xff00) >> 8);
     }
