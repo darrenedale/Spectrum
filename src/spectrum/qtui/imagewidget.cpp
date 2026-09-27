@@ -35,6 +35,10 @@ void ImageWidget::resizeEvent(QResizeEvent * ev)
 
 void ImageWidget::paintEvent(QPaintEvent *)
 {
+    if (m_image.isNull()) {
+        return;
+    }
+
     QPainter painter(this);
     painter.drawImage(renderRect(), m_image);
     painter.end();

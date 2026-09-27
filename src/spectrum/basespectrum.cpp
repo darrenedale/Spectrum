@@ -88,8 +88,7 @@ namespace Spectrum
 
             // check interrupt counter against threshold and raise INT in CPU if required
             if (m_interruptTStateCounter > interruptThreshold) {
-                // NOTE spectrum leaves RST38 interrupt on the bus when generating the interrupt
-                z80()->interrupt(Z80::InterruptRst38 & 0xff);
+                z80()->interrupt(0xff);     // NOTE spectrum leaves 0xff on the bus when generating the interrupt
                 refreshDisplays();
                 m_interruptTStateCounter %= interruptThreshold;
 

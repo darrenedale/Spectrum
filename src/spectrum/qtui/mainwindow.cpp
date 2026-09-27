@@ -1225,7 +1225,7 @@ void MainWindow::createHelpMenu()
             m_aboutWidget = std::make_unique<AboutWidget>();
 
             // TODO this is a runtime condition, not sure we should be asserting
-            sp_assert(m_aboutWidget, "unable to create about widget in MainWindow::createHelpMenu");
+            sp_assert(m_aboutWidget, "unable to create about widget in MainWindow::createHelpMenu()");
 
             m_aboutWidget->setWindowFlags(Qt::WindowType::Dialog);
             m_aboutWidget->setWindowTitle(tr("About %1").arg(Application::applicationDisplayName()));
