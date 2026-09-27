@@ -1258,7 +1258,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Z80__PLAIN__LD__BC__NN:					// 0x01
-			Z80__LD__REG16__NN(m_registers.bc, z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+            Z80__LD__REG16__NN(m_registers.bc, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
 			break;
 
 		case Z80__PLAIN__LD__INDIRECT_BC__A:		// 0x02
@@ -1353,7 +1353,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
 		case Z80__PLAIN__DJNZ__d:						// 0x10
 			if (0 != --(m_registers.b)) {
-				m_registers.pc += (SignedByte)(*(instruction + 1));
+				m_registers.pc += static_cast<SignedByte>(*(instruction + 1));
 				m_registers.memptr = m_registers.pc;
 				Z80_USE_JUMP_CYCLE_COST;
 			}
@@ -1361,7 +1361,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Z80__PLAIN__LD__DE__NN:				// 0x11
-			Z80__LD__REG16__NN(m_registers.de, *((UnsignedWord *)(instruction + 1)));
+			Z80__LD__REG16__NN(m_registers.de, *reinterpret_cast<const UnsignedWord *>(instruction + 1));
 			break;
 
 		case Z80__PLAIN__LD__INDIRECT_DE__A:		// 0x12
@@ -1453,11 +1453,11 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Z80__PLAIN__LD__HL__NN:				// 0x21
-			Z80__LD__REG16__NN(m_registers.hl, *((UnsignedWord *)(instruction + 1)));
+			Z80__LD__REG16__NN(m_registers.hl, *reinterpret_cast<const UnsignedWord *>(instruction + 1));
 			break;
 
 		case Z80__PLAIN__LD__INDIRECT_NN__HL:	// 0x22
-			Z80__LD__INDIRECT_NN__REG16(z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_registers.hl);
+			Z80__LD__INDIRECT_NN__REG16(z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)), m_registers.hl);
 			break;
 
 		case Z80__PLAIN__INC__HL:					// 0x23
@@ -1529,7 +1529,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
 		case Z80__PLAIN__LD__HL__INDIRECT_NN:	// 0x2a
 		    // NOTE the interface of the Z80 class expects addresses in host byte order
-			Z80__LD__REG16__INDIRECT_NN(m_registers.hl, z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG16__INDIRECT_NN(m_registers.hl, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
 			break;
 
 		case Z80__PLAIN__DEC__HL:					// 0x2b
@@ -1567,11 +1567,11 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Z80__PLAIN__LD__SP__NN:				// 0x31
-			Z80__LD__REG16__NN(m_registers.sp, z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG16__NN(m_registers.sp, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
 			break;
 
 		case Z80__PLAIN__LD__INDIRECT_NN__A:		// 0x32
-			Z80__LD__INDIRECT_NN__REG8(z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_registers.a);
+			Z80__LD__INDIRECT_NN__REG8(z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)), m_registers.a);
 			break;
 
 		case Z80__PLAIN__INC__SP:					// 0x33
@@ -1610,7 +1610,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Z80__PLAIN__LD__A__INDIRECT_NN:		// 0x3a
-			Z80__LD__REG8__INDIRECT_NN(m_registers.a, z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG8__INDIRECT_NN(m_registers.a, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
 			break;
 
 		case Z80__PLAIN__DEC__SP:					// 0x3b
@@ -2163,7 +2163,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Z80__PLAIN__JP__NZ__NN:				// 0xc2
-            m_registers.memptr = z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+            m_registers.memptr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
 
             // NOTE docs I've found say cost is 10 if jump taken, 1 if not; however Z80 test suite expects cost to
             //  always bew 10
@@ -2176,7 +2176,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Z80__PLAIN__JP__NN:						// 0xc3
-            m_registers.memptr = z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+            m_registers.memptr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
 			m_registers.pc = m_registers.memptr;
 			Z80_DONT_UPDATE_PC;
 			// NOTE don't set the jumped indicator because there's no different t-state cost - the jump always takes
@@ -2184,7 +2184,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Z80__PLAIN__CALL__NZ__NN:				// 0xc4
-            m_registers.memptr = z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+            m_registers.memptr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
 
 			if (!Z80_FLAG_Z_ISSET) {
                 Z80_USE_JUMP_CYCLE_COST;
@@ -2224,7 +2224,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Z80__PLAIN__JP__Z__NN:					// 0xca
-            m_registers.memptr = z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+            m_registers.memptr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
 
             if (Z80_FLAG_Z_ISSET) {
                 m_registers.pc = m_registers.memptr;
@@ -2237,7 +2237,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Z80__PLAIN__CALL__Z__NN:				// 0xcc
-            m_registers.memptr = z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+            m_registers.memptr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
 
             if (Z80_FLAG_Z_ISSET) {
                 Z80_USE_JUMP_CYCLE_COST;
@@ -2248,7 +2248,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Z80__PLAIN__CALL__NN:					// 0xcd
-            m_registers.memptr = z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+            m_registers.memptr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
 			Z80__PUSH__REG16(m_registers.pc + 3);
 			m_registers.pc = m_registers.memptr;
 			Z80_DONT_UPDATE_PC;
@@ -2276,7 +2276,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Z80__PLAIN__JP__NC__NN:				// 0xd2
-            m_registers.memptr = z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+            m_registers.memptr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
 
             if (!Z80_FLAG_C_ISSET) {
                 m_registers.pc = m_registers.memptr;
@@ -2290,7 +2290,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Z80__PLAIN__CALL__NC__NN:				// 0xd4
-            m_registers.memptr = z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+            m_registers.memptr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
 
             if (!Z80_FLAG_C_ISSET) {
                 Z80_USE_JUMP_CYCLE_COST;
@@ -2328,7 +2328,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Z80__PLAIN__JP__C__NN:					// 0xda
-            m_registers.memptr = z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+            m_registers.memptr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
 
             if (Z80_FLAG_C_ISSET) {
                 m_registers.pc = m_registers.memptr;
@@ -2341,7 +2341,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Z80__PLAIN__CALL__C__NN:				// 0xdc
-            m_registers.memptr = z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+            m_registers.memptr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
 
             if (Z80_FLAG_C_ISSET) {
                 Z80_USE_JUMP_CYCLE_COST;
@@ -2379,7 +2379,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
 		case Z80__PLAIN__JP__PO__NN:				// 0xe2
 			// the operand PO stands for "parity odd"
-            m_registers.memptr = z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+            m_registers.memptr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
 
             if (!Z80_FLAG_P_ISSET) {
                 m_registers.pc = m_registers.memptr;
@@ -2393,7 +2393,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
 		case Z80__PLAIN__CALL__PO__NN:				// 0xe4
 			// the operand PO stands for "parity odd"
-            m_registers.memptr = z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+            m_registers.memptr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
 
             if (!Z80_FLAG_P_ISSET) {
                 Z80_USE_JUMP_CYCLE_COST;
@@ -2434,7 +2434,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
 		case Z80__PLAIN__JP__PE__NN:				// 0xea
             // the operand PO stands for "parity even"
-            m_registers.memptr = z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+            m_registers.memptr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
 
             if (Z80_FLAG_P_ISSET) {
                 m_registers.pc = m_registers.memptr;
@@ -2448,7 +2448,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
 		case Z80__PLAIN__CALL__PE__NN:				// 0xec
 			/* the operand PE stands for "parity even" */
-            m_registers.memptr = z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+            m_registers.memptr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
 
             if (Z80_FLAG_P_ISSET) {
                 Z80_USE_JUMP_CYCLE_COST;
@@ -2489,7 +2489,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 		case Z80__PLAIN__JP__P__NN:					// 0xf2
 			// the P operand in this instruction stands for "plus", not to be confused for the parity flag. it properly
             //  operates using the sign flag
-            m_registers.memptr = z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+            m_registers.memptr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
 
             if (!Z80_FLAG_S_ISSET) {
                 m_registers.pc = m_registers.memptr;
@@ -2503,7 +2503,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
 		case Z80__PLAIN__CALL__P__NN:				// 0xf4
 			// the operand P stands for "plus" and thus uses the sign flag, not to be confused with the parity flag
-            m_registers.memptr = z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+            m_registers.memptr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
 
             if (!Z80_FLAG_S_ISSET) {
                 Z80_USE_JUMP_CYCLE_COST;
@@ -2541,7 +2541,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
 		case Z80__PLAIN__JP__M__NN:					// 0xfa
 			// the operand M stands for "minus" and therefore uses the sign flag
-            m_registers.memptr = z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+            m_registers.memptr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
 
             if (Z80_FLAG_S_ISSET) {
                 m_registers.pc = m_registers.memptr;
@@ -2558,7 +2558,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
 		case Z80__PLAIN__CALL__M__NN:				// 0xfc
 			// the operand M stands for "minus" and therefore uses the sign flag
-            m_registers.memptr = z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1)));
+            m_registers.memptr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
 
             if (Z80_FLAG_S_ISSET) {
                 Z80_USE_JUMP_CYCLE_COST;
@@ -2592,7 +2592,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 	};
 }
 
-// no 0xcb instructions directly modify the PC so we don't need to receive the (bool *) doPc parameter to indicate this
+// no 0xcb instructions directly modify the PC so we don't need to receive the bool * doPc parameter to indicate this
 Z80::InstructionCost Z80::Z80::executeCbInstruction(const UnsignedByte * instruction)
 {
 	switch(*instruction) {
@@ -3718,7 +3718,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Z80__ED__LD__INDIRECT_NN__BC:		// 0xed 0x43
-			Z80__LD__INDIRECT_NN__REG16(z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_registers.bc);
+			Z80__LD__INDIRECT_NN__REG16(z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)), m_registers.bc);
 			break;
 
 		case Z80__ED__NEG:							// 0xed 0x44
@@ -3751,7 +3751,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Z80__ED__LD__BC__INDIRECT_NN:       // 0xed 0x4b
-			Z80__LD__REG16__INDIRECT_NN(m_registers.bc, z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG16__INDIRECT_NN(m_registers.bc, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
 			break;
 
 		case Z80__ED__NEG__0XED__0X4C:		// 0xed 0x4c
@@ -3786,7 +3786,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Z80__ED__LD__INDIRECT_NN__DE:	// 0xed 0x53
-			Z80__LD__INDIRECT_NN__REG16(z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_registers.de);
+			Z80__LD__INDIRECT_NN__REG16(z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)), m_registers.de);
 			break;
 
 		case Z80__ED__NEG__0XED__0X54:		// 0xed 0x54
@@ -3824,7 +3824,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Z80__ED__LD__DE__INDIRECT_NN:
-			Z80__LD__REG16__INDIRECT_NN(m_registers.de, z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG16__INDIRECT_NN(m_registers.de, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
 			break;
 
 		case Z80__ED__NEG__0XED__0X5C:		// 0xed 0x5c
@@ -3863,7 +3863,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Z80__ED__LD__INDIRECT_NN__HL:
-			Z80__LD__INDIRECT_NN__REG16(z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_registers.hl);
+			Z80__LD__INDIRECT_NN__REG16(z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)), m_registers.hl);
 			break;
 
 		case Z80__ED__NEG__0XED__0X64:	// 0xed 0x64
@@ -3921,7 +3921,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Z80__ED__LD__HL__INDIRECT_NN:
-			Z80__LD__REG16__INDIRECT_NN(m_registers.hl, z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG16__INDIRECT_NN(m_registers.hl, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
 			break;
 
 		case Z80__ED__NEG__0XED__0X6C:	// 0xed 0x6c
@@ -3984,7 +3984,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Z80__ED__LD__INDIRECT_NN__SP:
-			Z80__LD__INDIRECT_NN__REG16(z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), m_registers.sp);
+			Z80__LD__INDIRECT_NN__REG16(z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)), m_registers.sp);
 			break;
 
 		case Z80__ED__NEG__0XED__0X74:	/* oxed 0x74 */
@@ -4018,7 +4018,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Z80__ED__LD__SP__INDIRECT_NN:   	// 0xed 0x7b
-			Z80__LD__REG16__INDIRECT_NN(m_registers.sp, z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG16__INDIRECT_NN(m_registers.sp, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
 			break;
 
 		case Z80__ED__NEG__0XED__0X7C:	    	// 0xed 0x7c
@@ -4526,11 +4526,11 @@ Z80::InstructionCost Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, cons
 			break;
 
 		case Z80__DD_OR_FD__LD__IX_OR_IY__NN: /*  0x21 */
-			Z80__LD__REG16__NN(reg, z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG16__NN(reg, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
 			break;
 
 		case Z80__DD_OR_FD__LD__INDIRECT_NN__IX_OR_IY: /*  0x22 */
-			Z80__LD__INDIRECT_NN__REG16(z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))), reg);
+			Z80__LD__INDIRECT_NN__REG16(z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)), reg);
 			break;
 
 		case Z80__DD_OR_FD__INC__IX_OR_IY: /*  0x23 */
@@ -4554,7 +4554,7 @@ Z80::InstructionCost Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, cons
 			break;
 
 		case Z80__DD_OR_FD__LD__IX_OR_IY__INDIRECT_NN: /*  0x2a */
-			Z80__LD__REG16__INDIRECT_NN(reg, z80ToHostByteOrder(*((UnsignedWord *)(instruction + 1))));
+			Z80__LD__REG16__INDIRECT_NN(reg, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
 			break;
 
 		case Z80__DD_OR_FD__DEC__IX_OR_IY: /*  0x2b */
