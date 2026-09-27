@@ -182,6 +182,15 @@ namespace Spectrum::QtUi::Debugger
          */
         void setStringValue(const QByteArray & value);
 
+        /**
+         * Listens for return/enter key presses on value entry widget and triggers signals.
+         *
+         * @param subject
+         * @param ev
+         * @return
+         */
+        bool eventFilter(QObject * subject, QEvent * ev) override;
+
     Q_SIGNALS:
         /**
          * Emitted when the user has requested a string search.
@@ -228,44 +237,23 @@ namespace Spectrum::QtUi::Debugger
          */
         void keyPressEvent(QKeyEvent * ev) override;
 
-        /**
-         * Listens for return/enter key presses on value entry widget and triggers signals.
-         *
-         * @param subject
-         * @param ev
-         * @return
-         */
-        bool eventFilter(QObject * subject, QEvent * ev) override;
-
-        /**
-         * Internal handler for when the user changes the search type.
-         */
+        /** Internal handler for when the user changes the search type. */
         void onSearchTypeChanged();
 
-        /**
-         * Helper to emit the appropriate search request signal for the current search type and value.
-         */
+        /** Helper to emit the appropriate search request signal for the current search type and value. */
         void emitSearchRequest();
 
     private:
-        /**
-         * The search type widget.
-         */
+        /** The search type widget. */
         QComboBox m_searchType;
 
-        /**
-         * The widget to capture the user's string search query.
-         */
+        /** The widget to capture the user's string search query. */
         QLineEdit m_stringValue;
 
-        /**
-         * The widget to capture the user's string 8-bit search value.
-         */
+        /** The widget to capture the user's string 8-bit search value. */
         QSpinBox m_byteValue;
 
-        /**
-         * The widget to capture the user's 16-bit search value.
-         */
+        /** The widget to capture the user's 16-bit search value. */
         QSpinBox m_wordValue;
     };
 }

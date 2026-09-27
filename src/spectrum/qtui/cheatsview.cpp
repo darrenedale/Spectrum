@@ -3,18 +3,20 @@
 //
 
 #include <cmath>
+
 #include <QApplication>
-#include <QStyle>
-#include <QLabel>
 #include <QFileDialog>
-#include <QToolBar>
-#include <QUuid>
+#include <QLabel>
 #include <QRegularExpression>
+#include <QStyle>
+#include <QToolBar>
 #include <QVariant>
 #include <QSettings>
+#include <QUuid>
+
+#include "application.h"
 #include "cheatsview.h"
 #include "cheatsviewitem.h"
-#include "application.h"
 #include "mainwindow.h"
 #include "threadpauser.h"
 #include "../io/pokfilereader.h"
@@ -25,7 +27,11 @@ using namespace Spectrum::Io;
 
 namespace
 {
-    constexpr const char * UuidPropertyName = "pokeUuid";
+    constexpr auto UuidPropertyName = "pokeUuid";
+
+    /** Regular expression to match and extract the extension from the name of a poke file. */
+    const auto PokeFileExtensionRegularExpression = QRegularExpression(R"(^.*\(\*\.([a-zA-Z0-9_-]+)\)$)");
+
 }
 
 CheatsView::CheatsView(QWidget * parent)
@@ -254,7 +260,7 @@ void CheatsView::loadCheatsTriggered()
         filters << tr("POK Poke files (*.pok)");
     }
 
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Load cheats"), m_lastLoadDir, filters.join(";;"), &lastFilter);
+    const QString fileName = QFileDialog::getOpenFileName(this, tr("Load cheats"), m_lastLoadDir, filters.join(";;"), &lastFilter);
 
     if(fileName.isEmpty()) {
         return;
@@ -264,7 +270,7 @@ void CheatsView::loadCheatsTriggered()
     auto format = lastFilter;
 
     if (!format.isEmpty()) {
-        if (auto matches = QRegularExpression(R"(^.*\(\*\.([a-zA-Z0-9_-]+)\)$)").match(format); matches.hasMatch()) {
+        if (const auto matches = PokeFileExtensionRegularExpression.match(format); matches.hasMatch()) {
             format = matches.captured(1).toLower();
         } else {
             format.clear();
