@@ -18,12 +18,15 @@ namespace Spectrum::QtUi::Debugger
         Q_OBJECT
 
     public:
+        /** Convenience alias for the base class type for the stored breakpoints. */
+        using Breakpoint = Spectrum::Debugger::Breakpoint;
+
         /**
          * The item data role to fetch the enabled status of an item.
          *
          * This role can be used with any column in the model, it will always return the enabled status for the item identified by the row.
          */
-        static constexpr const int EnabledRole = Qt::ItemDataRole::UserRole;
+        static constexpr int EnabledRole = Qt::ItemDataRole::UserRole;
 
         /**
          * Initialise a new model.
@@ -43,7 +46,8 @@ namespace Spectrum::QtUi::Debugger
          *
          * @return 3.
          */
-        [[nodiscard]] constexpr int columnCount(const QModelIndex & parent = {}) const override
+        [[nodiscard]]
+        constexpr int columnCount(const QModelIndex & parent = {}) const override
         {
             return 2;
         }
@@ -55,7 +59,8 @@ namespace Spectrum::QtUi::Debugger
          *
          * @return The number of breakpoints.
          */
-        [[nodiscard]] int rowCount(const QModelIndex & parent = {}) const override
+        [[nodiscard]]
+        int rowCount(const QModelIndex & parent = {}) const override
         {
             return static_cast<int>(m_breakpoints.size());
         }
@@ -72,7 +77,8 @@ namespace Spectrum::QtUi::Debugger
          *
          * @return The header data.
          */
-        [[nodiscard]] QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::ItemDataRole::DisplayRole) const override;
+        [[nodiscard]]
+        QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
 
         /**
          * Fetch the data for an item.
@@ -85,7 +91,8 @@ namespace Spectrum::QtUi::Debugger
          *
          * @return
          */
-        [[nodiscard]] QVariant data(const QModelIndex & idx, int role = Qt::ItemDataRole::DisplayRole) const override;
+        [[nodiscard]]
+        QVariant data(const QModelIndex & idx, int role) const override;
 
         /**
          * Provide the flags for an item.
@@ -95,7 +102,8 @@ namespace Spectrum::QtUi::Debugger
          * @param idx The index of the item whose flags are required.
          * @return
          */
-        [[nodiscard]] Qt::ItemFlags flags(const QModelIndex & idx) const override
+        [[nodiscard]]
+        Qt::ItemFlags flags(const QModelIndex & idx) const override
         {
             return Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemNeverHasChildren;
         }
@@ -110,7 +118,8 @@ namespace Spectrum::QtUi::Debugger
          *
          * @return The index.
          */
-        [[nodiscard]] QModelIndex index(int row, int col, const QModelIndex & = {}) const override
+        [[nodiscard]]
+        QModelIndex index(const int row, const int col, const QModelIndex & = {}) const override
         {
             return createIndex(row, col);
         }
@@ -122,15 +131,11 @@ namespace Spectrum::QtUi::Debugger
          *
          * @return A default-constructed QModelIndex.
          */
-        [[nodiscard]] constexpr QModelIndex parent(const QModelIndex &) const override
+        [[nodiscard]]
+        constexpr QModelIndex parent(const QModelIndex &) const override
         {
             return {};
         }
-
-        /**
-         * Convenience alias for the base class type for the stored breakpoints.
-         */
-        using Breakpoint = Spectrum::Debugger::Breakpoint;
 
         /**
          * Add a watch to the model.
@@ -229,21 +234,24 @@ namespace Spectrum::QtUi::Debugger
          *
          * @param idx The index of the breakpoint.
          */
-        [[nodiscard]] bool breakpointIsEnabled(Breakpoint *) const;
+        [[nodiscard]]
+        bool breakpointIsEnabled(Breakpoint *) const;
 
         /**
          * Check whether a breakpoint is enabled.
          *
          * @param idx The index of the breakpoint.
          */
-        [[nodiscard]] bool breakpointIsEnabled(int idx) const;
+        [[nodiscard]]
+        bool breakpointIsEnabled(int idx) const;
 
         /**
          * Check whether a breakpoint is enabled.
          *
          * @param idx The index of the breakpoint.
          */
-        [[nodiscard]] inline bool breakpointIsEnabled(QModelIndex idx) const
+        [[nodiscard]]
+        bool breakpointIsEnabled(const QModelIndex& idx) const
         {
             return idx.data(EnabledRole).toBool();
         }
@@ -258,7 +266,8 @@ namespace Spectrum::QtUi::Debugger
          *
          * @return trye if the model has no breakpoints, false if it has one or more.
          */
-        [[nodiscard]] bool isEmpty() const
+        [[nodiscard]]
+        bool isEmpty() const
         {
             return m_breakpoints.empty();
         }
@@ -268,7 +277,8 @@ namespace Spectrum::QtUi::Debugger
          *
          * @return true if an equivalent breakpoint is already in the model, false otherwise.
          */
-        [[nodiscard]] bool hasBreakpoint(const Breakpoint &) const;
+        [[nodiscard]]
+        bool hasBreakpoint(const Breakpoint &) const;
 
         /**
          * Fetch a breakpoint from the model.
@@ -277,7 +287,8 @@ namespace Spectrum::QtUi::Debugger
          *
          * @return
          */
-        [[nodiscard]] Breakpoint * breakpoint(int) const;
+        [[nodiscard]]
+        Breakpoint * breakpoint(int) const;
 
         /**
          * Fetch a breakpoint from the model.
@@ -286,7 +297,8 @@ namespace Spectrum::QtUi::Debugger
          *
          * @return
          */
-        [[nodiscard]] Breakpoint * breakpoint(const QModelIndex & idx) const
+        [[nodiscard]]
+        Breakpoint * breakpoint(const QModelIndex & idx) const
         {
             return breakpoint(idx.row());
         }
@@ -312,28 +324,22 @@ namespace Spectrum::QtUi::Debugger
         /**
          * Emitted when a breakpoint has been disabled.
          *
-         * @param index breakpoint The breakpoint that was disabled.
+         * @param breakpoint breakpoint The breakpoint that was disabled.
          */
         void breakpointDisabled(Spectrum::Debugger::Breakpoint * breakpoint);
 
     private:
-        /**
-         * Internal data structure for representing breakpoints stored in the model.
-         */
+        /** Internal data structure for representing breakpoints stored in the model. */
         struct BreakpointData
         {
             std::unique_ptr<Breakpoint> breakpoint;
             bool isEnabled;
         };
 
-        /**
-         * Storage type for the breakpoints in the model.
-         */
+        /** Storage type for the breakpoints in the model. */
         using Breakpoints = std::vector<BreakpointData>;
 
-        /**
-         * Storage for the breakpoints contained in the model.
-         */
+        /** Storage for the breakpoints contained in the model. */
         Breakpoints m_breakpoints;
     };
 }

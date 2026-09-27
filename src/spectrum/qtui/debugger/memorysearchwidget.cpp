@@ -2,20 +2,24 @@
 // Created by darren on 05/05/2021.
 //
 
+#include <format>
 #include <iomanip>
 #include <optional>
+#include <print>
+
 #include <QHBoxLayout>
-#include <QLabel>
 #include <QKeyEvent>
+#include <QLabel>
 #include <QRegularExpression>
 #include <QString>
 
+#include "memorysearchwidget.h"
 #include "../application.h"
 #include "../widgetupdatesuspender.h"
-#include "memorysearchwidget.h"
+#include "../../../util/assert.h"
 #include "../../../util/debug.h"
 
-// using namespace Qt::Literals::StringLiterals;
+using namespace std::string_literals;
 using namespace Spectrum::QtUi::Debugger;
 
 namespace
@@ -42,6 +46,61 @@ namespace
         });
 
         return ret;
+    }
+
+    std::string to_string(const MemorySearchWidget::SearchType & searchType)
+    {
+        switch (searchType)
+        {
+            case MemorySearchWidget::SearchType::UnsignedByte:
+                return "UnsignedByte"s;
+
+            case MemorySearchWidget::SearchType::UnsignedWord:
+                return "UnsignedWord"s;
+
+            case MemorySearchWidget::SearchType::SignedByte:
+                return "SignedByte"s;
+
+            case MemorySearchWidget::SearchType::SignedWord:
+                return "SignedWord"s;
+
+            case MemorySearchWidget::SearchType::String:
+                return "String"s;
+
+            case MemorySearchWidget::SearchType::ByteArray:
+                return "ByteArray"s;
+
+            default:
+                sp_assert(false, "detected addition of SearchType enumerator with value {} not handled in to_string", static_cast<std::uint16_t>(searchType));
+        }
+    }
+};
+
+
+/**
+ * Formatter for all the enums, based on the to_string() implementation for each.
+ * @tparam T must be one of the above enum types.
+ */
+template<>
+struct std::formatter<MemorySearchWidget::SearchType>
+{
+    template<class ParseContext>
+    constexpr ParseContext::iterator parse(ParseContext& context)
+    {
+        auto it = context.begin();
+
+        if (it != context.end() && *it != '}')
+        {
+            throw std::format_error("invalid format args");
+        }
+
+        return it;
+    }
+
+    template<class FormatContext>
+    FormatContext::iterator format(const MemorySearchWidget::SearchType & type, FormatContext & context) const
+    {
+        return std::ranges::copy(::to_string(type), context.out()).out;
     }
 };
 
@@ -87,14 +146,14 @@ MemorySearchWidget::SearchType MemorySearchWidget::searchType() const
 {
     bool ok;
     auto type = m_searchType.currentData().toInt(&ok);
-    assert(ok);
+    sp_assert(ok, "invalid search type ({}) {} found in MemorySearchWidget - can't convert to int", m_searchType.currentData().typeName(), m_searchType.currentData().toString().toStdString());
     return static_cast<SearchType>(type);
 }
 
 void MemorySearchWidget::setSearchType(MemorySearchWidget::SearchType type)
 {
-    auto idx = m_searchType.findData(static_cast<int>(type));
-    assert(-1 != idx);
+    const auto idx = m_searchType.findData(static_cast<int>(type));
+    sp_assert(-1 != idx, "search type {} not found in MemorySearchWidget", type);
     m_searchType.setCurrentIndex(idx);
 }
 
@@ -204,8 +263,7 @@ void MemorySearchWidget::onSearchTypeChanged()
             break;
 
         default:
-            Util::debug << "found invalid search type in search type combo\n";
-            assert(false);
+            sp_assert(false, "found invalid search type {} in MemorySearchWidget", searchType());
     }
 }
 

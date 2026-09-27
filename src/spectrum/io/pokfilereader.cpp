@@ -3,8 +3,11 @@
 //
 
 #include <fstream>
+#include <print>
 #include <sstream>
+
 #include "pokfilereader.h"
+#include "../../util/assert.h"
 #include "../../util/debug.h"
 
 using namespace Spectrum::Io;
@@ -95,7 +98,7 @@ std::optional<Spectrum::PokeDefinition> PokFileReader::nextPoke()
 
 std::optional<Poke> PokFileReader::parsePokeLine(const std::string & line)
 {
-    assert(!line.empty() && ('M' == line[0] || 'Z' == line[0]));
+    sp_assert(!line.empty() && ('M' == line[0] || 'Z' == line[0]), "found empty or invalid poke file line");
     PokeDefinition::Poke poke;
 
     std::istringstream in(line);
@@ -133,7 +136,9 @@ std::optional<Poke> PokFileReader::parsePokeLine(const std::string & line)
     if (in.fail() || value > 0x100) {
         Util::debug << "failed reading poke value\n";
         return {};
-    } else if (value == 0x100) {
+    }
+
+    if (value == 0x100) {
         // 0x100 means "user-provided value", which in a Poke object is represented by an unfilled optional
         poke.bytes = {{}};
     } else {

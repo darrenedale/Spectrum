@@ -3,25 +3,26 @@
 //
 
 #include <algorithm>
-#include <cassert>
+#include <print>
 #include <ranges>
 #include <utility>
 
 #include "breakpoint.h"
+#include "../../util/assert.h"
 
 using namespace Spectrum::Debugger;
 
 void Breakpoint::notifyObservers()
 {
     for (auto * observer : m_observers) {
-        assert(observer);
+        sp_assert(observer, "found null observer in Breakpoint::notifyObservers");
         observer->notify(this);
     }
 }
 
 void Breakpoint::addObserver(Observer * observer)
 {
-    assert(observer);
+        sp_assert(observer, "found null observer in Breakpoint::addObserver");
     m_observers.push_back(observer);
 }
 

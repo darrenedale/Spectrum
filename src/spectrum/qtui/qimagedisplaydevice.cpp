@@ -1,19 +1,19 @@
 #include <chrono>
 #include <cmath>
+#include <iostream>
+#include <print>
 
 #include <QImage>
-#include <QRgb>
 #include <QPainter>
+#include <QRgb>
 
 #include "qimagedisplaydevice.h"
-#include "../../util/debug.h"
+#include "../../util/assert.h"
 
 using namespace Spectrum::QtUi;
 
 namespace
 {
-    constexpr int DefaultRefreshRate = 50;
-
     constexpr QRgb colourMap[16] = {
             qRgb(0x00, 0x00, 0x00),
             qRgb(0x00, 0x00, 0xcd),
@@ -64,7 +64,7 @@ QImageDisplayDevice::QImageDisplayDevice(const int frameSkip)
   m_bwForeground(DefaultBlackAndWhiteForeground),
   m_bwBackground(DefaultBlackAndWhiteBackground)
 {
-    assert (m_frameSkip > 0);
+    sp_assert(m_frameSkip > 0, "invalid frame skip {} provided to QImageDisplayDevice constructor", m_frameSkip);
 }
 
 void QImageDisplayDevice::redrawDisplay(const DisplayFile & displayMemory)

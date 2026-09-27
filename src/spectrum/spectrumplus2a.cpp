@@ -1,10 +1,11 @@
-#include <cassert>
 #include <fstream>
-#include "spectrumplus2a.h"
-#include "memory/memoryplus2a.h"
+
 #include "basespectrum.h"
-#include "devices/displaydevice.h"
 #include "snapshot.h"
+#include "spectrumplus2a.h"
+#include "devices/displaydevice.h"
+#include "memory/memoryplus2a.h"
+#include "../util/assert.h"
 
 using namespace Spectrum;
 
@@ -22,7 +23,7 @@ SpectrumPlus2a::SpectrumPlus2a(const std::string & romFile0, const std::string &
     mem->loadRom(romFile2, 2);
     mem->loadRom(romFile3, 3);
     auto * cpu = z80();
-    assert(cpu);
+    sp_assert(cpu, "base class constructor did not provide a Z80 in SpectrumPlus2a constructor");
     cpu->connectIODevice(&m_pager);
 }
 
@@ -32,7 +33,7 @@ SpectrumPlus2a::SpectrumPlus2a()
 
 DisplayFile SpectrumPlus2a::displayMemory() const
 {
-    assert(memoryPlus2a());
+    sp_assert(memoryPlus2a(), "Spectrum has no memory in SpectrumPlus2a::displayMemory()");
 
     if (ScreenBuffer::Shadow == m_screenBuffer) {
         return DisplayFile(memoryPlus2a()->pagePointer(7), DisplayFile::extent);
@@ -43,16 +44,15 @@ DisplayFile SpectrumPlus2a::displayMemory() const
 
 SpectrumPlus2a::~SpectrumPlus2a()
 {
-    auto * cpu = z80();
-
-    if (cpu) {
+    if (auto * cpu = z80()) {
         cpu->disconnectIODevice(&m_pager);
     }
 }
 
 void SpectrumPlus2a::reset()
 {
-    assert(memoryPlus2a());
+    sp_assert(memoryPlus2a(), "Spectrum has no memory in SpectrumPlus2a::reset");
+
     // NOTE base class method triggers reload of ROM images
     BaseSpectrum::reset();
     m_screenBuffer = ScreenBuffer::Normal;
@@ -63,7 +63,8 @@ void SpectrumPlus2a::reset()
 
 void SpectrumPlus2a::reloadRoms()
 {
-    assert(memoryPlus2a());
+    sp_assert(memoryPlus2a(), "Spectrum has no memory in SpectrumPlus2a::reloadRoms");
+
     memoryPlus2a()->loadRom(m_romFiles[0], 0);
     memoryPlus2a()->loadRom(m_romFiles[1], 1);
     memoryPlus2a()->loadRom(m_romFiles[2], 2);
@@ -91,10 +92,10 @@ bool SpectrumPlus2a::canApplySnapshot(const Snapshot & snapshot)
 
 void SpectrumPlus2a::applySnapshot(const Snapshot & snapshot)
 {
-    assert(snapshot.model() == model());
-    assert(4 > snapshot.romNumber);
+    sp_assert(snapshot.model() == model(), "SpectrumPlus2a::applySnapshot called with a snapshot for a different model");
+    sp_assert(4 > snapshot.romNumber, "snapshot has invalid ROM number {}", snapshot.romNumber);
     auto * snapshotMemory = dynamic_cast<const MemoryType *>(snapshot.memory());
-    assert(snapshotMemory);
+    sp_assert(snapshotMemory, "snapshot has no memory in SpectrumPlus2a::applySnapshot");
 
     reset();
     applySnapshotCpuState(snapshot);

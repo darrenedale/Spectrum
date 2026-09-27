@@ -2,12 +2,15 @@
 // Created by darren on 03/05/2021.
 //
 
+#include <print>
+
 #include <QActionGroup>
-#include <QStringLiteral>
 #include <QClipboard>
+#include <QStringLiteral>
 
 #include "watchescontextmenu.h"
 #include "../application.h"
+#include "../../../util/assert.h"
 
 using namespace Spectrum::QtUi::Debugger;
 using Spectrum::Debugger::MemoryWatch;
@@ -19,7 +22,7 @@ WatchesContextMenu::WatchesContextMenu(WatchesModel * model, const QModelIndex &
   m_model(model),
   m_index(idx)
 {
-    assert(model);
+    sp_assert(model, "null model provided to WatchesContextMenu constructor");
     // for safety, the menu is closed if the model is destroyed or changes - in the case, the index may become invalid but will still report validity, and any
     // attempt to fetch the watch from the model could dereference an invalid pointer
     connect(model, &QAbstractItemModel::destroyed, this, &QMenu::close);
@@ -151,7 +154,7 @@ template<StringMemoryWatch::CharacterEncoding charset>
 void WatchesContextMenu::onCharacterSetTriggered()
 {
     auto * watch = dynamic_cast<StringMemoryWatch *>(m_model->watch(m_index));
-    assert(watch);
+    sp_assert(watch, "missing or invalid StringMemoryWatch found in WatchesModel instance in WatchesContextMenu, detected in onCharacterSetTriggered()");
     watch->setCharacterEncoding(charset);
     m_model->dataChanged(m_index, m_index);
 }
@@ -160,7 +163,7 @@ template<IntegerMemoryWatchBase::ByteOrder byteOrder>
 void WatchesContextMenu::onByteOrderTriggered()
 {
     auto * watch = dynamic_cast<IntegerMemoryWatchBase *>(m_model->watch(m_index));
-    assert(watch);
+    sp_assert(watch, "missing or invalid StringMemoryWatch found in WatchesModel instance in WatchesContextMenu, detected in onByteOrderTriggered()");
     watch->setByteOrder(byteOrder);
     m_model->dataChanged(m_index, m_index);
 }
@@ -169,7 +172,7 @@ template<IntegerMemoryWatchBase::Base base>
 void WatchesContextMenu::onNumericBaseTriggered()
 {
     auto * watch = dynamic_cast<IntegerMemoryWatchBase *>(m_model->watch(m_index));
-    assert(watch);
+    sp_assert(watch, "missing or invalid StringMemoryWatch found in WatchesModel instance in WatchesContextMenu, detected in onNumericBaseTriggered()");
     watch->setBase(base);
     m_model->dataChanged(m_index, m_index);
 }

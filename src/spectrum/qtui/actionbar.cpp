@@ -2,13 +2,17 @@
 // Created by darren on 26/04/2021.
 //
 
-#include <QHBoxLayout>
-#include <QVBoxLayout>
+#include <print>
+
 #include <QAction>
-#include <QToolButton>
+#include <QHBoxLayout>
 #include <QStyle>
+#include <QToolButton>
+#include <QVBoxLayout>
+
 #include "actionbar.h"
 #include "widgetupdatesuspender.h"
+#include "../../util/assert.h"
 #include "../../util/debug.h"
 
 using namespace Spectrum::QtUi;
@@ -108,14 +112,14 @@ void ActionBar::setIconSize(const QSize & size)
     }
 }
 
-void ActionBar::addStretch(int size)
+void ActionBar::addStretch(const int size)
 {
     auto * layout = qobject_cast<QBoxLayout *>(this->layout());
-    assert(layout);
+    sp_assert(layout, "ActionBar has no layout in ActionBar::addStretch");
     layout->addStretch(size);
 }
 
-void ActionBar::insertStretch(int idx, int size)
+void ActionBar::insertStretch(const int idx, const int size)
 {
     if (0 > idx || layout()->count() <= idx) {
         Util::debug << "index " << idx << " is outside the current bounds of the action bar - adding stretch to the end of the action bar layout\n";
@@ -124,7 +128,7 @@ void ActionBar::insertStretch(int idx, int size)
     }
 
     auto * layout = qobject_cast<QBoxLayout *>(this->layout());
-    assert(layout);
+    sp_assert(layout, "ActionBar has no layout in ActionBar::insertStretch");
     layout->insertStretch(idx, size);
 }
 
@@ -132,7 +136,7 @@ void ActionBar::addAction(QAction * action)
 {
     QWidget::addAction(action);
     auto * layout = qobject_cast<QBoxLayout *>(this->layout());
-    assert(layout);
+    sp_assert(layout, "ActionBar has no layout in ActionBar::addAction");
     layout->addWidget(createToolButton(action));
 }
 
@@ -153,7 +157,7 @@ void ActionBar::insertAction(QAction * before, QAction * action)
     }
 
     auto * layout = qobject_cast<QBoxLayout *>(this->layout());
-    assert(layout);
+    sp_assert(layout, "ActionBar has no layout in ActionBar::insertAction");
 
     QWidget::insertAction(before, action);
 
@@ -178,7 +182,7 @@ void ActionBar::insertActions(QAction * before, const QList<QAction *> & actionL
     }
 
     auto * layout = qobject_cast<QBoxLayout *>(this->layout());
-    assert(layout);
+    sp_assert(layout, "ActionBar has no layout in ActionBar::insertActions");
 
     QWidget::insertActions(before, actionList);
     WidgetUpdateSuspender suspender(*this);

@@ -2,6 +2,7 @@
 #define CPU_H
 
 #include <cstdint>
+
 #include "memory.h"
 
 /**
@@ -20,7 +21,6 @@ public:
      * that CPU no longer keeps a reference to the memory once it has been discarded.
      *
      * @param memory
-     * @param memorySize
      */
     explicit Cpu(MemoryType * memory);
 
@@ -63,7 +63,6 @@ public:
      * once it has been discarded.
      *
      * @param memory
-     * @param memorySize
      */
     void setMemory(MemoryType * memory);
 
@@ -74,7 +73,8 @@ public:
      *
      * @return A pointer to the memory.
      */
-    inline MemoryType * memory()
+    [[nodiscard]]
+    MemoryType * memory() noexcept
     {
         return m_memory;
     }
@@ -86,7 +86,8 @@ public:
      *
      * @return A pointer to the memory.
      */
-    [[nodiscard]] inline const MemoryType * memory() const
+    [[nodiscard]]
+    const MemoryType * memory() const noexcept
     {
         return m_memory;
     }
@@ -98,7 +99,8 @@ public:
      *
      * @return The addressable size.
      */
-    [[nodiscard]] inline int memorySize() const
+    [[nodiscard]]
+    int memorySize() const
     {
         return static_cast<int>(m_memory->addressableSize());
     }
@@ -111,7 +113,7 @@ public:
      *
      * @param hz The speed of the CPU in hertz (cycles per second).
      */
-    inline void setClockSpeed(unsigned long long hz)
+    void setClockSpeed(const unsigned long long hz) noexcept
     {
         m_clockSpeed = hz;
     }
@@ -122,9 +124,9 @@ public:
      * This has no impact on the actual speed of the emulation - the consumer of the CPU can, however, use this setting
      * to determine timings that keep the CPU appearing to run at this speed.
      *
-     * @param hz The speed of the CPU in megahertz hertz (millions of cycles per second).
+     * @param mhz The speed of the CPU in megahertz hertz (millions of cycles per second).
      */
-    inline void setClockSpeedMHz(double mhz)
+    void setClockSpeedMHz(const double mhz)
     {
         m_clockSpeed = static_cast<unsigned long long>(mhz * 1000000);
     }
@@ -134,7 +136,8 @@ public:
      *
      * @return The clock speed in hertz (cycles per second).
      */
-    [[nodiscard]] inline unsigned long long clockSpeed() const
+    [[nodiscard]]
+    unsigned long long clockSpeed() const
     {
         return m_clockSpeed;
     }
@@ -144,7 +147,8 @@ public:
      *
      * @return The clock speed in megahertz (millions of cycles per second).
      */
-    [[nodiscard]] inline double clockSpeedMHz() const
+    [[nodiscard]]
+    double clockSpeedMHz() const
     {
         return static_cast<double>(m_clockSpeed) / 1000000.0;
     }

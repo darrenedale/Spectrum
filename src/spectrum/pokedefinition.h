@@ -100,9 +100,9 @@ namespace Spectrum
          */
         void apply(BaseSpectrum::MemoryType & memory) const;
 
-        void apply(BaseSpectrum & spectrum) const
+        void apply(const BaseSpectrum & spectrum) const
         {
-            assert(spectrum.memory());
+            sp_assert(spectrum.memory(), "detected Spectrum with null memory in Spectrum::PokeDefinition::apply()");
             return apply(*(spectrum.memory()));
         }
 
@@ -116,7 +116,7 @@ namespace Spectrum
 
         void undo(const BaseSpectrum & spectrum) const
         {
-            assert(spectrum.memory());
+            sp_assert(spectrum.memory(), "detected Spectrum with null memory in Spectrum::PokeDefinition::undo()");
             return undo(*(spectrum.memory()));
         }
 

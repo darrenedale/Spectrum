@@ -1,20 +1,22 @@
 #include "basespectrum.h"
-#include <fstream>
+
 #include <chrono>
+#include <fstream>
+#include <print>
 #include <thread>
+
+#include "snapshot.h"
+#include "z80.h"
 #include "devices/displaydevice.h"
 #include "devices/joystickinterface.h"
 #include "devices/mouseinterface.h"
 #include "devices/keyboard.h"
-#include "z80.h"
-#include "snapshot.h"
+#include "../util/assert.h"
 
 namespace
 {
-    /**
-     * The default Z80 clock speed for a Spectrum.
-     */
-    const int DefaultClockSpeed = 3500000;
+    /** The default Z80 clock speed for a Spectrum. */
+    constexpr int DefaultClockSpeed = 3500000;
 }
 
 namespace Spectrum
@@ -50,7 +52,7 @@ namespace Spectrum
         reloadRoms();
         refreshDisplays();
         auto * cpu = this->z80();
-        assert(cpu);
+        sp_assert(cpu, "null Z80 CPU detected in BaseSpectrum::reset");
         m_interruptTStateCounter = 0;
         cpu->reset();
     }
@@ -75,7 +77,7 @@ namespace Spectrum
         using namespace std::chrono;
         using namespace std::chrono_literals;
 
-        assert(z80());
+        sp_assert(z80(), "null Z80 CPU detected in BaseSpectrum::run");
 
         static steady_clock::time_point lastInterrupt = steady_clock::now();
         // standard spectrum refresh is not exactly 50FPS it's 50.08 (69888 t-states)
@@ -86,8 +88,7 @@ namespace Spectrum
 
             // check interrupt counter against threshold and raise INT in CPU if required
             if (m_interruptTStateCounter > interruptThreshold) {
-                // NOTE spectrum leaves RST38 interrupt on the bus when generating the interrupt
-                z80()->interrupt(Z80::InterruptRst38 & 0xff);
+                z80()->interrupt(0xff);     // NOTE spectrum leaves 0xff on the bus when generating the interrupt
                 refreshDisplays();
                 m_interruptTStateCounter %= interruptThreshold;
 
@@ -155,7 +156,7 @@ namespace Spectrum
 
     void BaseSpectrum::addDisplayDevice(Devices::DisplayDevice * dev)
     {
-        assert(dev);
+        sp_assert(dev, "null DisplayDevice passed to BaseSpectrum::addDisplayDevice");
         m_displayDevices.push_back(dev);
         auto * cpu = z80();
 
@@ -178,7 +179,7 @@ namespace Spectrum
     void BaseSpectrum::applySnapshotCpuState(const Snapshot & snapshot)
     {
         auto * cpu = z80();
-        assert(cpu);
+        sp_assert(cpu, "null CPU detected in BaseSpectrum::applySnapshotCpuState()");
         cpu->registers() = snapshot.registers();
         cpu->setIff1(snapshot.iff1);
         cpu->setIff2(snapshot.iff2);

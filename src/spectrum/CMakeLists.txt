@@ -154,7 +154,6 @@ add_executable(
         ../cpu.cpp
         ../memory.h
         ../simplememory.h
-        ../util/concepts.h
         ../util/crc32.h
         ../util/debug.h
         ../util/endian.h
@@ -170,6 +169,7 @@ add_executable(
         ../z80/z80.cpp
 
         ${SPECTRUM_QT_GAMEPAD_SOURCES}
+        ../util/assert.h
 )
 
 target_link_libraries(spectrum ${SPECTRUM_QT_LIBS})

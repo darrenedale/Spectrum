@@ -20,6 +20,7 @@ add_executable(
         ../../z80/assembly/operand.cpp
         ../../z80/assembly/disassembler.cpp
         testiodevice.h
+        ../../util/assert.h
 )
 
 set_target_properties(

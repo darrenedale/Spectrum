@@ -82,7 +82,8 @@ namespace Spectrum::Debugger
         bool check(const BaseSpectrum & spectrum) noexcept override
         {
             const auto * memory = spectrum.memory();
-            assert(memory && address() <= memory->addressableSize() - sizeof(value_t));
+            sp_assert(memory, "null memory detected in Spectrum passed to MemoryChangedBreakpoint::check()");
+            sp_assert(address() <= memory->addressableSize() - sizeof(value_t), "MemoryChangedBreakpoint with value size {} bytes at {:#08x} would read beyond memory address space on memory in Spectrum passed to MemoryChangedBreakpoint::check()", sizeof(value_t), address());
             auto currentValue = memory->readWord<value_t>(address());
 
             // NOTE the breakpoint never triggers on the first check since we don't know what the memory value was before the breakpoint was created.

@@ -5,14 +5,12 @@
 #ifndef SPECTRUM_IO_SNAPSHOTFORMATMATCHER_H
 #define SPECTRUM_IO_SNAPSHOTFORMATMATCHER_H
 
-// NOTE I think this should be 202002L (publication date) but MSVC has 201907L (feature freeze date)
-#if (!defined(__cpp_lib_concepts) || 201907L > __cpp_lib_concepts)
-// use polyfill for missing concepts library
-#include "../../util/concepts.h"
-#endif
+#include <concepts>
 
 namespace Spectrum::Io
 {
+    class SnapshotReader;
+
     /**
      * Concept used for snapshot readers that can indicate whether a file could be a snapshot in their format.
      *

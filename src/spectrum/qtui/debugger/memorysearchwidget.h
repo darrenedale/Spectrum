@@ -29,7 +29,7 @@ namespace Spectrum::QtUi::Debugger
         /**
          * Enumeration of the types of search available.
          */
-        enum class SearchType
+        enum class SearchType : std::uint8_t
         {
             UnsignedByte = 0,       // search for a single unsigned byte value
             UnsignedWord,           // search for a 16-bit unsigned word value
