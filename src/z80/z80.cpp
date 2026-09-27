@@ -24,7 +24,7 @@
 #include "../util/assert.h"
 #include "../util/debug.h"
 
-#if !(defined(NDEBUG))
+#if !defined(NDEBUG)
 #include "assembly/disassembler.h"
 #endif
 
@@ -998,7 +998,7 @@ Z80::InstructionCost Z80::Z80::execute(const UnsignedByte * instruction, bool do
     // cost is always assigned in the switch() so we don't need to initialise it here
     InstructionCost cost;
 
-#if (!defined(NDEBUG))
+#if !defined(NDEBUG) && defined(DEBUG_EXECUTION_HISTORY)
 	ExecutedInstruction historyEntry(instruction, this);
 #endif
 
@@ -1041,7 +1041,7 @@ Z80::InstructionCost Z80::Z80::execute(const UnsignedByte * instruction, bool do
         m_registers.pc += cost.size;
     }
 
-#if (!defined(NDEBUG))
+#if !defined(NDEBUG) && defined(DEBUG_EXECUTION_HISTORY)
 	historyEntry.registersAfter = registers();
     m_executionHistory.add(std::move(historyEntry));
 
@@ -1094,31 +1094,76 @@ void Z80::Z80::handleNmi()
 
 int Z80::Z80::handleInterrupt()
 {
-    int tStates = 0;
     m_iff1 = m_iff2 = false;
-    // TODO R register?
+    ++m_registers.r;
 
     if (m_halted) {
-        // HALTing the CPU (either via HALT instruction or by some device signalling the HALT pin) freezes the PC. In either case, once we resume we need the
-        // PC to move on to the next instruction (otherwise it would simply re-execute the HALT)
+        // HALTing the CPU (either via HALT instruction or by some device signalling the HALT pin) freezes the PC. In
+        // either case, once we resume we need the PC to move on to the next instruction (otherwise it would simply
+        // re-execute the HALT)
         m_halted = false;
         ++m_registers.pc;
     }
 
+    // Z80__PUSH__REG16(m_registers.pc);
+
+    // TODO when we support IRequest, reset if needed
+
     switch (m_interruptMode) {
         case InterruptMode::IM0:
-            Util::debug << "IM0 is not currently handled correctly.\n";
+            // Util::debug << "IM0 is not currently handled correctly.\n";
             // TODO if the instruction is a call or RST, push PC onto stack
-            if (false/* is_call_or_rst */) {
+            // if (false/* is_call_or_rst */) {
                 Z80__PUSH__REG16(m_registers.pc);
-            }
+            // }
 
             // TODO fetch the instruction from the device, up to 4 bytes
             // execute the instruction
-//				execute(reinterpret_cast<UnsignedByte *>(&m_interruptData), false);
+            //				execute(reinterpret_cast<UnsignedByte *>(&m_interruptData), false);
             // clear the instruction cache - actually just turns it into a NOP
+
+            // TODO this is only suitable for Spectrums, which only use RST $0038
+            switch (m_interruptData) {
+                case InterruptRst00:
+                    m_registers.pc = 0x0000;
+                    break;
+
+                case InterruptRst08:
+                    m_registers.pc = 0x0008;
+                    break;
+
+                case InterruptRst10:
+                    m_registers.pc = 0x0010;
+                    break;
+
+                case InterruptRst18:
+                    m_registers.pc = 0x0018;
+                    break;
+
+                case InterruptRst20:
+                    m_registers.pc = 0x0020;
+                    break;
+
+                case InterruptRst28:
+                    m_registers.pc = 0x0028;
+                    break;
+
+                case InterruptRst30:
+                    m_registers.pc = 0x0030;
+                    break;
+
+                case InterruptRst38:
+                    m_registers.pc = 0x0038;
+                    break;
+
+                [[unlikely]]
+                default:
+                    sp_assert(false, "invalid interrupt vector {} in interrupt mode IM0", m_interruptData);
+                    break;
+            }
+
             m_interruptData = 0x00;
-            return 0;
+            return 13;
 
         case InterruptMode::IM1:
             Z80__PUSH__REG16(m_registers.pc);
@@ -6062,7 +6107,7 @@ void Z80::Z80::setRegisterValue(const Register8 reg, const UnsignedByte value) n
 	}
 }
 
-#if (!defined(NDEBUG))
+#if !defined(NDEBUG)
 namespace
 {
     void dumpRegisters(std::ostream & out, const ::Z80::Registers & registers)
@@ -6100,6 +6145,7 @@ void Z80::Z80::dumpState(std::ostream & out) const
         << std::dec << std::setfill(' ');
 }
 
+#if defined(DEBUG_EXECUTION_HISTORY)
 void Z80::Z80::dumpExecutionHistory(const int entries, std::ostream & out) const
 {
     auto entry = m_executionHistory.newest();
@@ -6112,15 +6158,15 @@ void Z80::Z80::dumpExecutionHistory(const int entries, std::ostream & out) const
         out << "#" << std::dec << std::setw(0) << instructionIndex << " (@ 0x"
             << std::hex << std::setfill('0') << std::setw(4) << entry->registersBefore.pc << ")\n"
             << to_string(mnemonic) << "          [" << std::hex << std::setfill('0');
-        
+
         for (auto byteIndex = 0; byteIndex < mnemonic.size; ++byteIndex) {
             if (0 < byteIndex) {
                 out << ", ";
             }
-            
+
             out << "0x" << std::setw(2) << static_cast<std::uint16_t>(entry->machineCode[byteIndex]);
         }
-        
+
         out << "]\n";
 
         out << to_string(mnemonic.instruction) << ' ';
@@ -6170,4 +6216,5 @@ void Z80::Z80::dumpExecutionHistory(const int entries, std::ostream & out) const
 
     out << "\n======================================================================\n";
 }
+#endif
 #endif

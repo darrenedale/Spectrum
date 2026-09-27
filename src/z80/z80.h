@@ -14,7 +14,7 @@
 #include "../simplememory.h"
 #include "../util/assert.h"
 
-#if (!defined(NDEBUG))
+#if !defined(NDEBUG) && defined(DEBUG_EXECUTION_HISTORY)
 #include "executionhistory.h"
 #endif
 
@@ -47,7 +47,17 @@ namespace Z80
     : public Cpu
     {
         public:
-            using Memory = ::Memory<UnsignedByte>;
+            /** IM0 interrupt vectors. */
+        static constexpr UnsignedWord InterruptRst00 = 0x00c7;
+        static constexpr UnsignedWord InterruptRst08 = 0x00cf;
+        static constexpr UnsignedWord InterruptRst10 = 0x00d7;
+        static constexpr UnsignedWord InterruptRst18 = 0x00df;
+        static constexpr UnsignedWord InterruptRst20 = 0x00e7;
+        static constexpr UnsignedWord InterruptRst28 = 0x00ef;
+        static constexpr UnsignedWord InterruptRst30 = 0x00f7;
+        static constexpr UnsignedWord InterruptRst38 = 0x00ff;
+
+        using Memory = ::Memory<UnsignedByte>;
 
             /**
              * Initialise a new Z80 with a memory object.
@@ -107,6 +117,7 @@ namespace Z80
              *
              * @return The registers.
              */
+            [[nodiscard]]
             Registers & registers() noexcept
             {
                 return m_registers;
@@ -197,36 +208,28 @@ namespace Z80
                 return m_registers.iy;
             }
 
-            /**
-             * The stack pointer in host byte order.
-             */
+            /** The stack pointer in host byte order. */
             [[nodiscard]]
             UnsignedWord sp() const noexcept
             {
                 return m_registers.sp;
             }
 
-            /**
-             * The stack pointer in host byte order.
-             */
+            /** The stack pointer in host byte order. */
             [[nodiscard]]
             UnsignedWord stackPointer() const noexcept
             {
                 return sp();
             }
 
-            /**
-             * The program counter in host byte order.
-             */
+            /** The program counter in host byte order. */
             [[nodiscard]]
             UnsignedWord pc() const noexcept
             {
                 return m_registers.pc;
             }
 
-            /**
-             * The program counter in host byte order.
-             */
+            /** The program counter in host byte order. */
             [[nodiscard]]
             UnsignedWord programCounter() const noexcept
             {
@@ -236,7 +239,7 @@ namespace Z80
             //
             // shadow registers in host byte order
             //
-            
+
             [[nodiscard]]
             UnsignedWord afShadowRegisterValue() const noexcept
             {
@@ -264,7 +267,7 @@ namespace Z80
             //
             // register values in Z80 byte order
             //
-            
+
             [[nodiscard]]
             UnsignedWord afRegisterValueZ80() const noexcept
             {
@@ -301,36 +304,28 @@ namespace Z80
                 return registerValueZ80(Register16::IY);
             }
 
-            /**
-             * The stack pointer in Z80 byte order.
-             */
+            /** The stack pointer in Z80 byte order. */
             [[nodiscard]]
             UnsignedWord spZ80() const noexcept
             {
                 return registerValueZ80(Register16::SP);
             }
 
-            /**
-             * The stack pointer in Z80 byte order.
-             */
+            /** The stack pointer in Z80 byte order. */
             [[nodiscard]]
             UnsignedWord stackPointerZ80() const noexcept
             {
                 return spZ80();
             }
 
-            /**
-             * The program counter in Z80 byte order.
-             */
+            /** The program counter in Z80 byte order. */
             [[nodiscard]]
             UnsignedWord pcZ80() const noexcept
             {
                 return registerValueZ80(Register16::PC);
             }
 
-            /**
-             * The program counter in Z80 byte order.
-             */
+            /** The program counter in Z80 byte order. */
             [[nodiscard]]
             UnsignedWord programCounterZ80() const noexcept
             {
@@ -717,92 +712,92 @@ namespace Z80
             // 8-bit Registers
             //
 
-            void setA(const UnsignedByte value) noexcept
+            void setA(const UnsignedByte value)noexcept
             {
                 m_registers.a = value;
             }
 
-            void setF(const UnsignedByte value) noexcept
+            void setF(const UnsignedByte value)noexcept
             {
                 m_registers.f = value;
             }
 
-            void setB(const UnsignedByte value) noexcept
+            void setB(const UnsignedByte value)noexcept
             {
                 m_registers.b = value;
             }
 
-            void setC(const UnsignedByte value) noexcept
+            void setC(const UnsignedByte value)noexcept
             {
                 m_registers.c = value;
             }
 
-            void setD(const UnsignedByte value) noexcept
+            void setD(const UnsignedByte value)noexcept
             {
                 m_registers.d = value;
             }
 
-            void setE(const UnsignedByte value) noexcept
+            void setE(const UnsignedByte value)noexcept
             {
                 m_registers.e = value;
             }
 
-            void setH(const UnsignedByte value) noexcept
+            void setH(const UnsignedByte value)noexcept
             {
                 m_registers.h = value;
             }
 
-            void setL(const UnsignedByte value) noexcept
+            void setL(const UnsignedByte value)noexcept
             {
                 m_registers.l = value;
             }
 
-            void setI(const UnsignedByte value) noexcept
+            void setI(const UnsignedByte value)noexcept
             {
                 m_registers.i = value;
             }
 
-            void setR(const UnsignedByte value) noexcept
+            void setR(const UnsignedByte value)noexcept
             {
                 m_registers.r = value;
             }
 
-            void setAShadow(const UnsignedByte value) noexcept
+            void setAShadow(const UnsignedByte value)noexcept
             {
                 m_registers.aShadow = value;
             }
 
-            void setFShadow(const UnsignedByte value) noexcept
+            void setFShadow(const UnsignedByte value)noexcept
             {
                 m_registers.fShadow = value;
             }
 
-            void setBShadow(const UnsignedByte value) noexcept
+            void setBShadow(const UnsignedByte value)noexcept
             {
                 m_registers.bShadow = value;
             }
 
-            void setCShadow(const UnsignedByte value) noexcept
+            void setCShadow(const UnsignedByte value)noexcept
             {
                 m_registers.cShadow = value;
             }
 
-            void setDShadow(const UnsignedByte value) noexcept
+            void setDShadow(const UnsignedByte value)noexcept
             {
                 m_registers.dShadow = value;
             }
 
-            void setEShadow(const UnsignedByte value) noexcept
+            void setEShadow(const UnsignedByte value)noexcept
             {
                 m_registers.eShadow = value;
             }
 
-            void setHShadow(const UnsignedByte value) noexcept
+            void setHShadow(const UnsignedByte value)noexcept
             {
                 m_registers.hShadow = value;
             }
 
-            void setLShadow(const UnsignedByte value) noexcept
+            void setLShadow(const UnsignedByte value)noexcept
             {
                 m_registers.lShadow = value;
             }
@@ -810,10 +805,11 @@ namespace Z80
             //
             // query flag states
             //
+
             /**
              * True if all flag bits from the mask are set, false otherwise.
              *
-             * @tparam mask 
+             * @tparam mask
              * @return
              */
             template<UnsignedByte mask>
@@ -1098,7 +1094,7 @@ namespace Z80
              * @param addr The address to write the 8-bit value. The address is given in host byte order.
              * @param value
              */
-            inline void pokeUnsigned(MemoryType::Address addr, UnsignedByte value);
+            void pokeUnsigned(MemoryType::Address addr, UnsignedByte value);
 
             /**
              * Write a 16-bit value to the Z80 memory.
@@ -1382,17 +1378,19 @@ namespace Z80
              */
             std::set<IODevice *> m_ioDevices;
 
-#if (!defined(NDEBUG))
+#if !defined(NDEBUG)
         public:
             // write details about the current state of the CPU
             void dumpState(std::ostream & out = std::cout) const;
 
+#if defined(DEBUG_EXECUTION_HISTORY)
             // write details about the N most recently executed instructions
             void dumpExecutionHistory(int entries, std::ostream & out = std::cout) const;
 
         private:
             // a ring buffer with the 10000 most recently executed instructions
             ExecutionHistory<10000> m_executionHistory;
+#endif
 #endif
     };
 }
