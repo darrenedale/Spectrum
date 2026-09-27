@@ -170,6 +170,7 @@ add_executable(
         ../z80/z80.cpp
 
         ${SPECTRUM_QT_GAMEPAD_SOURCES}
+        ../util/assert.h
 )
 
 target_link_libraries(spectrum ${SPECTRUM_QT_LIBS})
@@ -177,7 +178,7 @@ target_link_libraries(spectrum ${SPECTRUM_QT_LIBS})
 set_target_properties(
         spectrum
         PROPERTIES
-        CXX_STANDARD 20
+        CXX_STANDARD 26
         OUTPUT_NAME Spectrum
 )
 

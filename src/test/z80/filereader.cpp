@@ -2,12 +2,13 @@
 // Created by darren on 27/02/2021.
 //
 
-#include <cassert>
 #include <cstring>
 #include <iostream>
+#include <print>
 #include <sstream>
 
 #include "filereader.h"
+#include "../../util/assert.h"
 
 using namespace Test::Z80;
 
@@ -33,9 +34,7 @@ std::optional<::Z80::UnsignedWord> FileReader::parseWord(char bytes[4])
             return {};
         }
 
-        auto digit = std::tolower(bytes[idx]);
-
-        if ('0' <= digit && '9' >= digit) {
+        if (const auto digit = std::tolower(bytes[idx]); '0' <= digit && '9' >= digit) {
             word |= (digit - '0') << ((3 - idx) * 4);
         } else {
             word |= (10 + digit - 'a') << ((3 - idx) * 4);
@@ -56,9 +55,7 @@ std::optional<::Z80::UnsignedByte> FileReader::parseByte(char bytes[2])
             return {};
         }
 
-        auto digit = std::tolower(bytes[idx]);
-
-        if ('0' <= digit && '9' >= digit) {
+        if (const auto digit = std::tolower(bytes[idx]); '0' <= digit && '9' >= digit) {
             byte |= (digit - '0') << ((1 - idx) * 4);
         } else {
             byte |= (10 + digit - 'a') << ((1 - idx) * 4);
@@ -109,7 +106,7 @@ bool FileReader::open()
 
 void FileReader::skipEmptyLines()
 {
-    assert(isOpen());
+    sp_assert(isOpen(), "call to FileReader::skipEmptyLines on closed reader");
 
     while (!m_inStream.eof() && '\n' == m_inStream.peek()) {
         m_inStream.get();
@@ -118,7 +115,7 @@ void FileReader::skipEmptyLines()
 
 std::optional<std::string> FileReader::readLine()
 {
-    assert(isOpen());
+    sp_assert(isOpen(), "call to FileReader::readLine on closed reader");
     char buffer[4096];
     m_inStream.getline(buffer, 4096);
 
@@ -138,7 +135,7 @@ std::optional<std::string> FileReader::readName()
 
 bool FileReader::readRegisterPairs(State & state)
 {
-    assert(isOpen());
+    sp_assert(isOpen(), "call to FileReader::readRegisterPairs on closed reader");
     auto line = readLine();
 
     if (!line) {
@@ -182,8 +179,8 @@ bool FileReader::readRegisterPairs(State & state)
 
 bool FileReader::readRegistersFlagsTStates(State & state, std::size_t & tStates)
 {
-    assert(isOpen());
-    auto line = readLine();
+    sp_assert(isOpen(), "call to FileReader::readRegistersFlagsTStates on closed reader");
+    const auto line = readLine();
 
     if (!line) {
         return false;
@@ -216,7 +213,7 @@ bool FileReader::readRegistersFlagsTStates(State & state, std::size_t & tStates)
     }
 
     for (auto & property : {&state.iff1, &state.iff2,}) {
-        char byte = in.get();
+        const char byte = static_cast<char>(in.get());
 
         if (' ' != in.get()) {
             std::cerr << "Invalid delimiter in registers/flags/t-states line\n";
@@ -233,14 +230,14 @@ bool FileReader::readRegistersFlagsTStates(State & state, std::size_t & tStates)
         *property = *flag;
     }
 
-    char byte = in.get();
+    char byte = static_cast<char>(in.get());
 
     if (' ' != in.get()) {
         std::cerr << "Invalid delimiter in registers/flags/t-states line\n";
         return false;
     }
 
-    auto im = parseInterruptMode(byte);
+    const auto im = parseInterruptMode(byte);
 
     if (!im) {
         std::cerr << "Failed parsing interrupt mode in registers/flags/t-states line\n";
@@ -249,14 +246,14 @@ bool FileReader::readRegistersFlagsTStates(State & state, std::size_t & tStates)
 
     state.im = *im;
 
-    byte = in.get();
+    byte = static_cast<char>(in.get());
 
     if (' ' != in.get()) {
         std::cerr << "Invalid delimiter in registers/flags/t-states line\n";
         return false;
     }
 
-    auto flag = parseFlag(byte);
+    const auto flag = parseFlag(byte);
 
     if (!flag) {
         std::cerr << "Failed parsing halted flag in registers/flags/t-states line\n";
@@ -278,7 +275,7 @@ bool FileReader::readRegistersFlagsTStates(State & state, std::size_t & tStates)
 
 std::optional<std::vector<MemoryBlock>> FileReader::readMemoryBlocks()
 {
-    assert(isOpen());
+    sp_assert(isOpen(), "call to FileReader::readMemoryBlocks on closed reader");
     std::vector<MemoryBlock> memory;
 
     while ('-' != m_inStream.peek()) {
@@ -303,8 +300,8 @@ std::optional<std::vector<MemoryBlock>> FileReader::readMemoryBlocks()
 
 std::optional<MemoryBlock> FileReader::readMemoryBlock()
 {
-    assert(isOpen());
-    auto line = readLine();
+    sp_assert(isOpen(), "call to FileReader::readMemoryBlock on closed reader");
+    const auto line = readLine();
 
     if (!line) {
         return {};
@@ -319,7 +316,7 @@ std::optional<MemoryBlock> FileReader::readMemoryBlock()
         return {};
     }
 
-    auto address = parseWord(bytes);
+    const auto address = parseWord(bytes);
 
     if (!address) {
         std::cerr << "Failed parsing memory block address\n";
@@ -365,5 +362,5 @@ std::optional<MemoryBlock> FileReader::readMemoryBlock()
         return {};
     }
 
-    return std::make_optional<MemoryBlock>({*address, std::move(data)});
+    return std::make_optional(MemoryBlock{.address = *address, .data = std::move(data)});
 }

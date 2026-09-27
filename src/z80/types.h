@@ -7,6 +7,7 @@
 
 #include <bit>
 #include <cstdint>
+#include <format>
 #include <string>
 
 namespace Z80
@@ -146,5 +147,30 @@ namespace Z80
         return static_cast<Z80::SignedWord>(value);
     }
 }
+
+// TODO we could probably make this even more generic by requiring a type for which to_string is implemented
+template <typename T>
+requires std::is_same_v<T, Z80::Register16> || std::is_same_v<T, Z80::Register8> || std::is_same_v<T, Z80::InterruptMode>
+struct std::formatter<T>
+{
+    template<class ParseContext>
+    constexpr ParseContext::iterator parse(ParseContext& context)
+    {
+        auto it = context.begin();
+
+        if (it != context.end() && *it != '}')
+        {
+            throw std::format_error("invalid format args");
+        }
+
+        return it;
+    }
+
+    template<class FormatContext>
+    FormatContext::iterator format(const T & value, FormatContext & context) const
+    {
+        return std::ranges::copy(to_string(value), context.out()).out;
+    }
+};
 
 #endif //Z80_TYPES_H

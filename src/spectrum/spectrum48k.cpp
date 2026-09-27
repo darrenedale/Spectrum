@@ -1,7 +1,10 @@
 #include <fstream>
-#include "spectrum48k.h"
+#include <print>
+
 #include "snapshot.h"
+#include "spectrum48k.h"
 #include "devices/displaydevice.h"
+#include "../util/assert.h"
 
 using namespace Spectrum;
 
@@ -55,8 +58,8 @@ bool Spectrum48k::canApplySnapshot(const Snapshot & snapshot)
 
 void Spectrum48k::applySnapshot(const Snapshot & snapshot)
 {
-    assert(snapshot.model() == model());
-    assert(dynamic_cast<const MemoryType *>(snapshot.memory()));
+    sp_assert(snapshot.model() == model(), "detected Spectrum model mismatch in Spectrum::Spectrum48k::applySnapshot()");
+    sp_assert(dynamic_cast<const MemoryType *>(snapshot.memory()), "found incompatible snapshot memory in Spectrum::Spectrum48k::applySnapshot()");
 
     reset();
     applySnapshotCpuState(snapshot);

@@ -5,9 +5,12 @@
 #ifndef SPECTRUM_IO_SNAPSHOTWRITER_H
 #define SPECTRUM_IO_SNAPSHOTWRITER_H
 
-#include <ostream>
 #include <fstream>
+#include <ostream>
+#include <print>
+
 #include "../snapshot.h"
+#include "../../util/assert.h"
 
 namespace Spectrum::Io
 {
@@ -142,7 +145,7 @@ namespace Spectrum::Io
          */
         Snapshot & snapshot() noexcept
         {
-            assert(m_snapshot);
+            sp_assert(m_snapshot, "detected null snapshot in call to Spectrum::Io::SnapshotWriter::snapshot()");
             return *m_snapshot;
         }
 
@@ -155,7 +158,7 @@ namespace Spectrum::Io
          */
         [[nodiscard]] const Snapshot & snapshot() const noexcept
         {
-            assert(m_snapshot);
+            sp_assert(m_snapshot, "detected null snapshot in call to Spectrum::Io::SnapshotWriter::snapshot()");
             return *m_snapshot;
         }
 

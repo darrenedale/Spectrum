@@ -7,7 +7,9 @@
 
 #include <concepts>
 #include <optional>
+#include <print>
 #include <vector>
+
 #include <QAbstractItemView>
 #include <QAction>
 #include <QRect>
@@ -18,6 +20,8 @@
 #include <QToolTip>
 #include <QTimer>
 #include <QApplication>
+
+#include "../../util/assert.h"
 #include "../../util/compiler.h"
 
 // NOTE I think this should be 202002L (publication date) but MSVC has 201907L (feature freeze date)
@@ -315,7 +319,7 @@ namespace Spectrum::QtUi
          */
         QAction * addItemAction(QAction * action)
         {
-            assert(action);
+            sp_assert(action, "null action provided to ActionableItemView::addItemAction");
             auto & actionItem = m_itemActions.emplace_back(action, QRect(), QMetaObject::Connection());
 
             actionItem.destructHandler = ViewType::connect(action, &QAction::destroyed, [this, action]() {

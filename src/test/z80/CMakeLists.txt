@@ -20,10 +20,11 @@ add_executable(
         ../../z80/assembly/operand.cpp
         ../../z80/assembly/disassembler.cpp
         testiodevice.h
+        ../../util/assert.h
 )
 
 set_target_properties(
         z80-test
         PROPERTIES
-        CXX_STANDARD 20
+        CXX_STANDARD 26
 )

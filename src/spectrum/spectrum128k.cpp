@@ -1,11 +1,12 @@
-#include <cassert>
 #include <fstream>
+#include <print>
 
 #include "basespectrum.h"
-#include "memory/memory128k.h"
 #include "snapshot.h"
 #include "spectrum128k.h"
 #include "devices/displaydevice.h"
+#include "memory/memory128k.h"
+#include "../util/assert.h"
 
 using namespace Spectrum;
 
@@ -21,7 +22,7 @@ Spectrum128k::Spectrum128k(const std::string & romFile0, const std::string & rom
     mem->loadRom(romFile0, 0);
     mem->loadRom(romFile1, 1);
     auto * cpu = z80();
-    assert(cpu);
+    sp_assert(cpu, "null Cpu provided to Spectrum128k constructor");
     cpu->connectIODevice(&m_pager);
 }
 
@@ -31,7 +32,7 @@ Spectrum128k::Spectrum128k()
 
 DisplayFile Spectrum128k::displayMemory() const
 {
-    assert(memory128());
+    sp_assert(memory128(), "Spectrum has no memory in Spectrum128k::displayMemory()");
 
     if (ScreenBuffer::Shadow == m_screenBuffer) {
         return DisplayFile(memory128()->pagePointer(7), DisplayFile::extent);
@@ -42,16 +43,15 @@ DisplayFile Spectrum128k::displayMemory() const
 
 Spectrum128k::~Spectrum128k()
 {
-    auto * cpu = z80();
-
-    if (cpu) {
+    if (auto * cpu = z80()) {
         cpu->disconnectIODevice(&m_pager);
     }
 }
 
 void Spectrum128k::reset()
 {
-    assert(memory128());
+    sp_assert(memory128(), "Spectrum has no memory in Spectrum128k::reset()");
+
     // NOTE base class method triggers reload of ROM images
     BaseSpectrum::reset();
     m_screenBuffer = ScreenBuffer::Normal;
@@ -62,7 +62,8 @@ void Spectrum128k::reset()
 
 void Spectrum128k::reloadRoms()
 {
-    assert(memory128());
+    sp_assert(memory128(), "Spectrum has no memory in Spectrum128k::reloadRoms()");
+
     memory128()->loadRom(m_romFiles[0], 0);
     memory128()->loadRom(m_romFiles[1], 1);
 }
@@ -86,10 +87,10 @@ bool Spectrum128k::canApplySnapshot(const Snapshot & snapshot)
 
 void Spectrum128k::applySnapshot(const Snapshot & snapshot)
 {
-    assert(snapshot.model() == model());
-    assert(2 > snapshot.romNumber);
+    sp_assert(snapshot.model() == model(), "Spectrum128k::applySnapshot called with a snapshot for a different model");
+    sp_assert(2 > snapshot.romNumber, "snapshot has invalid ROM number {}", snapshot.romNumber);
     auto * snapshotMemory = dynamic_cast<const MemoryType *>(snapshot.memory());
-    assert(snapshotMemory);
+    sp_assert(snapshotMemory, "snapshot has no memory in Spectrum128k::applySnapshot()");
 
     reset();
     applySnapshotCpuState(snapshot);

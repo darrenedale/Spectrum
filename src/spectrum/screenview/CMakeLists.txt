@@ -8,12 +8,13 @@ add_executable(
         ../qtui/qimagedisplaydevice.cpp
         ../qtui/imagewidget.cpp
         ../../z80/iodevice.cpp
+        ../../util/assert.h
 )
 
 set_target_properties(
         screenview
         PROPERTIES
-        CXX_STANDARD 20
+        CXX_STANDARD 26
 )
 
 if (APPLE)

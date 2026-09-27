@@ -3,8 +3,10 @@
 //
 
 #include <algorithm>
-#include <cassert>
+#include <cstdio>
+#include <print>
 #include "SimpleSpectrumMemory.h"
+#include "../../util/assert.h"
 
 namespace Spectrum::Memory
 {
@@ -19,9 +21,9 @@ namespace Spectrum::Memory
 
     void SimpleSpectrumMemory::mapMemory(Address startAddress, unsigned char * storage, SimpleMemory::Size size)
     {
-        assert(storage);
-        assert(startAddress < addressableSize());
-        assert(startAddress + size <= addressableSize());
+        sp_assert(storage, "null storage provided to {}", __FUNCTION__);
+        sp_assert(startAddress < addressableSize(), "start address {} overflows the addressable range {}", startAddress, addressableSize());
+        sp_assert(startAddress + size <= addressableSize(), "size {} overflows the addressable range {}", size, addressableSize());
 
         m_mappedMemory.emplace_back(MappedMemoryBlock{
             .address = startAddress,
@@ -36,7 +38,7 @@ namespace Spectrum::Memory
             return block.address == startAddress && block.storage == storage;
         });
 
-        assert(pos != m_mappedMemory.crend());
+        sp_assert(pos != m_mappedMemory.crend(), "memory block starting at {} not found in storage", startAddress);
         m_mappedMemory.erase(pos.base());
     }
 

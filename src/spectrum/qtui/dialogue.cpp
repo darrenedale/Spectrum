@@ -2,12 +2,16 @@
 // Created by darren on 24/04/2021.
 //
 
-#include <QGridLayout>
+#include <print>
+
 #include <QAbstractButton>
+#include <QGridLayout>
 #include <QScreen>
+
 #include "dialogue.h"
-#include "../../util/debug.h"
 #include "widgetupdatesuspender.h"
+#include "../../util/assert.h"
+#include "../../util/debug.h"
 
 using namespace Spectrum::QtUi;
 
@@ -103,7 +107,7 @@ QPushButton * Dialogue::addButton(const QString & text, QDialogButtonBox::Button
 
 void Dialogue::addButton(QAbstractButton * button, QDialogButtonBox::ButtonRole role)
 {
-    assert(button);
+    sp_assert(button, "null button provided to Dialogue::addButton");
 
     if (m_controls.buttons().contains(button)) {
         Util::debug << "button is already in button box ";

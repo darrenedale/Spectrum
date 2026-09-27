@@ -3,12 +3,15 @@
 //
 
 #include <cstdint>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
+#include <print>
+
 #include "zx82snapshotwriter.h"
 #include "../spectrum48k.h"
-#include "../../util/endian.h"
+#include "../../util/assert.h"
 #include "../../util/debug.h"
+#include "../../util/endian.h"
 #include "../../util/compiler.h"
 
 using namespace Spectrum::Io;
@@ -17,9 +20,9 @@ using ::Z80::InterruptMode;
 namespace
 {
     // where the memory image read from the stream gets stored in the snapshot's memory image
-    constexpr const std::uint16_t MemoryImageOffset = 0x4000;
+    constexpr std::uint16_t MemoryImageOffset = 0x4000;
 
-    constexpr const int MaxRunLength = 128;
+    constexpr int MaxRunLength = 128;
 
     // the identifier required at the start of the header
     const std::uint32_t Identifier = *reinterpret_cast<const std::uint32_t *>("ZX82");
@@ -168,7 +171,7 @@ DISABLE_WARNING_POP
 
     // NOTE we assume that the snapshot has a standard 48K Spectrum memory object
     if (compressionEnabled()) {
-        auto compressed = compressMemory(snap.memory()->pointerTo(MemoryImageOffset), 0x10000 - MemoryImageOffset);
+        const auto compressed = compressMemory(snap.memory()->pointerTo(MemoryImageOffset), 0x10000 - MemoryImageOffset);
         out.write(reinterpret_cast<const std::ostream::char_type *>(compressed.data()), static_cast<std::streamsize>(compressed.size()));
     } else {
         out.write(reinterpret_cast<const std::ostream::char_type *>(snap.memory()->pointerTo(MemoryImageOffset)), 0x10000 - MemoryImageOffset);
@@ -177,9 +180,9 @@ DISABLE_WARNING_POP
     return !out.bad() && !out.fail();
 }
 
-Zx82SnapshotWriter::CompressedMemory Zx82SnapshotWriter::compressMemory(const Z80::UnsignedByte * memory, std::uint32_t size)
+Zx82SnapshotWriter::CompressedMemory Zx82SnapshotWriter::compressMemory(const Z80::UnsignedByte * memory, const std::uint32_t size)
 {
-    assert(size > 1);
+    sp_assert(size > 1, "detected uncompressable memory size in Spectrum::Io::Zx82SnapshotWriter::compressMemory()");
     CompressedMemory ret;
     ret.reserve(size);
     auto * end = memory + size;

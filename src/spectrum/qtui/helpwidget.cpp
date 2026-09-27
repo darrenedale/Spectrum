@@ -2,14 +2,18 @@
 // Created by darren on 22/04/2021.
 //
 
-#include <QLabel>
-#include <QScrollArea>
-#include <QPushButton>
-#include <QVBoxLayout>
+#include <print>
+
 #include <QFile>
+#include <QLabel>
+#include <QPushButton>
+#include <QScrollArea>
 #include <QSettings>
+#include <QVBoxLayout>
+
 #include "application.h"
 #include "helpwidget.h"
+#include "../../util/assert.h"
 
 using namespace Spectrum::QtUi;
 
@@ -34,7 +38,7 @@ HelpWidget::HelpWidget(QWidget * parent)
         QFile helpText(QStringLiteral(":/help/en/help-without-gamepad"));
 #endif
         const auto helpTextOpened = helpText.open(QIODevice::OpenModeFlag::ReadOnly);
-        assert(helpTextOpened);
+        sp_assert(helpTextOpened, "unable to find help text resource \":/help/en/help-without-gamepad\" compiled into binary");
         label->setText(QString::fromUtf8(helpText.readAll()).arg(Application::instance()->property("version").toString()));
     }
 

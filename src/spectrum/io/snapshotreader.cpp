@@ -2,8 +2,10 @@
 // Created by darren on 22/03/2021.
 //
 
-#include <cassert>
+#include <print>
+
 #include "snapshotreader.h"
+#include "../../util/assert.h"
 
 using namespace Spectrum::Io;
 
@@ -77,6 +79,6 @@ void SnapshotReader::setStream(std::unique_ptr<std::istream> in)
 
 std::istream & SnapshotReader::inputStream() const
 {
-    assert(m_in);
+    sp_assert(m_in, "detected null input stream in SnapshotReader::inputStream()");
     return *m_in;
 }

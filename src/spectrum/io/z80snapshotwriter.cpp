@@ -2,12 +2,14 @@
 // Created by darren on 14/03/2021.
 //
 
-#include <iostream>
 #include <array>
+#include <iostream>
+
 #include "z80snapshotwriter.h"
 #include "../memory/pagingmemoryinterface.h"
-#include "../../util/debug.h"
+#include "../../util/assert.h"
 #include "../../util/compiler.h"
+#include "../../util/debug.h"
 
 using namespace Spectrum::Io;
 using ::Z80::UnsignedWord;
@@ -143,7 +145,8 @@ bool Z80SnapshotWriter::writeTo(std::ostream & out) const
     }
 
     // unreachable code
-    assert(false);
+    [[unlikely]]
+    sp_assert(false, "reached unreachable code in Z80SnapshotWriter::writeTo() - unhandled model in snapshot");
 }
 DISABLE_WARNING_POP
 
@@ -275,7 +278,7 @@ bool Z80SnapshotWriter::write128kModel(std::ostream & out) const
     }
 
     const auto * memory = dynamic_cast<const Memory::PagingMemoryInterface *>(snapshot().memory());
-    assert(memory);
+    sp_assert(memory, "missing or invalid memory found in Z80 snapshot in Z80SnapshotWriter::write128kModel()");
     auto pages = memory->pageCount();
 
     for (int page = 0; page < pages; ++page) {

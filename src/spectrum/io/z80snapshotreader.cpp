@@ -2,17 +2,20 @@
 // Created by darren on 22/03/2021.
 //
 
-#include <iterator>
 #include <cstring>
 #include <filesystem>
+#include <iterator>
+#include <print>
+
 #include "z80snapshotreader.h"
-#include "../spectrum48k.h"
 #include "../spectrum128k.h"
+#include "../spectrum48k.h"
 #include "../spectrumplus2.h"
 #include "../spectrumplus2a.h"
 #include "../spectrumplus3.h"
-#include "../../util/debug.h"
+#include "../../util/assert.h"
 #include "../../util/compiler.h"
+#include "../../util/debug.h"
 
 using namespace Spectrum::Io;
 
@@ -335,7 +338,7 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
         return nullptr;
     }
 
-    assert(memory);
+    sp_assert(memory, "null memory detected in Z80SnapshotReader::read() - likely unsupported file format");
     auto & registers = snapshot->registers();
 
     registers.af = static_cast<UnsignedWord>(header.a) << 8 | header.f;

@@ -2,13 +2,17 @@
 // Created by darren on 22/04/2021.
 //
 
-#include "aboutwidget.h"
-#include "application.h"
+#include <print>
+
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
 #include <QSettings>
+#include <QVBoxLayout>
+
+#include "aboutwidget.h"
+#include "application.h"
+#include "../../util/assert.h"
 
 using namespace Spectrum::QtUi;
 
@@ -16,7 +20,7 @@ AboutWidget::AboutWidget(QWidget * parent)
 : QWidget(parent)
 {
     auto * app = Application::instance();
-    assert(app);
+    sp_assert(app, "no Application instance found in AboutWidget constructor");
     auto unitWidth = fontMetrics().horizontalAdvance(QLatin1Char('W'));
     setMinimumWidth(unitWidth * 30);
 

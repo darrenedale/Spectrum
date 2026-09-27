@@ -2,7 +2,10 @@
 // Created by darren on 04/05/2021.
 //
 
+#include <print>
+
 #include "memorycontextmenu.h"
+#include "../../../util/assert.h"
 
 using namespace Spectrum::QtUi::Debugger;
 
@@ -60,7 +63,9 @@ void MemoryContextMenu::onBreakOnChangeTriggered()
         Q_EMIT breakOnWordChange(m_address);
     } else {
         // can only reach here if a call is made with an int type template arg for which no signal exists
-        assert(false);
+        [[unlikely]]
+        sp_assert(false, "reached unreachable code in MemoryContextMenu::onBreakOnChangeTriggered");
+        static_assert(false);
     }
 }
 
@@ -73,7 +78,8 @@ void MemoryContextMenu::onWatchIntegerTriggered()
         Q_EMIT watchWord(m_address);
     } else {
         // can only reach here if a call is made with an int type template arg for which no signal exists
-        assert(false);
+        [[unlikely]]
+        sp_assert(false, "reached unreachable code in MemoryContextMenu::onWatchIntegerTriggered");
     }
 }
 
