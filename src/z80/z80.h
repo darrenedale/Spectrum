@@ -184,130 +184,122 @@ namespace Z80
                 return m_registers.bc;
             }
 
-        [[nodiscard]]
-        UnsignedWord deRegisterValue() const noexcept
+            [[nodiscard]]
+            UnsignedWord deRegisterValue() const noexcept
             {
                 return m_registers.de;
             }
 
-        [[nodiscard]]
-        UnsignedWord hlRegisterValue() const noexcept
+            [[nodiscard]]
+            UnsignedWord hlRegisterValue() const noexcept
             {
                 return m_registers.hl;
             }
 
-        [[nodiscard]]
-        UnsignedWord ixRegisterValue() const noexcept
+            [[nodiscard]]
+            UnsignedWord ixRegisterValue() const noexcept
             {
                 return m_registers.ix;
             }
 
-        [[nodiscard]]
-        UnsignedWord iyRegisterValue() const noexcept
+            [[nodiscard]]
+            UnsignedWord iyRegisterValue() const noexcept
             {
                 return m_registers.iy;
             }
 
-        /**
-         * The stack pointer in host byte order.
-         */
-        [[nodiscard]]
-        UnsignedWord sp() const noexcept
+            /** The stack pointer in host byte order. */
+            [[nodiscard]]
+            UnsignedWord sp() const noexcept
             {
                 return m_registers.sp;
             }
 
-        /**
-         * The stack pointer in host byte order.
-         */
-        [[nodiscard]]
-        UnsignedWord stackPointer() const noexcept
+            /** The stack pointer in host byte order. */
+            [[nodiscard]]
+            UnsignedWord stackPointer() const noexcept
             {
                 return sp();
             }
 
-        /**
-         * The program counter in host byte order.
-         */
-        [[nodiscard]]
-        UnsignedWord pc() const noexcept
+            /** The program counter in host byte order. */
+            [[nodiscard]]
+            UnsignedWord pc() const noexcept
             {
                 return m_registers.pc;
             }
 
-        /**
-         * The program counter in host byte order.
-         */
-        [[nodiscard]]
-        UnsignedWord programCounter() const noexcept
+            /** The program counter in host byte order. */
+            [[nodiscard]]
+            UnsignedWord programCounter() const noexcept
             {
                 return pc();
             }
 
-        //
-        // shadow registers in host byte order
-        //
-        
-        [[nodiscard]]
-        UnsignedWord afShadowRegisterValue() const noexcept
+            //
+            // shadow registers in host byte order
+            //
+
+            [[nodiscard]]
+            UnsignedWord afShadowRegisterValue() const noexcept
             {
                 return m_registers.afShadow;
             }
 
-        [[nodiscard]]
-        UnsignedWord bcShadowRegisterValue() const noexcept
+            [[nodiscard]]
+            UnsignedWord bcShadowRegisterValue() const noexcept
             {
                 return m_registers.bcShadow;
             }
 
-        [[nodiscard]]
-        UnsignedWord deShadowRegisterValue() const noexcept
+            [[nodiscard]]
+            UnsignedWord deShadowRegisterValue() const noexcept
             {
                 return m_registers.deShadow;
             }
 
-        [[nodiscard]]
-        UnsignedWord hlShadowRegisterValue() const noexcept
+            [[nodiscard]]
+            UnsignedWord hlShadowRegisterValue() const noexcept
             {
                 return m_registers.hlShadow;
             }
 
-        //
-        // register values in Z80 byte order
-        //
-        
-        [[nodiscard]]
-        UnsignedWord afRegisterValueZ80() const noexcept
+            //
+            // register values in Z80 byte order
+            //
+
+            [[nodiscard]]
+            UnsignedWord afRegisterValueZ80() const noexcept
             {
                 return registerValueZ80(Register16::AF);
             }
 
-        [[nodiscard]]
-        UnsignedWord bcRegisterValueZ80() const noexcept
+            [[nodiscard]]
+            UnsignedWord bcRegisterValueZ80() const noexcept
             {
                 return registerValueZ80(Register16::BC);
             }
 
-        [[nodiscard]]
-        UnsignedWord deRegisterValueZ80() const noexcept
+            [[nodiscard]]
+            UnsignedWord deRegisterValueZ80() const noexcept
             {
                 return registerValueZ80(Register16::DE);
             }
 
-        [[nodiscard]]
-        UnsignedWord hlRegisterValueZ80() const noexcept
+            [[nodiscard]]
+            UnsignedWord hlRegisterValueZ80() const noexcept
             {
                 return registerValueZ80(Register16::HL);
             }
 
-        [[nodiscard]]
-        UnsignedWord ixRegisterValueZ80() const noexcept
+            [[nodiscard]]
+            UnsignedWord ixRegisterValueZ80() const noexcept
             {
                 return registerValueZ80(Register16::IX);
             }
 
-        [[nodiscard]]
-        UnsignedWord iyRegisterValueZ80() const noexcept
+            [[nodiscard]]
+            UnsignedWord iyRegisterValueZ80() const noexcept
             {
                 return registerValueZ80(Register16::IY);
             }
