@@ -1,3 +1,5 @@
+#include "mainwindow.h"
+
 #include <filesystem>
 #include <iostream>
 #include <fstream>
@@ -21,8 +23,8 @@
 #include <QStandardPaths>
 #include <QStringBuilder>
 #include <memory>
+
 #include "application.h"
-#include "mainwindow.h"
 #include "aboutwidget.h"
 #include "threadpauser.h"
 #include "dialogue.h"

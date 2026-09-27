@@ -1,5 +1,6 @@
 option(WITH_QT_GAMEPAD "Include support for host gamepads using the QtGamepad module" OFF)
 option(USE_QT5 "Use QT5 instead of QT6" OFF)
+option(DEBUG_INSTRUCTION_HISTORY "Compile with instruction history capture in debug builds" OFF)
 
 set(
         SPECTRUM_QT_COMPONENTS
@@ -35,6 +36,10 @@ else (USE_QT5)
     message(STATUS "Using Qt6")
     find_package(Qt6 COMPONENTS ${SPECTRUM_QT_COMPONENTS})
 endif(USE_QT5)
+
+if (DEBUG_INSTRUCTION_HISTORY)
+    add_compile_definitions(-DDEBUG_INSTRUCTION_HISTORY)
+endif (DEBUG_INSTRUCTION_HISTORY)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
