@@ -533,10 +533,10 @@ namespace Z80
              *
              * @param iff Whether to set (true) or clear (false) the iff.
              */
-                void setIff2(const bool iff) noexcept
-                {
-                    m_iff2 = iff;
-                }
+            void setIff2(const bool iff) noexcept
+            {
+                m_iff2 = iff;
+            }
 
             /**
              * Fetch the state of the secondary iff.
