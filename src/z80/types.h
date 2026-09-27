@@ -60,7 +60,7 @@ namespace Z80
 
     struct InstructionCost
     {
-        std::uint8_t tStates;   // number of t-states the instruction took to executed
+        std::uint8_t tStates;   // number of t-states the instruction took to execute
         std::uint8_t size;      // size in bytes of the instruction
     };
 

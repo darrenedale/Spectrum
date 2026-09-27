@@ -569,10 +569,8 @@ namespace Spectrum::QtUi
          */
         bool event(QEvent * ev) override
         {
-#if (defined(__clang__))
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_SWITCH     // we're only interested in a subset of event types
-#endif
             switch (ev->type()) {
                 case QEvent::Type::HoverMove: {
 #if defined(USE_QT5)
@@ -603,9 +601,7 @@ DISABLE_WARNING_SWITCH     // we're only interested in a subset of event types
                     }
                     break;
             }
-#if (defined(__clang__))
 DISABLE_WARNING_POP
-#endif
             return ViewType::event(ev);
         }
 

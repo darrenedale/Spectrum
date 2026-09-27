@@ -146,6 +146,9 @@ namespace
     /** Regular expression to extract the extension from a snapshot filename. */
     const auto SnapshotExtensionRegularExpression = QRegularExpression("^.*\\.([a-zA-Z0-9_-]+)$");
 
+    /** Regular expression to extract the extension from a snapshot filter from the file dialogue. */
+    const auto SnapshotFilterExtensionRegularExpression = QRegularExpression(R"(^.*\(\*\.([a-zA-Z0-9_-]+)\)$)");
+
     /**
      * Helper to map a key from a Qt key event to a Spectrum keyboard key combination.
      *
@@ -155,10 +158,8 @@ namespace
      */
     std::vector<Keyboard::Key> mapToSpectrumKeys(const Qt::Key key)
     {
-#if (defined(__clang__))
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_SWITCH     // we're only interested in the keys that map to the Spectrum keyboard
-#endif
         // TODO configurable mapping
         switch (key) {
             case Qt::Key::Key_Backspace:
@@ -356,9 +357,7 @@ DISABLE_WARNING_SWITCH     // we're only interested in the keys that map to the 
             default:
                 return {};
         }
-#if (defined(__clang__))
 DISABLE_WARNING_POP
-#endif
     }
 
     /**
@@ -370,10 +369,8 @@ DISABLE_WARNING_POP
      */
     JoystickMapping mapToSpectrumJoystick(Qt::Key key)
     {
-#if (defined(__clang__))
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_SWITCH     // we're only interested in keys that map to the virtual joystick
-#endif
         switch (key) {
             case Qt::Key::Key_Up:
                 return JoystickMapping::Up;
@@ -390,9 +387,7 @@ DISABLE_WARNING_SWITCH     // we're only interested in keys that map to the virt
             case Qt::Key::Key_Control:
                 return JoystickMapping::Button1;
         }
-#if (defined(__clang__))
 DISABLE_WARNING_POP
-#endif
 
         return JoystickMapping::None;
     }
@@ -1426,10 +1421,8 @@ void MainWindow::rescanGameControllers()
 
 bool MainWindow::eventFilter(QObject * target, QEvent * event)
 {
-#if (defined(__clang__))
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_SWITCH
-#endif
     if (&m_displayWidget == target) {
         switch (event->type()) {
             case QEvent::Type::MouseMove:
@@ -1562,9 +1555,7 @@ DISABLE_WARNING_SWITCH
                 break;
         }
     }
-#if (defined(__clang__))
 DISABLE_WARNING_POP
-#endif
     return false;
 }
 
@@ -1572,7 +1563,17 @@ void MainWindow::loadSettings()
 {
     QSettings settings;
     bool ok;
-    settings.beginGroup("mainwindow");
+
+// We prefix the group name rather than nesting groups because we save as .ini files, and .ini files don't support group
+// nesting, so Qt prefixes each setting with the full sub-group path using \ as a separator. It doesn't matter much here
+// because only Qt will read these main window settings, but with core emulator settings and potential other UIs we want
+// the config file to be parseable without having to handle the Qt-isms
+#if defined(USE_QT_5)
+    settings.beginGroup(QStringLiteral("qt5-mainwindow"));
+#else
+    settings.beginGroup(QStringLiteral("qt6-mainwindow"));
+#endif
+
     m_lastSnapshotLoadDir = settings.value(QStringLiteral("lastSnapshotLoadDir")).toString();
     m_lastScreenshotDir = settings.value(QStringLiteral("lastScreenshotDir")).toString();
     m_lastPokeLoadDir = settings.value(QStringLiteral("lastPokeLoadDir")).toString();
@@ -1677,7 +1678,17 @@ void MainWindow::loadSettings()
 void MainWindow::saveSettings()
 {
     QSettings settings;
-    settings.beginGroup(QStringLiteral("mainwindow"));
+
+// We prefix the group name rather than nesting groups because we save as .ini files, and .ini files don't support group
+// nesting, so Qt prefixes each setting with the full sub-group path using \ as a separator. It doesn't matter much here
+// because only Qt will read these main window settings, but with core emulator settings and potential other UIs we want
+// the config file to be parseable without having to handle the Qt-isms
+#if defined(USE_QT_5)
+    settings.beginGroup(QStringLiteral("qt5-mainwindow"));
+#else
+    settings.beginGroup(QStringLiteral("qt6-mainwindow"));
+#endif
+
     settings.setValue(QStringLiteral("position"), pos());
     settings.setValue(QStringLiteral("size"), size());
     settings.setValue(QStringLiteral("lastSnapshotLoadDir"), m_lastSnapshotLoadDir);
@@ -1779,8 +1790,6 @@ void MainWindow::saveSettings()
             break;
         }
     }
-
-    settings.endGroup();
 }
 
 void MainWindow::showEvent(QShowEvent * ev)
@@ -1949,7 +1958,7 @@ void MainWindow::loadSnapshotTriggered()
     auto format = lastFilter;
 
     if (!format.isEmpty()) {
-        if (auto matches = QRegularExpression(R"(^.*\(\*\.([a-zA-Z0-9_-]+)\)$)").match(format); matches.hasMatch()) {
+        if (const auto matches = SnapshotFilterExtensionRegularExpression.match(format); matches.hasMatch()) {
             format = matches.captured(1).toLower();
         } else {
             format.clear();
@@ -2119,7 +2128,7 @@ void MainWindow::kempstonMouseToggled(bool on)
     }
 }
 
-void MainWindow::emulationSpeedChanged(int speed)
+void MainWindow::emulationSpeedChanged(const int speed)
 {
     if (0 == speed) {
         m_spectrum->setExecutionSpeedConstrained(false);
@@ -2139,7 +2148,7 @@ void MainWindow::updateStatusBarSpeedWidget()
         m_statusBarEmulationSpeed.setText(tr("%1%").arg("∞"));    // infinity
     }
 
-    auto mhz = m_spectrum->z80()->clockSpeedMHz();
+    const auto mhz = m_spectrum->z80()->clockSpeedMHz();
     int precision = 2;
     auto tmpMhz = mhz;
 

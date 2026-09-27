@@ -64,7 +64,17 @@ CheatsView::~CheatsView()
 void CheatsView::loadSettings()
 {
     QSettings settings;
-    settings.beginGroup("cheatsWidget");
+
+// We prefix the group name rather than nesting groups because we save as .ini files, and .ini files don't support group
+// nesting, so Qt prefixes each setting with the full sub-group path using \ as a separator. It doesn't matter much here
+// because only Qt will read these main window settings, but with core emulator settings and potential other UIs we want
+// the config file to be parseable without having to handle the Qt-isms
+#if defined(USE_QT_5)
+    settings.beginGroup(QStringLiteral("qt5-cheatswidget"));
+#else
+    settings.beginGroup(QStringLiteral("qt6-cheatswidget"));
+#endif
+
     m_lastLoadDir = settings.value(QStringLiteral("lastCheatLoadDir")).toString();
     settings.endGroup();
 }
@@ -72,7 +82,13 @@ void CheatsView::loadSettings()
 void CheatsView::saveSettings()
 {
     QSettings settings;
-    settings.beginGroup("cheatsWidget");
+
+#if defined(USE_QT_5)
+    settings.beginGroup(QStringLiteral("qt5-cheatswidget"));
+#else
+    settings.beginGroup(QStringLiteral("qt6-cheatswidget"));
+#endif
+
     settings.setValue(QStringLiteral("lastCheatLoadDir"), m_lastLoadDir);
     settings.endGroup();
 }
