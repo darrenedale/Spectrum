@@ -188,7 +188,7 @@ bool SpSnapshotReader::couldBeSnapshot(std::istream & in)
     static auto signature = *reinterpret_cast<const std::uint16_t *>("SP");
 
     if (!in) {
-        Util::debug << "stream is not open.\n";
+        Util::debug("input stream is not open");
         return false;
     }
 

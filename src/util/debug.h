@@ -6,10 +6,12 @@
 #define UTIL_DEBUG_H
 
 #include <cstdio>
+#include <format>
 
 namespace Util
 {
-    void debug(std::format_string<Args...> format, Args&&... args)
+    template <typename... Args>
+    void debug(const std::format_string<Args...> format, Args&&... args)
     {
 #if !defined(NDEBUG)
         std::println(std::stderr, format, std::forward<Args...>(args));

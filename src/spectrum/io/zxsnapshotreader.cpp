@@ -111,7 +111,7 @@ DISABLE_WARNING_POP
 const Snapshot * ZxSnapshotReader::read() const
 {
     if (!isOpen()) {
-        Util::debug << "Input stream is not open.\n";
+        Util::debug("input stream is not open");
         return nullptr;
     }
 
