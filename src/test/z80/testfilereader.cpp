@@ -2,14 +2,16 @@
 // Created by darren on 26/02/2021.
 //
 
-#include <cassert>
-#include <iostream>
-#include <sstream>
 #include <cstring>
+#include <iostream>
+#include <print>
+#include <sstream>
 
 #include "testfilereader.h"
+#include "../../util/assert.h"
 
 using namespace Test::Z80;
+
 using TestClass = ::Test::Z80::Test;
 
 TestFileReader::TestFileReader(std::string fileName)
@@ -67,7 +69,7 @@ std::optional<TestClass> TestFileReader::nextTest()
 
 bool TestFileReader::readEndOfTestMarker()
 {
-    assert(isOpen());
-    auto line = readLine();
+    sp_assert(isOpen(), "call to TestFileReader::readEndOfTestMarker() on closed reader");
+    const auto line = readLine();
     return line && "-1" == *line;
 }

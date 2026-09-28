@@ -5,150 +5,151 @@
 #ifndef SPECTRUM_DEBUGGER_MEMORYWATCH_H
 #define SPECTRUM_DEBUGGER_MEMORYWATCH_H
 
-#include "../../z80/types.h"
 #include "../basespectrum.h"
+#include "../../util/assert.h"
+#include "../../z80/types.h"
 
 namespace Spectrum::Debugger
 {
     /** Abstract base class for debug watches on Computer memory. */
     class MemoryWatch
     {
-    public:
-        /** Convenience alias for the size, in bytes, of a chunk of watched memory. */
-        using WatchSize = std::uint32_t;
+        public:
+            /** Convenience alias for the size, in bytes, of a chunk of watched memory. */
+            using WatchSize = std::uint32_t;
 
-        /**
-         * Initialise a new watch for a given address in a given memory object.
-         *
-         * The memory must not be null and must be fully addressable for all the bytes watched.
-         *
-         * @param memory The memory object to watch.
-         * @param address The address to watch.
-         */
-        MemoryWatch(BaseSpectrum::MemoryType * memory, const ::Z80::UnsignedWord address)
-        : m_memory(memory),
-          m_address(address)
-        {
-            assert(memory);
-            assert(address < memory->addressableSize());
-        }
+            /**
+             * Initialise a new watch for a given address in a given memory object.
+             *
+             * The memory must not be null and must be fully addressable for all the bytes watched.
+             *
+             * @param memory The memory object to watch.
+             * @param address The address to watch.
+             */
+            MemoryWatch(BaseSpectrum::MemoryType * memory, const ::Z80::UnsignedWord address)
+            : m_memory(memory),
+              m_address(address)
+            {
+                sp_assert(memory, "null memory provided to Spectrum::Debugger::MemoryWatch constructor)");
+                sp_assert(address < memory->addressableSize(), "memory watch address {:#04x} is beyond the extent of the address space of the memory provided to Spectrum::Debugger::MemoryWatch cnstructor", address);
+            }
 
-        virtual ~MemoryWatch() = default;
+            virtual ~MemoryWatch() = default;
 
-        /**
-         * Fetch the memory that is being watched.
-         *
-         * @return The memory.
-         */
-        [[nodiscard]]
-        BaseSpectrum::MemoryType * memory() const noexcept
-        {
-            return m_memory;
-        }
+            /**
+             * Fetch the memory that is being watched.
+             *
+             * @return The memory.
+             */
+            [[nodiscard]]
+            BaseSpectrum::MemoryType * memory() const noexcept
+            {
+                return m_memory;
+            }
 
-        /**
-         * Set the address that is being watched.
-         *
-         * The memory must not be null and must support addressing all the bytes being watched.
-         *
-         * @param memory The memory.
-         */
-        void setMemory(BaseSpectrum::MemoryType * memory) noexcept
-        {
-            assert(memory);
-            assert(address() < memory->addressableSize());
-            m_memory = memory;
-        }
+            /**
+             * Set the address that is being watched.
+             *
+             * The memory must not be null and must support addressing all the bytes being watched.
+             *
+             * @param memory The memory.
+             */
+            void setMemory(BaseSpectrum::MemoryType * memory) noexcept
+            {
+                sp_assert(memory, "null memory provided to Spectrum::Debugger::MemoryWatch::setMemory()");
+                sp_assert(address() < memory->addressableSize(), "new memory size ({}) is insufficient for the watch address {:#04x} in memory provided to Spectrum::Debugger::MemoryWatch::setMemory()", memory->addressableSize(), address());
+                m_memory = memory;
+            }
 
-        /**
-         * Fetch the address that is being watched.
-         *
-         * @return The address.
-         */
-        [[nodiscard]]
-        ::Z80::UnsignedWord address() const noexcept
-        {
-            return m_address;
-        }
+            /**
+             * Fetch the address that is being watched.
+             *
+             * @return The address.
+             */
+            [[nodiscard]]
+            ::Z80::UnsignedWord address() const noexcept
+            {
+                return m_address;
+            }
 
-        /**
-         * Set the address that is being watched.
-         *
-         * The memory must support addressing all the bytes being watched from the new address.
-         *
-         * @param address The address.
-         */
-        void setAddress(const ::Z80::UnsignedWord address)
-        {
-            assert(address < memory()->addressableSize());
-            m_address = address;
-        }
+            /**
+             * Set the address that is being watched.
+             *
+             * The memory must support addressing all the bytes being watched from the new address.
+             *
+             * @param address The address.
+             */
+            void setAddress(const ::Z80::UnsignedWord address)
+            {
+                sp_assert(address < memory()->addressableSize(), "memory watch address {:#04x} is beyond the extent of the address space in Debugger::MemoryWatch::setAddress()", address);
+                m_address = address;
+            }
 
-        /**
-         * The size in bytes of the block of memory that the watch is observing.
-         *
-         * @return The number of bytes, starting at address().
-         */
-        [[nodiscard]]
-        virtual WatchSize size() const noexcept  = 0;
+            /**
+             * The size in bytes of the block of memory that the watch is observing.
+             *
+             * @return The number of bytes, starting at address().
+             */
+            [[nodiscard]]
+            virtual WatchSize size() const noexcept  = 0;
 
-        /**
-         * The label for the watch.
-         *
-         * The label will be an empty string if none has been set.
-         *
-         * @return The label.
-         */
-        [[nodiscard]]
-        const std::string & label() const
-        {
-            return m_label;
-        }
+            /**
+             * The label for the watch.
+             *
+             * The label will be an empty string if none has been set.
+             *
+             * @return The label.
+             */
+            [[nodiscard]]
+            const std::string & label() const
+            {
+                return m_label;
+            }
 
-        /**
-         * Set the label for the watch.
-         *
-         * @param label
-         */
-        void setLabel(std::string label) noexcept
-        {
-            m_label = std::move(label);
-        }
+            /**
+             * Set the label for the watch.
+             *
+             * @param label
+             */
+            void setLabel(std::string label) noexcept
+            {
+                m_label = std::move(label);
+            }
 
-        /**
-         * Provides a user-visible name for the type of watch.
-         *
-         * Watches of a given type should return fundamentally the same type name. It is recommended that each watch type has a common type name (e.g. "String")
-         * optionally followed by the size of the watch. For example:
-         * - "String [10]" A string of 10 bytes
-         * - "String [20]" A string of 20 bytes
-         * - "Int [8]" An 8-bit integer
-         * - "Int [16]" A 16-bit integer
-         * - "Int [32]" A 32-bit integer
-         * - "Int [64]" A 64-bit integer
-         *
-         * @return
-         */
-        [[nodiscard]]
-        virtual std::string typeName() const noexcept = 0;
+            /**
+             * Provides a user-visible name for the type of watch.
+             *
+             * Watches of a given type should return fundamentally the same type name. It is recommended that each watch type has a common type name (e.g. "String")
+             * optionally followed by the size of the watch. For example:
+             * - "String [10]" A string of 10 bytes
+             * - "String [20]" A string of 20 bytes
+             * - "Int [8]" An 8-bit integer
+             * - "Int [16]" A 16-bit integer
+             * - "Int [32]" A 32-bit integer
+             * - "Int [64]" A 64-bit integer
+             *
+             * @return
+             */
+            [[nodiscard]]
+            virtual std::string typeName() const noexcept = 0;
 
-        /**
-         * Fetch the content to display for the current value of the watched address.
-         *
-         * @return The display content.
-         */
-        [[nodiscard]]
-        virtual std::string displayValue() const = 0;
+            /**
+             * Fetch the content to display for the current value of the watched address.
+             *
+             * @return The display content.
+             */
+            [[nodiscard]]
+            virtual std::string displayValue() const = 0;
 
-    private:
-        /** The memory being watched. */
-        BaseSpectrum::MemoryType * m_memory;
+        private:
+            /** The memory being watched. */
+            BaseSpectrum::MemoryType * m_memory;
 
-        /** The address of the first byte of memory being watched. */
-        ::Z80::UnsignedWord m_address;
+            /** The address of the first byte of memory being watched. */
+            ::Z80::UnsignedWord m_address;
 
-        /** The arbitrary label to give to the watch. */
-        std::string m_label;
+            /** The arbitrary label to give to the watch. */
+            std::string m_label;
     };
 }
 

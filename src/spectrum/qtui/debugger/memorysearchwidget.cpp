@@ -2,32 +2,41 @@
 // Created by darren on 05/05/2021.
 //
 
+#include <cstdlib>
+#include <format>
 #include <iomanip>
 #include <optional>
+#include <print>
+
 #include <QHBoxLayout>
-#include <QLabel>
 #include <QKeyEvent>
+#include <QLabel>
 #include <QRegularExpression>
 #include <QString>
 
+#include "memorysearchwidget.h"
 #include "../application.h"
 #include "../widgetupdatesuspender.h"
-#include "memorysearchwidget.h"
+#include "../../../util/assert.h"
 #include "../../../util/debug.h"
 
-// using namespace Qt::Literals::StringLiterals;
+using namespace std::string_literals;
 using namespace Spectrum::QtUi::Debugger;
 
 namespace
 {
+    /** Regular expression to split a string of multiple hex values. */
+    const auto ValueSeparatorRegularExpression = QRegularExpression(R"((?:\s*(?:[,.:;]|\s)\s*))");
+
+    /** Regular expression to match a hex value. */
+    const auto ValueRegularExpression = QRegularExpression("^(?:[01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5]|0x[0-9a-fA-F]?[0-9a-fA-F])$");
+
     std::optional<QByteArray> parseByteArray(const QString & text)
     {
-        static const auto rxSeparator = QRegularExpression(R"((?:\s*(?:[,.:;]|\s)\s*))");
-        auto bytes = text.split(rxSeparator);
+        auto bytes = text.split(ValueSeparatorRegularExpression);
 
-        if (!std::all_of(bytes.cbegin(), bytes.cend(), [](const QString & value) -> bool {
-            static const auto rxValue = QRegularExpression("^(?:[01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5]|0x[0-9a-fA-F]?[0-9a-fA-F])$");
-            auto match = rxValue.match(value);
+        if (!std::ranges::all_of(std::as_const(bytes), [](const QString & value) -> bool {
+            const auto match = ValueRegularExpression.match(value);
             return match.hasMatch();
         })) {
             return {};
@@ -36,12 +45,68 @@ namespace
         QByteArray ret;
         ret.reserve(bytes.size());
 
-        std::transform(bytes.cbegin(), bytes.cend(), std::back_inserter(ret), [](const QString & value) {
+        std::ranges::transform(std::as_const(bytes), std::back_inserter(ret), [](const QString & value) {
             // NOTE base = 0 means it will interpret the 0x prefix as a hex number
             return static_cast<char>(value.toInt(nullptr, 0));
         });
 
         return ret;
+    }
+
+    std::string to_string(const MemorySearchWidget::SearchType & searchType)
+    {
+        switch (searchType)
+        {
+            case MemorySearchWidget::SearchType::UnsignedByte:
+                return "UnsignedByte"s;
+
+            case MemorySearchWidget::SearchType::UnsignedWord:
+                return "UnsignedWord"s;
+
+            case MemorySearchWidget::SearchType::SignedByte:
+                return "SignedByte"s;
+
+            case MemorySearchWidget::SearchType::SignedWord:
+                return "SignedWord"s;
+
+            case MemorySearchWidget::SearchType::String:
+                return "String"s;
+
+            case MemorySearchWidget::SearchType::ByteArray:
+                return "ByteArray"s;
+
+            default:
+                sp_assert(false, "detected addition of SearchType enumerator with value {} not handled in to_string", static_cast<std::uint16_t>(searchType));
+                std::abort();
+        }
+    }
+};
+
+
+/**
+ * Formatter for all the enums, based on the to_string() implementation for each.
+ * @tparam T must be one of the above enum types.
+ */
+template<>
+struct std::formatter<MemorySearchWidget::SearchType>
+{
+    template<class ParseContext>
+    constexpr ParseContext::iterator parse(ParseContext& context)
+    {
+        auto it = context.begin();
+
+        if (it != context.end() && *it != '}')
+        {
+            throw std::format_error("invalid format args");
+        }
+
+        return it;
+    }
+
+    template<class FormatContext>
+    FormatContext::iterator format(const MemorySearchWidget::SearchType & type, FormatContext & context) const
+    {
+        return std::ranges::copy(::to_string(type), context.out()).out;
     }
 };
 
@@ -87,14 +152,14 @@ MemorySearchWidget::SearchType MemorySearchWidget::searchType() const
 {
     bool ok;
     auto type = m_searchType.currentData().toInt(&ok);
-    assert(ok);
+    sp_assert(ok, "invalid search type ({}) {} found in MemorySearchWidget - can't convert to int", m_searchType.currentData().typeName(), m_searchType.currentData().toString().toStdString());
     return static_cast<SearchType>(type);
 }
 
 void MemorySearchWidget::setSearchType(MemorySearchWidget::SearchType type)
 {
-    auto idx = m_searchType.findData(static_cast<int>(type));
-    assert(-1 != idx);
+    const auto idx = m_searchType.findData(static_cast<int>(type));
+    sp_assert(-1 != idx, "search type {} not found in MemorySearchWidget", type);
     m_searchType.setCurrentIndex(idx);
 }
 
@@ -144,9 +209,10 @@ void MemorySearchWidget::keyPressEvent(QKeyEvent * ev)
 bool MemorySearchWidget::eventFilter(QObject * subject, QEvent * ev)
 {
     if (ev->type() == QEvent::KeyPress) {
-        auto * keyEvent = reinterpret_cast<QKeyEvent *>(ev);
-
-        if (Qt::Key::Key_Enter == keyEvent->key() || Qt::Key::Key_Return == keyEvent->key()) {
+        if (
+            const auto * keyEvent = reinterpret_cast<QKeyEvent *>(ev);
+            Qt::Key::Key_Enter == keyEvent->key() || Qt::Key::Key_Return == keyEvent->key()
+        ) {
             emitSearchRequest();
         }
     }
@@ -204,8 +270,8 @@ void MemorySearchWidget::onSearchTypeChanged()
             break;
 
         default:
-            Util::debug << "found invalid search type in search type combo\n";
-            assert(false);
+            sp_assert(false, "found invalid search type {} in MemorySearchWidget", searchType());
+            std::abort();
     }
 }
 
@@ -233,9 +299,7 @@ void MemorySearchWidget::emitSearchRequest()
             break;
 
         case SearchType::ByteArray: {
-            auto byteArray = parseByteArray(m_stringValue.text());
-
-            if (!byteArray) {
+            if (const auto byteArray = parseByteArray(m_stringValue.text()); !byteArray) {
                 Application::showNotification(tr("The array of bytes contains an invalid value."));
             } else {
                 Q_EMIT stringSearchRequested(*byteArray);

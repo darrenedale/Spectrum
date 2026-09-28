@@ -45,12 +45,7 @@ namespace
     constexpr const int MemoryImageOffset = 0x4000;
 }
 
-/**
- * The snapshot MUST have at least a 64kb memory image.
- *
- * @param snapshot
- * @return
- */
+/** The snapshot MUST have at least a 64kb memory image. */
 const Spectrum::Snapshot * SnaSnapshotReader::read() const
 {
     if (!isOpen()) {
@@ -103,7 +98,7 @@ const Spectrum::Snapshot * SnaSnapshotReader::read() const
 bool SnaSnapshotReader::couldBeSnapshot(std::istream & in)
 {
     if (!in) {
-        Util::debug("stream is not open.");
+        Util::debug("input stream is not open.");
         return false;
     }
 

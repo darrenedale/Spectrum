@@ -2,32 +2,36 @@
 #define SPECTRUM_QTUI_DEBUGGER_SPECTRUMDEBUGWINDOW_H
 
 #include <cstdint>
-#include <iostream>
 #include <iomanip>
-#include <QMainWindow>
+#include <iostream>
+#include <print>
+
 #include <QAction>
-#include <QTreeView>
+#include <QMainWindow>
 #include <QTableView>
-#include "../../../util/debug.h"
-#include "../hexspinbox.h"
-#include "../thread.h"
-#include "registerswidget.h"
-#include "shadowregisterswidget.h"
-#include "interruptwidget.h"
-#include "programpointerswidget.h"
-#include "../registerpairwidget.h"
-#include "disassemblywidget.h"
-#include "memorywidget.h"
-#include "keyboardmonitorwidget.h"
-#include "../pokewidget.h"
-#include "watchesmodel.h"
-#include "watchesview.h"
+#include <QTreeView>
+
 #include "breakpointsmodel.h"
 #include "breakpointsview.h"
+#include "disassemblywidget.h"
+#include "interruptwidget.h"
+#include "keyboardmonitorwidget.h"
 #include "memorycontextmenu.h"
+#include "memorywidget.h"
+#include "programpointerswidget.h"
+#include "registerswidget.h"
+#include "shadowregisterswidget.h"
+#include "watchesmodel.h"
+#include "watchesview.h"
+#include "../hexspinbox.h"
+#include "../pokewidget.h"
+#include "../registerpairwidget.h"
+#include "../thread.h"
 #include "../../debugger/breakpoint.h"
-#include "../../debugger/memorychangedbreakpoint.h"
 #include "../../debugger/integermemorywatch.h"
+#include "../../debugger/memorychangedbreakpoint.h"
+#include "../../../util/assert.h"
+#include "../../../util/debug.h"
 
 class QLineEdit;
 
@@ -170,8 +174,8 @@ namespace Spectrum::QtUi::Debugger
         template<Spectrum::Debugger::IntegerMemoryWatchType ValueType>
         void watchIntegerMemoryAddress(::Z80::UnsignedWord address)
         {
-            assert(m_thread);
-            assert(m_thread->spectrum().memory());
+            sp_assert(m_thread, "null thread detected in DebugWindow::watchIntegerMemoryAddress");
+            sp_assert(m_thread->spectrum().memory(), "Spectrum in thread has no memory, in DebugWindow::watchIntegerMemoryAddress");
             m_watchesModel.addWatch(std::make_unique<IntegerMemoryWatch<ValueType>>(m_thread->spectrum().memory(), address));
         }
 

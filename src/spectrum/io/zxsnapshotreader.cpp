@@ -248,7 +248,6 @@ DISABLE_WARNING_POP
 bool ZxSnapshotReader::couldBeSnapshot(const std::string & fileName)
 {
     if (49486 != std::filesystem::file_size(fileName)) {
-        Util::debug << ".zx snapshots are always 49486 bytes in size.\n";
         return false;
     }
 

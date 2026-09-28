@@ -1,56 +1,60 @@
 #include <filesystem>
-#include <iostream>
 #include <fstream>
-#include <QtGlobal>
-#include <QMenuBar>
-#include <QToolBar>
-#include <QStatusBar>
+#include <iostream>
+#include <memory>
+#include <print>
+
 #include <QAction>
+#include <QDateTime>
+#include <QDebug>
+#include <QDockWidget>
+#include <QEvent>
+#include <QFileDialog>
+#include <QKeyEvent>
 #include <QLabel>
+#include <QMenuBar>
+#include <QMimeData>
+#include <QPainter>
+#include <QSettings>
 #include <QSlider>
 #include <QSpinBox>
-#include <QDockWidget>
-#include <QFileDialog>
-#include <QEvent>
-#include <QKeyEvent>
-#include <QMimeData>
-#include <QDebug>
-#include <QSettings>
-#include <QDateTime>
-#include <QPainter>
 #include <QStandardPaths>
+#include <QStatusBar>
 #include <QStringBuilder>
-#include <memory>
-#include "application.h"
-#include "mainwindow.h"
+#include <QToolBar>
+#include <QtGlobal>
+
 #include "aboutwidget.h"
-#include "threadpauser.h"
+#include "application.h"
 #include "dialogue.h"
-#include "../spectrum16k.h"
-#include "../spectrum48k.h"
-#include "../spectrum128k.h"
-#include "../spectrumplus2.h"
-#include "../spectrumplus2a.h"
-#include "../spectrumplus3.h"
-#include "../devices/kempstonjoystick.h"
-#include "../devices/interfacetwojoystick.h"
+#include "mainwindow.h"
+#include "threadpauser.h"
 #include "../devices/cursorjoystick.h"
 #include "../devices/fullerjoystick.h"
+#include "../devices/interfacetwojoystick.h"
+#include "../devices/kempstonjoystick.h"
 #include "../devices/kempstonmouse.h"
-#include "../snapshot.h"
-#include "../io/snasnapshotreader.h"
-#include "../io/z80snapshotreader.h"
-#include "../io/spsnapshotreader.h"
-#include "../io/zx82snapshotreader.h"
-#include "../io/zxsnapshotreader.h"
-#include "../io/z80snapshotwriter.h"
-#include "../io/snasnapshotwriter.h"
-#include "../io/spsnapshotwriter.h"
-#include "../io/zx82snapshotwriter.h"
-#include "../io/zxsnapshotwriter.h"
 #include "../io/snapshotformatguesser.h"
 #include "../io/snapshotreaderfactory.h"
 #include "../io/snapshotwriterfactory.h"
+#include "../io/snasnapshotreader.h"
+#include "../io/snasnapshotwriter.h"
+#include "../io/spsnapshotreader.h"
+#include "../io/spsnapshotwriter.h"
+#include "../io/z80snapshotreader.h"
+#include "../io/z80snapshotwriter.h"
+#include "../io/zx82snapshotreader.h"
+#include "../io/zx82snapshotwriter.h"
+#include "../io/zxsnapshotreader.h"
+#include "../io/zxsnapshotwriter.h"
+#include "../snapshot.h"
+#include "../spectrum128k.h"
+#include "../spectrum16k.h"
+#include "../spectrum48k.h"
+#include "../spectrumplus2.h"
+#include "../spectrumplus2a.h"
+#include "../spectrumplus3.h"
+#include "../../util/assert.h"
 #include "../../util/compiler.h"
 
 using namespace Spectrum::Devices;
@@ -142,6 +146,9 @@ namespace
     /** Regular expression to extract the extension from a snapshot filename. */
     const auto SnapshotExtensionRegularExpression = QRegularExpression("^.*\\.([a-zA-Z0-9_-]+)$");
 
+    /** Regular expression to extract the extension from a snapshot filter from the file dialogue. */
+    const auto SnapshotFilterExtensionRegularExpression = QRegularExpression(R"(^.*\(\*\.([a-zA-Z0-9_-]+)\)$)");
+
     /**
      * Helper to map a key from a Qt key event to a Spectrum keyboard key combination.
      *
@@ -151,10 +158,8 @@ namespace
      */
     std::vector<Keyboard::Key> mapToSpectrumKeys(const Qt::Key key)
     {
-#if (defined(__clang__))
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_SWITCH     // we're only interested in the keys that map to the Spectrum keyboard
-#endif
         // TODO configurable mapping
         switch (key) {
             case Qt::Key::Key_Backspace:
@@ -352,9 +357,7 @@ DISABLE_WARNING_SWITCH     // we're only interested in the keys that map to the 
             default:
                 return {};
         }
-#if (defined(__clang__))
 DISABLE_WARNING_POP
-#endif
     }
 
     /**
@@ -366,10 +369,8 @@ DISABLE_WARNING_POP
      */
     JoystickMapping mapToSpectrumJoystick(Qt::Key key)
     {
-#if (defined(__clang__))
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_SWITCH     // we're only interested in keys that map to the virtual joystick
-#endif
         switch (key) {
             case Qt::Key::Key_Up:
                 return JoystickMapping::Up;
@@ -386,9 +387,7 @@ DISABLE_WARNING_SWITCH     // we're only interested in keys that map to the virt
             case Qt::Key::Key_Control:
                 return JoystickMapping::Button1;
         }
-#if (defined(__clang__))
 DISABLE_WARNING_POP
-#endif
 
         return JoystickMapping::None;
     }
@@ -675,7 +674,7 @@ void MainWindow::setModel(Spectrum::Model model)
     }
 
     if (!newSpectrum) {
-        assert(!error.isEmpty());
+        sp_assert(!error.isEmpty(), "missing error message when failing to switch Spectrum model to {}", model);
         Application::showNotification(error, DefaultNotificationTimeout);
         return;
     }
@@ -706,7 +705,7 @@ void MainWindow::setModel(Spectrum::Model model)
 
 Spectrum::Model MainWindow::model() const
 {
-    assert(m_spectrum);
+    sp_assert(m_spectrum, "detected null Spectrum object in MainWindow::model");
     return m_spectrum->model();
 }
 
@@ -1220,11 +1219,14 @@ void MainWindow::createHelpMenu()
 {
     auto * menu = menuBar()->addMenu(tr("Help"));
 
-    auto * action = menu->addAction(tr("About"));
+    const auto * action = menu->addAction(tr("About"));
     connect(action, &QAction::triggered, [this]() {
         if (!m_aboutWidget) {
             m_aboutWidget = std::make_unique<AboutWidget>();
-            assert(m_aboutWidget);
+
+            // TODO this is a runtime condition, not sure we should be asserting
+            sp_assert(m_aboutWidget, "unable to create about widget in MainWindow::createHelpMenu()");
+
             m_aboutWidget->setWindowFlags(Qt::WindowType::Dialog);
             m_aboutWidget->setWindowTitle(tr("About %1").arg(Application::applicationDisplayName()));
         }
@@ -1238,7 +1240,10 @@ void MainWindow::createHelpMenu()
     connect(action, &QAction::triggered, [this]() {
         if (!m_helpWidget) {
             m_helpWidget = std::make_unique<HelpWidget>();
-            assert(m_helpWidget);
+
+            // TODO this is a runtime condition, not sure we should be asserting
+            sp_assert(m_helpWidget, "unable to create help widget in MainWindow::createHelpMenu");
+
             m_helpWidget->setWindowFlags(Qt::WindowType::Dialog);
             m_helpWidget->setWindowTitle(tr("%1 Help").arg(Application::applicationDisplayName()));
         }
@@ -1416,10 +1421,8 @@ void MainWindow::rescanGameControllers()
 
 bool MainWindow::eventFilter(QObject * target, QEvent * event)
 {
-#if (defined(__clang__))
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_SWITCH
-#endif
     if (&m_displayWidget == target) {
         switch (event->type()) {
             case QEvent::Type::MouseMove:
@@ -1552,9 +1555,7 @@ DISABLE_WARNING_SWITCH
                 break;
         }
     }
-#if (defined(__clang__))
 DISABLE_WARNING_POP
-#endif
     return false;
 }
 
@@ -1663,7 +1664,7 @@ void MainWindow::loadSettings()
 
         // default to the keyboard controller if the settings contain a controller that's not currently available
         if (!found) {
-            assert (!m_frameSkipGroup.actions().isEmpty());
+            sp_assert (!m_frameSkipGroup.actions().isEmpty(), "found empty set of frameskip options in MainWindow::loadSettings");
 
             // the first action in the group is the "don't skip any frames" option
             m_frameSkipGroup.actions().first()->setChecked(true);
@@ -1957,7 +1958,7 @@ void MainWindow::loadSnapshotTriggered()
     auto format = lastFilter;
 
     if (!format.isEmpty()) {
-        if (auto matches = QRegularExpression(R"(^.*\(\*\.([a-zA-Z0-9_-]+)\)$)").match(format); matches.hasMatch()) {
+        if (const auto matches = SnapshotFilterExtensionRegularExpression.match(format); matches.hasMatch()) {
             format = matches.captured(1).toLower();
         } else {
             format.clear();
@@ -1994,7 +1995,7 @@ void MainWindow::saveSnapshotTriggered()
     auto format = lastFilter;
 
     if (!format.isEmpty()) {
-        if (auto matches = QRegularExpression(R"(^.*\(\*\.([a-zA-Z0-9_-]+)\)$)").match(format); matches.hasMatch()) {
+        if (auto matches = SnapshotFilterExtensionRegularExpression.match(format); matches.hasMatch()) {
             format = matches.captured(1).toLower();
         } else {
             format.clear();
@@ -2127,7 +2128,7 @@ void MainWindow::kempstonMouseToggled(bool on)
     }
 }
 
-void MainWindow::emulationSpeedChanged(int speed)
+void MainWindow::emulationSpeedChanged(const int speed)
 {
     if (0 == speed) {
         m_spectrum->setExecutionSpeedConstrained(false);
@@ -2147,7 +2148,7 @@ void MainWindow::updateStatusBarSpeedWidget()
         m_statusBarEmulationSpeed.setText(tr("%1%").arg("∞"));    // infinity
     }
 
-    auto mhz = m_spectrum->z80()->clockSpeedMHz();
+    const auto mhz = m_spectrum->z80()->clockSpeedMHz();
     int precision = 2;
     auto tmpMhz = mhz;
 
@@ -2206,9 +2207,9 @@ void MainWindow::threadStepped()
     refreshSpectrumDisplay();
 }
 
-void MainWindow::saveSnapshotToSlot(int slotIndex, QString format)
+void MainWindow::saveSnapshotToSlot(const int slotIndex, QString format)
 {
-    assert(1 <= slotIndex && 5 >= slotIndex);
+    sp_assert(1 <= slotIndex && 5 >= slotIndex, "invalid slot index {} provided to MainWindow::saveSnapshotToSlot", slotIndex);
 
     if (format.isEmpty()) {
         format = QStringLiteral("z80");
@@ -2227,10 +2228,10 @@ void MainWindow::saveSnapshotToSlot(int slotIndex, QString format)
 
 bool MainWindow::loadSnapshotFromSlot(int slotIndex)
 {
-    assert(1 <= slotIndex && 5 >= slotIndex);
+    sp_assert(1 <= slotIndex && 5 >= slotIndex, "invalid slot index {} provided to MainWindow::loadSnapshotFromSlot", slotIndex);
 
-    auto slotDir = QDir(QStandardPaths::writableLocation(QStandardPaths::StandardLocation::AppDataLocation) % QStringLiteral("/slots"));
-    auto fileName = QStringLiteral("%1.z80").arg(slotIndex);
+    const auto slotDir = QDir(QStandardPaths::writableLocation(QStandardPaths::StandardLocation::AppDataLocation) % QStringLiteral("/slots"));
+    const auto fileName = QStringLiteral("%1.z80").arg(slotIndex);
 
     if (!slotDir.exists(fileName)) {
         Application::showNotification(tr("Slot %1 is empty").arg(slotIndex));

@@ -2,8 +2,11 @@
 // Created by darren on 02/05/2021.
 //
 
+#include <print>
+
 #include "watchesmodel.h"
 #include "../../debugger/stringmemorywatch.h"
+#include "../../../util/assert.h"
 #include "../../../util/debug.h"
 
 using namespace Spectrum::QtUi::Debugger;
@@ -11,10 +14,10 @@ using Spectrum::Debugger::StringMemoryWatch;
 
 namespace
 {
-    constexpr const int AddressColumn = 0;
-    constexpr const int LabelColumn = 1;
-    constexpr const int TypeColumn = 2;
-    constexpr const int ValueColumn = 3;
+    constexpr int AddressColumn = 0;
+    constexpr int LabelColumn = 1;
+    constexpr int TypeColumn = 2;
+    constexpr int ValueColumn = 3;
 }
 
 WatchesModel::WatchesModel(QObject * parent)
@@ -37,12 +40,16 @@ Qt::ItemFlags WatchesModel::flags(const QModelIndex & idx) const
                 flags |= Qt::ItemFlag::ItemIsEditable;
             }
             break;
+
+        default:
+            // no flags to add
+            break;
     }
 
     return flags;
 }
 
-QVariant WatchesModel::data(const QModelIndex & idx, int role) const
+QVariant WatchesModel::data(const QModelIndex & idx, const int role) const
 {
     if (idx.row() >= rowCount() || idx.column() >= columnCount()) {
         return {};
@@ -62,10 +69,11 @@ QVariant WatchesModel::data(const QModelIndex & idx, int role) const
 
                 case ValueColumn:
                     return QString::fromStdString(watch(idx)->displayValue());
+
+                [[unlikely]]
+                default:
+                    sp_assert(false, "reached unreachable code: detected addition of column to WatchesModel not handled in WatchesModel::data()");
             }
-            // unreachable code - if we get here columnCount() has been changed without providing the data for the extra column(s)
-            assert(false);
-            break;
 
         case Qt::ItemDataRole::EditRole:
             switch (idx.column()) {
@@ -77,12 +85,15 @@ QVariant WatchesModel::data(const QModelIndex & idx, int role) const
 
                 case TypeColumn:
                     // for string watches, enable editing of the string size in the type column
-                    if (auto * strWatch = dynamic_cast<StringMemoryWatch *>(watch(idx)); nullptr != strWatch) {
+                    if (const auto * strWatch = dynamic_cast<StringMemoryWatch *>(watch(idx)); nullptr != strWatch) {
                         return strWatch->size();
                     }
                     break;
+
+                [[unlikely]]
+                default:
+                    sp_assert(false, "reached unreachable code: detected addition of column to WatchesModel not handled in WatchesModel::data()");
             }
-            break;
 
         default:
             // just to suppress warnings re: uncovered code paths
@@ -92,15 +103,15 @@ QVariant WatchesModel::data(const QModelIndex & idx, int role) const
     return {};
 }
 
-bool WatchesModel::setData(const QModelIndex & idx, const QVariant & data, int role)
+bool WatchesModel::setData(const QModelIndex & idx, const QVariant & data, const int role)
 {
     if (role == Qt::ItemDataRole::EditRole) {
         switch (idx.column()) {
             case AddressColumn: {
-                assert(watch(idx));
+                sp_assert(watch(idx), "WatchesMode::setData() called with invalid index R{} C{}", idx.row(), idx.column());
 
                 bool ok;
-                auto address = data.toUInt(&ok);
+                const auto address = data.toUInt(&ok);
 
                 if (!ok) {
                     Util::debug << "invalid data type - must have unsigned integer for the address\n";
@@ -117,16 +128,16 @@ bool WatchesModel::setData(const QModelIndex & idx, const QVariant & data, int r
             }
 
             case LabelColumn:
-                assert(watch(idx));
+                sp_assert(watch(idx), "WatchesMode::setData() called with invalid index R{} C{}", idx.row(), idx.column());
                 watch(idx)->setLabel(data.toString().toStdString());
                 return true;
 
             case TypeColumn: {
                 auto * strWatch = dynamic_cast<StringMemoryWatch *>(watch(idx));
-                assert(strWatch);
+                sp_assert(watch(idx), "WatchesMode::setData() called with invalid index ir index that doesn't identify a StringMemoryWatch (R{} C{})", idx.row(), idx.column());
 
                 bool ok;
-                auto size = data.toInt(&ok);
+                const auto size = data.toInt(&ok);
 
                 if (!ok) {
                     Util::debug << "incorrect data type\n";
@@ -141,21 +152,25 @@ bool WatchesModel::setData(const QModelIndex & idx, const QVariant & data, int r
                 strWatch->setSize(size);
                 return true;
             }
+
+            [[unlikely]]
+            default:
+                sp_assert(false, "reached unreachable code: detected addition of column to WatchesModel not handled in WatchesModel::setData()");
         }
     }
 
     return false;
 }
 
-WatchesModel::MemoryWatch * WatchesModel::watch(int idx) const
+WatchesModel::MemoryWatch * WatchesModel::watch(const int idx) const
 {
-    assert(idx < rowCount());
+    sp_assert(idx < rowCount(), "out-of-bounds index {} provided to WatchesModel::watch()", idx);
     return m_watches[idx].get();
 }
 
 void WatchesModel::removeWatch(WatchesModel::MemoryWatch * watch)
 {
-    auto pos = std::find_if(m_watches.cbegin(), m_watches.cend(), [watch](const auto & modelWatch) -> bool {
+    const auto pos = std::ranges::find_if(std::as_const(m_watches), [watch](const auto & modelWatch) -> bool {
         return modelWatch.get() == watch;
     });
 
@@ -166,15 +181,15 @@ void WatchesModel::removeWatch(WatchesModel::MemoryWatch * watch)
     removeWatch(static_cast<int>(std::distance(m_watches.cbegin(), pos)));
 }
 
-void WatchesModel::removeWatch(int row)
+void WatchesModel::removeWatch(const int idx)
 {
-    assert(0 <= row && row < rowCount());
-    beginRemoveRows({}, row, row);
-    m_watches.erase(m_watches.cbegin() + row);
+    sp_assert(0 <= idx && idx < rowCount(), "out-of-bounds index {} provided to WatchesModel::removeWatch()", idx);
+    beginRemoveRows({}, idx, idx);
+    m_watches.erase(m_watches.cbegin() + idx);
     endRemoveRows();
 }
 
-void WatchesModel::removeAllWatches(::Z80::UnsignedWord address)
+void WatchesModel::removeAllWatches(const ::Z80::UnsignedWord address)
 {
     for (auto it = m_watches.begin(); it != m_watches.end(); ) {
         if ((*it)->address() == address) {
@@ -198,7 +213,7 @@ void WatchesModel::clear()
     endRemoveRows();
 }
 
-QVariant WatchesModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant WatchesModel::headerData(const int section, const Qt::Orientation orientation, const int role) const
 {
     if (Qt::Orientation::Vertical == orientation) {
         return {};
@@ -223,12 +238,12 @@ QVariant WatchesModel::headerData(int section, Qt::Orientation orientation, int 
 
         default:
             // unreachable code - if we get here columnCount() has been changed without providing the header for the extra column(s)
-            assert(false);
-            return {};
+            [[unlikely]]
+            sp_assert(false, "unrecognised section {} provided to WatchesModel::headerData()", section);
     }
 }
 
-QModelIndex WatchesModel::index(int row, int col, const QModelIndex &) const
+QModelIndex WatchesModel::index(const int row, const int col, const QModelIndex &) const
 {
     return createIndex(row, col);
 }

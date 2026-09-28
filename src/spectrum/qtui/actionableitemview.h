@@ -7,7 +7,9 @@
 
 #include <concepts>
 #include <optional>
+#include <print>
 #include <vector>
+
 #include <QAbstractItemView>
 #include <QAction>
 #include <QRect>
@@ -18,13 +20,9 @@
 #include <QToolTip>
 #include <QTimer>
 #include <QApplication>
-#include "../../util/compiler.h"
 
-// NOTE I think this should be 202002L (publication date) but MSVC has 201907L (feature freeze date)
-#if (!defined(__cpp_lib_concepts) || 201907L > __cpp_lib_concepts)
-// use polyfill for missing concepts library
-#include "../../util/concepts.h"
-#endif
+#include "../../util/assert.h"
+#include "../../util/compiler.h"
 
 namespace Spectrum::QtUi
 {
@@ -315,7 +313,7 @@ namespace Spectrum::QtUi
          */
         QAction * addItemAction(QAction * action)
         {
-            assert(action);
+            sp_assert(action, "null action provided to ActionableItemView::addItemAction");
             auto & actionItem = m_itemActions.emplace_back(action, QRect(), QMetaObject::Connection());
 
             actionItem.destructHandler = ViewType::connect(action, &QAction::destroyed, [this, action]() {
@@ -565,10 +563,8 @@ namespace Spectrum::QtUi
          */
         bool event(QEvent * ev) override
         {
-#if (defined(__clang__))
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_SWITCH     // we're only interested in a subset of event types
-#endif
             switch (ev->type()) {
                 case QEvent::Type::HoverMove: {
 #if defined(USE_QT5)
@@ -599,9 +595,7 @@ DISABLE_WARNING_SWITCH     // we're only interested in a subset of event types
                     }
                     break;
             }
-#if (defined(__clang__))
 DISABLE_WARNING_POP
-#endif
             return ViewType::event(ev);
         }
 

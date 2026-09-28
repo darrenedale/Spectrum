@@ -118,7 +118,7 @@ namespace Interpreter
          *
          * @return The input.
          */
-        std::string readInput() noexcept;
+        static std::string readInput() noexcept;
 
         /**
          * Tokenise a string of input into a token stream.

@@ -2,11 +2,14 @@
 // Created by darren on 17/03/2021.
 //
 
-#include <iostream>
-#include <sstream>
 #include <iomanip>
+#include <iostream>
+#include <print>
+#include <sstream>
+
 #include "operand.h"
 #include "../z80.h"
+#include "../../util/assert.h"
 #include "../../util/compiler.h"
 
 using namespace Z80::Assembly;
@@ -112,7 +115,7 @@ std::string Z80::Assembly::to_string(const AddressingMode & mode)
 
     // unreachable code - if we get here an AddressingMode enumerator has been added but not handled above
     [[unlikely]]
-    assert(false);
+    sp_assert(false, "AddressingMode enumerator with value {} not handled in to_string()", static_cast<std::uint16_t>(mode));
 }
 DISABLE_WARNING_POP
 

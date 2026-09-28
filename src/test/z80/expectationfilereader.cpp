@@ -2,7 +2,6 @@
 // Created by darren on 26/02/2021.
 //
 
-#include <cassert>
 #include <cstring>
 #include <iostream>
 #include <sstream>
@@ -88,7 +87,7 @@ std::optional<std::vector<Event>> ExpectationFileReader::readEvents()
 
 std::optional<Event> ExpectationFileReader::readEvent()
 {
-    auto line = readLine();
+    const auto line = readLine();
 
     if (!line) {
         std::cerr << "Error reading event line\n";
@@ -141,14 +140,14 @@ std::optional<Event> ExpectationFileReader::readEvent()
         return {};
     }
 
-    auto separator = in.get();
+    const auto separator = in.get();
 
     if (' ' != separator && (-1 != separator || !in.eof())) {
         std::cerr << "Invalid separator between address/port and data\n";
         return {};
     }
 
-    auto addr = parseWord(buffer);
+    const auto addr = parseWord(buffer);
 
     if (!addr) {
         std::cerr << "Failed parsing address '" << buffer[0] << buffer[1] << buffer[2] << buffer[3] << "'\n";

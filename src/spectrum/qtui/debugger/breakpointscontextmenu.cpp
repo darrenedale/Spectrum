@@ -2,8 +2,11 @@
 // Created by darren on 07/05/2021.
 //
 
+#include <print>
+
 #include "breakpointscontextmenu.h"
 #include "../application.h"
+#include "../../../util/assert.h"
 
 using namespace Spectrum::QtUi::Debugger;
 using Spectrum::Debugger::Breakpoint;
@@ -13,7 +16,7 @@ BreakpointsContextMenu::BreakpointsContextMenu(BreakpointsModel * model, const Q
   m_model(model),
   m_index(idx)
 {
-    assert(model);
+    sp_assert(model, "null model provided to BreakpointsContextMenu constructor");
     // for safety, the menu is closed if the model is destroyed or changes - in the case, the index may become invalid but will still report validity, and any
     // attempt to fetch the watch from the model could dereference an invalid pointer
     connect(model, &QAbstractItemModel::destroyed, this, &QMenu::close);

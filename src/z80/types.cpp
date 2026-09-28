@@ -2,10 +2,11 @@
 // Created by darren on 31/03/2021.
 //
 
-#include <cassert>
+#include <print>
 #include <string>
 
 #include "types.h"
+#include "../util/assert.h"
 
 using namespace std::string_literals;
 
@@ -54,8 +55,8 @@ std::string Z80::to_string(const Register16 & reg)
     // unreachable code - someone's added a 16-bit register and not updated the function or type-punned an invalid value
     // to a register
     [[unlikely]]
-    assert(false);
-    return {};
+    sp_assert(false, "reached unreachable code - enumerator with value {} in Register16 not handled in Z80::to_string(const Register16&)", static_cast<int>(reg));
+    std::abort();
 }
 
 std::string Z80::to_string(const Register8 & reg)
@@ -131,8 +132,8 @@ std::string Z80::to_string(const Register8 & reg)
     // unreachable code - someone's added an 8-bit register and not updated the function or type-punned an invalid value
     // to a register
     [[unlikely]]
-    assert(false);
-    return {};
+    sp_assert(false, "reached unreachable code - enumerator with value {} in Register8 not handled in Z80::to_string(const Register8&)", static_cast<int>(reg));
+    std::abort();
 }
 
 std::string Z80::to_string(const InterruptMode & im)
@@ -150,6 +151,6 @@ std::string Z80::to_string(const InterruptMode & im)
     
     // unreachable code - someone's added a mode and not updated the function or type-punned an invalid value to a mode
     [[unlikely]]
-    assert(false);
-    return {};
+    sp_assert(false, "reached unreachable code - enumerator with value {} in InterruptMode not handled in Z80::to_string(const InterruptMode&)", static_cast<int>(im));
+    std::abort();
 }
