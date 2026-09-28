@@ -95,7 +95,7 @@ void InterruptWidget::setRegister(Register8 reg, UnsignedByte value)
             break;
 
         default:
-            Util::debug << "Only registers I and R are present in this widget.\n";
+            Util::debugln("Only registers I and R are present in this widget");;
             break;
     }
 }
@@ -110,7 +110,7 @@ UnsignedByte InterruptWidget::registerValue(Register8 reg)
             return m_r.value();
 
         default:
-            Util::debug << "Only registers I and R are present in this widget.\n";
+            Util::debugln("Only registers I and R are present in this widget");;
             return 0;
     }
 }

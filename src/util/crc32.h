@@ -5,14 +5,14 @@
 #ifndef UTIL_CRC32_H
 #define UTIL_CRC32_H
 
+#include <concepts>
 #include <cstdint>
 #include <type_traits>
 
-#include "concepts.h"
-
 namespace Util
 {
-    template<byte_integral byte_t = std::uint8_t>
+    template<std::integral byte_t = std::uint8_t>
+    requires (1 == sizeof(byte_t))
     class Crc32
     {
         public:

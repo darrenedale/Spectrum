@@ -84,7 +84,7 @@ void ProgramPointersWidget::setRegister(Register16 reg, UnsignedWord value)
             break;
 
         default:
-            Util::debug << "Only registers PC and SP are present in this widget.\n";
+            Util::debugln("Only registers PC and SP are present in this widget");;
             break;
     }
 }
@@ -99,7 +99,7 @@ UnsignedWord ProgramPointersWidget::registerValue(Register16 reg) const
             return m_pc.value();
 
         default:
-            Util::debug << "Only registers PC and SP are present in this widget.\n";
+            Util::debugln("Only registers PC and SP are present in this widget");;
             return 0;
     }
 }

@@ -59,7 +59,7 @@ const Spectrum::Snapshot * SnaSnapshotReader::read() const
     in.read(reinterpret_cast<std::istream::char_type *>(&header), sizeof(Header));
     
     if (in.fail()) {
-        Util::debug("Failed to read SNA header from input stream.");
+        Util::debugln("Failed to read SNA header from input stream");;
         return nullptr;
     }
 
@@ -98,7 +98,7 @@ const Spectrum::Snapshot * SnaSnapshotReader::read() const
 bool SnaSnapshotReader::couldBeSnapshot(std::istream & in)
 {
     if (!in) {
-        Util::debug("input stream is not open.");
+        Util::debugln("input stream is not open");;
         return false;
     }
 
@@ -124,7 +124,7 @@ bool SnaSnapshotReader::couldBeSnapshot(std::istream & in)
 bool SnaSnapshotReader::couldBeSnapshot(const std::string & fileName)
 {
     if (49179 != std::filesystem::file_size(fileName)) {
-        Util::debug(".zx snapshots are always 49179 bytes in size.");
+        Util::debugln(".zx snapshots are always 49179 bytes in size");;
         return false;
     }
 

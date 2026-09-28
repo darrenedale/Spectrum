@@ -70,7 +70,7 @@ void Notification::show(std::optional<int> timeout) const
     ));
 
     if (!reply.isValid()) {
-        Util::debug << "dbus notification error: " << qPrintable(reply.error().message()) << '\n';
+        Util::debugln("dbus notification error: {}", qPrintable(reply.error().message()));
         showFallbackNotification(message(), title());
     }
 }
@@ -105,7 +105,7 @@ namespace
         }
 
         content = content % "<text>" % message % "</text>";
-        Util::debug << "Toast XML: " << static_cast<QString>(prefix % content % postfix).toStdString() << '\n';
+        Util::debugln("Toast XML: {}", static_cast<QString>(prefix % content % postfix).toStdString());
         XmlDocument doc;
         doc.LoadXml(static_cast<QString>(prefix % content % postfix).toStdWString());
         return doc;
@@ -127,7 +127,7 @@ void Notification::show(std::optional<int> timeout) const
 
 void Notification::show(std::optional<int> timeout) const
 {
-    Util::debug << "Desktop notifications for MacOS are not yet implemented.\n";
+    Util::debugln("Desktop notifications for MacOS are not yet implemented");;
     showFallbackNotification(message(), title());
 }
 
@@ -135,7 +135,7 @@ void Notification::show(std::optional<int> timeout) const
 
 void Notification::show(std::optional<int> timeout) const
 {
-    Util::debug << "Desktop notifications are not available for this platform.\n";
+    Util::debugln("Desktop notifications are not available for this platform");;
     showFallbackNotification(message(), title());
 }
 

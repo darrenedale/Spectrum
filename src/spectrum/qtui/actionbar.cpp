@@ -122,7 +122,7 @@ void ActionBar::addStretch(const int size)
 void ActionBar::insertStretch(const int idx, const int size)
 {
     if (0 > idx || layout()->count() <= idx) {
-        Util::debug << "index " << idx << " is outside the current bounds of the action bar - adding stretch to the end of the action bar layout\n";
+        Util::debugln("index {} is outside the current bounds of the action bar - adding stretch to the end of the action bar layout", idx);
         addStretch(size);
         return;
     }
@@ -170,7 +170,7 @@ void ActionBar::insertAction(QAction * before, QAction * action)
         }
     }
 
-    Util::debug << "widget for action " << before->text().toStdString() << " not found, appending rather than inserting\n";
+    Util::debugln("widget for action {} not found, appending rather than inserting", before->text().toStdString());
     layout->addWidget(createToolButton(action));
 }
 
@@ -199,7 +199,7 @@ void ActionBar::insertActions(QAction * before, const QList<QAction *> & actionL
         }
     }
 
-    Util::debug << "widget for action " << before->text().toStdString() << " not found, appending rather than inserting\n";
+    Util::debugln("widget for action {} not found, appending rather than inserting", before->text().toStdString());
 
     for (auto * action : actionList) {
         layout->addWidget(createToolButton(action));
@@ -222,7 +222,7 @@ void ActionBar::removeAction(QAction * action)
         return;
     }
 
-    Util::debug << "action " << action->text().toStdString() << " not found\n";
+    Util::debugln("action {} not found", action->text().toStdString());
 }
 
 void ActionBar::removeActions(const QList<QAction *> & actions)

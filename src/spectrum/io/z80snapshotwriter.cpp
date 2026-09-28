@@ -234,7 +234,7 @@ bool Z80SnapshotWriter::writeHeader(std::ostream & out) const
 bool Z80SnapshotWriter::write48k(std::ostream & out) const
 {
     if (!writeHeader(out)) {
-        Util::debug("failed writing .z80 header");
+        Util::debugln("failed writing .z80 header");
         return false;
     }
 
@@ -242,7 +242,7 @@ bool Z80SnapshotWriter::write48k(std::ostream & out) const
         !writeMemoryPage(out, snapshot().memory()->pointerTo(0xc000), 2) ||
         !writeMemoryPage(out, snapshot().memory()->pointerTo(0x4000), 5)
     ) {
-        Util::debug("failed writing memory to .z80 file");
+        Util::debugln("failed writing memory to .z80 file");
         return false;
     }
 
@@ -252,7 +252,7 @@ bool Z80SnapshotWriter::write48k(std::ostream & out) const
 bool Z80SnapshotWriter::write16k(std::ostream & out) const
 {
     if (!writeHeader(out)) {
-        Util::debug("failed writing .z80 header");
+        Util::debugln("failed writing .z80 header");
         return false;
     }
 
@@ -263,7 +263,7 @@ bool Z80SnapshotWriter::write16k(std::ostream & out) const
         !writeMemoryPage(out, emptyPage.data(), 1) ||
         !writeMemoryPage(out, emptyPage.data(), 2)
     ) {
-        Util::debug("failed writing memory to .z80 file");
+        Util::debugln("failed writing memory to .z80 file");
         return false;
     }
 
@@ -273,7 +273,7 @@ bool Z80SnapshotWriter::write16k(std::ostream & out) const
 bool Z80SnapshotWriter::write128kModel(std::ostream & out) const
 {
     if (!writeHeader(out)) {
-        Util::debug("failed writing .z80 header");
+        Util::debugln("failed writing .z80 header");
         return false;
     }
 
@@ -283,7 +283,7 @@ bool Z80SnapshotWriter::write128kModel(std::ostream & out) const
 
     for (int page = 0; page < pages; ++page) {
         if (!writeMemoryPage(out, memory->pagePointer(page), page)) {
-            Util::debug("failed writing memory page #{} to .z80 file", page);
+            Util::debugln("failed writing memory page #{} to .z80 file", page);
             return false;
         }
     }

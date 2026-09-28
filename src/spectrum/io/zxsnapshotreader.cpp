@@ -111,7 +111,7 @@ DISABLE_WARNING_POP
 const Snapshot * ZxSnapshotReader::read() const
 {
     if (!isOpen()) {
-        Util::debug("input stream is not open");
+        Util::debugln("input stream is not open");
         return nullptr;
     }
 
@@ -121,7 +121,7 @@ const Snapshot * ZxSnapshotReader::read() const
     in.read(reinterpret_cast<std::istream::char_type *>(&content), sizeof(ZxFileContent));
 
     if (in.fail() || sizeof(ZxFileContent) != in.gcount()) {
-        Util::debug << "Failed to read from input stream.\n";
+        Util::debugln("Failed to read from input stream");;
         return nullptr;
     }
 
@@ -184,7 +184,7 @@ DISABLE_WARNING_POP
             break;
 
         default:
-            Util::debug << "Invalid interrupt mode in .ZX input stream.\n";
+            Util::debugln("Invalid interrupt mode in .ZX input stream");;
             return nullptr;
     }
 
@@ -199,7 +199,7 @@ DISABLE_WARNING_POP
 bool ZxSnapshotReader::couldBeSnapshot(std::istream & in)
 {
     if (!in) {
-        Util::debug << "stream is not open.\n";
+        Util::debugln("stream is not open");;
         return false;
     }
 

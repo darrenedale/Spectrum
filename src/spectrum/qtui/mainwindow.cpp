@@ -717,7 +717,7 @@ void MainWindow::saveScreenshot(const QString & fileName)
         std::ofstream outFile(fileName.toStdString());
 
         if (!outFile.is_open()) {
-            Util::debug << "Could not open file '" << fileName.toStdString() << "' for writing\n";
+            Util::debugln("Could not open file \"{}\" for writing", fileName.toStdString());
             Application::showNotification(tr("Failed to open screenshot file %1 for writing.").arg(fileName), DefaultNotificationTimeout);
             return;
         }
@@ -725,7 +725,7 @@ void MainWindow::saveScreenshot(const QString & fileName)
         outFile.write(reinterpret_cast<const char *>(m_spectrum->displayMemory().data()), DisplayFile::extent);
         outFile.close();
     } else if (!m_display.image().save(fileName)) {
-        Util::debug << "Could not save screenshot to '" << fileName.toStdString() << "'\n";
+        Util::debugln("Could not save screenshot to \"{}\"", fileName.toStdString());
         Application::showNotification(tr("Failed to save screenshot to %1.").arg(fileName), DefaultNotificationTimeout);
     }
 }
@@ -759,7 +759,7 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
     >::readerForFormat(format.toStdString());
 
     if (!reader) {
-        Util::debug << "unrecognised format '" << format.toStdString() << "'\n";
+        Util::debugln("unrecognised format \"{}\"", format.toStdString());
         Application::showNotification(tr("The snapshot format for %1 could not be determined.").arg(fileName), DefaultNotificationTimeout);
         return false;
     }
@@ -767,7 +767,7 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
     reader->setFileName(fileName.toStdString());
 
     if (!reader->isOpen()) {
-        Util::debug << "Snapshot file '" << fileName.toStdString() << "' could not be opened.\n";
+        Util::debugln("Snapshot file \"{}\" could not be opened", fileName.toStdString());
         Application::showNotification(tr("The snapshot file %1 could not be opened.").arg(fileName), DefaultNotificationTimeout);
         return false;
     }
@@ -855,7 +855,7 @@ void MainWindow::saveSnapshot(const QString & fileName, QString format)
     >::writerForFormat(format.toStdString());
 
     if (!writer) {
-        Util::debug << "unrecognised format '" << format.toStdString() << "' from filename '" << fileName.toStdString() << "'\n";
+        Util::debugln("unrecognised format \"{}\" from filename \"{}\"", format.toStdString(), fileName.toStdString());
         Application::showNotification(tr("Unrecognised snapshot format %1.").arg(format), DefaultNotificationTimeout);
     }
 
@@ -867,7 +867,7 @@ void MainWindow::saveSnapshot(const QString & fileName, QString format)
     writer->setSnapshot(m_spectrum->snapshot());
 
     if (!writer->writeTo(fileName.toStdString())) {
-        Util::debug << "failed to write snapshot to '" << fileName.toStdString() << "'\n";
+        Util::debugln("failed to write snapshot to \"{}\"", fileName.toStdString());
         Application::showNotification(tr("Failed to save snapshot to %1.").arg(fileName), DefaultNotificationTimeout);
     } else {
         statusBar()->showMessage(tr("Snapshot successfully saved to %1.").arg(fileName), DefaultNotificationTimeout);
@@ -977,25 +977,24 @@ void MainWindow::stopThread()
     m_spectrumThread.stop();
 
 #if (!defined(NDEBUG))
-    Util::debug << "Stopping SpectrumThread @ " << static_cast<void *>(&m_spectrumThread) << ' ';
+    Util::debug("Stopping SpectrumThread @ {:#08x} ", reinterpret_cast<uintptr_t>(&m_spectrumThread));
 
     if (!m_spectrumThread.wait(250)) {
         int waitFor = ThreadStopWaitThreshold;
 
         while (0 < waitFor && !m_spectrumThread.wait(100)) {
-            Util::debug << '.';
+            Util::debug("...");
             waitFor -= 100;
         }
     }
 
-    Util::debug << '\n';
+    Util::debug("\n");
 #else
     m_spectrumThread.wait(ThreadStopWaitThreshold);
 #endif
 
     if (m_spectrumThread.isRunning()) {
-        Util::debug << "forcibly terminating SpectrumThread @" << std::hex
-            << static_cast<void *>(&m_spectrumThread) << "\n";
+        Util::debugln("forcibly terminating SpectrumThread {:#08x}", reinterpret_cast<std::uintptr_t>(&m_spectrumThread));
         m_spectrumThread.terminate();
     }
 }
@@ -1389,7 +1388,7 @@ void MainWindow::rescanGameControllers()
 
     for (const auto gamepadId : QGamepadManager::instance()->connectedGamepads()) {
         QGamepad gamepad(gamepadId);
-        Util::debug << "found connected gameController \"" << gamepad.name().toStdString() << "\" [" << gamepadId << "]\n";
+        Util::debugln("found connected gameController \"{}\" [{}]", gamepad.name().toStdString(), gamepadId);
 
         auto name = gamepad.name().trimmed();
 
@@ -1884,7 +1883,7 @@ void MainWindow::dropEvent(QDropEvent * event)
             spectrumApp->addRecentSnapshot(fileName);
         }
     } else {
-        Util::debug << "remote URLs cannot yet be loaded.\n";
+        Util::debugln("remote URLs cannot yet be loaded");;
     }
 }
 

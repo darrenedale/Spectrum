@@ -157,7 +157,7 @@ void Application::loadRecentSnapshots()
     const auto vSnapshots = settings.value(QLatin1String("recentSnapshots"));
 
     if (!vSnapshots.canConvert<QStringList>()) {
-        Util::debug << "found invalid list of recent snapshots in settings\n";
+        Util::debugln("found invalid list of recent snapshots in settings");
         settings.remove(QLatin1String("recentSnapshots"));
         settings.endGroup();
         return;

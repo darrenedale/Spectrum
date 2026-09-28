@@ -157,7 +157,7 @@ namespace Spectrum::QtUi::Debugger
             auto breakpoint = std::make_unique<MemoryChangedBreakpoint<ValueType>>(address);
 
             if (hasBreakpoint(*breakpoint)) {
-                Util::debug << "breakpoint monitoring 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << " for " << (sizeof(ValueType) * 8) << "-bit changes already set\n";
+                Util::debug("breakpoint monitoring {:#04x} for {}-bit changes already set", address, sizeof(ValueType) * 8);
                 return;
             }
 

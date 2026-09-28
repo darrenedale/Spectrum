@@ -304,7 +304,7 @@ std::string Z80::Assembly::to_string(const Instruction & instruction)
             return "OTDR";
     }
 
-    Util::debug << "unhandled instruction enumerator\n";
+    Util::debugln("unhandled instruction enumerator");
     abort();
 }
 

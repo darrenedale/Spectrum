@@ -97,7 +97,7 @@ namespace
             }
 
             if (line >= m_mnemonics.size()) {
-                Util::debug << "address 0x" << std::hex << std::setfill('0') << std::setw(4) << address << " not found in disassembly\n" << std::dec << std::setfill(' ');
+                Util::debugln("address {:#04x} not found in disassembly",address);
                 return {};
             }
 

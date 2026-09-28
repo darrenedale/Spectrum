@@ -229,7 +229,7 @@ DISABLE_WARNING_POP
 const Spectrum::Snapshot * Z80SnapshotReader::read() const
 {
     if (!isOpen()) {
-        Util::debug("input stream is not open");
+        Util::debugln("input stream is not open");
         return nullptr;
     }
 
@@ -325,7 +325,7 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
                 break;
 
             default:
-                Util::debug("The version ({}) of the stream content is not recognised", static_cast<uint32_t>(format));
+                Util::debugln("The version ({}) of the stream content is not recognised", static_cast<uint32_t>(format));
                 return nullptr;
         }
     } else {
@@ -334,7 +334,7 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
     }
 
     if (!snapshot) {
-        Util::debug("The stream is for a Spectrum model not currently supported");
+        Util::debugln("The stream is for a Spectrum model not currently supported");
         return nullptr;
     }
 
@@ -371,7 +371,7 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
             in.read(reinterpret_cast<std::istream::char_type *>(buffer), 0xffff);
 
             if (in.fail() && !in.eof()) {
-                Util::debug("Failed reading compressed memory image");
+                Util::debugln("Failed reading compressed memory image");
                 return nullptr;
             }
 
@@ -379,7 +379,7 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
             auto size = compressedSize(buffer, in.gcount());
 
             if (!size) {
-                Util::debug("failed to find end of memory image marker in stream");
+                Util::debugln("failed to find end of memory image marker in stream");
                 return nullptr;
             }
 
@@ -389,7 +389,7 @@ const Spectrum::Snapshot * Z80SnapshotReader::read() const
             in.read(reinterpret_cast<std::istream::char_type *>(memory->pointerTo(0) + MemoryImageOffset), (0x10000 - MemoryImageOffset));
 
             if (in.fail() && !in.eof()) {
-                Util::debug("Error reading memory image");
+                Util::debugln("Error reading memory image");
                 return nullptr;
             }
         }
@@ -435,7 +435,7 @@ DISABLE_WARNING_POP
             }
 
             if (in.fail()) {
-                Util::debug("failed to read from stream at {} (expecting memory page)", static_cast<int>(in.tellg()));
+                Util::debugln("failed to read from stream at {} (expecting memory page)", static_cast<int>(in.tellg()));
                 return nullptr;
             }
 
@@ -484,7 +484,7 @@ DISABLE_WARNING_POP
                 in.read(reinterpret_cast<std::istream::char_type *>(buffer.data()), size);
 
                 if (size != in.gcount()) {
-                    Util::debug("truncated read (expected {} read {}) for page #{}", size, in.gcount(), static_cast<std::uint16_t>(page));
+                    Util::debugln("truncated read (expected {} read {}) for page #{}", size, in.gcount(), static_cast<std::uint16_t>(page));
                     return nullptr;
                 }
 
@@ -535,7 +535,7 @@ std::optional<std::size_t> Z80SnapshotReader::compressedSize(UnsignedByte * memo
 bool Z80SnapshotReader::couldBeSnapshot(std::istream & in)
 {
     if (!in) {
-        Util::debug("input stream is not open");
+        Util::debugln("input stream is not open");
         return false;
     }
 
@@ -545,7 +545,7 @@ bool Z80SnapshotReader::couldBeSnapshot(std::istream & in)
     in.read(reinterpret_cast<std::istream::char_type *>(&wordValue), sizeof(wordValue));
 
     if (in.fail()) {
-        Util::debug("failed to read stream");
+        Util::debugln("failed to read stream");
         return false;
     }
 
@@ -560,7 +560,7 @@ bool Z80SnapshotReader::couldBeSnapshot(std::istream & in)
     in.read(reinterpret_cast<std::istream::char_type *>(&wordValue), sizeof(wordValue));
 
     if (in.fail()) {
-        Util::debug("failed to read stream");
+        Util::debugln("failed to read stream");
         return false;
     }
 
@@ -579,7 +579,7 @@ bool Z80SnapshotReader::couldBeSnapshot(std::istream & in)
     in.read(reinterpret_cast<std::istream::char_type *>(flagBytes), sizeof(flagBytes));
 
     if (in.fail()) {
-        Util::debug("failed to read stream");
+        Util::debugln("failed to read stream");
         return false;
     }
 
@@ -598,7 +598,7 @@ bool Z80SnapshotReader::couldBeSnapshot(const std::string & fileName)
     in.read(reinterpret_cast<std::istream::char_type *>(&wordValue), sizeof(wordValue));
 
     if (in.fail()) {
-        Util::debug("failed to read stream");
+        Util::debugln("failed to read stream");
         return false;
     }
 
@@ -609,7 +609,7 @@ bool Z80SnapshotReader::couldBeSnapshot(const std::string & fileName)
         in.read(&byteValue, 1);
 
         if (in.fail()) {
-            Util::debug("failed to read stream");
+            Util::debugln("failed to read stream");
             return false;
         }
 
