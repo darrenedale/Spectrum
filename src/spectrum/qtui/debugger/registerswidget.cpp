@@ -98,7 +98,7 @@ void RegistersWidget::setRegister(Register16 reg, UnsignedWord value)
             break;
             
         default:
-            Util::debug << "Only registers AF, BC, DE, HL, IX and IY are present in this widget.\n";
+            Util::debugln("Only registers AF, BC, DE, HL, IX and IY are present in this widget");;
             break;
     }
 }
@@ -125,7 +125,7 @@ UnsignedWord RegistersWidget::registerValue(Register16 reg)
             return m_iy.value();
 
         default:
-            Util::debug << "Only registers AF, BC, DE, HL, IX and IY are present in this widget.\n";
+            Util::debugln("Only registers AF, BC, DE, HL, IX and IY are present in this widget");;
             return 0;
     }
 }

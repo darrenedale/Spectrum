@@ -182,7 +182,7 @@ QByteArray MemorySearchWidget::stringValue() const
             // ASCII and Spectrum charset equivalence
             ret += static_cast<QByteArray::value_type>(unicode & 0x00ff);
         } else {
-            Util::debug << "unicode codepoint U+" << std::hex << std::setfill('0') << std::setw(4) << static_cast<int>(unicode) << " cannot be represented in the Spectrum charset\n";
+            Util::debugln("unicode codepoint U+{:04x} cannot be represented in the Spectrum charset", static_cast<int>(unicode));
             ret += '\0';
         }
     }

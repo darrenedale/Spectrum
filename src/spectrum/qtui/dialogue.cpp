@@ -110,14 +110,12 @@ void Dialogue::addButton(QAbstractButton * button, QDialogButtonBox::ButtonRole 
     sp_assert(button, "null button provided to Dialogue::addButton");
 
     if (m_controls.buttons().contains(button)) {
-        Util::debug << "button is already in button box ";
-
         if (m_controls.buttonRole(button) == role) {
-            Util::debug << "and has the provided role, nothing to do\n";
+            Util::debugln("button is already in button box and has the provided role, nothing to do");
             return;
         }
 
-        Util::debug << "with a different role, removing and re-adding\n";
+        Util::debugln("button is already in button box with a different role, removing and re-adding");
         m_controls.removeButton(button);
     }
 
@@ -203,7 +201,7 @@ void Dialogue::rebuildLayout()
     ++row;
 
     if (!m_controls.buttons().isEmpty()) {
-        Util::debug << "controls will span " << (col + 1) << '\n';
+        Util::debugln("controls will span {}", col + 1);
         layout->addWidget(&m_controls, row, 0, 1, (col + 1));
         layout->setRowStretch(row, 0);
         ++row;

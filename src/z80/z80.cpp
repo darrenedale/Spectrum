@@ -1062,7 +1062,7 @@ Z80::InstructionCost Z80::Z80::execute(const UnsignedByte * instruction, bool do
 //        Util::debug << "\n  SP after : 0x" << std::setw(4) << historyEntry.registersAfter.sp << '\n';
 //
 //        if (0xfffe < historyEntry.registersAfter.sp) {
-//            Util::debug << "  Stack is now empty\n";
+//            Util::debug("  Stack is now empty");
 //        } else {
 //            Util::debug << "\n  Top of stack: 0x" << std::setw(4) << peekUnsignedHostWord(historyEntry.registersAfter.sp);
 //            Util::debug << "   [0x" << std::setw(2) << static_cast<std::uint16_t>(peekUnsigned(historyEntry.registersAfter.sp));
@@ -1111,7 +1111,7 @@ int Z80::Z80::handleInterrupt()
 
     switch (m_interruptMode) {
         case InterruptMode::IM0:
-            // Util::debug << "IM0 is not currently handled correctly.\n";
+            // Util::debug("IM0 is not currently handled correctly");;
             // TODO if the instruction is a call or RST, push PC onto stack
             // if (false/* is_call_or_rst */) {
                 Z80__PUSH__REG16(m_registers.pc);
@@ -1237,7 +1237,7 @@ int Z80::Z80::fetchExecuteCycle()
 #if (!defined(NDEBUG))
     if (m_halted && !m_iff1) {
         if (!haltAndDiWarningShown) {
-            Util::debug << "CPU is halted and interrupts are disabled - the CPU cannot be resumed\n";
+            Util::debugln("CPU is halted and interrupts are disabled - the CPU cannot be resumed");
         }
     } else {
         haltAndDiWarningShown = false;
@@ -2233,7 +2233,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Z80__PLAIN__PREFIX__CB:				// 0xcb
-            Util::debug << "executePlainInstruction() called with opcode 0xcb. such an opcode should be handled by executeCbInstruction()" << "\n";
+            Util::debugln("executePlainInstruction() called with opcode 0xcb - such an opcode should be handled by executeCbInstruction()");
 			break;
 
 		case Z80__PLAIN__CALL__Z__NN:				// 0xcc
@@ -2352,7 +2352,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Z80__PLAIN__PREFIX__DD:				// 0xdd
-            Util::debug << "executePlainInstruction() called with opcode 0xdd. such an opcode should be handled by executeDdInstruction()" << "\n";
+            Util::debugln("executePlainInstruction() called with opcode 0xdd. such an opcode should be handled by executeDdInstruction()");
 			break;
 
 		case Z80__PLAIN__SBC__A__N:					// 0xde
@@ -2460,7 +2460,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
 		case Z80__PLAIN__PREFIX__ED:				// 0xed
 			/* should never happen */
-            Util::debug << "executePlainInstruction() called with opcode 0xed. such an opcode should be handled by executeEdInstruction()" << "\n";
+            Util::debugln("executePlainInstruction() called with opcode 0xed. such an opcode should be handled by executeEdInstruction()");
 			break;
 
 		case Z80__PLAIN__XOR__N:						// 0xee
@@ -2569,7 +2569,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Z80__PLAIN__PREFIX__FD:				// 0xfd
-            Util::debug << "executePlainInstruction() called with opcode 0xfd. such an opcode should be handled by executeFdInstruction()" << "\n";
+            Util::debugln("executePlainInstruction() called with opcode 0xfd. such an opcode should be handled by executeFdInstruction()");
 			break;
 
 		case Z80__PLAIN__CP__N:						// 0xfe
@@ -2582,7 +2582,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		default:
-            Util::debug << "unexpected opcode: 0x" << std::hex << (*instruction) << "\n";
+            Util::debugln("unexpected opcode: {:#02x}", *instruction);
             throw InvalidOpcode({*instruction}, m_registers.pc);
 	}
 
@@ -3624,7 +3624,7 @@ Z80::InstructionCost Z80::Z80::executeCbInstruction(const UnsignedByte * instruc
 			break;
 
 		default:
-            Util::debug << "unexpected opcode: 0xcb 0x" << std::hex << (*instruction) << "\n";
+            Util::debugln("unexpected opcode: 0xcb {:#02x}", *instruction);
             throw InvalidOpcode({0xcb, *instruction}, m_registers.pc);
 	}
 
@@ -3969,7 +3969,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 
 		case Z80__ED__IN__INDIRECT_C:           // 0xed 0x70
             {
-                Util::debug << "opcode 0xed 0x70 IN F,(C) - just setting flags\n";
+                Util::debugln("opcode 0xed 0x70 IN F,(C) - just setting flags");
                 UnsignedByte tmpInByte;
                 Z80__IN__REG8__INDIRECT_REG16(tmpInByte, m_registers.bc);
             }
@@ -4490,7 +4490,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		default:
-            Util::debug << "unexpected opcode: 0xed 0x" << std::hex << (*instruction) << "\n";
+            Util::debugln("unexpected opcode: 0xed {:#02x}", *instruction);
             throw InvalidOpcode({0xed, *instruction}, m_registers.pc);
 	}
 
@@ -5074,16 +5074,14 @@ Z80::InstructionCost Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, cons
 #if (!defined(NDEBUG))
             // this is like a NOP - the second 0xdd or 0xfd supersedes the first and consumes 1 byte and 4 t-states. The
             // PC is subsequently incremented and the second 0xdd or 0xfd becomes the first byte of the next instruction
-            Util::debug << "Encountered redundant double-extended 0x"
-                << std::hex << std::setfill('0') << std::setw(2) << static_cast<std::uint16_t>(*instruction) << '\n'
-                << std::dec << std::setfill(' ');
+            Util::debugln("Encountered redundant double-extended {:#02x}", static_cast<std::uint16_t>(*instruction));
 #endif
             return {4, 1};
 
 	    default:
             {
                 UnsignedByte prefix = (&reg == &m_registers.ix ? 0xdd : 0xfd);
-                Util::debug << "unexpected opcode: 0x" << std::hex << prefix << " 0x" << (*instruction) << "\n";
+                Util::debugln("unexpected opcode: {:#02x} {:#02x}", prefix, *instruction);
                 throw InvalidOpcode({prefix, *instruction}, m_registers.pc);
             }
     }

@@ -106,14 +106,14 @@ bool ZxSnapshotWriter::writeTo(std::ostream & out) const
     const auto & snap = snapshot();
 
     if (Model::Spectrum48k != snap.model()) {
-        Util::debug << "Only Spectrum 48k snapshots are currently supported by the ZX82 file writer\n";
+        Util::debugln("Only Spectrum 48k snapshots are currently supported by the ZX82 file writer");
         return false;
     }
 
     const auto * memory = snap.memory();
 
     if (!memory) {
-        Util::debug << "Snapshot is incomplete (no memory)\n";
+        Util::debugln("Snapshot is incomplete (no memory)");
         return false;
     }
 
@@ -122,21 +122,21 @@ bool ZxSnapshotWriter::writeTo(std::ostream & out) const
     out.write(padding132Bytes.data(), padding132Bytes.size());
 
     if (out.bad()) {
-        Util::debug << "Error writing 132 bytes of 0-padding to snapshot stream.\n";
+        Util::debugln("Error writing 132 bytes of 0-padding to snapshot stream");;
         return false;
     }
 
     out.write(reinterpret_cast<const std::ostream::char_type *>(memory->pointerTo(MemoryImageOffset)), 0x10000 - MemoryImageOffset);
     
     if (out.bad()) {
-        Util::debug << "Error writing memory image to snapshot stream.\n";
+        Util::debugln("Error writing memory image to snapshot stream");;
         return false;
     }
 
     out.write(padding132Bytes.data(), padding132Bytes.size());
 
     if (out.bad()) {
-        Util::debug << "Error writing 132 bytes of 0-padding to snapshot stream.\n";
+        Util::debugln("Error writing 132 bytes of 0-padding to snapshot stream");;
         return false;
     }
 

@@ -243,7 +243,7 @@ void MemoryView::setMemory(BaseSpectrum::MemoryType * memory)
 
 void MemoryView::find(::Z80::UnsignedWord value, std::optional<::Z80::UnsignedWord> fromAddress)
 {
-    Util::debug << "Searching for unsigned word\n";
+    Util::debugln("Searching for unsigned word");
     if constexpr (::Z80::HostByteOrder != ::Z80::Z80ByteOrder) {
         value = Util::swapByteOrder(value);
     }
@@ -253,7 +253,7 @@ void MemoryView::find(::Z80::UnsignedWord value, std::optional<::Z80::UnsignedWo
 
 void MemoryView::find(::Z80::SignedWord value, std::optional<::Z80::UnsignedWord> fromAddress)
 {
-    Util::debug << "Searching for unsigned word\n";
+    Util::debugln("Searching for unsigned word");
     if constexpr (::Z80::HostByteOrder != ::Z80::Z80ByteOrder) {
         value = Util::swapByteOrder(value);
     }

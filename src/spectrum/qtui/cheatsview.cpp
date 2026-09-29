@@ -195,21 +195,21 @@ void CheatsView::addCheatWidget(const QString & name, const QString & uuid)
 void CheatsView::removeCheat(int idx)
 {
     if (0 > idx || cheatCount() <= idx) {
-        Util::debug << "index " << idx << " out of bounds.\n";
+        Util::debugln("index {} out of bounds", idx);
         return;
     }
 
     auto * item = m_layout.itemAt(idx);
 
     if (!item->widget()) {
-        Util::debug << "item at index " << idx << " is not a widget.\n";
+        Util::debugln("item at index {} is not a widget", idx);
         return;
     }
 
     auto uuid = item->widget()->property(UuidPropertyName).toString();
 
     if (uuid.isEmpty()) {
-        Util::debug << "item at index " << idx << " has an empty UUID.\n";
+        Util::debugln("item at index {} has an empty UUID", idx);
         return;
     }
 
@@ -290,7 +290,7 @@ void CheatsView::undoCheatTriggered(const QString & uuid)
     auto stdUuid = uuid.toStdString();
 
     if (!m_cheats.contains(stdUuid)) {
-        Util::debug << "Poke with UUID " << stdUuid << " not found\n";
+        Util::debugln("Poke with UUID {} not found", stdUuid);
         return;
     }
 
@@ -308,7 +308,7 @@ void CheatsView::applyCheatTriggered(const QString & uuid)
     auto stdUuid = uuid.toStdString();
 
     if (!m_cheats.contains(stdUuid)) {
-        Util::debug << "Poke with UUID " << stdUuid << " not found\n";
+        Util::debugln("Poke with UUID {} not found", stdUuid);
         return;
     }
 

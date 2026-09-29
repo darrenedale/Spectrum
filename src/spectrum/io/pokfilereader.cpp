@@ -63,7 +63,7 @@ std::optional<Spectrum::PokeDefinition> PokFileReader::nextPoke()
     }
 
     if (LineType::Name != nextLineType()) {
-        Util::debug << "Unexpected line type: found '" << static_cast<char>((*m_in).peek()) << "' expecting 'N'.";
+        Util::debug("Unexpected line type: found '{}' expecting 'N'", static_cast<char>((*m_in).peek()));
         return {};
     }
 
@@ -72,17 +72,17 @@ std::optional<Spectrum::PokeDefinition> PokFileReader::nextPoke()
     poke.setName({line.cbegin() + 1, line.cend()});
 
     while (true) {
-        auto lineType = nextLineType();
+        const auto lineType = nextLineType();
 
         if (lineType != LineType::Poke && lineType != LineType::LastPoke) {
-            Util::debug << "Unexpected line type: found: '" << static_cast<char>((*m_in).peek()) << "' expecting 'M' or 'Z'.";
+            Util::debugln("Unexpected line type: found: '{}' expecting 'M' or 'Z'.", static_cast<char>(m_in->peek()));
             return {};
         }
 
         auto pokeValue = parsePokeLine(readLine());
 
         if (!pokeValue) {
-            Util::debug << "Error parsing poke line '" << line << "'\n";
+            Util::debugln("Error parsing poke line '{}'", line);
             return {};
         }
 
@@ -112,7 +112,7 @@ std::optional<Poke> PokFileReader::parsePokeLine(const std::string & line)
     in >> value;
 
     if (in.fail()) {
-        Util::debug << "failed reading poke address\n";
+        Util::debugln("failed reading poke address");
         return {};
     }
 
@@ -122,7 +122,7 @@ std::optional<Poke> PokFileReader::parsePokeLine(const std::string & line)
     in >> poke.address;
 
     if (in.fail()) {
-        Util::debug << "failed reading poke address\n";
+        Util::debugln("failed reading poke address");
         return {};
     }
 
@@ -134,7 +134,7 @@ std::optional<Poke> PokFileReader::parsePokeLine(const std::string & line)
     in >> value;
 
     if (in.fail() || value > 0x100) {
-        Util::debug << "failed reading poke value\n";
+        Util::debugln("failed reading poke value");
         return {};
     }
 
@@ -151,7 +151,7 @@ std::optional<Poke> PokFileReader::parsePokeLine(const std::string & line)
     in >> value;
 
     if (in.fail() || value > 0xff) {
-        Util::debug << "failed reading poke undo value\n";
+        Util::debugln("failed reading poke undo value");
         return {};
     }
 

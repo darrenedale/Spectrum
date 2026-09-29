@@ -5,52 +5,26 @@
 #ifndef UTIL_DEBUG_H
 #define UTIL_DEBUG_H
 
-#if (!defined(NDEBUG))
-
+#include <format>
 #include <iostream>
 
 namespace Util
 {
-    /**
-     * Alias the debug stream to the standard error stream.
-     */
-    using DebugStream = std::ostream;
-    static DebugStream & debug = std::cerr;
-}
-
-#else
-
-namespace Util
-{
-    /**
-     * Empty class to optimise away uses of Util::debug in non-debug builds.
-     */
-    class DebugStream
+    template <typename... Args>
+    void debugln(const std::format_string<Args...> format, Args&&... args)
     {
-    public:
-        DebugStream() = default;
-        DebugStream(const DebugStream &) = delete;
-        DebugStream(DebugStream &&) = delete;
-        void operator=(const DebugStream &) = delete;
-        void operator=(DebugStream &&) = delete;
-        ~DebugStream() = default;
-
-        /**
-         * Template to fake-stream any type to the "debug" stream.
-         *
-         * @tparam T
-         * @return
-         */
-        template<typename T>
-        DebugStream & operator<<(const T &)
-        {
-            return *this;
-        }
-    };
-
-    static DebugStream debug;
-}
-
+#if !defined(NDEBUG)
+        std::println(std::cerr, format, std::forward<Args>(args)...);
 #endif
+    }
+
+    template <typename... Args>
+    void debug(const std::format_string<Args...> format, Args&&... args)
+    {
+#if !defined(NDEBUG)
+        std::print(std::cerr, format, std::forward<Args>(args)...);
+#endif
+    }
+}
 
 #endif //UTIL_DEBUG_H

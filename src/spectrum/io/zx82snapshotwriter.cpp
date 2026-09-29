@@ -103,14 +103,14 @@ bool Zx82SnapshotWriter::writeTo(std::ostream & out) const
     const auto & snap = snapshot();
 
     if (Model::Spectrum48k != snap.model()) {
-        Util::debug << "Only Spectrum 48k snapshots are currently supported by the ZX82 file writer\n";
+        Util::debugln("Only Spectrum 48k snapshots are currently supported by the ZX82 file writer");
         return false;
     }
 
     const auto * memory = snap.memory();
 
     if (!memory) {
-        Util::debug << "Snapshot is incomplete (no memory)\n";
+        Util::debugln("Snapshot is incomplete (no memory)");
         return false;
     }
 
@@ -165,7 +165,7 @@ DISABLE_WARNING_POP
     out.write(reinterpret_cast<const std::ostream::char_type *>(&header), sizeof(Header));
 
     if (!out.good()) {
-        Util::debug << "failed writing .zx82 header\n";
+        Util::debugln("failed writing .zx82 header");
         return false;
     }
 

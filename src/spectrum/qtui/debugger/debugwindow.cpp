@@ -242,7 +242,7 @@ void DebugWindow::connectWidgets()
         const auto addr = m_pointers.registerValue(Register16::SP);
 
         if (addr > 0xffff - 2) {
-            Util::debug << "Can't set a breakpoint at address on top of stack - stack is currently < 2 bytes in size\n";
+            Util::debugln("Can't set a breakpoint at address on top of stack - stack is currently < 2 bytes in size");
             showStatusMessage("Can't set breakpoint - the top of the stack does not contain an address.", DefaultTransientMessageTimeout);
             return;
         }
@@ -452,7 +452,7 @@ void DebugWindow::threadSpectrumChanged()
 void DebugWindow::setProgramCounterBreakpointTriggered(const UnsignedWord address)
 {
     if (0 > address || 0xffff < address) {
-        Util::debug << "invalid breakpoint address: " << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << "\n";
+        Util::debugln("invalid breakpoint address: {:#04x}", address);
         return;
     }
 
@@ -464,7 +464,7 @@ void DebugWindow::breakAtProgramCounter(UnsignedWord address)
     auto breakpoint = std::make_unique<ProgramCounterBreakpoint>(address);
 
     if (hasBreakpoint(*breakpoint)) {
-        Util::debug << "breakpoint already set: 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << "\n";
+        Util::debugln("breakpoint already set: {:#04x}", address);
         return;
     }
 
@@ -478,7 +478,7 @@ void DebugWindow::breakIfStackPointerBelow(UnsignedWord address)
     auto breakpoint = std::make_unique<StackPointerBelowBreakpoint>(address);
 
     if (hasBreakpoint(*breakpoint)) {
-        Util::debug << "stack pointer breakpoint already set at 0x" << std::hex << std::setfill('0') << std::setw(4) << address << std::dec << std::setfill(' ') << "\n";
+        Util::debugln("stack pointer breakpoint already set at {:#04x}", address);
         return;
     }
 

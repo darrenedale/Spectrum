@@ -114,12 +114,12 @@ bool WatchesModel::setData(const QModelIndex & idx, const QVariant & data, const
                 const auto address = data.toUInt(&ok);
 
                 if (!ok) {
-                    Util::debug << "invalid data type - must have unsigned integer for the address\n";
+                    Util::debugln("invalid data type - must have unsigned integer for the address");
                     return false;
                 }
 
                 if (address + watch(idx)->size() > watch(idx)->memory()->addressableSize()) {
-                    Util::debug << "invalid address - watch would overflow addressable memory\n";
+                    Util::debugln("invalid address - watch would overflow addressable memory");
                     return false;
                 }
 
@@ -140,12 +140,12 @@ bool WatchesModel::setData(const QModelIndex & idx, const QVariant & data, const
                 const auto size = data.toInt(&ok);
 
                 if (!ok) {
-                    Util::debug << "incorrect data type\n";
+                    Util::debugln("incorrect data type");
                     return false;
                 }
 
                 if (1 > size || strWatch->memory()->addressableSize() < strWatch->address() + size) {
-                    Util::debug << "invalid size\n";
+                    Util::debugln("invalid size");
                     return false;
                 }
 

@@ -82,7 +82,7 @@ void ShadowRegistersWidget::setRegister(Register16 reg, UnsignedWord value)
             break;
 
         default:
-            Util::debug << "Only registers AF', BC', DE', HL' are present in this widget.\n";
+            Util::debugln("Only registers AF', BC', DE', HL' are present in this widget");;
             break;
     }
 }
@@ -103,7 +103,7 @@ UnsignedWord ShadowRegistersWidget::registerValue(Register16 reg)
             return m_hlShadow.value();
 
         default:
-            Util::debug << "Only registers AF', BC', DE', HL' are present in this widget.\n";
+            Util::debugln("Only registers AF', BC', DE', HL' are present in this widget");;
             return 0;
     }
 }
