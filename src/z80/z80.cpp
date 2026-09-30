@@ -28,23 +28,23 @@
 #include "assembly/disassembler.h"
 #endif
 
-#define Z80_FLAG_C_SET (m_registers.f |= Z80_FLAG_C_MASK)
-#define Z80_FLAG_Z_SET (m_registers.f |= Z80_FLAG_Z_MASK)
-#define Z80_FLAG_P_SET (m_registers.f |= Z80_FLAG_P_MASK)
-#define Z80_FLAG_S_SET (m_registers.f |= Z80_FLAG_S_MASK)
-#define Z80_FLAG_N_SET (m_registers.f |= Z80_FLAG_N_MASK)
-#define Z80_FLAG_H_SET (m_registers.f |= Z80_FLAG_H_MASK)
-#define Z80_FLAG_F3_SET (m_registers.f |= Z80_FLAG_F3_MASK)
-#define Z80_FLAG_F5_SET (m_registers.f |= Z80_FLAG_F5_MASK)
+#define Z80_FLAG_C_SET (m_registers.f |= Z80FlagCMask)
+#define Z80_FLAG_Z_SET (m_registers.f |= Z80FlagZMask)
+#define Z80_FLAG_P_SET (m_registers.f |= Z80FlagPMask)
+#define Z80_FLAG_S_SET (m_registers.f |= Z80FlagSMask)
+#define Z80_FLAG_N_SET (m_registers.f |= Z80FlagNMask)
+#define Z80_FLAG_H_SET (m_registers.f |= Z80FlagHMask)
+#define Z80_FLAG_F3_SET (m_registers.f |= Z80FlagF3Mask)
+#define Z80_FLAG_F5_SET (m_registers.f |= Z80FlagF5Mask)
 
-#define Z80_FLAG_C_CLEAR (m_registers.f &= ~Z80_FLAG_C_MASK)
-#define Z80_FLAG_Z_CLEAR (m_registers.f &= ~Z80_FLAG_Z_MASK)
-#define Z80_FLAG_P_CLEAR (m_registers.f &= ~Z80_FLAG_P_MASK)
-#define Z80_FLAG_S_CLEAR (m_registers.f &= ~Z80_FLAG_S_MASK)
-#define Z80_FLAG_N_CLEAR (m_registers.f &= ~Z80_FLAG_N_MASK)
-#define Z80_FLAG_H_CLEAR (m_registers.f &= ~Z80_FLAG_H_MASK)
-#define Z80_FLAG_F3_CLEAR (m_registers.f &= ~Z80_FLAG_F3_MASK)
-#define Z80_FLAG_F5_CLEAR (m_registers.f &= ~Z80_FLAG_F5_MASK)
+#define Z80_FLAG_C_CLEAR (m_registers.f &= ~Z80FlagCMask)
+#define Z80_FLAG_Z_CLEAR (m_registers.f &= ~Z80FlagZMask)
+#define Z80_FLAG_P_CLEAR (m_registers.f &= ~Z80FlagPMask)
+#define Z80_FLAG_S_CLEAR (m_registers.f &= ~Z80FlagSMask)
+#define Z80_FLAG_N_CLEAR (m_registers.f &= ~Z80FlagNMask)
+#define Z80_FLAG_H_CLEAR (m_registers.f &= ~Z80FlagHMask)
+#define Z80_FLAG_F3_CLEAR (m_registers.f &= ~Z80FlagF3Mask)
+#define Z80_FLAG_F5_CLEAR (m_registers.f &= ~Z80FlagF5Mask)
 
 #define Z80_FLAG_C_UPDATE(cond) if (cond) Z80_FLAG_C_SET; else Z80_FLAG_C_CLEAR
 #define Z80_FLAG_Z_UPDATE(cond) if (cond) Z80_FLAG_Z_SET; else Z80_FLAG_Z_CLEAR
@@ -58,12 +58,12 @@
 // very often S, 5 and 3 flags are simply set to the same bits as the result (usually reg A)
 #define Z80_FLAGS_S53_UPDATE(byte) (m_registers.f = (m_registers.f & 0b01010111) | ((byte) & 0b10101000))
 
-#define Z80_FLAG_C_ISSET (0 != (m_registers.f & Z80_FLAG_C_MASK))
-#define Z80_FLAG_Z_ISSET (0 != (m_registers.f & Z80_FLAG_Z_MASK))
-#define Z80_FLAG_P_ISSET (0 != (m_registers.f & Z80_FLAG_P_MASK))
-#define Z80_FLAG_S_ISSET (0 != (m_registers.f & Z80_FLAG_S_MASK))
-#define Z80_FLAG_N_ISSET (0 != (m_registers.f & Z80_FLAG_N_MASK))
-#define Z80_FLAG_H_ISSET (0 != (m_registers.f & Z80_FLAG_H_MASK))
+#define Z80_FLAG_C_ISSET (0 != (m_registers.f & Z80FlagCMask))
+#define Z80_FLAG_Z_ISSET (0 != (m_registers.f & Z80FlagZMask))
+#define Z80_FLAG_P_ISSET (0 != (m_registers.f & Z80FlagPMask))
+#define Z80_FLAG_S_ISSET (0 != (m_registers.f & Z80FlagSMask))
+#define Z80_FLAG_N_ISSET (0 != (m_registers.f & Z80FlagNMask))
+#define Z80_FLAG_H_ISSET (0 != (m_registers.f & Z80FlagHMask))
 
 /* used in instruction execution methods to force the PC NOT to be updated with
  * the size of the instruction in execute() in cases where the instruction
@@ -259,8 +259,8 @@ pokeHostWord(m_registers.sp, (reg));
     Z80_FLAG_S_UPDATE((dest) & 0x80);  \
     Z80_FLAG_C_UPDATE(tmpResult & 0x100);    \
     Z80_FLAG_H_UPDATE_ADD(tmpOldValue, tmpDelta, tmpResult);                    \
-    Z80_FLAG_F3_UPDATE((dest) & Z80_FLAG_F3_MASK);\
-    Z80_FLAG_F5_UPDATE((dest) & Z80_FLAG_F5_MASK);\
+    Z80_FLAG_F3_UPDATE((dest) & Z80FlagF3Mask);\
+    Z80_FLAG_F5_UPDATE((dest) & Z80FlagF5Mask);\
 }
 
 #define Z80__ADD__REG8__REG8(dest,src) Z80__ADD__REG8__N(dest,src)
@@ -275,8 +275,8 @@ pokeHostWord(m_registers.sp, (reg));
     Z80_FLAG_H_UPDATE_16_ADD(tmpOldValue, tmpDelta, tmpResult); \
     Z80_FLAG_N_CLEAR;                            \
     Z80_FLAG_C_UPDATE(tmpResult & 0x10000);\
-    Z80_FLAG_F5_UPDATE((dest) & (Z80_FLAG_F5_MASK << 8)); \
-    Z80_FLAG_F3_UPDATE((dest) & (Z80_FLAG_F3_MASK << 8)); \
+    Z80_FLAG_F5_UPDATE((dest) & (Z80FlagF5Mask << 8)); \
+    Z80_FLAG_F3_UPDATE((dest) & (Z80FlagF3Mask << 8)); \
 }
 
 #define Z80__ADD__REG8_Indirect_REG16_D(dest, reg, d) Z80__ADD__REG8__N((dest),(*(memory()->pointerTo((reg) + (d)))))
@@ -390,8 +390,8 @@ Z80_FLAG_P_UPDATE(0x80 == (reg));       \
 Z80_FLAG_N_CLEAR;                       \
 Z80_FLAG_Z_UPDATE(0 == (reg));          \
 Z80_FLAG_S_UPDATE((reg) & 0x80);        \
-Z80_FLAG_F3_UPDATE((reg) & Z80_FLAG_F3_MASK); \
-Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
+Z80_FLAG_F3_UPDATE((reg) & Z80FlagF3Mask); \
+Z80_FLAG_F5_UPDATE((reg) & Z80FlagF5Mask);
 
 #define Z80__INC_Indirect_REG16(reg) Z80__INC__REG8(*(memory()->pointerTo(reg)))
 #define Z80__INC__REG16(reg) (reg)++;
@@ -408,8 +408,8 @@ Z80_FLAG_P_UPDATE(0x7f == (reg)); \
 Z80_FLAG_N_SET;             \
 Z80_FLAG_Z_UPDATE(0 == (reg));   \
 Z80_FLAG_S_UPDATE((reg) & 0x80); \
-Z80_FLAG_F3_UPDATE((reg) & Z80_FLAG_F3_MASK); \
-Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
+Z80_FLAG_F3_UPDATE((reg) & Z80FlagF3Mask); \
+Z80_FLAG_F5_UPDATE((reg) & Z80FlagF5Mask);
 
 #define Z80__DEC_Indirect_REG16(reg) Z80__DEC__REG8(*(memory()->pointerTo(reg)))
 #define Z80__DEC__REG16(reg) (reg)--;
@@ -448,9 +448,9 @@ Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);
     Z80_FLAG_N_SET;      \
     Z80_FLAG_P_UPDATE_OVERFLOW_SUB(m_registers.a, tmpDelta, tmpResult); \
     Z80_FLAG_H_UPDATE_SUB(m_registers.a, tmpDelta, tmpResult); \
-    Z80_FLAG_S_UPDATE(tmpResult & Z80_FLAG_S_MASK);\
-    Z80_FLAG_F5_UPDATE(tmpDelta & Z80_FLAG_F5_MASK);\
-    Z80_FLAG_F3_UPDATE(tmpDelta & Z80_FLAG_F3_MASK);\
+    Z80_FLAG_S_UPDATE(tmpResult & Z80FlagSMask);\
+    Z80_FLAG_F5_UPDATE(tmpDelta & Z80FlagF5Mask);\
+    Z80_FLAG_F3_UPDATE(tmpDelta & Z80FlagF3Mask);\
     Z80_FLAG_Z_UPDATE(0 == tmpResult);      \
 }
 
@@ -732,14 +732,14 @@ Z80_FLAG_Z_UPDATE(0 == ((reg) & (0x01 << n))); \
 Z80_FLAG_P_UPDATE(Z80_FLAG_Z_ISSET);        \
 Z80_FLAG_N_CLEAR;                \
 Z80_FLAG_H_SET;                  \
-Z80_FLAG_F5_UPDATE((reg) & Z80_FLAG_F5_MASK);\
-Z80_FLAG_F3_UPDATE((reg) & Z80_FLAG_F3_MASK);\
-Z80_FLAG_S_UPDATE((n) == 7 && (reg) & Z80_FLAG_S_MASK);
+Z80_FLAG_F5_UPDATE((reg) & Z80FlagF5Mask);\
+Z80_FLAG_F3_UPDATE((reg) & Z80FlagF3Mask);\
+Z80_FLAG_S_UPDATE((n) == 7 && (reg) & Z80FlagSMask);
 
 #define Z80__BIT__N_Indirect_REG16(n,reg) \
 Z80__BIT__N__REG8(n,peekUnsigned(reg));    \
-Z80_FLAG_F5_UPDATE(m_registers.memptrH & Z80_FLAG_F5_MASK);\
-Z80_FLAG_F3_UPDATE(m_registers.memptrH & Z80_FLAG_F3_MASK);
+Z80_FLAG_F5_UPDATE(m_registers.memptrH & Z80FlagF5Mask);\
+Z80_FLAG_F3_UPDATE(m_registers.memptrH & Z80FlagF3Mask);
 
 #define Z80__BIT__N_Indirect_REG16_D(n,reg,d) \
 m_registers.memptr = ((reg) + (d)); \
@@ -1295,8 +1295,8 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 					Z80_FLAG_C_CLEAR;
 				}
 
-				Z80_FLAG_F5_UPDATE(m_registers.a & Z80_FLAG_F5_MASK);
-				Z80_FLAG_F3_UPDATE(m_registers.a & Z80_FLAG_F3_MASK);
+				Z80_FLAG_F5_UPDATE(m_registers.a & Z80FlagF5Mask);
+				Z80_FLAG_F3_UPDATE(m_registers.a & Z80FlagF3Mask);
 				Z80_FLAG_H_CLEAR;
 				Z80_FLAG_N_CLEAR;
 			}
@@ -1346,8 +1346,8 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
 				Z80_FLAG_H_CLEAR;
 				Z80_FLAG_N_CLEAR;
-				Z80_FLAG_F3_UPDATE((m_registers.a & Z80_FLAG_F3_MASK));
-				Z80_FLAG_F5_UPDATE((m_registers.a & Z80_FLAG_F5_MASK));
+				Z80_FLAG_F3_UPDATE((m_registers.a & Z80FlagF3Mask));
+				Z80_FLAG_F5_UPDATE((m_registers.a & Z80FlagF5Mask));
 			}
 			break;
 
@@ -1392,9 +1392,9 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 				 *
 				 * FLAGS: S, Z and P preserved, C modified directly by instruction,
 				 * H and N cleared */
-				UnsignedByte flags = (m_registers.f & ~Z80_FLAG_C_MASK);
+				UnsignedByte flags = (m_registers.f & ~Z80FlagCMask);
 				Z80__RL__REG8(m_registers.a);
-				m_registers.f = flags | (m_registers.f & Z80_FLAG_C_MASK);
+				m_registers.f = flags | (m_registers.f & Z80FlagCMask);
 				Z80_FLAG_H_CLEAR;
 				Z80_FLAG_N_CLEAR;
 			}
@@ -1437,9 +1437,9 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 				 *
 				 * FLAGS: S, Z and P preserved, C modified directly by instruction,
 				 * H and N cleared */
-				UnsignedByte flags = (m_registers.f & ~Z80_FLAG_C_MASK);
+				UnsignedByte flags = (m_registers.f & ~Z80FlagCMask);
 				Z80__RR__REG8(m_registers.a);
-				m_registers.f = flags | (m_registers.f & Z80_FLAG_C_MASK);
+				m_registers.f = flags | (m_registers.f & Z80FlagCMask);
 				Z80_FLAG_H_CLEAR;
 				Z80_FLAG_N_CLEAR;
 			}
@@ -1555,8 +1555,8 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			(m_registers.a) = ~(m_registers.a);
 			Z80_FLAG_N_SET;
 			Z80_FLAG_H_SET;
-            Z80_FLAG_F3_UPDATE(m_registers.a & Z80_FLAG_F3_MASK);
-            Z80_FLAG_F5_UPDATE(m_registers.a & Z80_FLAG_F5_MASK);
+            Z80_FLAG_F3_UPDATE(m_registers.a & Z80FlagF3Mask);
+            Z80_FLAG_F5_UPDATE(m_registers.a & Z80FlagF5Mask);
 			break;
 
 		case Opcodes::Z80_Plain_Jr_Nc_d:					// 0x30
@@ -1593,8 +1593,8 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 		case Opcodes::Z80_Plain_Scf:							// 0x37
 			Z80_FLAG_H_CLEAR;
 			Z80_FLAG_N_CLEAR;
-			Z80_FLAG_F3_UPDATE(m_registers.a & Z80_FLAG_F3_MASK);
-			Z80_FLAG_F5_UPDATE(m_registers.a & Z80_FLAG_F5_MASK);
+			Z80_FLAG_F3_UPDATE(m_registers.a & Z80FlagF3Mask);
+			Z80_FLAG_F5_UPDATE(m_registers.a & Z80FlagF5Mask);
 			Z80_FLAG_C_SET;
 			break;
 
@@ -1633,8 +1633,8 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			Z80_FLAG_H_UPDATE(Z80_FLAG_C_ISSET);
 			Z80_FLAG_C_UPDATE(!Z80_FLAG_C_ISSET);
 			Z80_FLAG_N_CLEAR;
-            Z80_FLAG_F3_UPDATE(m_registers.a & Z80_FLAG_F3_MASK);
-            Z80_FLAG_F5_UPDATE(m_registers.a & Z80_FLAG_F5_MASK);
+            Z80_FLAG_F3_UPDATE(m_registers.a & Z80FlagF3Mask);
+            Z80_FLAG_F5_UPDATE(m_registers.a & Z80FlagF5Mask);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_B_B:					// 0x40
@@ -4081,8 +4081,8 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
                 Z80_FLAG_H_CLEAR;
                 Z80_FLAG_N_CLEAR;
                 Z80_FLAG_P_UPDATE(0 != m_registers.bc);
-                Z80_FLAG_F5_UPDATE(tmpByte & (Z80_FLAG_F5_MASK >> 4));
-                Z80_FLAG_F3_UPDATE(tmpByte & Z80_FLAG_F3_MASK);
+                Z80_FLAG_F5_UPDATE(tmpByte & (Z80FlagF5Mask >> 4));
+                Z80_FLAG_F3_UPDATE(tmpByte & Z80FlagF3Mask);
             }
 			break;
 
@@ -4096,8 +4096,8 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 
 				Z80_FLAG_C_UPDATE(flagC);
 				Z80_FLAG_P_UPDATE(0 != m_registers.bc);
-				Z80_FLAG_F5_UPDATE(m_registers.a & (Z80_FLAG_F5_MASK >> 4));
-				Z80_FLAG_F3_UPDATE(m_registers.a & Z80_FLAG_F3_MASK);
+				Z80_FLAG_F5_UPDATE(m_registers.a & (Z80FlagF5Mask >> 4));
+				Z80_FLAG_F3_UPDATE(m_registers.a & Z80FlagF3Mask);
 			}
 			break;
 
@@ -4153,8 +4153,8 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
                 Z80_FLAG_N_CLEAR;
                 Z80_FLAG_P_UPDATE(0 != m_registers.bc);
                 value += m_registers.a;
-                Z80_FLAG_F5_UPDATE(value & (Z80_FLAG_F5_MASK >> 4));
-                Z80_FLAG_F3_UPDATE(value & Z80_FLAG_F3_MASK);
+                Z80_FLAG_F5_UPDATE(value & (Z80FlagF5Mask >> 4));
+                Z80_FLAG_F3_UPDATE(value & Z80FlagF3Mask);
             }
 			break;
 
@@ -4169,14 +4169,14 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 				Z80_FLAG_P_UPDATE(0 != m_registers.bc);
 				Z80_FLAG_Z_UPDATE(0 == result);
                 Z80_FLAG_H_UPDATE_SUB(m_registers.a, sub, result);
-                Z80_FLAG_S_UPDATE(result & Z80_FLAG_S_MASK);
+                Z80_FLAG_S_UPDATE(result & Z80FlagSMask);
 
 				if (Z80_FLAG_H_ISSET) {
 				    --result;
 				}
 
-				Z80_FLAG_F5_UPDATE(result & (Z80_FLAG_F5_MASK >> 4));
-				Z80_FLAG_F3_UPDATE(result & Z80_FLAG_F3_MASK);
+				Z80_FLAG_F5_UPDATE(result & (Z80FlagF5Mask >> 4));
+				Z80_FLAG_F3_UPDATE(result & Z80FlagF3Mask);
 			}
 			break;
 
@@ -4241,8 +4241,8 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
                 Z80_FLAG_H_CLEAR;
                 Z80_FLAG_N_CLEAR;
                 Z80_FLAG_P_UPDATE(0 != m_registers.bc);
-                Z80_FLAG_F5_UPDATE(value & (Z80_FLAG_F5_MASK >> 4));
-                Z80_FLAG_F3_UPDATE(value & Z80_FLAG_F3_MASK);
+                Z80_FLAG_F5_UPDATE(value & (Z80FlagF5Mask >> 4));
+                Z80_FLAG_F3_UPDATE(value & Z80FlagF3Mask);
             }
 			break;
 
@@ -4265,8 +4265,8 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
                 Z80_FLAG_H_UPDATE_SUB(m_registers.a, value, result);
                 Z80_FLAG_N_SET;
                 Z80_FLAG_P_UPDATE(0 != m_registers.bc);
-                Z80_FLAG_F5_UPDATE(result & (Z80_FLAG_F5_MASK >> 4));
-                Z80_FLAG_F3_UPDATE(result & Z80_FLAG_F3_MASK);
+                Z80_FLAG_F5_UPDATE(result & (Z80FlagF5Mask >> 4));
+                Z80_FLAG_F3_UPDATE(result & Z80FlagF3Mask);
             }
 			break;
 
@@ -4343,8 +4343,8 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
                 Z80_FLAG_H_CLEAR;
                 Z80_FLAG_N_CLEAR;
                 Z80_FLAG_P_UPDATE(0 != m_registers.bc);
-                Z80_FLAG_F5_UPDATE(value & (Z80_FLAG_F5_MASK >> 4));
-                Z80_FLAG_F3_UPDATE(value & Z80_FLAG_F3_MASK);
+                Z80_FLAG_F5_UPDATE(value & (Z80FlagF5Mask >> 4));
+                Z80_FLAG_F3_UPDATE(value & Z80FlagF3Mask);
             }
 			break;
 
@@ -4367,8 +4367,8 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
                 Z80_FLAG_H_UPDATE_SUB(m_registers.a, value, result);
                 Z80_FLAG_N_SET;
                 Z80_FLAG_P_UPDATE(0 != m_registers.bc);
-                Z80_FLAG_F5_UPDATE(result & (Z80_FLAG_F5_MASK >> 4));
-                Z80_FLAG_F3_UPDATE(result & Z80_FLAG_F3_MASK);
+                Z80_FLAG_F5_UPDATE(result & (Z80FlagF5Mask >> 4));
+                Z80_FLAG_F3_UPDATE(result & Z80FlagF3Mask);
             }
 			break;
 

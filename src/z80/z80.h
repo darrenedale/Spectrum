@@ -18,26 +18,26 @@
 #include "executionhistory.h"
 #endif
 
-#define Z80_FLAG_C_BIT 0
-#define Z80_FLAG_Z_BIT 6
-#define Z80_FLAG_P_BIT 2
-#define Z80_FLAG_S_BIT 7
-#define Z80_FLAG_N_BIT 1
-#define Z80_FLAG_H_BIT 4
-#define Z80_FLAG_F3_BIT 3
-#define Z80_FLAG_F5_BIT 5
-
-#define Z80_FLAG_C_MASK (0x01 << Z80_FLAG_C_BIT)
-#define Z80_FLAG_Z_MASK (0x01 << Z80_FLAG_Z_BIT)
-#define Z80_FLAG_P_MASK (0x01 << Z80_FLAG_P_BIT)
-#define Z80_FLAG_S_MASK (0x01 << Z80_FLAG_S_BIT)
-#define Z80_FLAG_N_MASK (0x01 << Z80_FLAG_N_BIT)
-#define Z80_FLAG_H_MASK (0x01 << Z80_FLAG_H_BIT)
-#define Z80_FLAG_F3_MASK (0x01 << Z80_FLAG_F3_BIT)
-#define Z80_FLAG_F5_MASK (0x01 << Z80_FLAG_F5_BIT)
-
 namespace Z80
 {
+    constexpr std::uint8_t Z80FlagCBit = 0;
+    constexpr std::uint8_t Z80FlagZBit = 6;
+    constexpr std::uint8_t Z80FlagPBit = 2;
+    constexpr std::uint8_t Z80FlagSBit = 7;
+    constexpr std::uint8_t Z80FlagNBit = 1;
+    constexpr std::uint8_t Z80FlagHBit = 4;
+    constexpr std::uint8_t Z80FlagF3Bit = 3;
+    constexpr std::uint8_t Z80FlagF5Bit = 5;
+    
+    constexpr std::uint8_t Z80FlagCMask = 0x01 << Z80FlagCBit;
+    constexpr std::uint8_t Z80FlagZMask = 0x01 << Z80FlagZBit;
+    constexpr std::uint8_t Z80FlagPMask = 0x01 << Z80FlagPBit;
+    constexpr std::uint8_t Z80FlagSMask = 0x01 << Z80FlagSBit;
+    constexpr std::uint8_t Z80FlagNMask = 0x01 << Z80FlagNBit;
+    constexpr std::uint8_t Z80FlagHMask = 0x01 << Z80FlagHBit;
+    constexpr std::uint8_t Z80FlagF3Mask = 0x01 << Z80FlagF3Bit;
+    constexpr std::uint8_t Z80FlagF5Mask = 0x01 << Z80FlagF5Bit;
+
     class IODevice;
 
     /**
@@ -822,49 +822,49 @@ namespace Z80
             [[nodiscard]]
             bool sFlag() const noexcept
             {
-                return checkFlags<Z80_FLAG_S_MASK>();
+                return checkFlags<Z80FlagSMask>();
             }
 
             [[nodiscard]]
             bool zFlag() const noexcept
             {
-                return checkFlags<Z80_FLAG_Z_MASK>();
+                return checkFlags<Z80FlagZMask>();
             }
 
             [[nodiscard]]
             bool f5Flag() const noexcept
             {
-                return checkFlags<Z80_FLAG_F5_MASK>();
+                return checkFlags<Z80FlagF5Mask>();
             }
 
             [[nodiscard]]
             bool hFlag() const noexcept
             {
-                return checkFlags<Z80_FLAG_H_MASK>();
+                return checkFlags<Z80FlagHMask>();
             }
 
             [[nodiscard]]
             bool f3Flag() const noexcept
             {
-                return checkFlags<Z80_FLAG_F3_MASK>();
+                return checkFlags<Z80FlagF3Mask>();
             }
 
             [[nodiscard]]
             bool pFlag() const noexcept
             {
-                return checkFlags<Z80_FLAG_P_MASK>();
+                return checkFlags<Z80FlagPMask>();
             }
 
             [[nodiscard]]
             bool nFlag() const noexcept
             {
-                return checkFlags<Z80_FLAG_N_MASK>();
+                return checkFlags<Z80FlagNMask>();
             }
 
             [[nodiscard]]
             bool cFlag() const noexcept
             {
-                return checkFlags<Z80_FLAG_C_MASK>();
+                return checkFlags<Z80FlagCMask>();
             }
 
             template<UnsignedByte mask>
@@ -877,49 +877,49 @@ namespace Z80
             [[nodiscard]]
             bool sShadowFlag() const noexcept
             {
-                return checkShadowFlags<Z80_FLAG_S_MASK>();
+                return checkShadowFlags<Z80FlagSMask>();
             }
 
             [[nodiscard]]
             bool zShadowFlag() const noexcept
             {
-                return checkShadowFlags<Z80_FLAG_Z_MASK>();
+                return checkShadowFlags<Z80FlagZMask>();
             }
 
             [[nodiscard]]
             bool f5ShadowFlag() const noexcept
             {
-                return checkShadowFlags<Z80_FLAG_F3_MASK>();
+                return checkShadowFlags<Z80FlagF3Mask>();
             }
 
             [[nodiscard]]
             bool hShadowFlag() const noexcept
             {
-                return checkShadowFlags<Z80_FLAG_H_MASK>();
+                return checkShadowFlags<Z80FlagHMask>();
             }
 
             [[nodiscard]]
             bool f3ShadowFlag() const noexcept
             {
-                return checkShadowFlags<Z80_FLAG_F3_MASK>();
+                return checkShadowFlags<Z80FlagF3Mask>();
             }
 
             [[nodiscard]]
             bool pShadowFlag() const noexcept
             {
-                return checkShadowFlags<Z80_FLAG_P_MASK>();
+                return checkShadowFlags<Z80FlagPMask>();
             }
 
             [[nodiscard]]
             bool nShadowFlag() const noexcept
             {
-                return checkShadowFlags<Z80_FLAG_N_MASK>();
+                return checkShadowFlags<Z80FlagNMask>();
             }
 
             [[nodiscard]]
             bool cShadowFlag() const noexcept
             {
-                return checkShadowFlags<Z80_FLAG_C_MASK>();
+                return checkShadowFlags<Z80FlagCMask>();
             }
 
             // convenience aliases
