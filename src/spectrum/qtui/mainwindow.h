@@ -408,19 +408,13 @@ namespace Spectrum::QtUi
             void stepTriggered();
             void debugTriggered();
 
-            /**
-             * Handler for when the Spectrum thread pauses.
-             */
+            /** Handler for when the Spectrum thread pauses. */
             void threadPaused();
 
-            /**
-             * Handler for when the Spectrum thread resumes after a pause.
-             */
+            /** Handler for when the Spectrum thread resumes after a pause. */
             void threadResumed();
 
-            /**
-             * Handler for when the Spectrum thread steps a single instruction while paused.
-             */
+            /** Handler for when the Spectrum thread steps a single instruction while paused. */
             void threadStepped();
 
             QString m_lastSnapshotLoadDir;

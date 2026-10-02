@@ -810,6 +810,7 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
                 .arg(fileName, QString::fromStdString(to_string(snapshot->model()))),
                 DefaultNotificationTimeout
             );
+
             return false;
         }
     }
@@ -950,9 +951,8 @@ void MainWindow::refreshSpectrumDisplay()
 void MainWindow::refreshRecentSnapshots()
 {
     m_recentSnapshots.clear();
-    const auto & recentSnapshots = spectrumApp->recentSnapshots();
 
-    if (recentSnapshots.empty()) {
+    if (const auto & recentSnapshots = spectrumApp->recentSnapshots(); recentSnapshots.empty()) {
         auto * action = m_recentSnapshots.addAction(tr("No recent snapshots."));
         action->setEnabled(false);
     } else {
@@ -1874,16 +1874,12 @@ void MainWindow::dropEvent(QDropEvent * event)
         return;
     }
 
-    const auto & url = urls.constFirst();
-
-    if (url.isLocalFile()) {
-        auto fileName = url.toLocalFile();
-
-        if (loadSnapshot(fileName)) {
+    if (const auto & url = urls.constFirst(); url.isLocalFile()) {
+        if (const auto fileName = url.toLocalFile(); loadSnapshot(fileName)) {
             spectrumApp->addRecentSnapshot(fileName);
         }
     } else {
-        Util::debugln("remote URLs cannot yet be loaded");;
+        Util::debugln("remote URLs cannot yet be loaded");
     }
 }
 

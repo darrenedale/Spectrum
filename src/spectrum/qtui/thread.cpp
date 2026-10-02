@@ -56,7 +56,7 @@ void Thread::run()
             continue;
         }
 
-        m_spectrum->run(((m_pause && m_step) || m_debugMode ? 1 : DefaultInstructionCount));
+        m_spectrum->run((m_pause && m_step) || m_debugMode ? 1 : DefaultInstructionCount);
 
         if (m_step) {
             Q_EMIT stepped();
@@ -110,7 +110,7 @@ void Thread::stop()
     m_waitCondition.wakeAll();
 }
 
-void Thread::setDebugMode(bool debug)
+void Thread::setDebugMode(const bool debug)
 {
     if (debug == m_debugMode) {
         return;
