@@ -15,10 +15,10 @@ namespace Spectrum::QtUi
     {
         Q_OBJECT
 
-    public:
-        using ImageWidget::ImageWidget;
+        public:
+            using ImageWidget::ImageWidget;
 
-        [[nodiscard]] QPoint mapToSpectrum(const QPoint & pos) const;
+            [[nodiscard]] QPoint mapToSpectrum(const QPoint & pos) const;
     };
 }
 
