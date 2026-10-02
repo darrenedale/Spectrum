@@ -810,6 +810,7 @@ bool MainWindow::loadSnapshot(const QString & fileName, QString format)
                 .arg(fileName, QString::fromStdString(to_string(snapshot->model()))),
                 DefaultNotificationTimeout
             );
+
             return false;
         }
     }
@@ -950,9 +951,8 @@ void MainWindow::refreshSpectrumDisplay()
 void MainWindow::refreshRecentSnapshots()
 {
     m_recentSnapshots.clear();
-    const auto & recentSnapshots = spectrumApp->recentSnapshots();
 
-    if (recentSnapshots.empty()) {
+    if (const auto & recentSnapshots = spectrumApp->recentSnapshots(); recentSnapshots.empty()) {
         auto * action = m_recentSnapshots.addAction(tr("No recent snapshots."));
         action->setEnabled(false);
     } else {
@@ -1424,9 +1424,13 @@ DISABLE_WARNING_PUSH
 DISABLE_WARNING_SWITCH
     if (&m_displayWidget == target) {
         switch (event->type()) {
+            case QEvent::FocusOut:
+                pauseSpectrum();
+                break;
+
             case QEvent::Type::MouseMove:
                 if (m_mouse) {
-                    auto pos = m_displayWidget.mapToSpectrum(dynamic_cast<QMouseEvent *>(event)->pos());
+                    const auto pos = m_displayWidget.mapToSpectrum(dynamic_cast<QMouseEvent *>(event)->pos());
                     m_mouse->setX(pos.x());
                     m_mouse->setY(pos.y());
                 }
@@ -1435,7 +1439,7 @@ DISABLE_WARNING_SWITCH
             case QEvent::Type::MouseButtonPress:
             case QEvent::Type::MouseButtonRelease:
                 if (m_mouse) {
-                    auto buttons = dynamic_cast<QMouseEvent *>(event)->buttons();
+                    const auto buttons = dynamic_cast<QMouseEvent *>(event)->buttons();
                     m_mouse->setButton1Pressed(buttons & Qt::MouseButton::LeftButton);
                     m_mouse->setButton2Pressed(buttons & Qt::MouseButton::RightButton);
                     m_mouse->setButton3Pressed(buttons & Qt::MouseButton::MiddleButton);
@@ -1443,10 +1447,8 @@ DISABLE_WARNING_SWITCH
                 break;
                 
             case QEvent::Type::KeyPress: {
-                auto qtKey = static_cast<Qt::Key>(dynamic_cast<QKeyEvent *>(event)->key());
-
                 // while user holds tab on display widget, temporarily run as fast as possible
-                if (Qt::Key::Key_Tab == qtKey) {
+                if (const auto qtKey = static_cast<Qt::Key>(dynamic_cast<QKeyEvent *>(event)->key()); Qt::Key::Key_Tab == qtKey) {
                     m_spectrum->setExecutionSpeedConstrained(false);
                     updateStatusBarSpeedWidget();
                     return true;
@@ -1495,9 +1497,7 @@ DISABLE_WARNING_SWITCH
             break;
 
             case QEvent::Type::KeyRelease: {
-                auto qtKey = static_cast<Qt::Key>(dynamic_cast<QKeyEvent *>(event)->key());
-
-                if (Qt::Key::Key_Tab == qtKey) {
+                if (const auto qtKey = static_cast<Qt::Key>(dynamic_cast<QKeyEvent *>(event)->key()); Qt::Key::Key_Tab == qtKey) {
                     m_spectrum->setExecutionSpeedConstrained(0 < m_emulationSpeedSlider.value());
                     updateStatusBarSpeedWidget();
                     return true;
@@ -1874,16 +1874,12 @@ void MainWindow::dropEvent(QDropEvent * event)
         return;
     }
 
-    const auto & url = urls.constFirst();
-
-    if (url.isLocalFile()) {
-        auto fileName = url.toLocalFile();
-
-        if (loadSnapshot(fileName)) {
+    if (const auto & url = urls.constFirst(); url.isLocalFile()) {
+        if (const auto fileName = url.toLocalFile(); loadSnapshot(fileName)) {
             spectrumApp->addRecentSnapshot(fileName);
         }
     } else {
-        Util::debugln("remote URLs cannot yet be loaded");;
+        Util::debugln("remote URLs cannot yet be loaded");
     }
 }
 
@@ -1920,7 +1916,7 @@ void MainWindow::saveScreenshotTriggered()
         s_filters << tr("Windows Bitmap (BMP) files (*.bmp)");
     }
 
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save screenshot"), m_lastScreenshotDir, s_filters.join(";;"));
+    const QString fileName = QFileDialog::getSaveFileName(this, tr("Save screenshot"), m_lastScreenshotDir, s_filters.join(";;"));
 
     if(fileName.isEmpty()) {
         return;
@@ -1947,7 +1943,7 @@ void MainWindow::loadSnapshotTriggered()
         filters << tr("All files (*)");
     }
 
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Load snapshot"), m_lastSnapshotLoadDir, filters.join(";;"), &lastFilter);
+    const QString fileName = QFileDialog::getOpenFileName(this, tr("Load snapshot"), m_lastSnapshotLoadDir, filters.join(";;"), &lastFilter);
 
     if(fileName.isEmpty()) {
         return;
