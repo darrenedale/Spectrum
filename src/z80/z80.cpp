@@ -172,23 +172,23 @@
 // data loading instructions
 //
 // FLAGS: no flags are modified
-#define Z80__LD__REG8__N(dest, n) ((dest) = (n))
-#define Z80__LD__REG8__REG8(dest, src) ((dest) = (src))
+#define Z80_LD_Reg8_N(dest, n) ((dest) = (n))
+#define Z80_LD_Reg8_Reg8(dest, src) ((dest) = (src))
 
 // nn (the memory address to retrieve) MUST be in HOST byte order
-#define Z80__LD__REG8_Indirect_NN(dest, nn) ((dest) = peekUnsigned(nn))
-#define Z80__LD__REG8_Indirect_REG16(dest, src) ((dest) = peekUnsigned((src)))
+#define Z80_LD_Reg8_IndirectNn(dest, nn) ((dest) = peekUnsigned(nn))
+#define Z80_LD_Reg8_IndirectReg16(dest, src) ((dest) = peekUnsigned((src)))
 
 // nn (the value to write to the register) MUST be in HOST byte order
-#define Z80__LD__REG16__NN(dest, nn) ((dest) = (nn))
-#define Z80__LD__REG16__REG16(dest, src) ((dest) = (src))
+#define Z80_LD_Reg16_NN(dest, nn) ((dest) = (nn))
+#define Z80_LD_Reg16_Reg16(dest, src) ((dest) = (src))
 
-#define Z80__LD_Indirect_REG16__REG8(dest, src) pokeUnsigned((dest), (src))
+#define Z80_LD_IndirectReg16_Reg8(dest, src) pokeUnsigned((dest), (src))
 
 // nn (the memory address to load) MUST be in HOST byte order
 // TODO check how we're handling memptr - this code seems to imply that unlike the other registers it's being stored
 //  in Z80 byte order?
-#define Z80__LD_Indirect_NN__REG16(nn, src) \
+#define Z80_LD_IndirectNn_Reg16(nn, src) \
 {                                            \
     auto tmpAddr = (nn);                     \
     pokeHostWord(tmpAddr, (src));            \
@@ -196,22 +196,22 @@
 }
 
 // nn (the memory address to retrieve) MUST be in HOST byte order
-#define Z80__LD__REG16_Indirect_NN(dest, nn) ((dest) = peekUnsignedHostWord(nn))
-#define Z80__LD_Indirect_REG16__N(dest, n) (pokeUnsigned((dest), n))
+#define Z80_LD_Reg16_IndirectNn(dest, nn) ((dest) = peekUnsignedHostWord(nn))
+#define Z80_LD_IndirectReg16_N(dest, n) (pokeUnsigned((dest), n))
 
 // nn (the memory address to load) MUST be in HOST byte order
-#define Z80__LD_Indirect_NN__REG8(nn, src) (pokeUnsigned(nn, (src)))
-#define Z80__LD_Indirect_REG16_D__N(reg, d, n) Z80__LD_Indirect_REG16__N(((reg) + (d)), (n));
-#define Z80__LD_Indirect_REG16_D__REG8(reg, d, src) Z80__LD_Indirect_NN__REG8((reg) + (d), (src));
-#define Z80__LD__REG8_Indirect_REG16_D(dest, reg, d) Z80__LD__REG8_Indirect_NN((dest), (reg) + (d));
+#define Z80_LD_IndirectNn_Reg8(nn, src) (pokeUnsigned(nn, (src)))
+#define Z80_LD_IndirectReg16D_N(reg, d, n) Z80_LD_IndirectReg16_N(((reg) + (d)), (n));
+#define Z80_LD_IndirectReg16D_Reg8(reg, d, src) Z80_LD_IndirectNn_Reg8((reg) + (d), (src));
+#define Z80_LD_Reg8_IndirectReg16D(dest, reg, d) Z80_LD_Reg8_IndirectNn((dest), (reg) + (d));
 
 // reset instructions
 //
 // addr can be 0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30 or 0x38, and must be in HOST byte order
 //
 // FLAGS: no flags are modified.
-#define Z80__RST__N(addr)             \
-Z80__PUSH__REG16(m_registers.pc + 1); \
+#define Z80_RST_N(addr)             \
+Z80_PUSH_Reg16(m_registers.pc + 1); \
 m_registers.pc = (addr);              \
 m_registers.memptr = m_registers.pc
 
@@ -219,14 +219,14 @@ m_registers.memptr = m_registers.pc
  *
  * FLAGS: no flags are modified.
  */
-#define Z80__EX__REG16__REG16(src, dest)    \
+#define Z80_EX_Reg16_Reg16(src, dest)    \
 {                                           \
     UnsignedWord tmpWord = (dest);          \
     (dest) = (src);                         \
     (src) = tmpWord;                        \
 }
 
-#define Z80__EX_Indirect_REG16__REG16(src, dest) \
+#define Z80_EX_IndirectReg16_Reg16(src, dest) \
 {\
     UnsignedWord tmpWord = peekUnsignedHostWord((src));\
     pokeHostWord((src), (dest));                   \
@@ -236,18 +236,18 @@ m_registers.memptr = m_registers.pc
 //
 // stack instructions
 //
-#define Z80__POP__REG16(reg)              \
+#define Z80_POP_Reg16(reg)              \
 (reg) = peekUnsignedHostWord(m_registers.sp); \
 m_registers.sp += 2;
 
-#define Z80__PUSH__REG16(reg) \
+#define Z80_PUSH_Reg16(reg) \
 m_registers.sp -= 2;          \
 pokeHostWord(m_registers.sp, (reg));
 
 //
 // addition instructions
 //
-#define Z80__ADD__REG8__N(dest,n) \
+#define Z80_ADD_Reg8_N(dest,n) \
 {    \
     UnsignedByte tmpOldValue = (dest); \
     UnsignedByte tmpDelta = (n);         \
@@ -263,10 +263,10 @@ pokeHostWord(m_registers.sp, (reg));
     Z80_FLAG_F5_UPDATE((dest) & Z80FlagF5Mask);\
 }
 
-#define Z80__ADD__REG8__REG8(dest,src) Z80__ADD__REG8__N(dest,src)
-#define Z80__ADD__REG8_Indirect_REG16(dest,src) Z80__ADD__REG8__N(dest,(*(memory()->pointerTo(src))))
+#define Z80_ADD_Reg8_Reg8(dest,src) Z80_ADD_Reg8_N(dest,src)
+#define Z80_ADD_Reg8_IndirectReg16(dest,src) Z80_ADD_Reg8_N(dest,(*(memory()->pointerTo(src))))
 
-#define Z80__ADD__REG16__REG16(dest,src) \
+#define Z80_ADD_Reg16_Reg16(dest,src) \
 {       \
     UnsignedWord tmpOldValue = (dest);           \
     UnsignedWord tmpDelta = (src);                 \
@@ -279,13 +279,13 @@ pokeHostWord(m_registers.sp, (reg));
     Z80_FLAG_F3_UPDATE((dest) & (Z80FlagF3Mask << 8)); \
 }
 
-#define Z80__ADD__REG8_Indirect_REG16_D(dest, reg, d) Z80__ADD__REG8__N((dest),(*(memory()->pointerTo((reg) + (d)))))
+#define Z80_ADD_Reg8_IndirectReg16D(dest, reg, d) Z80_ADD_Reg8_N((dest),(*(memory()->pointerTo((reg) + (d)))))
 
 //
 // addition with carry instructions
 // dest = dest + src + carry
 //
-#define Z80__ADC__REG8__N(dest,n) \
+#define Z80_ADC_Reg8_N(dest,n) \
 {      \
     UnsignedByte tmpOldValue = (dest);   \
     UnsignedByte tmpDelta = (n);           \
@@ -299,10 +299,10 @@ pokeHostWord(m_registers.sp, (reg));
     Z80_FLAG_Z_UPDATE(0 == (dest));      \
 }
 
-#define Z80__ADC__REG8__REG8(dest,src) Z80__ADC__REG8__N((dest), (src));
-#define Z80__ADC__REG8_Indirect_REG16(dest,src) Z80__ADC__REG8__N((dest), peekUnsigned(src))
+#define Z80_ADC_Reg8_Reg8(dest,src) Z80_ADC_Reg8_N((dest), (src));
+#define Z80_ADC_Reg8_IndirectReg16(dest,src) Z80_ADC_Reg8_N((dest), peekUnsigned(src))
 
-#define Z80__ADC__REG16__REG16(dest,src) \
+#define Z80_ADC_Reg16_Reg16(dest,src) \
 { \
     UnsignedWord tmpOldValue = (dest);            \
     UnsignedWord tmpDelta = (src);                    \
@@ -318,12 +318,12 @@ pokeHostWord(m_registers.sp, (reg));
     Z80_FLAG_H_UPDATE_ADD(static_cast<UnsignedByte>((tmpOldValue & 0xff00) >> 8), static_cast<UnsignedByte>((tmpDelta & 0xff00) >> 8), static_cast<UnsignedByte>((tmpResult & 0xff00) >> 8));\
 }
 
-#define Z80__ADC__REG8_Indirect_REG16_D(dest, reg, d) Z80__ADC__REG8__N((dest), peekUnsigned((reg) + (d)))
+#define Z80_ADC_Reg8_IndirectReg16D(dest, reg, d) Z80_ADC_Reg8_N((dest), peekUnsigned((reg) + (d)))
 
 //
 // subtraction instructions
 //
-#define Z80__SUB__N(n) \
+#define Z80_SUB_N(n) \
 { \
     UnsignedByte tmpOldValue = m_registers.a;   \
     UnsignedByte tmpDelta = (n);           \
@@ -337,15 +337,15 @@ pokeHostWord(m_registers.sp, (reg));
     Z80_FLAG_Z_UPDATE(0 == m_registers.a);      \
 }
 
-#define Z80__SUB__REG8(reg) Z80__SUB__N(reg)
-#define Z80__SUB_Indirect_REG16(reg) { UnsignedByte v = peekUnsigned(reg); Z80__SUB__N(v) }
-#define Z80__SUB_Indirect_REG16_D(reg,d) Z80__SUB__N(peekUnsigned((reg) + (d)))
+#define Z80_SUB_Reg8(reg) Z80_SUB_N(reg)
+#define Z80_SUB_IndirectReg16(reg) { UnsignedByte v = peekUnsigned(reg); Z80_SUB_N(v) }
+#define Z80_SUB_IndirectReg16D(reg,d) Z80_SUB_N(peekUnsigned((reg) + (d)))
 
 //
 // subtraction with carry instructions
 // dest = dest - src - carry
 //
-#define Z80__SBC__REG8__N(dest,n) \
+#define Z80_SBC_Reg8_N(dest,n) \
 { \
     UnsignedByte tmpOldValue = (dest);\
     UnsignedByte tmpDelta = (n);            \
@@ -359,10 +359,10 @@ pokeHostWord(m_registers.sp, (reg));
     Z80_FLAG_Z_UPDATE(0 == (dest));\
 }
 
-#define Z80__SBC__REG8__REG8(dest,src) Z80__SBC__REG8__N((dest), (src))
-#define Z80__SBC__REG8_Indirect_REG16(dest,src) Z80__SBC__REG8__N((dest),peekUnsigned(src))
+#define Z80_SBC_Reg8_Reg8(dest,src) Z80_SBC_Reg8_N((dest), (src))
+#define Z80_SBC_Reg8_IndirectReg16(dest,src) Z80_SBC_Reg8_N((dest),peekUnsigned(src))
 
-#define Z80__SBC__REG16__REG16(dest, src) \
+#define Z80_SBC_Reg16_Reg16(dest, src) \
 {     \
     UnsignedWord tmpOldValue = (dest);          \
     UnsignedWord tmpDelta = (src);                \
@@ -378,12 +378,12 @@ pokeHostWord(m_registers.sp, (reg));
    Z80_FLAG_H_UPDATE_SUB(static_cast<UnsignedByte>((tmpOldValue & 0xff00) >> 8), static_cast<UnsignedByte>((tmpDelta & 0xff00) >> 8), static_cast<UnsignedByte>((tmpResult & 0xff00) >> 8));\
 }
 
-#define Z80__SBC__REG8_Indirect_REG16_D(dest,reg,d) Z80__SBC__REG8__N((dest), peekUnsigned((reg) + (d)))
+#define Z80_SBC_Reg8_IndirectReg16D(dest,reg,d) Z80_SBC_Reg8_N((dest), peekUnsigned((reg) + (d)))
 
 //
 // increment instructions
 //
-#define Z80__INC__REG8(reg)             \
+#define Z80_INC_Reg8(reg)             \
 (reg)++;                                \
 Z80_FLAG_H_UPDATE(0 == (0x0f & (reg))); \
 Z80_FLAG_P_UPDATE(0x80 == (reg));       \
@@ -393,15 +393,15 @@ Z80_FLAG_S_UPDATE((reg) & 0x80);        \
 Z80_FLAG_F3_UPDATE((reg) & Z80FlagF3Mask); \
 Z80_FLAG_F5_UPDATE((reg) & Z80FlagF5Mask);
 
-#define Z80__INC_Indirect_REG16(reg) Z80__INC__REG8(*(memory()->pointerTo(reg)))
-#define Z80__INC__REG16(reg) (reg)++;
+#define Z80_INC_IndirectReg16(reg) Z80_INC_Reg8(*(memory()->pointerTo(reg)))
+#define Z80_INC_Reg16(reg) (reg)++;
 // TODO memptr
-#define Z80__INC_Indirect_REG16_D(reg, d) Z80__INC__REG8(*(memory()->pointerTo((reg) + (d))))
+#define Z80_INC_IndirectReg16D(reg, d) Z80_INC_Reg8(*(memory()->pointerTo((reg) + (d))))
 
 //
 // decrement instructions
 //
-#define Z80__DEC__REG8(reg) \
+#define Z80_DEC_Reg8(reg) \
 Z80_FLAG_H_UPDATE(0 == (0x0f & (reg))); \
 (reg)--;                    \
 Z80_FLAG_P_UPDATE(0x7f == (reg)); \
@@ -411,10 +411,10 @@ Z80_FLAG_S_UPDATE((reg) & 0x80); \
 Z80_FLAG_F3_UPDATE((reg) & Z80FlagF3Mask); \
 Z80_FLAG_F5_UPDATE((reg) & Z80FlagF5Mask);
 
-#define Z80__DEC_Indirect_REG16(reg) Z80__DEC__REG8(*(memory()->pointerTo(reg)))
-#define Z80__DEC__REG16(reg) (reg)--;
+#define Z80_DEC_IndirectReg16(reg) Z80_DEC_Reg8(*(memory()->pointerTo(reg)))
+#define Z80_DEC_Reg16(reg) (reg)--;
 // TODO memptr
-#define Z80__DEC_Indirect_REG16_D(reg, d) Z80__DEC__REG8(*(memory()->pointerTo((reg) + (d))));
+#define Z80_DEC_IndirectReg16D(reg, d) Z80_DEC_Reg8(*(memory()->pointerTo((reg) + (d))));
 
 //
 // negation instruction
@@ -440,7 +440,7 @@ Z80_FLAG_F5_UPDATE((reg) & Z80FlagF5Mask);
 // These instructions are mostly identical to SUB instruction, except that the result
 // is discarded rather than loaded into A and the handling of flags F5 and F3 differs.
 //
-#define Z80__CP__N(n) \
+#define Z80_CP_N(n) \
 { \
     UnsignedByte tmpDelta = (n);           \
     UnsignedWord tmpResult = m_registers.a - tmpDelta; \
@@ -454,9 +454,9 @@ Z80_FLAG_F5_UPDATE((reg) & Z80FlagF5Mask);
     Z80_FLAG_Z_UPDATE(0 == tmpResult);      \
 }
 
-#define Z80__CP__REG8(reg) Z80__CP__N(reg)
-#define Z80__CP_Indirect_REG16(reg) Z80__CP__N(peekUnsigned((reg)))
-#define Z80__CP_Indirect_REG16_D(reg,d) Z80__CP__N(peekUnsigned((reg) + (d)))
+#define Z80_CP_Reg8(reg) Z80_CP_N(reg)
+#define Z80_CP_IndirectReg16(reg) Z80_CP_N(peekUnsigned((reg)))
+#define Z80_CP_IndirectReg16D(reg,d) Z80_CP_N(peekUnsigned((reg) + (d)))
 
 //
 // bitwise operations
@@ -470,40 +470,40 @@ Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a)); \
 Z80_FLAGS_S53_UPDATE(m_registers.a);            \
 Z80_FLAG_Z_UPDATE(0 == m_registers.a);
 
-#define Z80__AND__N(n) m_registers.a &= (n); Z80_BITWISE_FLAGS; Z80_FLAG_H_SET;
-#define Z80__AND__REG8(reg) Z80__AND__N((reg))
-#define Z80__AND_Indirect_REG16(reg) Z80__AND__N(peekUnsigned(reg))
-#define Z80__AND_Indirect_REG16_D(reg,d) Z80__AND__N(peekUnsigned((reg) + (d)))
+#define Z80_AND_N(n) m_registers.a &= (n); Z80_BITWISE_FLAGS; Z80_FLAG_H_SET;
+#define Z80_AND_Reg8(reg) Z80_AND_N((reg))
+#define Z80_AND_IndirectReg16(reg) Z80_AND_N(peekUnsigned(reg))
+#define Z80_AND_IndirectReg16D(reg,d) Z80_AND_N(peekUnsigned((reg) + (d)))
 
-#define Z80__OR__N(n) m_registers.a |= (n); Z80_BITWISE_FLAGS; Z80_FLAG_H_CLEAR;
-#define Z80__OR__REG8(reg) Z80__OR__N((reg))
-#define Z80__OR_Indirect_REG16(reg) Z80__OR__N(peekUnsigned(reg))
-#define Z80__OR_Indirect_REG16_D(reg,d) Z80__OR__N(peekUnsigned((reg) + (d)))
+#define Z80_OR_N(n) m_registers.a |= (n); Z80_BITWISE_FLAGS; Z80_FLAG_H_CLEAR;
+#define Z80_OR_Reg8(reg) Z80_OR_N((reg))
+#define Z80_OR_IndirectReg16(reg) Z80_OR_N(peekUnsigned(reg))
+#define Z80_OR_IndirectReg16D(reg,d) Z80_OR_N(peekUnsigned((reg) + (d)))
 
-#define Z80__XOR__N(n) m_registers.a ^= (n); Z80_BITWISE_FLAGS; Z80_FLAG_H_CLEAR;
-#define Z80__XOR__REG8(reg) Z80__XOR__N((reg))
-#define Z80__XOR_Indirect_REG16(reg) Z80__XOR__N((peekUnsigned(reg)))
-#define Z80__XOR_Indirect_REG16_D(reg,d) Z80__XOR__N(peekUnsigned((reg) + (d)))
+#define Z80_XOR_N(n) m_registers.a ^= (n); Z80_BITWISE_FLAGS; Z80_FLAG_H_CLEAR;
+#define Z80_XOR_Reg8(reg) Z80_XOR_N((reg))
+#define Z80_XOR_IndirectReg16(reg) Z80_XOR_N((peekUnsigned(reg)))
+#define Z80_XOR_IndirectReg16D(reg,d) Z80_XOR_N(peekUnsigned((reg) + (d)))
 
 //
 // bit set instructions
 //
 /* FLAGS: all preserved */
-#define Z80__SET__N__REG8(n,reg) (reg) |= (1 << (n))
-#define Z80__SET__N_Indirect_REG16(n,reg) pokeUnsigned((reg), peekUnsigned((reg)) | (1 << (n)))
-#define Z80__SET__N_Indirect_REG16_D(n,reg,d) Z80__SET__N_Indirect_REG16(n,(reg) + (d))
-#define Z80__SET__N_Indirect_REG16_D__REG8(n,reg16,d,reg8) \
-Z80__SET__N_Indirect_REG16_D(n, (reg16), (d)); \
+#define Z80_SET_N_Reg8(n,reg) (reg) |= (1 << (n))
+#define Z80_SET_N_IndirectReg16(n,reg) pokeUnsigned((reg), peekUnsigned((reg)) | (1 << (n)))
+#define Z80_SET_N_IndirectReg16D(n,reg,d) Z80_SET_N_IndirectReg16(n,(reg) + (d))
+#define Z80_SET_N_IndirectReg16D_Reg8(n,reg16,d,reg8) \
+Z80_SET_N_IndirectReg16D(n, (reg16), (d)); \
 (reg8) = peekUnsigned((reg16) + (d));
 
 //
 // bit reset instructions
 //
-#define Z80__RES__N__REG8(n,reg) (reg) &= ~(1 << (n))
-#define Z80__RES__N_Indirect_REG16(n,reg) pokeUnsigned((reg), peekUnsigned((reg)) & ~(1 << (n)))
-#define Z80__RES__N_Indirect_REG16_D(n,reg,d) Z80__RES__N_Indirect_REG16(n,(reg) + (d))
-#define Z80__RES__N_Indirect_REG16_D__REG8(n,reg16,d,reg8) \
-Z80__RES__N_Indirect_REG16_D(n,(reg16),(d));               \
+#define Z80_RES_N_Reg8(n,reg) (reg) &= ~(1 << (n))
+#define Z80_RES_N_IndirectReg16(n,reg) pokeUnsigned((reg), peekUnsigned((reg)) & ~(1 << (n)))
+#define Z80_RES_N_IndirectReg16D(n,reg,d) Z80_RES_N_IndirectReg16(n,(reg) + (d))
+#define Z80_RES_N_IndirectReg16D_Reg8(n,reg16,d,reg8) \
+Z80_RES_N_IndirectReg16D(n,(reg16),(d));               \
 (reg8) = peekUnsigned((reg16) + (d))
 
 //
@@ -513,7 +513,7 @@ Z80__RES__N_Indirect_REG16_D(n,(reg16),(d));               \
 //
 // rotate left with carry instructions
 //
-#define Z80__RLC__REG8(reg)              \
+#define Z80_RLC_Reg8(reg)              \
 {                                        \
     bool tmpBit = (reg) & 0x80;          \
     (reg) <<= 1;                         \
@@ -532,18 +532,18 @@ Z80__RES__N_Indirect_REG16_D(n,(reg16),(d));               \
     Z80_FLAG_Z_UPDATE(0 == (reg));       \
 }
 
-#define Z80__RLC_Indirect_REG16(reg) {     \
+#define Z80_RLC_IndirectReg16(reg) {     \
     UnsignedByte * tmpValue = memory()->pointerTo(reg);\
-    Z80__RLC__REG8(*tmpValue);               \
+    Z80_RLC_Reg8(*tmpValue);               \
 }
 
-#define Z80__RLC_Indirect_REG16_D(reg,d) Z80__RLC_Indirect_REG16((reg) + (d))
-#define Z80__RLC_Indirect_REG16_D__REG8(reg16,d,reg8) Z80__RLC_Indirect_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
+#define Z80_RLC_IndirectReg16D(reg,d) Z80_RLC_IndirectReg16((reg) + (d))
+#define Z80_RLC_IndirectReg16D_Reg8(reg16,d,reg8) Z80_RLC_IndirectReg16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
 
 //
 // rotate right with carry instructions
 //
-#define Z80__RRC__REG8(reg) \
+#define Z80_RRC_Reg8(reg) \
 { \
     bool bit = (reg) & 0x01;      \
     (reg) >>= 1;                  \
@@ -562,13 +562,13 @@ Z80__RES__N_Indirect_REG16_D(n,(reg16),(d));               \
     Z80_FLAGS_S53_UPDATE((reg));         \
     Z80_FLAG_Z_UPDATE(0 == (reg));       \
 }
-#define Z80__RRC_Indirect_REG16(reg) \
+#define Z80_RRC_IndirectReg16(reg) \
 {\
     UnsignedByte * tmpValue = memory()->pointerTo(reg); \
-    Z80__RRC__REG8(*tmpValue);          \
+    Z80_RRC_Reg8(*tmpValue);          \
 }
-#define Z80__RRC_Indirect_REG16_D(reg,d) Z80__RRC_Indirect_REG16((reg) + (d))
-#define Z80__RRC_Indirect_REG16_D__REG8(reg16,d,reg8) Z80__RRC_Indirect_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
+#define Z80_RRC_IndirectReg16D(reg,d) Z80_RRC_IndirectReg16((reg) + (d))
+#define Z80_RRC_IndirectReg16D_Reg8(reg16,d,reg8) Z80_RRC_IndirectReg16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
 
 //
 // rotate left instructions
@@ -577,7 +577,7 @@ Z80__RES__N_Indirect_REG16_D(n,(reg16),(d));               \
 // moves into bit 0. In other words, it's as if the value was 9 bits in
 // size with the carry flag as bit 8.
 //
-#define Z80__RL__REG8(reg)        \
+#define Z80_RL_Reg8(reg)        \
 {                                 \
 	bool bit = (reg) & 0x80;      \
 	(reg) <<= 1;                  \
@@ -599,14 +599,14 @@ Z80__RES__N_Indirect_REG16_D(n,(reg16),(d));               \
 /*
  * re-use RL instruction for 8-bit reg to do the actual work
  */
-#define Z80__RL_Indirect_REG16(reg) \
+#define Z80_RL_IndirectReg16(reg) \
 {      \
     UnsignedByte * tmpValue = memory()->pointerTo(reg);\
-    Z80__RL__REG8(*tmpValue);                \
+    Z80_RL_Reg8(*tmpValue);                \
 }
 
-#define Z80__RL_Indirect_REG16_D(reg,d) Z80__RL_Indirect_REG16((reg) + (d))
-#define Z80__RL_Indirect_REG16_D__REG8(reg16,d,reg8) Z80__RL_Indirect_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
+#define Z80_RL_IndirectReg16D(reg,d) Z80_RL_IndirectReg16((reg) + (d))
+#define Z80_RL_IndirectReg16D_Reg8(reg16,d,reg8) Z80_RL_IndirectReg16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
 
 //
 // rotate right instructions
@@ -615,7 +615,7 @@ Z80__RES__N_Indirect_REG16_D(n,(reg16),(d));               \
 // moves into bit 7. In other words, it's as if the value was 9 bits in
 // size with the carry flag as bit 0.
 //
-#define Z80__RR__REG8(reg) \
+#define Z80_RR_Reg8(reg) \
 {     \
 	bool tmpBit = (reg) & 0x01;   \
 	(reg) >>= 1;                  \
@@ -633,17 +633,17 @@ Z80__RES__N_Indirect_REG16_D(n,(reg16),(d));               \
 	Z80_FLAGS_S53_UPDATE((reg));  \
 	Z80_FLAG_Z_UPDATE(0 == (reg));\
 }
-#define Z80__RR_Indirect_REG16(reg) {      \
+#define Z80_RR_IndirectReg16(reg) {      \
     UnsignedByte * tmpValue = memory()->pointerTo(reg);\
-    Z80__RR__REG8(*tmpValue);                \
+    Z80_RR_Reg8(*tmpValue);                \
 }
-#define Z80__RR_Indirect_REG16_D(reg,d) Z80__RR_Indirect_REG16((reg) + (d))
-#define Z80__RR_Indirect_REG16_D__REG8(reg16,d,reg8) Z80__RR_Indirect_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
+#define Z80_RR_IndirectReg16D(reg,d) Z80_RR_IndirectReg16((reg) + (d))
+#define Z80_RR_IndirectReg16D_Reg8(reg16,d,reg8) Z80_RR_IndirectReg16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
 
 //
 // arithmetic left shift instructions
 //
-#define Z80__SLA__REG8(reg) {            \
+#define Z80_SLA_Reg8(reg) {            \
 	Z80_FLAG_C_UPDATE((reg) & 0x80);     \
 	(reg) <<= 1;                         \
 	Z80_FLAG_H_CLEAR;                    \
@@ -652,17 +652,17 @@ Z80__RES__N_Indirect_REG16_D(n,(reg16),(d));               \
 	Z80_FLAGS_S53_UPDATE((reg));         \
 	Z80_FLAG_Z_UPDATE(0 == (reg));       \
 }
-#define Z80__SLA_Indirect_REG16(reg) {     \
+#define Z80_SLA_IndirectReg16(reg) {     \
     UnsignedByte * tmpValue = memory()->pointerTo(reg);\
-    Z80__SLA__REG8(*tmpValue);               \
+    Z80_SLA_Reg8(*tmpValue);               \
 }
-#define Z80__SLA_Indirect_REG16_D(reg,d) Z80__SLA_Indirect_REG16((reg) + (d))
-#define Z80__SLA_Indirect_REG16_D__REG8(reg16,d,reg8) Z80__SLA_Indirect_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
+#define Z80_SLA_IndirectReg16D(reg,d) Z80_SLA_IndirectReg16((reg) + (d))
+#define Z80_SLA_IndirectReg16D_Reg8(reg16,d,reg8) Z80_SLA_IndirectReg16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
 
 //
 // arithmetic right shift instructions
 //
-#define Z80__SRA__REG8(reg)                \
+#define Z80_SRA_Reg8(reg)                \
 {                                          \
 	Z80_FLAG_C_UPDATE((reg) & 0x01);       \
     (reg) = ((reg) & 0x80) | ((reg) >> 1); \
@@ -673,21 +673,21 @@ Z80__RES__N_Indirect_REG16_D(n,(reg16),(d));               \
 	Z80_FLAG_Z_UPDATE(0 == (reg));         \
 }
 
-#define Z80__SRA_Indirect_REG16(reg)       \
+#define Z80_SRA_IndirectReg16(reg)       \
 {                                           \
     UnsignedByte * tmpValue = memory()->pointerTo(reg);\
-    Z80__SRA__REG8(*tmpValue);               \
+    Z80_SRA_Reg8(*tmpValue);               \
 }
 
-#define Z80__SRA_Indirect_REG16_D(reg,d) Z80__SRA_Indirect_REG16((reg) + (d))
-#define Z80__SRA_Indirect_REG16_D__REG8(reg16,d,reg8) Z80__SRA_Indirect_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
+#define Z80_SRA_IndirectReg16D(reg,d) Z80_SRA_IndirectReg16((reg) + (d))
+#define Z80_SRA_IndirectReg16D_Reg8(reg16,d,reg8) Z80_SRA_IndirectReg16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
 
 //
 // logical left shift instruction
 //
 // bits are left shifted one place. bit 7 goes into carry flag and 1 goes into bit 0.
 //
-#define Z80__SLL__REG8(reg) {            \
+#define Z80_SLL_Reg8(reg) {            \
 	Z80_FLAG_C_UPDATE((reg) & 0x80);     \
     (reg) = 0x01 | ((reg) << 1);         \
 	Z80_FLAG_H_CLEAR;                    \
@@ -696,19 +696,19 @@ Z80__RES__N_Indirect_REG16_D(n,(reg16),(d));               \
 	Z80_FLAGS_S53_UPDATE((reg));  \
 	Z80_FLAG_Z_UPDATE(0 == (reg));       \
 }
-#define Z80__SLL_Indirect_REG16(reg) {     \
+#define Z80_SLL_IndirectReg16(reg) {     \
     UnsignedByte * tmpValue = memory()->pointerTo(reg);\
-    Z80__SLL__REG8(*tmpValue);               \
+    Z80_SLL_Reg8(*tmpValue);               \
 }
-#define Z80__SLL_Indirect_REG16_D(reg,d) Z80__SLL_Indirect_REG16((reg) + (d))
-#define Z80__SLL_Indirect_REG16_D__REG8(reg16,d,reg8) Z80__SLL_Indirect_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
+#define Z80_SLL_IndirectReg16D(reg,d) Z80_SLL_IndirectReg16((reg) + (d))
+#define Z80_SLL_IndirectReg16D_Reg8(reg16,d,reg8) Z80_SLL_IndirectReg16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
 
 //
 // logical right shift instructions
 //
 // bits are right shifted one place. bit 0 goes into carry flag and 1 goes into bit 7.
 //
-#define Z80__SRL__REG8(reg) {       \
+#define Z80_SRL_Reg8(reg) {       \
 	Z80_FLAG_C_UPDATE((reg) & 0x01);\
 	(reg) >>= 1;                    \
 	Z80_FLAG_H_CLEAR;               \
@@ -717,17 +717,17 @@ Z80__RES__N_Indirect_REG16_D(n,(reg16),(d));               \
 	Z80_FLAGS_S53_UPDATE((reg));    \
 	Z80_FLAG_Z_UPDATE(0 == (reg));  \
 }
-#define Z80__SRL_Indirect_REG16(reg) { \
+#define Z80_SRL_IndirectReg16(reg) { \
     UnsignedByte * tmpValue = memory()->pointerTo(reg);\
-    Z80__SRL__REG8(*tmpValue);               \
+    Z80_SRL_Reg8(*tmpValue);               \
 }
-#define Z80__SRL_Indirect_REG16_D(reg,d) Z80__SRL_Indirect_REG16((reg) + (d))
-#define Z80__SRL_Indirect_REG16_D__REG8(reg16,d,reg8) Z80__SRL_Indirect_REG16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
+#define Z80_SRL_IndirectReg16D(reg,d) Z80_SRL_IndirectReg16((reg) + (d))
+#define Z80_SRL_IndirectReg16D_Reg8(reg16,d,reg8) Z80_SRL_IndirectReg16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
 
 //
 // bit testing instructions
 //
-#define Z80__BIT__N__REG8(n,reg) \
+#define Z80_BIT_N_Reg8(n,reg) \
 Z80_FLAG_Z_UPDATE(0 == ((reg) & (0x01 << n))); \
 Z80_FLAG_P_UPDATE(Z80_FLAG_Z_ISSET);        \
 Z80_FLAG_N_CLEAR;                \
@@ -736,14 +736,14 @@ Z80_FLAG_F5_UPDATE((reg) & Z80FlagF5Mask);\
 Z80_FLAG_F3_UPDATE((reg) & Z80FlagF3Mask);\
 Z80_FLAG_S_UPDATE((n) == 7 && (reg) & Z80FlagSMask);
 
-#define Z80__BIT__N_Indirect_REG16(n,reg) \
-Z80__BIT__N__REG8(n,peekUnsigned(reg));    \
+#define Z80_BIT_N_IndirectReg16(n,reg) \
+Z80_BIT_N_Reg8(n,peekUnsigned(reg));    \
 Z80_FLAG_F5_UPDATE(m_registers.memptrH & Z80FlagF5Mask);\
 Z80_FLAG_F3_UPDATE(m_registers.memptrH & Z80FlagF3Mask);
 
-#define Z80__BIT__N_Indirect_REG16_D(n,reg,d) \
+#define Z80_BIT_N_IndirectReg16D(n,reg,d) \
 m_registers.memptr = ((reg) + (d)); \
-Z80__BIT__N_Indirect_REG16(n,m_registers.memptr);
+Z80_BIT_N_IndirectReg16(n,m_registers.memptr);
 
 //
 // nmi handler return instruction
@@ -751,8 +751,8 @@ Z80__BIT__N_Indirect_REG16(n,m_registers.memptr);
 // there is only one nmi return instruction, but it has several opcodes (most of
 // which are unofficial), so a macro is provided for a common implementation.
 //
-#define Z80__RETN                \
-Z80__POP__REG16(m_registers.pc); \
+#define Z80_RETN                \
+Z80_POP_Reg16(m_registers.pc); \
 m_iff1 = m_iff2;
 
 //
@@ -761,8 +761,8 @@ m_iff1 = m_iff2;
 // there is only one interrupt return instruction, but it has several opcodes
 // (most of which are unofficial), so a macro is provided for a common implementation.
 //
-#define Z80__RETI                \
-Z80__POP__REG16(m_registers.pc); \
+#define Z80_RETI                \
+Z80_POP_Reg16(m_registers.pc); \
 m_iff1 = m_iff2;                 \
 /* TODO signal IO device that interrupt has finished */
 
@@ -771,7 +771,7 @@ m_iff1 = m_iff2;                 \
 //
 
 // helper to perform byte write to connected IO devices
-#define Z80__WRITE_IO_DEVICES(value, port) { \
+#define Z80_WRITE_IO_DEVICES(value, port) { \
     for (auto * device : m_ioDevices) {      \
         if (!device->checkWritePort(port)) { \
             continue;                        \
@@ -782,20 +782,20 @@ m_iff1 = m_iff2;                 \
 }
 
 // port is 8-bit and is the LSB for the 16-bit port.
-#define Z80__OUT_Indirect_REG8__REG8(port,value) {    \
+#define Z80_OUT_IndirectReg8_Reg8(port,value) {    \
     UnsignedWord tmpPort = ((port) & 0xff | (m_registers.b << 8)); \
-    Z80__WRITE_IO_DEVICES((value), tmpPort)            \
+    Z80_WRITE_IO_DEVICES((value), tmpPort)            \
     m_registers.memptr = tmpPort + 1;                  \
 }
 
-#define Z80__OUT_Indirect_N__REG8(port,value) {       \
+#define Z80_OUT_Indirect_N_Reg8(port,value) {       \
     UnsignedWord tmpPort = ((port) & 0xff | (m_registers.a << 8)); \
-    Z80__WRITE_IO_DEVICES((value), tmpPort)            \
+    Z80_WRITE_IO_DEVICES((value), tmpPort)            \
     m_registers.memptr = tmpPort + 1;                  \
 }
 
 // TODO if multiple devices are reading from a given port, what happens to the result?
-#define Z80__READ_IO_DEVICES(result, port) { \
+#define Z80_READ_IO_DEVICES(result, port) { \
     (result) = 0xff;                         \
                                              \
     for (auto * device : m_ioDevices) {      \
@@ -811,9 +811,9 @@ m_iff1 = m_iff2;                 \
     }*/ \
 }
 
-#define Z80__IN__REG8_Indirect_REG8(dest,port) {    \
+#define Z80_IN_Reg8_IndirectReg8(dest,port) {    \
     UnsignedWord tmpPort = ((port) & 0xff) | (m_registers.b << 8); \
-    Z80__READ_IO_DEVICES((dest), tmpPort);           \
+    Z80_READ_IO_DEVICES((dest), tmpPort);           \
     m_registers.memptr = tmpPort + 1;                \
     Z80_FLAG_H_CLEAR;                                \
     Z80_FLAG_N_CLEAR;                                \
@@ -822,9 +822,9 @@ m_iff1 = m_iff2;                 \
     Z80_FLAG_P_UPDATE(isEvenParity((dest)));         \
 }
 
-#define Z80__IN__REG8_Indirect_REG16(dest,port) {   \
+#define Z80_IN_Reg8_IndirectReg16(dest,port) {   \
 /*    UnsignedWord tmpPort = ((port) & 0xff) | (m_registers.b << 8);*/ \
-    Z80__READ_IO_DEVICES((dest), (port));           \
+    Z80_READ_IO_DEVICES((dest), (port));           \
 /*    m_registers.memptr = tmpPort + 1; */               \
     Z80_FLAG_H_CLEAR;                                \
     Z80_FLAG_N_CLEAR;                                \
@@ -833,9 +833,9 @@ m_iff1 = m_iff2;                 \
     Z80_FLAG_P_UPDATE(isEvenParity((dest)));         \
 }
 
-#define Z80__IN__REG8_Indirect_N(dest,port) {       \
+#define Z80_IN_Reg8_Indirect_N(dest,port) {       \
     UnsignedWord tmpPort = ((port) & 0xff) | (m_registers.a << 8); \
-    Z80__READ_IO_DEVICES((dest), tmpPort);           \
+    Z80_READ_IO_DEVICES((dest), tmpPort);           \
 }
 
 using UnsignedByte = ::Z80::UnsignedByte;
@@ -844,9 +844,7 @@ using SignedByte = ::Z80::SignedByte;
 
 namespace
 {
-    constexpr const int DefaultClockSpeed = 3500000;
-
-    inline bool isEvenParity(UnsignedByte value)
+    bool isEvenParity(const UnsignedByte value)
     {
         static bool parity[256] = {
 #include "includes/8bit_parity.inc"
@@ -892,12 +890,13 @@ constexpr const std::uint8_t Z80::Z80::DdCbOrFdCbOpcodeTStates[256] = {
 
 Z80::Z80::Z80(Memory * memory)
 : Cpu(memory),
-  m_nmiPending(false),
-  m_interruptRequested(false),
+  m_registers(),
   m_tStates(0),
   m_iff1(false),
   m_iff2(false),
   m_interruptMode(InterruptMode::IM0),
+  m_nmiPending(false),
+  m_interruptRequested(false),
   m_delayInterruptOneInstruction(false),
   m_halted(false)
 {
@@ -1086,7 +1085,7 @@ void Z80::Z80::handleNmi()
         ++m_registers.pc;
     }
 
-    Z80__PUSH__REG16(m_registers.pc);
+    Z80_PUSH_Reg16(m_registers.pc);
     m_registers.pc = 0x0066;
     ++m_registers.r;
     m_tStates += 5;
@@ -1114,7 +1113,7 @@ int Z80::Z80::handleInterrupt()
             // Util::debug("IM0 is not currently handled correctly");;
             // TODO if the instruction is a call or RST, push PC onto stack
             // if (false/* is_call_or_rst */) {
-                Z80__PUSH__REG16(m_registers.pc);
+                Z80_PUSH_Reg16(m_registers.pc);
             // }
 
             // TODO fetch the instruction from the device, up to 4 bytes
@@ -1166,12 +1165,12 @@ int Z80::Z80::handleInterrupt()
             return 13;
 
         case InterruptMode::IM1:
-            Z80__PUSH__REG16(m_registers.pc);
+            Z80_PUSH_Reg16(m_registers.pc);
             m_registers.pc = 0x0038;
             return 13;
 
         case InterruptMode::IM2:
-            Z80__PUSH__REG16(m_registers.pc);
+            Z80_PUSH_Reg16(m_registers.pc);
             // interrupt service routine is pointed to by interrupt vector table starting at 0x{regI}00; byte on
             // data bus from interrupting device is offset into table (e.g. if device provides 0x20, the service
             // routine starts at the memory address stored at 0x{regI}20). For example, if I contains 0xfe and the
@@ -1258,27 +1257,27 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_Ld_Bc_Nn:					// 0x01
-            Z80__LD__REG16__NN(m_registers.bc, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
+            Z80_LD_Reg16_NN(m_registers.bc, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_Plain_Ld_IndirectBc_A:		// 0x02
-			Z80__LD_Indirect_REG16__REG8(m_registers.bc, m_registers.a);
+			Z80_LD_IndirectReg16_Reg8(m_registers.bc, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Plain_Inc_Bc:						// 0x03
-			Z80__INC__REG16(m_registers.bc);
+			Z80_INC_Reg16(m_registers.bc);
 			break;
 
 		case Opcodes::Z80_Plain_Inc_B:						// 0x04
-			Z80__INC__REG8(m_registers.b);
+			Z80_INC_Reg8(m_registers.b);
 			break;
 
 		case Opcodes::Z80_Plain_Dec_B:						// 0x05
-			Z80__DEC__REG8(m_registers.b);
+			Z80_DEC_Reg8(m_registers.b);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_B_N:					// 0x06
-			Z80__LD__REG8__N(m_registers.b, *(instruction + 1));
+			Z80_LD_Reg8_N(m_registers.b, *(instruction + 1));
 			break;
 
 		case Opcodes::Z80_Plain_Rlca:						// 0x07
@@ -1303,31 +1302,31 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_Ex_Af_AfShadow:			// 0x08
-			Z80__EX__REG16__REG16(m_registers.af, m_registers.afShadow);
+			Z80_EX_Reg16_Reg16(m_registers.af, m_registers.afShadow);
 			break;
 
 		case Opcodes::Z80_Plain_Add_Hl_Bc:				// 0x09
-			Z80__ADD__REG16__REG16(m_registers.hl, m_registers.bc);
+			Z80_ADD_Reg16_Reg16(m_registers.hl, m_registers.bc);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_A_IndirectBc:		// 0x0a
-			Z80__LD__REG8_Indirect_REG16(m_registers.a, m_registers.bc);
+			Z80_LD_Reg8_IndirectReg16(m_registers.a, m_registers.bc);
 			break;
 
 		case Opcodes::Z80_Plain_Dec_Bc:						// 0x0b
-			Z80__DEC__REG16(m_registers.bc);
+			Z80_DEC_Reg16(m_registers.bc);
 			break;
 
 		case Opcodes::Z80_Plain_Inc_C:						// 0x0c
-			Z80__INC__REG8(m_registers.c);
+			Z80_INC_Reg8(m_registers.c);
 			break;
 
 		case Opcodes::Z80_Plain_Dec_C:						// 0x0d
-			Z80__DEC__REG8(m_registers.c);
+			Z80_DEC_Reg8(m_registers.c);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_C_N:					// 0x0e
-			Z80__LD__REG8__N(m_registers.c, *(instruction + 1));
+			Z80_LD_Reg8_N(m_registers.c, *(instruction + 1));
 			break;
 
 		case Opcodes::Z80_Plain_Rrca:						// 0x0f
@@ -1361,27 +1360,27 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_Ld_De_Nn:				// 0x11
-			Z80__LD__REG16__NN(m_registers.de, *reinterpret_cast<const UnsignedWord *>(instruction + 1));
+			Z80_LD_Reg16_NN(m_registers.de, *reinterpret_cast<const UnsignedWord *>(instruction + 1));
 			break;
 
 		case Opcodes::Z80_Plain_Ld_IndirectDe_A:		// 0x12
-			Z80__LD_Indirect_REG16__REG8(m_registers.de, m_registers.a);
+			Z80_LD_IndirectReg16_Reg8(m_registers.de, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Plain_Inc_De:					// 0x13
-			Z80__INC__REG16(m_registers.de);
+			Z80_INC_Reg16(m_registers.de);
 			break;
 
 		case Opcodes::Z80_Plain_Inc_D:						// 0x14
-			Z80__INC__REG8(m_registers.d);
+			Z80_INC_Reg8(m_registers.d);
 			break;
 
 		case Opcodes::Z80_Plain_Dec_D:						// 0x15
-			Z80__DEC__REG8(m_registers.d);
+			Z80_DEC_Reg8(m_registers.d);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_D_N:					// 0x16
-			Z80__LD__REG8__N(m_registers.d, *(instruction + 1));
+			Z80_LD_Reg8_N(m_registers.d, *(instruction + 1));
 			break;
 
 		case Opcodes::Z80_Plain_Rla:							// 0x17
@@ -1393,7 +1392,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 				 * FLAGS: S, Z and P preserved, C modified directly by instruction,
 				 * H and N cleared */
 				UnsignedByte flags = (m_registers.f & ~Z80FlagCMask);
-				Z80__RL__REG8(m_registers.a);
+				Z80_RL_Reg8(m_registers.a);
 				m_registers.f = flags | (m_registers.f & Z80FlagCMask);
 				Z80_FLAG_H_CLEAR;
 				Z80_FLAG_N_CLEAR;
@@ -1406,27 +1405,27 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_Add_Hl_De:				// 0x19
-			Z80__ADD__REG16__REG16(m_registers.hl, m_registers.de);
+			Z80_ADD_Reg16_Reg16(m_registers.hl, m_registers.de);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_A_IndirectDe:		// 0x1a
-			Z80__LD__REG8_Indirect_REG16(m_registers.a, m_registers.de);
+			Z80_LD_Reg8_IndirectReg16(m_registers.a, m_registers.de);
 			break;
 
 		case Opcodes::Z80_Plain_Dec_De:					// 0x1b
-			Z80__DEC__REG16(m_registers.de);
+			Z80_DEC_Reg16(m_registers.de);
 			break;
 
 		case Opcodes::Z80_Plain_Inc_E:						// 0x1c
-			Z80__INC__REG8(m_registers.e);
+			Z80_INC_Reg8(m_registers.e);
 			break;
 
 		case Opcodes::Z80_Plain_Dec_E:						// 0x1d
-			Z80__DEC__REG8(m_registers.e);
+			Z80_DEC_Reg8(m_registers.e);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_E_N:					// 0x1e
-			Z80__LD__REG8__N(m_registers.e, *(instruction + 1));
+			Z80_LD_Reg8_N(m_registers.e, *(instruction + 1));
 			break;
 
 		case Opcodes::Z80_Plain_Rra:							// 0x1f
@@ -1438,7 +1437,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 				 * FLAGS: S, Z and P preserved, C modified directly by instruction,
 				 * H and N cleared */
 				UnsignedByte flags = (m_registers.f & ~Z80FlagCMask);
-				Z80__RR__REG8(m_registers.a);
+				Z80_RR_Reg8(m_registers.a);
 				m_registers.f = flags | (m_registers.f & Z80FlagCMask);
 				Z80_FLAG_H_CLEAR;
 				Z80_FLAG_N_CLEAR;
@@ -1453,27 +1452,27 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_Ld_Hl_Nn:				// 0x21
-			Z80__LD__REG16__NN(m_registers.hl, *reinterpret_cast<const UnsignedWord *>(instruction + 1));
+			Z80_LD_Reg16_NN(m_registers.hl, *reinterpret_cast<const UnsignedWord *>(instruction + 1));
 			break;
 
 		case Opcodes::Z80_Plain_Ld_IndirectNn_Hl:	// 0x22
-			Z80__LD_Indirect_NN__REG16(z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)), m_registers.hl);
+			Z80_LD_IndirectNn_Reg16(z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)), m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_Inc_Hl:					// 0x23
-			Z80__INC__REG16(m_registers.hl);
+			Z80_INC_Reg16(m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_Inc_H:						// 0x24
-			Z80__INC__REG8(m_registers.h);
+			Z80_INC_Reg8(m_registers.h);
 			break;
 
 		case Opcodes::Z80_Plain_Dec_H:						// 0x25
-			Z80__DEC__REG8(m_registers.h);
+			Z80_DEC_Reg8(m_registers.h);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_H_N:					// 0x26
-			Z80__LD__REG8__N(m_registers.h, *(instruction + 1));
+			Z80_LD_Reg8_N(m_registers.h, *(instruction + 1));
 			break;
 
 		case Opcodes::Z80_Plain_Daa:							// 0x27
@@ -1505,9 +1504,9 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
                 // NOTE we rely on the ADD/SUB instruction to set the flags, so we must use it even if there is no
                 //  correction
                 if( Z80_FLAG_N_ISSET ) {
-                    Z80__SUB__N(correction);
+                    Z80_SUB_N(correction);
                 } else {
-                    Z80__ADD__REG8__N(m_registers.a, correction);
+                    Z80_ADD_Reg8_N(m_registers.a, correction);
                 }
 
                 // finally, set the flags that weren't take care of in the ADD/SUB instruction
@@ -1524,28 +1523,28 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_Add_Hl_Hl:				// 0x29
-			Z80__ADD__REG16__REG16(m_registers.hl, m_registers.hl);
+			Z80_ADD_Reg16_Reg16(m_registers.hl, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_Hl_IndirectNn:	// 0x2a
 		    // NOTE the interface of the Z80 class expects addresses in host byte order
-			Z80__LD__REG16_Indirect_NN(m_registers.hl, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
+			Z80_LD_Reg16_IndirectNn(m_registers.hl, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_Plain_Dec_Hl:					// 0x2b
-			Z80__DEC__REG16(m_registers.hl);
+			Z80_DEC_Reg16(m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_Inc_L:						// 0x2c
-			Z80__INC__REG8(m_registers.l);
+			Z80_INC_Reg8(m_registers.l);
 			break;
 
 		case Opcodes::Z80_Plain_Dec_L:						// 0x2d
-			Z80__DEC__REG8(m_registers.l);
+			Z80_DEC_Reg8(m_registers.l);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_L_N:					// 0x2e
-			Z80__LD__REG8__N(m_registers.l, *(instruction + 1));
+			Z80_LD_Reg8_N(m_registers.l, *(instruction + 1));
 			break;
 
 		case Opcodes::Z80_Plain_Cpl:							// 0x2f
@@ -1567,27 +1566,27 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_Ld_Sp_Nn:				// 0x31
-			Z80__LD__REG16__NN(m_registers.sp, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
+			Z80_LD_Reg16_NN(m_registers.sp, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_Plain_Ld_IndirectNn_A:		// 0x32
-			Z80__LD_Indirect_NN__REG8(z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)), m_registers.a);
+			Z80_LD_IndirectNn_Reg8(z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)), m_registers.a);
 			break;
 
 		case Opcodes::Z80_Plain_Inc_Sp:					// 0x33
-			Z80__INC__REG16(m_registers.sp);
+			Z80_INC_Reg16(m_registers.sp);
 			break;
 
 		case Opcodes::Z80_Plain_Inc_IndirectHl:		// 0x34
-			Z80__INC_Indirect_REG16(m_registers.hl);
+			Z80_INC_IndirectReg16(m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_Dec_IndirectHl:		// 0x35
-			Z80__DEC_Indirect_REG16(m_registers.hl);
+			Z80_DEC_IndirectReg16(m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_IndirectHl_N:		// 0x36
-			Z80__LD_Indirect_REG16__N(m_registers.hl, *(instruction + 1));
+			Z80_LD_IndirectReg16_N(m_registers.hl, *(instruction + 1));
 			break;
 
 		case Opcodes::Z80_Plain_Scf:							// 0x37
@@ -1606,27 +1605,27 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_Add_Hl_Sp:				// 0x39
-			Z80__ADD__REG16__REG16(m_registers.hl, m_registers.sp);
+			Z80_ADD_Reg16_Reg16(m_registers.hl, m_registers.sp);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_A_IndirectNn:		// 0x3a
-			Z80__LD__REG8_Indirect_NN(m_registers.a, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
+			Z80_LD_Reg8_IndirectNn(m_registers.a, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_Plain_Dec_Sp:					// 0x3b
-			Z80__DEC__REG16(m_registers.sp);
+			Z80_DEC_Reg16(m_registers.sp);
 			break;
 
 		case Opcodes::Z80_Plain_Inc_A:						// 0x3c
-			Z80__INC__REG8(m_registers.a);
+			Z80_INC_Reg8(m_registers.a);
 			break;
 
 		case Opcodes::Z80_Plain_Dec_A:						// 0x3d
-			Z80__DEC__REG8(m_registers.a);
+			Z80_DEC_Reg8(m_registers.a);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_A_N:					// 0x3e
-			Z80__LD__REG8__N(m_registers.a, *(instruction + 1));
+			Z80_LD_Reg8_N(m_registers.a, *(instruction + 1));
 			break;
 
 		case Opcodes::Z80_Plain_Ccf:							// 0x3f
@@ -1642,35 +1641,35 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_Ld_B_C:					// 0x41
-			Z80__LD__REG8__REG8(m_registers.b, m_registers.c);
+			Z80_LD_Reg8_Reg8(m_registers.b, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_B_D:					// 0x42
-			Z80__LD__REG8__REG8(m_registers.b, m_registers.d);
+			Z80_LD_Reg8_Reg8(m_registers.b, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_B_E:					// 0x43
-			Z80__LD__REG8__REG8(m_registers.b, m_registers.e);
+			Z80_LD_Reg8_Reg8(m_registers.b, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_B_H:					// 0x44
-			Z80__LD__REG8__REG8(m_registers.b, m_registers.h);
+			Z80_LD_Reg8_Reg8(m_registers.b, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_B_L:					// 0x45
-			Z80__LD__REG8__REG8(m_registers.b, m_registers.l);
+			Z80_LD_Reg8_Reg8(m_registers.b, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_B_IndirectHl:		// 0x46
-			Z80__LD__REG8_Indirect_REG16(m_registers.b, m_registers.hl);
+			Z80_LD_Reg8_IndirectReg16(m_registers.b, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_B_A:					// 0x47
-			Z80__LD__REG8__REG8(m_registers.b, m_registers.a);
+			Z80_LD_Reg8_Reg8(m_registers.b, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_C_B:					// 0x48
-			Z80__LD__REG8__REG8(m_registers.c, m_registers.b);
+			Z80_LD_Reg8_Reg8(m_registers.c, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_C_C:					// 0x49
@@ -1678,35 +1677,35 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_Ld_C_D:					// 0x4a
-			Z80__LD__REG8__REG8(m_registers.c, m_registers.d);
+			Z80_LD_Reg8_Reg8(m_registers.c, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_C_E:					// 0x4b
-			Z80__LD__REG8__REG8(m_registers.c, m_registers.e);
+			Z80_LD_Reg8_Reg8(m_registers.c, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_C_H:					// 0x4c
-			Z80__LD__REG8__REG8(m_registers.c, m_registers.h);
+			Z80_LD_Reg8_Reg8(m_registers.c, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_C_L:					// 0x4d
-			Z80__LD__REG8__REG8(m_registers.c, m_registers.l);
+			Z80_LD_Reg8_Reg8(m_registers.c, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_C_IndirectHl:		// 0x4e
-			Z80__LD__REG8_Indirect_REG16(m_registers.c, m_registers.hl);
+			Z80_LD_Reg8_IndirectReg16(m_registers.c, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_C_A:					// 0x4f
-			Z80__LD__REG8__REG8(m_registers.c, m_registers.a);
+			Z80_LD_Reg8_Reg8(m_registers.c, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_D_B:					// 0x50
-			Z80__LD__REG8__REG8(m_registers.d, m_registers.b);
+			Z80_LD_Reg8_Reg8(m_registers.d, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_D_C:					// 0x51
-			Z80__LD__REG8__REG8(m_registers.d, m_registers.c);
+			Z80_LD_Reg8_Reg8(m_registers.d, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_D_D:					// 0x52
@@ -1714,35 +1713,35 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_Ld_D_E:					// 0x53
-			Z80__LD__REG8__REG8(m_registers.d, m_registers.e);
+			Z80_LD_Reg8_Reg8(m_registers.d, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_D_H:					// 0x54
-			Z80__LD__REG8__REG8(m_registers.d, m_registers.h);
+			Z80_LD_Reg8_Reg8(m_registers.d, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_D_L:					// 0x55
-			Z80__LD__REG8__REG8(m_registers.d, m_registers.l);
+			Z80_LD_Reg8_Reg8(m_registers.d, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_D_IndirectHl:		// 0x56
-			Z80__LD__REG8_Indirect_REG16(m_registers.d, m_registers.hl);
+			Z80_LD_Reg8_IndirectReg16(m_registers.d, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_D_A:					// 0x57
-			Z80__LD__REG8__REG8(m_registers.d, m_registers.a);
+			Z80_LD_Reg8_Reg8(m_registers.d, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_E_B:					// 0x58
-			Z80__LD__REG8__REG8(m_registers.e, m_registers.b);
+			Z80_LD_Reg8_Reg8(m_registers.e, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_E_C:					// 0x59
-			Z80__LD__REG8__REG8(m_registers.e, m_registers.c);
+			Z80_LD_Reg8_Reg8(m_registers.e, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_E_D:					// 0x5a
-			Z80__LD__REG8__REG8(m_registers.e, m_registers.d);
+			Z80_LD_Reg8_Reg8(m_registers.e, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_E_E:					// 0x5b
@@ -1750,35 +1749,35 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_Ld_E_H:					// 0x5c
-			Z80__LD__REG8__REG8(m_registers.e, m_registers.h);
+			Z80_LD_Reg8_Reg8(m_registers.e, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_E_L:					// 0x5d
-			Z80__LD__REG8__REG8(m_registers.e, m_registers.l);
+			Z80_LD_Reg8_Reg8(m_registers.e, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_E_IndirectHl:		// 0x5e
-			Z80__LD__REG8_Indirect_REG16(m_registers.e, m_registers.hl);
+			Z80_LD_Reg8_IndirectReg16(m_registers.e, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_E_A:					// 0x5f
-			Z80__LD__REG8__REG8(m_registers.e, m_registers.a);
+			Z80_LD_Reg8_Reg8(m_registers.e, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_H_B:					// 0x60
-			Z80__LD__REG8__REG8(m_registers.h, m_registers.b);
+			Z80_LD_Reg8_Reg8(m_registers.h, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_H_C:					// 0x61
-			Z80__LD__REG8__REG8(m_registers.h, m_registers.c);
+			Z80_LD_Reg8_Reg8(m_registers.h, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_H_D:					// 0x62
-			Z80__LD__REG8__REG8(m_registers.h, m_registers.d);
+			Z80_LD_Reg8_Reg8(m_registers.h, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_H_E:					// 0x63
-			Z80__LD__REG8__REG8(m_registers.h, m_registers.e);
+			Z80_LD_Reg8_Reg8(m_registers.h, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_H_H:					// 0x64
@@ -1786,35 +1785,35 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_Ld_H_L:					// 0x65
-			Z80__LD__REG8__REG8(m_registers.h, m_registers.l);
+			Z80_LD_Reg8_Reg8(m_registers.h, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_H_IndirectHl:		// 0x66
-			Z80__LD__REG8_Indirect_REG16(m_registers.h, m_registers.hl);
+			Z80_LD_Reg8_IndirectReg16(m_registers.h, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_H_A:					// 0x67
-			Z80__LD__REG8__REG8(m_registers.h, m_registers.a);
+			Z80_LD_Reg8_Reg8(m_registers.h, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_L_B:					// 0x68
-			Z80__LD__REG8__REG8(m_registers.l, m_registers.b);
+			Z80_LD_Reg8_Reg8(m_registers.l, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_L_C:					// 0x69
-			Z80__LD__REG8__REG8(m_registers.l, m_registers.c);
+			Z80_LD_Reg8_Reg8(m_registers.l, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_L_D:					// 0x6a
-			Z80__LD__REG8__REG8(m_registers.l, m_registers.d);
+			Z80_LD_Reg8_Reg8(m_registers.l, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_L_E:					// 0x6b
-			Z80__LD__REG8__REG8(m_registers.l, m_registers.e);
+			Z80_LD_Reg8_Reg8(m_registers.l, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_L_H:					// 0x6c
-			Z80__LD__REG8__REG8(m_registers.l, m_registers.h);
+			Z80_LD_Reg8_Reg8(m_registers.l, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_L_L:					// 0x6d
@@ -1822,35 +1821,35 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_Ld_L_IndirectHl:		// 0x6e
-			Z80__LD__REG8_Indirect_REG16(m_registers.l, m_registers.hl);
+			Z80_LD_Reg8_IndirectReg16(m_registers.l, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_L_A:					// 0x6f
-			Z80__LD__REG8__REG8(m_registers.l, m_registers.a);
+			Z80_LD_Reg8_Reg8(m_registers.l, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_IndirectHl_B:		// 0x70
-			Z80__LD_Indirect_REG16__REG8(m_registers.hl, m_registers.b);
+			Z80_LD_IndirectReg16_Reg8(m_registers.hl, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_IndirectHl_C:		// 0x71
-			Z80__LD_Indirect_REG16__REG8(m_registers.hl, m_registers.c);
+			Z80_LD_IndirectReg16_Reg8(m_registers.hl, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_IndirectHl_D:		// 0x72
-			Z80__LD_Indirect_REG16__REG8(m_registers.hl, m_registers.d);
+			Z80_LD_IndirectReg16_Reg8(m_registers.hl, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_IndirectHl_E:		// 0x73
-			Z80__LD_Indirect_REG16__REG8(m_registers.hl, m_registers.e);
+			Z80_LD_IndirectReg16_Reg8(m_registers.hl, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_IndirectHl_H:		// 0x74
-			Z80__LD_Indirect_REG16__REG8(m_registers.hl, m_registers.h);
+			Z80_LD_IndirectReg16_Reg8(m_registers.hl, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_IndirectHl_L:		// 0x75
-			Z80__LD_Indirect_REG16__REG8(m_registers.hl, m_registers.l);
+			Z80_LD_IndirectReg16_Reg8(m_registers.hl, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Plain_Halt:						// 0x76
@@ -1859,35 +1858,35 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_Ld_IndirectHl_A:		// 0x77
-			Z80__LD_Indirect_REG16__REG8(m_registers.hl, m_registers.a);
+			Z80_LD_IndirectReg16_Reg8(m_registers.hl, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_A_B:					// 0x78
-			Z80__LD__REG8__REG8(m_registers.a, m_registers.b);
+			Z80_LD_Reg8_Reg8(m_registers.a, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_A_C:					// 0x79
-			Z80__LD__REG8__REG8(m_registers.a, m_registers.c);
+			Z80_LD_Reg8_Reg8(m_registers.a, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_A_D:					// 0x7a
-			Z80__LD__REG8__REG8(m_registers.a, m_registers.d);
+			Z80_LD_Reg8_Reg8(m_registers.a, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_A_E:					// 0x7b
-			Z80__LD__REG8__REG8(m_registers.a, m_registers.e);
+			Z80_LD_Reg8_Reg8(m_registers.a, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_A_H:					// 0x7c
-			Z80__LD__REG8__REG8(m_registers.a, m_registers.h);
+			Z80_LD_Reg8_Reg8(m_registers.a, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_A_L:					// 0x7d
-			Z80__LD__REG8__REG8(m_registers.a, m_registers.l);
+			Z80_LD_Reg8_Reg8(m_registers.a, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_A_IndirectHl:		// 0x7e
-			Z80__LD__REG8_Indirect_REG16(m_registers.a, m_registers.hl);
+			Z80_LD_Reg8_IndirectReg16(m_registers.a, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_A_A:					// 0x7f
@@ -1895,271 +1894,271 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_Add_A_B:					// 0x80
-			Z80__ADD__REG8__REG8(m_registers.a, m_registers.b);
+			Z80_ADD_Reg8_Reg8(m_registers.a, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Plain_Add_A_C:					// 0x81
-			Z80__ADD__REG8__REG8(m_registers.a, m_registers.c);
+			Z80_ADD_Reg8_Reg8(m_registers.a, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Plain_Add_A_D:					// 0x82
-			Z80__ADD__REG8__REG8(m_registers.a, m_registers.d);
+			Z80_ADD_Reg8_Reg8(m_registers.a, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Plain_Add_A_E:					// 0x83
-			Z80__ADD__REG8__REG8(m_registers.a, m_registers.e);
+			Z80_ADD_Reg8_Reg8(m_registers.a, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Plain_Add_A_H:					// 0x84
-			Z80__ADD__REG8__REG8(m_registers.a, m_registers.h);
+			Z80_ADD_Reg8_Reg8(m_registers.a, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Plain_Add_A_L:					// 0x85
-			Z80__ADD__REG8__REG8(m_registers.a, m_registers.l);
+			Z80_ADD_Reg8_Reg8(m_registers.a, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Plain_Add_A_IndirectHl:	// 0x86
-			Z80__ADD__REG8_Indirect_REG16(m_registers.a, m_registers.hl);
+			Z80_ADD_Reg8_IndirectReg16(m_registers.a, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_Add_A_A:					// 0x87
-			Z80__ADD__REG8__REG8(m_registers.a, m_registers.a);
+			Z80_ADD_Reg8_Reg8(m_registers.a, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Plain_Adc_A_B:					// 0x88
-			Z80__ADC__REG8__REG8(m_registers.a, m_registers.b);
+			Z80_ADC_Reg8_Reg8(m_registers.a, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Plain_Adc_A_C:					// 0x89
-			Z80__ADC__REG8__REG8(m_registers.a, m_registers.c);
+			Z80_ADC_Reg8_Reg8(m_registers.a, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Plain_Adc_A_D:					// 0x8a
-			Z80__ADC__REG8__REG8(m_registers.a, m_registers.d);
+			Z80_ADC_Reg8_Reg8(m_registers.a, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Plain_Adc_A_E:					// 0x8b
-			Z80__ADC__REG8__REG8(m_registers.a, m_registers.e);
+			Z80_ADC_Reg8_Reg8(m_registers.a, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Plain_Adc_A_H:					// 0x8c
-			Z80__ADC__REG8__REG8(m_registers.a, m_registers.h);
+			Z80_ADC_Reg8_Reg8(m_registers.a, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Plain_Adc_A_L:					// 0x8d
-			Z80__ADC__REG8__REG8(m_registers.a, m_registers.l);
+			Z80_ADC_Reg8_Reg8(m_registers.a, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Plain_Adc_A_IndirectHl:	// 0x8e
-			Z80__ADC__REG8_Indirect_REG16(m_registers.a, m_registers.hl);
+			Z80_ADC_Reg8_IndirectReg16(m_registers.a, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_Adc_A_A:					// 0x8f
-			Z80__ADC__REG8__REG8(m_registers.a, m_registers.a);
+			Z80_ADC_Reg8_Reg8(m_registers.a, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Plain_Sub_B:						// 0x90
-			Z80__SUB__REG8(m_registers.b);
+			Z80_SUB_Reg8(m_registers.b);
 			break;
 
 		case Opcodes::Z80_Plain_Sub_C:						// 0x91
-			Z80__SUB__REG8(m_registers.c);
+			Z80_SUB_Reg8(m_registers.c);
 			break;
 
 		case Opcodes::Z80_Plain_Sub_D:						// 0x92
-			Z80__SUB__REG8(m_registers.d);
+			Z80_SUB_Reg8(m_registers.d);
 			break;
 
 		case Opcodes::Z80_Plain_Sub_E:						// 0x93
-			Z80__SUB__REG8(m_registers.e);
+			Z80_SUB_Reg8(m_registers.e);
 			break;
 
 		case Opcodes::Z80_Plain_Sub_H:						// 0x94
-			Z80__SUB__REG8(m_registers.h);
+			Z80_SUB_Reg8(m_registers.h);
 			break;
 
 		case Opcodes::Z80_Plain_Sub_L:						// 0x95
-			Z80__SUB__REG8(m_registers.l);
+			Z80_SUB_Reg8(m_registers.l);
 			break;
 
 		case Opcodes::Z80_Plain_Sub_IndirectHl:		// 0x96
-			Z80__SUB_Indirect_REG16(m_registers.hl);
+			Z80_SUB_IndirectReg16(m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_Sub_A:						// 0x97
-			Z80__SUB__REG8(m_registers.a);
+			Z80_SUB_Reg8(m_registers.a);
 			break;
 
 		case Opcodes::Z80_Plain_Sbc_A_B:					// 0x98
-			Z80__SBC__REG8__REG8(m_registers.a, m_registers.b);
+			Z80_SBC_Reg8_Reg8(m_registers.a, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Plain_Sbc_A_C:					// 0x99
-			Z80__SBC__REG8__REG8(m_registers.a, m_registers.c);
+			Z80_SBC_Reg8_Reg8(m_registers.a, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Plain_Sbc_A_D:					// 0x9a
-			Z80__SBC__REG8__REG8(m_registers.a, m_registers.d);
+			Z80_SBC_Reg8_Reg8(m_registers.a, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Plain_Sbc_A_E:					// 0x9b
-			Z80__SBC__REG8__REG8(m_registers.a, m_registers.e);
+			Z80_SBC_Reg8_Reg8(m_registers.a, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Plain_Sbc_A_H:					// 0x9c
-			Z80__SBC__REG8__REG8(m_registers.a, m_registers.h);
+			Z80_SBC_Reg8_Reg8(m_registers.a, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Plain_Sbc_A_L:					// 0x9d
-			Z80__SBC__REG8__REG8(m_registers.a, m_registers.l);
+			Z80_SBC_Reg8_Reg8(m_registers.a, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Plain_Sbc_A_IndirectHl:	// 0x9e
-			Z80__SBC__REG8_Indirect_REG16(m_registers.a, m_registers.hl);
+			Z80_SBC_Reg8_IndirectReg16(m_registers.a, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_Sbc_A_A:					// 0x9f
-			Z80__SBC__REG8__REG8(m_registers.a, m_registers.a);
+			Z80_SBC_Reg8_Reg8(m_registers.a, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Plain_And_B:						// 0xa0
-			Z80__AND__REG8(m_registers.b);
+			Z80_AND_Reg8(m_registers.b);
 			break;
 
 		case Opcodes::Z80_Plain_And_C:						// 0xa1
-			Z80__AND__REG8(m_registers.c);
+			Z80_AND_Reg8(m_registers.c);
 			break;
 
 		case Opcodes::Z80_Plain_And_D:						// 0xa2
-			Z80__AND__REG8(m_registers.d);
+			Z80_AND_Reg8(m_registers.d);
 			break;
 
 		case Opcodes::Z80_Plain_And_E:						// 0xa3
-			Z80__AND__REG8(m_registers.e);
+			Z80_AND_Reg8(m_registers.e);
 			break;
 
 		case Opcodes::Z80_Plain_And_H:						// 0xa4
-			Z80__AND__REG8(m_registers.h);
+			Z80_AND_Reg8(m_registers.h);
 			break;
 
 		case Opcodes::Z80_Plain_And_L:						// 0xa5
-			Z80__AND__REG8(m_registers.l);
+			Z80_AND_Reg8(m_registers.l);
 			break;
 
 		case Opcodes::Z80_Plain_And_IndirectHl:		// 0xa6
-			Z80__AND_Indirect_REG16(m_registers.hl);
+			Z80_AND_IndirectReg16(m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_And_A:						// 0xa7
-			Z80__AND__REG8(m_registers.a);
+			Z80_AND_Reg8(m_registers.a);
 			break;
 
 		case Opcodes::Z80_Plain_Xor_B:						// 0xa8
-			Z80__XOR__REG8(m_registers.b);
+			Z80_XOR_Reg8(m_registers.b);
 			break;
 
 		case Opcodes::Z80_Plain_Xor_C:						// 0xa9
-			Z80__XOR__REG8(m_registers.c);
+			Z80_XOR_Reg8(m_registers.c);
 			break;
 
 		case Opcodes::Z80_Plain_Xor_D:						// 0xaa
-			Z80__XOR__REG8(m_registers.d);
+			Z80_XOR_Reg8(m_registers.d);
 			break;
 
 		case Opcodes::Z80_Plain_Xor_E:						// 0xab
-			Z80__XOR__REG8(m_registers.e);
+			Z80_XOR_Reg8(m_registers.e);
 			break;
 
 		case Opcodes::Z80_Plain_Xor_H:						// 0xac
-			Z80__XOR__REG8(m_registers.h);
+			Z80_XOR_Reg8(m_registers.h);
 			break;
 
 		case Opcodes::Z80_Plain_Xor_L:						// 0xad
-			Z80__XOR__REG8(m_registers.l);
+			Z80_XOR_Reg8(m_registers.l);
 			break;
 
 		case Opcodes::Z80_Plain_Xor_IndirectHl:		// 0xae
-			Z80__XOR_Indirect_REG16(m_registers.hl);
+			Z80_XOR_IndirectReg16(m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_Xor_A:						// 0xaf
-			Z80__XOR__REG8(m_registers.a);
+			Z80_XOR_Reg8(m_registers.a);
 			break;
 
 		case Opcodes::Z80_Plain_Or_B:						// 0xb0
-			Z80__OR__REG8(m_registers.b);
+			Z80_OR_Reg8(m_registers.b);
 			break;
 
 		case Opcodes::Z80_Plain_Or_C:						// 0xb1
-			Z80__OR__REG8(m_registers.c);
+			Z80_OR_Reg8(m_registers.c);
 			break;
 
 		case Opcodes::Z80_Plain_Or_D:						// 0xb2
-			Z80__OR__REG8(m_registers.d);
+			Z80_OR_Reg8(m_registers.d);
 			break;
 
 		case Opcodes::Z80_Plain_Or_E:						// 0xb3
-			Z80__OR__REG8(m_registers.e);
+			Z80_OR_Reg8(m_registers.e);
 			break;
 
 		case Opcodes::Z80_Plain_Or_H:						// 0xb4
-			Z80__OR__REG8(m_registers.h);
+			Z80_OR_Reg8(m_registers.h);
 			break;
 
 		case Opcodes::Z80_Plain_Or_L:						// 0xb5
-			Z80__OR__REG8(m_registers.l);
+			Z80_OR_Reg8(m_registers.l);
 			break;
 
 		case Opcodes::Z80_Plain_Or_IndirectHl:			// 0xb6
-			Z80__OR_Indirect_REG16(m_registers.hl);
+			Z80_OR_IndirectReg16(m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_Or_A:						// 0xb7
-			Z80__OR__REG8(m_registers.a);
+			Z80_OR_Reg8(m_registers.a);
 			break;
 
 		case Opcodes::Z80_Plain_Cp_B:						// 0xb8
-			Z80__CP__REG8(m_registers.b);
+			Z80_CP_Reg8(m_registers.b);
 			break;
 
 		case Opcodes::Z80_Plain_Cp_C:						// 0xb9
-			Z80__CP__REG8(m_registers.c);
+			Z80_CP_Reg8(m_registers.c);
 			break;
 
 		case Opcodes::Z80_Plain_Cp_D:						// 0xba
-			Z80__CP__REG8(m_registers.d);
+			Z80_CP_Reg8(m_registers.d);
 			break;
 
 		case Opcodes::Z80_Plain_Cp_E:						// 0xbb
-			Z80__CP__REG8(m_registers.e);
+			Z80_CP_Reg8(m_registers.e);
 			break;
 
 		case Opcodes::Z80_Plain_Cp_H:						// 0xbc
-			Z80__CP__REG8(m_registers.h);
+			Z80_CP_Reg8(m_registers.h);
 			break;
 
 		case Opcodes::Z80_Plain_Cp_L:						// 0xbd
-			Z80__CP__REG8(m_registers.l);
+			Z80_CP_Reg8(m_registers.l);
 			break;
 
 		case Opcodes::Z80_Plain_Cp_IndirectHl:			// 0xbe
-			Z80__CP_Indirect_REG16(m_registers.hl);
+			Z80_CP_IndirectReg16(m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_Cp_A:						// 0xbf
-			Z80__CP__REG8(m_registers.a);
+			Z80_CP_Reg8(m_registers.a);
 			break;
 
 		case Opcodes::Z80_Plain_Ret_Nz:					// 0xc0
 			if (!Z80_FLAG_Z_ISSET) {
-				Z80__POP__REG16(m_registers.pc);
+				Z80_POP_Reg16(m_registers.pc);
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
 			break;
 
 		case Opcodes::Z80_Plain_Pop_Bc:					// 0xc1
-			Z80__POP__REG16(m_registers.bc);
+			Z80_POP_Reg16(m_registers.bc);
 			break;
 
 		case Opcodes::Z80_Plain_Jp_Nz_Nn:				// 0xc2
@@ -2188,36 +2187,36 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
 			if (!Z80_FLAG_Z_ISSET) {
                 Z80_USE_JUMP_CYCLE_COST;
-				Z80__PUSH__REG16(m_registers.pc + 3);
+				Z80_PUSH_Reg16(m_registers.pc + 3);
 				m_registers.pc = m_registers.memptr;
 				Z80_DONT_UPDATE_PC;
 			}
 			break;
 
 		case Opcodes::Z80_Plain_Push_Bc:					// 0xc5
-			Z80__PUSH__REG16(m_registers.bc);
+			Z80_PUSH_Reg16(m_registers.bc);
 			break;
 
 		case Opcodes::Z80_Plain_Add_A_N:					// 0xc6
-			Z80__ADD__REG8__N(m_registers.a, *(instruction + 1));
+			Z80_ADD_Reg8_N(m_registers.a, *(instruction + 1));
 			break;
 
 		case Opcodes::Z80_Plain_Rst_00:					// 0xc7
 			/* restart at 0x0000 */
-			Z80__RST__N(0x00);
+			Z80_RST_N(0x00);
 			Z80_DONT_UPDATE_PC;
 			break;
 
 		case Opcodes::Z80_Plain_Ret_Z:						// 0xc8
 			if (Z80_FLAG_Z_ISSET) {
-				Z80__POP__REG16(m_registers.pc);
+				Z80_POP_Reg16(m_registers.pc);
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
 			break;
 
 		case Opcodes::Z80_Plain_Ret:							// 0xc9
-			Z80__POP__REG16(m_registers.pc);
+			Z80_POP_Reg16(m_registers.pc);
 			Z80_DONT_UPDATE_PC;
             // NOTE don't set the jumped indicator because there's no different t-state cost - the jump always takes
             //  place, so the base cost in t-states is all that's used
@@ -2241,7 +2240,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
             if (Z80_FLAG_Z_ISSET) {
                 Z80_USE_JUMP_CYCLE_COST;
-                Z80__PUSH__REG16(m_registers.pc + 3);
+                Z80_PUSH_Reg16(m_registers.pc + 3);
                 m_registers.pc = m_registers.memptr;
                 Z80_DONT_UPDATE_PC;
             }
@@ -2249,30 +2248,30 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
 		case Opcodes::Z80_Plain_Call_Nn:					// 0xcd
             m_registers.memptr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
-			Z80__PUSH__REG16(m_registers.pc + 3);
+			Z80_PUSH_Reg16(m_registers.pc + 3);
 			m_registers.pc = m_registers.memptr;
 			Z80_DONT_UPDATE_PC;
 			break;
 
 		case Opcodes::Z80_Plain_Adc_A_N:					// 0xce
-			Z80__ADC__REG8__N(m_registers.a, *(instruction + 1));
+			Z80_ADC_Reg8_N(m_registers.a, *(instruction + 1));
 			break;
 
 		case Opcodes::Z80_Plain_Rst_08:					// 0xcf
-			Z80__RST__N(0x08);
+			Z80_RST_N(0x08);
 			Z80_DONT_UPDATE_PC;
 			break;
 
 		case Opcodes::Z80_Plain_Ret_Nc:					// 0xd0
 			if (!Z80_FLAG_C_ISSET) {
-				Z80__POP__REG16(m_registers.pc);
+				Z80_POP_Reg16(m_registers.pc);
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
 			break;
 
 		case Opcodes::Z80_Plain_Pop_De:					// 0xd1
-			Z80__POP__REG16(m_registers.de);
+			Z80_POP_Reg16(m_registers.de);
 			break;
 
 		case Opcodes::Z80_Plain_Jp_Nc_Nn:				// 0xd2
@@ -2285,7 +2284,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_Out_IndirectN_A:		// 0xd3
-            Z80__OUT_Indirect_N__REG8(*(instruction + 1), m_registers.a);
+            Z80_OUT_Indirect_N_Reg8(*(instruction + 1), m_registers.a);
             m_registers.memptr = m_registers.bc + 1;
 			break;
 
@@ -2294,37 +2293,37 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
             if (!Z80_FLAG_C_ISSET) {
                 Z80_USE_JUMP_CYCLE_COST;
-                Z80__PUSH__REG16(m_registers.pc + 3);
+                Z80_PUSH_Reg16(m_registers.pc + 3);
                 m_registers.pc = m_registers.memptr;
                 Z80_DONT_UPDATE_PC;
             }
 			break;
 
 		case Opcodes::Z80_Plain_Push_De:					// 0xd5
-			Z80__PUSH__REG16(m_registers.de);
+			Z80_PUSH_Reg16(m_registers.de);
 			break;
 
 		case Opcodes::Z80_Plain_Sub_N:						// 0xd6
-			Z80__SUB__N(*(instruction + 1));
+			Z80_SUB_N(*(instruction + 1));
 			break;
 
 		case Opcodes::Z80_Plain_Rst_10:					// 0xd7
-			Z80__RST__N(0x10);
+			Z80_RST_N(0x10);
 			Z80_DONT_UPDATE_PC;
 			break;
 
 		case Opcodes::Z80_Plain_Ret_C:						// 0xd8
 			if (Z80_FLAG_C_ISSET) {
-				Z80__POP__REG16(m_registers.pc);
+				Z80_POP_Reg16(m_registers.pc);
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
 			break;
 
 		case Opcodes::Z80_Plain_Exx:							// 0xd9
-			Z80__EX__REG16__REG16(m_registers.bc, m_registers.bcShadow);
-			Z80__EX__REG16__REG16(m_registers.de, m_registers.deShadow);
-			Z80__EX__REG16__REG16(m_registers.hl, m_registers.hlShadow);
+			Z80_EX_Reg16_Reg16(m_registers.bc, m_registers.bcShadow);
+			Z80_EX_Reg16_Reg16(m_registers.de, m_registers.deShadow);
+			Z80_EX_Reg16_Reg16(m_registers.hl, m_registers.hlShadow);
 			break;
 
 		case Opcodes::Z80_Plain_Jp_C_Nn:					// 0xda
@@ -2337,7 +2336,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_In_A_IndirectN:		// 0xdb
-            Z80__IN__REG8_Indirect_N(m_registers.a, *(instruction + 1));
+            Z80_IN_Reg8_Indirect_N(m_registers.a, *(instruction + 1));
 			break;
 
 		case Opcodes::Z80_Plain_Call_C_Nn:				// 0xdc
@@ -2345,7 +2344,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
             if (Z80_FLAG_C_ISSET) {
                 Z80_USE_JUMP_CYCLE_COST;
-                Z80__PUSH__REG16(m_registers.pc + 3);
+                Z80_PUSH_Reg16(m_registers.pc + 3);
                 m_registers.pc = m_registers.memptr;
                 Z80_DONT_UPDATE_PC;
             }
@@ -2356,25 +2355,25 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_Sbc_A_N:					// 0xde
-			Z80__SBC__REG8__N(m_registers.a, *(instruction + 1));
+			Z80_SBC_Reg8_N(m_registers.a, *(instruction + 1));
 			break;
 
 		case Opcodes::Z80_Plain_Rst_18:					// 0xdf
-			Z80__RST__N(0x18);
+			Z80_RST_N(0x18);
 			Z80_DONT_UPDATE_PC;
 			break;
 
 		case Opcodes::Z80_Plain_Ret_Po:					// 0xe0
 			/* the operand PO stands for "parity odd" */
 			if (!Z80_FLAG_P_ISSET) {
-				Z80__POP__REG16(m_registers.pc);
+				Z80_POP_Reg16(m_registers.pc);
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
 			break;
 
 		case Opcodes::Z80_Plain_Pop_Hl:					// 0xe1
-			Z80__POP__REG16(m_registers.hl);
+			Z80_POP_Reg16(m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_Jp_Po_Nn:				// 0xe2
@@ -2388,7 +2387,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_Ex_IndirectSp_Hl:	// 0xe3
-			Z80__EX_Indirect_REG16__REG16(m_registers.sp, m_registers.hl);
+			Z80_EX_IndirectReg16_Reg16(m_registers.sp, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_Call_Po_Nn:				// 0xe4
@@ -2397,29 +2396,29 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
             if (!Z80_FLAG_P_ISSET) {
                 Z80_USE_JUMP_CYCLE_COST;
-                Z80__PUSH__REG16(m_registers.pc + 3);
+                Z80_PUSH_Reg16(m_registers.pc + 3);
                 m_registers.pc = m_registers.memptr;
                 Z80_DONT_UPDATE_PC;
             }
 			break;
 
 		case Opcodes::Z80_Plain_Push_Hl:					// 0xe5
-			Z80__PUSH__REG16(m_registers.hl);
+			Z80_PUSH_Reg16(m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_And_N:						// 0xe6
-			Z80__AND__N(*(instruction + 1));
+			Z80_AND_N(*(instruction + 1));
 			break;
 
 		case Opcodes::Z80_Plain_Rst_20:					// 0xe7
-			Z80__RST__N(0x20);
+			Z80_RST_N(0x20);
 			Z80_DONT_UPDATE_PC;
 			break;
 
 		case Opcodes::Z80_Plain_Ret_Pe:					// 0xe8
 			/* the operand PE stands for "parity even" */
 			if (Z80_FLAG_P_ISSET) {
-				Z80__POP__REG16(m_registers.pc);
+				Z80_POP_Reg16(m_registers.pc);
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
@@ -2443,7 +2442,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_Ex_De_Hl:				// 0xeb
-			Z80__EX__REG16__REG16(m_registers.de, m_registers.hl);
+			Z80_EX_Reg16_Reg16(m_registers.de, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_Call_Pe_Nn:				// 0xec
@@ -2452,7 +2451,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
             if (Z80_FLAG_P_ISSET) {
                 Z80_USE_JUMP_CYCLE_COST;
-                Z80__PUSH__REG16(m_registers.pc + 3);
+                Z80_PUSH_Reg16(m_registers.pc + 3);
                 m_registers.pc = m_registers.memptr;
                 Z80_DONT_UPDATE_PC;
             }
@@ -2464,11 +2463,11 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_Xor_N:						// 0xee
-			Z80__XOR__N(*(instruction + 1));
+			Z80_XOR_N(*(instruction + 1));
 			break;
 
 		case Opcodes::Z80_Plain_Rst_28:					// 0xef
-			Z80__RST__N(0x28);
+			Z80_RST_N(0x28);
 			Z80_DONT_UPDATE_PC;
 			break;
 
@@ -2476,14 +2475,14 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			/* the operand P means "plus" and therefore uses the sign flag; not
 				to be confused with the parity flag */
 			if (!Z80_FLAG_S_ISSET) {
-				Z80__POP__REG16(m_registers.pc);
+				Z80_POP_Reg16(m_registers.pc);
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
 			break;
 
 		case Opcodes::Z80_Plain_Pop_Af:					// 0xf1
-			Z80__POP__REG16(m_registers.af);
+			Z80_POP_Reg16(m_registers.af);
 			break;
 
 		case Opcodes::Z80_Plain_Jp_P_Nn:					// 0xf2
@@ -2507,36 +2506,36 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
             if (!Z80_FLAG_S_ISSET) {
                 Z80_USE_JUMP_CYCLE_COST;
-                Z80__PUSH__REG16(m_registers.pc + 3);
+                Z80_PUSH_Reg16(m_registers.pc + 3);
                 m_registers.pc = m_registers.memptr;
                 Z80_DONT_UPDATE_PC;
             }
 			break;
 
 		case Opcodes::Z80_Plain_Push_Af:					// 0xf5
-			Z80__PUSH__REG16(m_registers.af);
+			Z80_PUSH_Reg16(m_registers.af);
 			break;
 
 		case Opcodes::Z80_Plain_Or_N:						// 0xf6
-			Z80__OR__N(*(instruction + 1));
+			Z80_OR_N(*(instruction + 1));
 			break;
 
 		case Opcodes::Z80_Plain_Rst_30:					// 0xf7
-			Z80__RST__N(0x30);
+			Z80_RST_N(0x30);
 			Z80_DONT_UPDATE_PC;
 			break;
 
 		case Opcodes::Z80_Plain_Ret_M:						// 0xf8
 			/* the operand M stands for "minus" and therefore uses the sign flag */
 			if (Z80_FLAG_S_ISSET) {
-				Z80__POP__REG16(m_registers.pc);
+				Z80_POP_Reg16(m_registers.pc);
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
 			}
 			break;
 
 		case Opcodes::Z80_Plain_Ld_Sp_Hl:				// 0xf9
-			Z80__LD__REG16__REG16(m_registers.sp, m_registers.hl);
+			Z80_LD_Reg16_Reg16(m_registers.sp, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_Jp_M_Nn:					// 0xfa
@@ -2562,7 +2561,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
             if (Z80_FLAG_S_ISSET) {
                 Z80_USE_JUMP_CYCLE_COST;
-                Z80__PUSH__REG16(m_registers.pc + 3);
+                Z80_PUSH_Reg16(m_registers.pc + 3);
                 m_registers.pc = m_registers.memptr;
                 Z80_DONT_UPDATE_PC;
             }
@@ -2573,11 +2572,11 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_Cp_N:						// 0xfe
-			Z80__CP__N(*(instruction + 1));
+			Z80_CP_N(*(instruction + 1));
 			break;
 
 		case Opcodes::Z80_Plain_Rst_38:					// 0xff
-			Z80__RST__N(0x38);
+			Z80_RST_N(0x38);
 			Z80_DONT_UPDATE_PC;
 			break;
 
@@ -2597,1030 +2596,1030 @@ Z80::InstructionCost Z80::Z80::executeCbInstruction(const UnsignedByte * instruc
 {
 	switch(*instruction) {
 		case Opcodes::Z80_Cb_Rlc_B:		// 0xcb 0x00
-			Z80__RLC__REG8(m_registers.b);
+			Z80_RLC_Reg8(m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Rlc_C:		// 0xcb 0x01
-			Z80__RLC__REG8(m_registers.c);
+			Z80_RLC_Reg8(m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Rlc_D:		// 0xcb 0x02
-			Z80__RLC__REG8(m_registers.d);
+			Z80_RLC_Reg8(m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Rlc_E:		// 0xcb 0x03
-			Z80__RLC__REG8(m_registers.e);
+			Z80_RLC_Reg8(m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Rlc_H:		// 0xcb 0x04
-			Z80__RLC__REG8(m_registers.h);
+			Z80_RLC_Reg8(m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Rlc_L:		// 0xcb 0x05
-			Z80__RLC__REG8(m_registers.l);
+			Z80_RLC_Reg8(m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Rlc_IndirectHl:		// 0xcb 0x06
-			Z80__RLC_Indirect_REG16(m_registers.hl);
+			Z80_RLC_IndirectReg16(m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Rlc_A:		// 0xcb 0x07
-			Z80__RLC__REG8(m_registers.a);
+			Z80_RLC_Reg8(m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Rrc_B:		// 0xcb 0x08
-			Z80__RRC__REG8(m_registers.b);
+			Z80_RRC_Reg8(m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Rrc_C:		// 0xcb 0x09
-			Z80__RRC__REG8(m_registers.c);
+			Z80_RRC_Reg8(m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Rrc_D:		// 0xcb 0x0a
-			Z80__RRC__REG8(m_registers.d);
+			Z80_RRC_Reg8(m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Rrc_E:		// 0xcb 0x0b
-			Z80__RRC__REG8(m_registers.e);
+			Z80_RRC_Reg8(m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Rrc_H:		// 0xcb 0x0c
-			Z80__RRC__REG8(m_registers.h);
+			Z80_RRC_Reg8(m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Rrc_L:		// 0xcb 0x0d
-			Z80__RRC__REG8(m_registers.l);
+			Z80_RRC_Reg8(m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Rrc_IndirectHl:		// 0xcb 0x0e
-			Z80__RRC_Indirect_REG16(m_registers.hl);
+			Z80_RRC_IndirectReg16(m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Rrc_A:		// 0xcb 0x0f
-			Z80__RRC__REG8(m_registers.a);
+			Z80_RRC_Reg8(m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Rl_B:		// 0xcb 0x10
-			Z80__RL__REG8(m_registers.b);
+			Z80_RL_Reg8(m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Rl_C:		// 0xcb 0x11
-			Z80__RL__REG8(m_registers.c);
+			Z80_RL_Reg8(m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Rl_D:		// 0xcb 0x12
-			Z80__RL__REG8(m_registers.d);
+			Z80_RL_Reg8(m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Rl_E:		// 0xcb 0x13
-			Z80__RL__REG8(m_registers.e);
+			Z80_RL_Reg8(m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Rl_H:		// 0xcb 0x14
-			Z80__RL__REG8(m_registers.h);
+			Z80_RL_Reg8(m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Rl_L:		// 0xcb 0x15
-			Z80__RL__REG8(m_registers.l);
+			Z80_RL_Reg8(m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Rl_IndirectHl:		// 0xcb 0x16
-			Z80__RL_Indirect_REG16(m_registers.hl);
+			Z80_RL_IndirectReg16(m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Rl_A:		// 0xcb 0x17
-			Z80__RL__REG8(m_registers.a);
+			Z80_RL_Reg8(m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Rr_B:		// 0xcb 0x18
-			Z80__RR__REG8(m_registers.b);
+			Z80_RR_Reg8(m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Rr_C:		// 0xcb 0x19
-			Z80__RR__REG8(m_registers.c);
+			Z80_RR_Reg8(m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Rr_D:		// 0xcb 0x1a
-			Z80__RR__REG8(m_registers.d);
+			Z80_RR_Reg8(m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Rr_E:		// 0xcb 0x1b
-			Z80__RR__REG8(m_registers.e);
+			Z80_RR_Reg8(m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Rr_H:		// 0xcb 0x1c
-			Z80__RR__REG8(m_registers.h);
+			Z80_RR_Reg8(m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Rr_L:		// 0xcb 0x1d
-			Z80__RR__REG8(m_registers.l);
+			Z80_RR_Reg8(m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Rr_IndirectHl:		// 0xcb 0x1e
-			Z80__RR_Indirect_REG16(m_registers.hl);
+			Z80_RR_IndirectReg16(m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Rr_A:		// 0xcb 0x1f
-			Z80__RR__REG8(m_registers.a);
+			Z80_RR_Reg8(m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Sla_B:		// 0xcb 0x21
-			Z80__SLA__REG8(m_registers.b);
+			Z80_SLA_Reg8(m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Sla_C:		// 0xcb 0x22
-			Z80__SLA__REG8(m_registers.c);
+			Z80_SLA_Reg8(m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Sla_D:		// 0xcb 0x23
-			Z80__SLA__REG8(m_registers.d);
+			Z80_SLA_Reg8(m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Sla_E:		// 0xcb 0x24
-			Z80__SLA__REG8(m_registers.e);
+			Z80_SLA_Reg8(m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Sla_H:		// 0xcb 0x25
-			Z80__SLA__REG8(m_registers.h);
+			Z80_SLA_Reg8(m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Sla_L:		// 0xcb 0x26
-			Z80__SLA__REG8(m_registers.l);
+			Z80_SLA_Reg8(m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Sla_IndirectHl:		// 0xcb 0x26
-			Z80__SLA_Indirect_REG16(m_registers.hl);
+			Z80_SLA_IndirectReg16(m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Sla_A:		// 0xcb 0x27
-			Z80__SLA__REG8(m_registers.a);
+			Z80_SLA_Reg8(m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Sra_B:		// 0xcb 0x28
-			Z80__SRA__REG8(m_registers.b);
+			Z80_SRA_Reg8(m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Sra_C:		// 0xcb 0x29
-			Z80__SRA__REG8(m_registers.c);
+			Z80_SRA_Reg8(m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Sra_D:		// 0xcb 0x2a
-			Z80__SRA__REG8(m_registers.d);
+			Z80_SRA_Reg8(m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Sra_E:		// 0xcb 0x2b
-			Z80__SRA__REG8(m_registers.e);
+			Z80_SRA_Reg8(m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Sra_H:		// 0xcb 0x2c
-			Z80__SRA__REG8(m_registers.h);
+			Z80_SRA_Reg8(m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Sra_L:		// 0xcb 0x2d
-			Z80__SRA__REG8(m_registers.l);
+			Z80_SRA_Reg8(m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Sra_IndirectHl:		// 0xcb 0x2e
-			Z80__SRA_Indirect_REG16(m_registers.hl);
+			Z80_SRA_IndirectReg16(m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Sra_A:		// 0xcb 0x2f
-			Z80__SRA__REG8(m_registers.a);
+			Z80_SRA_Reg8(m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Sll_B:		// 0xcb 0x30
-			Z80__SLL__REG8(m_registers.b);
+			Z80_SLL_Reg8(m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Sll_C:		// 0xcb 0x31
-			Z80__SLL__REG8(m_registers.c);
+			Z80_SLL_Reg8(m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Sll_D:		// 0xcb 0x32
-			Z80__SLL__REG8(m_registers.d);
+			Z80_SLL_Reg8(m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Sll_E:		// 0xcb 0x33
-			Z80__SLL__REG8(m_registers.e);
+			Z80_SLL_Reg8(m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Sll_H:		// 0xcb 0x34
-			Z80__SLL__REG8(m_registers.h);
+			Z80_SLL_Reg8(m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Sll_L:		// 0xcb 0x35
-			Z80__SLL__REG8(m_registers.l);
+			Z80_SLL_Reg8(m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Sll_IndirectHl:		// 0xcb 0x36
-			Z80__SLL_Indirect_REG16(m_registers.hl);
+			Z80_SLL_IndirectReg16(m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Sll_A:		// 0xcb 0x37
-			Z80__SLL__REG8(m_registers.a);
+			Z80_SLL_Reg8(m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Srl_B:		// 0xcb 0x38
-			Z80__SRL__REG8(m_registers.b);
+			Z80_SRL_Reg8(m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Srl_C:		// 0xcb 0x39
-			Z80__SRL__REG8(m_registers.c);
+			Z80_SRL_Reg8(m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Srl_D:		// 0xcb 0x3a
-			Z80__SRL__REG8(m_registers.d);
+			Z80_SRL_Reg8(m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Srl_E:		// 0xcb 0x3b
-			Z80__SRL__REG8(m_registers.e);
+			Z80_SRL_Reg8(m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Srl_H:		// 0xcb 0x3c
-			Z80__SRL__REG8(m_registers.h);
+			Z80_SRL_Reg8(m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Srl_L:		// 0xcb 0x3d
-			Z80__SRL__REG8(m_registers.l);
+			Z80_SRL_Reg8(m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Srl_IndirectHl:		// 0xcb 0x3e
-			Z80__SRL_Indirect_REG16(m_registers.hl);
+			Z80_SRL_IndirectReg16(m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Srl_A:		// 0xcb 0x3f
-			Z80__SRL__REG8(m_registers.a);
+			Z80_SRL_Reg8(m_registers.a);
 			break;
 
 		/* BIT opcodes */
 		case Opcodes::Z80_Cb_Bit_0_B:		// 0xcb 0x40
-			Z80__BIT__N__REG8(0, m_registers.b);
+			Z80_BIT_N_Reg8(0, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_0_C:		// 0xcb 0x41
-			Z80__BIT__N__REG8(0, m_registers.c);
+			Z80_BIT_N_Reg8(0, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_0_D:		// 0xcb 0x42
-			Z80__BIT__N__REG8(0, m_registers.d);
+			Z80_BIT_N_Reg8(0, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_0_E:		// 0xcb 0x43
-			Z80__BIT__N__REG8(0, m_registers.e);
+			Z80_BIT_N_Reg8(0, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_0_H:		// 0xcb 0x44
-			Z80__BIT__N__REG8(0, m_registers.h);
+			Z80_BIT_N_Reg8(0, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_0_L:		// 0xcb 0x45
-			Z80__BIT__N__REG8(0, m_registers.l);
+			Z80_BIT_N_Reg8(0, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_0_IndirectHl:		// 0xcb 0x46
-            Z80__BIT__N_Indirect_REG16(0, m_registers.hl);
+            Z80_BIT_N_IndirectReg16(0, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_0_A:		// 0xcb 0x47
-			Z80__BIT__N__REG8(0, m_registers.a);
+			Z80_BIT_N_Reg8(0, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_1_B:		// 0xcb 0x48
-			Z80__BIT__N__REG8(1, m_registers.b);
+			Z80_BIT_N_Reg8(1, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_1_C:		// 0xcb 0x49
-			Z80__BIT__N__REG8(1, m_registers.c);
+			Z80_BIT_N_Reg8(1, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_1_D:		// 0xcb 0x4a
-			Z80__BIT__N__REG8(1, m_registers.d);
+			Z80_BIT_N_Reg8(1, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_1_E:		// 0xcb 0x4b
-			Z80__BIT__N__REG8(1, m_registers.e);
+			Z80_BIT_N_Reg8(1, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_1_H:		// 0xcb 0x4c
-			Z80__BIT__N__REG8(1, m_registers.h);
+			Z80_BIT_N_Reg8(1, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_1_L:		// 0xcb 0x4d
-			Z80__BIT__N__REG8(1, m_registers.l);
+			Z80_BIT_N_Reg8(1, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_1_IndirectHl:		// 0xcb 0x4e
-			Z80__BIT__N_Indirect_REG16(1, m_registers.hl);
+			Z80_BIT_N_IndirectReg16(1, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_1_A:		// 0xcb 0x4f
-			Z80__BIT__N__REG8(1, m_registers.a);
+			Z80_BIT_N_Reg8(1, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_2_B:		// 0xcb 0x50
-			Z80__BIT__N__REG8(2, m_registers.b);
+			Z80_BIT_N_Reg8(2, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_2_C:		// 0xcb 0x51
-			Z80__BIT__N__REG8(2, m_registers.c);
+			Z80_BIT_N_Reg8(2, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_2_D:		// 0xcb 0x52
-			Z80__BIT__N__REG8(2, m_registers.d);
+			Z80_BIT_N_Reg8(2, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_2_E:		// 0xcb 0x53
-			Z80__BIT__N__REG8(2, m_registers.e);
+			Z80_BIT_N_Reg8(2, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_2_H:		// 0xcb 0x54
-			Z80__BIT__N__REG8(2, m_registers.h);
+			Z80_BIT_N_Reg8(2, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_2_L:		// 0xcb 0x55
-			Z80__BIT__N__REG8(2, m_registers.l);
+			Z80_BIT_N_Reg8(2, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_2_IndirectHl:		// 0xcb 0x56
-			Z80__BIT__N_Indirect_REG16(2, m_registers.hl);
+			Z80_BIT_N_IndirectReg16(2, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_2_A:		// 0xcb 0x57
-			Z80__BIT__N__REG8(2, m_registers.a);
+			Z80_BIT_N_Reg8(2, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_3_B:		// 0xcb 0x58
-			Z80__BIT__N__REG8(3, m_registers.b);
+			Z80_BIT_N_Reg8(3, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_3_C:		// 0xcb 0x59
-			Z80__BIT__N__REG8(3, m_registers.c);
+			Z80_BIT_N_Reg8(3, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_3_D:		// 0xcb 0x5a
-			Z80__BIT__N__REG8(3, m_registers.d);
+			Z80_BIT_N_Reg8(3, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_3_E:		// 0xcb 0x5b
-			Z80__BIT__N__REG8(3, m_registers.e);
+			Z80_BIT_N_Reg8(3, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_3_H:		// 0xcb 0x5c
-			Z80__BIT__N__REG8(3, m_registers.h);
+			Z80_BIT_N_Reg8(3, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_3_L:		// 0xcb 0x5d
-			Z80__BIT__N__REG8(3, m_registers.l);
+			Z80_BIT_N_Reg8(3, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_3_IndirectHl:		// 0xcb 0x5e
-			Z80__BIT__N_Indirect_REG16(3, m_registers.hl);
+			Z80_BIT_N_IndirectReg16(3, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_3_A:		// 0xcb 0x5f
-			Z80__BIT__N__REG8(3, m_registers.a);
+			Z80_BIT_N_Reg8(3, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_4_B:		// 0xcb 0x60
-			Z80__BIT__N__REG8(4, m_registers.b);
+			Z80_BIT_N_Reg8(4, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_4_C:		// 0xcb 0x61
-			Z80__BIT__N__REG8(4, m_registers.c);
+			Z80_BIT_N_Reg8(4, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_4_D:		// 0xcb 0x62
-			Z80__BIT__N__REG8(4, m_registers.d);
+			Z80_BIT_N_Reg8(4, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_4_E:		// 0xcb 0x63
-			Z80__BIT__N__REG8(4, m_registers.e);
+			Z80_BIT_N_Reg8(4, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_4_H:		// 0xcb 0x64
-			Z80__BIT__N__REG8(4, m_registers.h);
+			Z80_BIT_N_Reg8(4, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_4_L:		// 0xcb 0x65
-			Z80__BIT__N__REG8(4, m_registers.l);
+			Z80_BIT_N_Reg8(4, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_4_IndirectHl:		// 0xcb 0x66
-			Z80__BIT__N_Indirect_REG16(4, m_registers.hl);
+			Z80_BIT_N_IndirectReg16(4, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_4_A:		// 0xcb 0x67
-			Z80__BIT__N__REG8(4, m_registers.a);
+			Z80_BIT_N_Reg8(4, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_5_B:		// 0xcb 0x68
-			Z80__BIT__N__REG8(5, m_registers.b);
+			Z80_BIT_N_Reg8(5, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_5_C:		// 0xcb 0x69
-			Z80__BIT__N__REG8(5, m_registers.c);
+			Z80_BIT_N_Reg8(5, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_5_D:		// 0xcb 0x6a
-			Z80__BIT__N__REG8(5, m_registers.d);
+			Z80_BIT_N_Reg8(5, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_5_E:		// 0xcb 0x6b
-			Z80__BIT__N__REG8(5, m_registers.e);
+			Z80_BIT_N_Reg8(5, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_5_H:		// 0xcb 0x6c
-			Z80__BIT__N__REG8(5, m_registers.h);
+			Z80_BIT_N_Reg8(5, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_5_L:		// 0xcb 0x6d
-			Z80__BIT__N__REG8(5, m_registers.l);
+			Z80_BIT_N_Reg8(5, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_5_IndirectHl:		// 0xcb 0x6e
-			Z80__BIT__N_Indirect_REG16(5, m_registers.hl);
+			Z80_BIT_N_IndirectReg16(5, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_5_A:		// 0xcb 0x6f
-			Z80__BIT__N__REG8(5, m_registers.a);
+			Z80_BIT_N_Reg8(5, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_6_B:		// 0xcb 0x70
-			Z80__BIT__N__REG8(6, m_registers.b);
+			Z80_BIT_N_Reg8(6, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_6_C:		// 0xcb 0x71
-			Z80__BIT__N__REG8(6, m_registers.c);
+			Z80_BIT_N_Reg8(6, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_6_D:		// 0xcb 0x72
-			Z80__BIT__N__REG8(6, m_registers.d);
+			Z80_BIT_N_Reg8(6, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_6_E:		// 0xcb 0x73
-			Z80__BIT__N__REG8(6, m_registers.e);
+			Z80_BIT_N_Reg8(6, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_6_H:		// 0xcb 0x74
-			Z80__BIT__N__REG8(6, m_registers.h);
+			Z80_BIT_N_Reg8(6, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_6_L:		// 0xcb 0x75
-			Z80__BIT__N__REG8(6, m_registers.l);
+			Z80_BIT_N_Reg8(6, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_6_IndirectHl:		// 0xcb 0x76
-			Z80__BIT__N_Indirect_REG16(6, m_registers.hl);
+			Z80_BIT_N_IndirectReg16(6, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_6_A:		// 0xcb 0x77
-			Z80__BIT__N__REG8(6, m_registers.a);
+			Z80_BIT_N_Reg8(6, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_7_B:		// 0xcb 0x78
-			Z80__BIT__N__REG8(7, m_registers.b);
+			Z80_BIT_N_Reg8(7, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_7_C:		// 0xcb 0x79
-			Z80__BIT__N__REG8(7, m_registers.c);
+			Z80_BIT_N_Reg8(7, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_7_D:		// 0xcb 0x7a
-			Z80__BIT__N__REG8(7, m_registers.d);
+			Z80_BIT_N_Reg8(7, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_7_E:		// 0xcb 0x7b
-			Z80__BIT__N__REG8(7, m_registers.e);
+			Z80_BIT_N_Reg8(7, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_7_H:		// 0xcb 0x7c
-			Z80__BIT__N__REG8(7, m_registers.h);
+			Z80_BIT_N_Reg8(7, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_7_L:		// 0xcb 0x7d
-			Z80__BIT__N__REG8(7, m_registers.l);
+			Z80_BIT_N_Reg8(7, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_7_IndirectHl:		// 0xcb 0x7e
-			Z80__BIT__N_Indirect_REG16(7, m_registers.hl);
+			Z80_BIT_N_IndirectReg16(7, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Bit_7_A:		// 0xcb 0x7f
-			Z80__BIT__N__REG8(7, m_registers.a);
+			Z80_BIT_N_Reg8(7, m_registers.a);
 			break;
 
 		/* RES opcodes */
 		case Opcodes::Z80_Cb_Res_0_B:		// 0xcb 0x80
-			Z80__RES__N__REG8(0, m_registers.b);
+			Z80_RES_N_Reg8(0, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Res_0_C:		// 0xcb 0x81
-			Z80__RES__N__REG8(0, m_registers.c);
+			Z80_RES_N_Reg8(0, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Res_0_D:		// 0xcb 0x82
-			Z80__RES__N__REG8(0, m_registers.d);
+			Z80_RES_N_Reg8(0, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Res_0_E:		// 0xcb 0x83
-			Z80__RES__N__REG8(0, m_registers.e);
+			Z80_RES_N_Reg8(0, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Res_0_H:		// 0xcb 0x84
-			Z80__RES__N__REG8(0, m_registers.h);
+			Z80_RES_N_Reg8(0, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Res_0_L:		// 0xcb 0x85
-			Z80__RES__N__REG8(0, m_registers.l);
+			Z80_RES_N_Reg8(0, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Res_0_IndirectHl:		// 0xcb 0x86
-			Z80__RES__N_Indirect_REG16(0, m_registers.hl);
+			Z80_RES_N_IndirectReg16(0, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Res_0_A:		// 0xcb 0x87
-			Z80__RES__N__REG8(0, m_registers.a);
+			Z80_RES_N_Reg8(0, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Res_1_B:		// 0xcb 0x88
-			Z80__RES__N__REG8(1, m_registers.b);
+			Z80_RES_N_Reg8(1, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Res_1_C:		// 0xcb 0x89
-			Z80__RES__N__REG8(1, m_registers.c);
+			Z80_RES_N_Reg8(1, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Res_1_D:		// 0xcb 0x8a
-			Z80__RES__N__REG8(1, m_registers.d);
+			Z80_RES_N_Reg8(1, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Res_1_E:		// 0xcb 0x8b
-			Z80__RES__N__REG8(1, m_registers.e);
+			Z80_RES_N_Reg8(1, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Res_1_H:		// 0xcb 0x8c
-			Z80__RES__N__REG8(1, m_registers.h);
+			Z80_RES_N_Reg8(1, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Res_1_L:		// 0xcb 0x8d
-			Z80__RES__N__REG8(1, m_registers.l);
+			Z80_RES_N_Reg8(1, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Res_1_IndirectHl:		// 0xcb 0x8e
-			Z80__RES__N_Indirect_REG16(1, m_registers.hl);
+			Z80_RES_N_IndirectReg16(1, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Res_1_A:		// 0xcb 0x8f
-			Z80__RES__N__REG8(1, m_registers.a);
+			Z80_RES_N_Reg8(1, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Res_2_B:		// 0xcb 0x90
-			Z80__RES__N__REG8(2, m_registers.b);
+			Z80_RES_N_Reg8(2, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Res_2_C:		// 0xcb 0x91
-			Z80__RES__N__REG8(2, m_registers.c);
+			Z80_RES_N_Reg8(2, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Res_2_D:		// 0xcb 0x92
-			Z80__RES__N__REG8(2, m_registers.d);
+			Z80_RES_N_Reg8(2, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Res_2_E:		// 0xcb 0x93
-			Z80__RES__N__REG8(2, m_registers.e);
+			Z80_RES_N_Reg8(2, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Res_2_H:		// 0xcb 0x94
-			Z80__RES__N__REG8(2, m_registers.h);
+			Z80_RES_N_Reg8(2, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Res_2_L:		// 0xcb 0x95
-			Z80__RES__N__REG8(2, m_registers.l);
+			Z80_RES_N_Reg8(2, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Res_2_IndirectHl:		// 0xcb 0x96
-			Z80__RES__N_Indirect_REG16(2, m_registers.hl);
+			Z80_RES_N_IndirectReg16(2, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Res_2_A:		// 0xcb 0x97
-			Z80__RES__N__REG8(2, m_registers.a);
+			Z80_RES_N_Reg8(2, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Res_3_B:		// 0xcb 0x98
-			Z80__RES__N__REG8(3, m_registers.b);
+			Z80_RES_N_Reg8(3, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Res_3_C:		// 0xcb 0x99
-			Z80__RES__N__REG8(3, m_registers.c);
+			Z80_RES_N_Reg8(3, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Res_3_D:		// 0xcb 0x9a
-			Z80__RES__N__REG8(3, m_registers.d);
+			Z80_RES_N_Reg8(3, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Res_3_E:		// 0xcb 0x9b
-			Z80__RES__N__REG8(3, m_registers.e);
+			Z80_RES_N_Reg8(3, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Res_3_H:		// 0xcb 0x9c
-			Z80__RES__N__REG8(3, m_registers.h);
+			Z80_RES_N_Reg8(3, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Res_3_L:		// 0xcb 0x9d
-			Z80__RES__N__REG8(3, m_registers.l);
+			Z80_RES_N_Reg8(3, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Res_3_IndirectHl:		// 0xcb 0x9e
-			Z80__RES__N_Indirect_REG16(3, m_registers.hl);
+			Z80_RES_N_IndirectReg16(3, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Res_3_A:		// 0xcb 0x9f
-			Z80__RES__N__REG8(3, m_registers.a);
+			Z80_RES_N_Reg8(3, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Res_4_B:		// 0xcb 0xa0
-			Z80__RES__N__REG8(4, m_registers.b);
+			Z80_RES_N_Reg8(4, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Res_4_C:		// 0xcb 0xa1
-			Z80__RES__N__REG8(4, m_registers.c);
+			Z80_RES_N_Reg8(4, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Res_4_D:		// 0xcb 0xa2
-			Z80__RES__N__REG8(4, m_registers.d);
+			Z80_RES_N_Reg8(4, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Res_4_E:		// 0xcb 0xa3
-			Z80__RES__N__REG8(4, m_registers.e);
+			Z80_RES_N_Reg8(4, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Res_4_H:		// 0xcb 0xa4
-			Z80__RES__N__REG8(4, m_registers.h);
+			Z80_RES_N_Reg8(4, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Res_4_L:		// 0xcb 0xa5
-			Z80__RES__N__REG8(4, m_registers.l);
+			Z80_RES_N_Reg8(4, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Res_4_IndirectHl:		// 0xcb 0xa6
-			Z80__RES__N_Indirect_REG16(4, m_registers.hl);
+			Z80_RES_N_IndirectReg16(4, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Res_4_A:		// 0xcb 0xa7
-			Z80__RES__N__REG8(4, m_registers.a);
+			Z80_RES_N_Reg8(4, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Res_5_B:		// 0xcb 0xa8
-			Z80__RES__N__REG8(5, m_registers.b);
+			Z80_RES_N_Reg8(5, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Res_5_C:		// 0xcb 0xa9
-			Z80__RES__N__REG8(5, m_registers.c);
+			Z80_RES_N_Reg8(5, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Res_5_D:		// 0xcb 0xaa
-			Z80__RES__N__REG8(5, m_registers.d);
+			Z80_RES_N_Reg8(5, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Res_5_E:		// 0xcb 0xab
-			Z80__RES__N__REG8(5, m_registers.e);
+			Z80_RES_N_Reg8(5, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Res_5_H:		// 0xcb 0xac
-			Z80__RES__N__REG8(5, m_registers.h);
+			Z80_RES_N_Reg8(5, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Res_5_L:		// 0xcb 0xad
-			Z80__RES__N__REG8(5, m_registers.l);
+			Z80_RES_N_Reg8(5, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Res_5_IndirectHl:		// 0xcb 0xae
-			Z80__RES__N_Indirect_REG16(5, m_registers.hl);
+			Z80_RES_N_IndirectReg16(5, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Res_5_A:		// 0xcb 0xaf
-			Z80__RES__N__REG8(5, m_registers.a);
+			Z80_RES_N_Reg8(5, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Res_6_B:		// 0xcb 0xb0
-			Z80__RES__N__REG8(6, m_registers.b);
+			Z80_RES_N_Reg8(6, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Res_6_C:		// 0xcb 0xb1
-			Z80__RES__N__REG8(6, m_registers.c);
+			Z80_RES_N_Reg8(6, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Res_6_D:		// 0xcb 0xb2
-			Z80__RES__N__REG8(6, m_registers.d);
+			Z80_RES_N_Reg8(6, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Res_6_E:		// 0xcb 0xb3
-			Z80__RES__N__REG8(6, m_registers.e);
+			Z80_RES_N_Reg8(6, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Res_6_H:		// 0xcb 0xb4
-			Z80__RES__N__REG8(6, m_registers.h);
+			Z80_RES_N_Reg8(6, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Res_6_L:		// 0xcb 0xb5
-			Z80__RES__N__REG8(6, m_registers.l);
+			Z80_RES_N_Reg8(6, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Res_6_IndirectHl:		// 0xcb 0xb6
-			Z80__RES__N_Indirect_REG16(6, m_registers.hl);
+			Z80_RES_N_IndirectReg16(6, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Res_6_A:		// 0xcb 0xb7
-			Z80__RES__N__REG8(6, m_registers.a);
+			Z80_RES_N_Reg8(6, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Res_7_B:		// 0xcb 0xb8
-			Z80__RES__N__REG8(7, m_registers.b);
+			Z80_RES_N_Reg8(7, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Res_7_C:		// 0xcb 0xb9
-			Z80__RES__N__REG8(7, m_registers.c);
+			Z80_RES_N_Reg8(7, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Res_7_D:		// 0xcb 0xba
-			Z80__RES__N__REG8(7, m_registers.d);
+			Z80_RES_N_Reg8(7, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Res_7_E:		// 0xcb 0xbb
-			Z80__RES__N__REG8(7, m_registers.e);
+			Z80_RES_N_Reg8(7, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Res_7_H:		// 0xcb 0xbc
-			Z80__RES__N__REG8(7, m_registers.h);
+			Z80_RES_N_Reg8(7, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Res_7_L:		// 0xcb 0xbd
-			Z80__RES__N__REG8(7, m_registers.l);
+			Z80_RES_N_Reg8(7, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Res_7_IndirectHl:		// 0xcb 0xbe
-			Z80__RES__N_Indirect_REG16(7, m_registers.hl);
+			Z80_RES_N_IndirectReg16(7, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Res_7_A:		// 0xcb 0xbf
-			Z80__RES__N__REG8(7, m_registers.a);
+			Z80_RES_N_Reg8(7, m_registers.a);
 			break;
 
 		/* SET opcodes */
 		case Opcodes::Z80_Cb_Set_0_B:		// 0xcb 0xc0
-			Z80__SET__N__REG8(0, m_registers.b);
+			Z80_SET_N_Reg8(0, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Set_0_C:		// 0xcb 0xc1
-			Z80__SET__N__REG8(0, m_registers.c);
+			Z80_SET_N_Reg8(0, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Set_0_D:		// 0xcb 0xc2
-			Z80__SET__N__REG8(0, m_registers.d);
+			Z80_SET_N_Reg8(0, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Set_0_E:		// 0xcb 0xc3
-			Z80__SET__N__REG8(0, m_registers.e);
+			Z80_SET_N_Reg8(0, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Set_0_H:		// 0xcb 0xc4
-			Z80__SET__N__REG8(0, m_registers.h);
+			Z80_SET_N_Reg8(0, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Set_0_L:		// 0xcb 0xc5
-			Z80__SET__N__REG8(0, m_registers.l);
+			Z80_SET_N_Reg8(0, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Set_0_IndirectHl:		// 0xcb 0xc6
-			Z80__SET__N_Indirect_REG16(0, m_registers.hl);
+			Z80_SET_N_IndirectReg16(0, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Set_0_A:		// 0xcb 0xc7
-			Z80__SET__N__REG8(0, m_registers.a);
+			Z80_SET_N_Reg8(0, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Set_1_B:		// 0xcb 0xc8
-			Z80__SET__N__REG8(1, m_registers.b);
+			Z80_SET_N_Reg8(1, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Set_1_C:		// 0xcb 0xc9
-			Z80__SET__N__REG8(1, m_registers.c);
+			Z80_SET_N_Reg8(1, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Set_1_D:		// 0xcb 0xca
-			Z80__SET__N__REG8(1, m_registers.d);
+			Z80_SET_N_Reg8(1, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Set_1_E:		// 0xcb 0xcb
-			Z80__SET__N__REG8(1, m_registers.e);
+			Z80_SET_N_Reg8(1, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Set_1_H:		// 0xcb 0xcc
-			Z80__SET__N__REG8(1, m_registers.h);
+			Z80_SET_N_Reg8(1, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Set_1_L:		// 0xcb 0xcd
-			Z80__SET__N__REG8(1, m_registers.l);
+			Z80_SET_N_Reg8(1, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Set_1_IndirectHl:		// 0xcb 0xce
-			Z80__SET__N_Indirect_REG16(1, m_registers.hl);
+			Z80_SET_N_IndirectReg16(1, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Set_1_A:		// 0xcb 0xcf
-			Z80__SET__N__REG8(1, m_registers.a);
+			Z80_SET_N_Reg8(1, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Set_2_B:		// 0xcb 0xd0
-			Z80__SET__N__REG8(2, m_registers.b);
+			Z80_SET_N_Reg8(2, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Set_2_C:		// 0xcb 0xd1
-			Z80__SET__N__REG8(2, m_registers.c);
+			Z80_SET_N_Reg8(2, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Set_2_D:		// 0xcb 0xd2
-			Z80__SET__N__REG8(2, m_registers.d);
+			Z80_SET_N_Reg8(2, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Set_2_E:		// 0xcb 0xd3
-			Z80__SET__N__REG8(2, m_registers.e);
+			Z80_SET_N_Reg8(2, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Set_2_H:		// 0xcb 0xd4
-			Z80__SET__N__REG8(2, m_registers.h);
+			Z80_SET_N_Reg8(2, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Set_2_L:		// 0xcb 0xd5
-			Z80__SET__N__REG8(2, m_registers.l);
+			Z80_SET_N_Reg8(2, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Set_2_IndirectHl:		// 0xcb 0xd6
-			Z80__SET__N_Indirect_REG16(2, m_registers.hl);
+			Z80_SET_N_IndirectReg16(2, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Set_2_A:		// 0xcb 0xd7
-			Z80__SET__N__REG8(2, m_registers.a);
+			Z80_SET_N_Reg8(2, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Set_3_B:		// 0xcb 0xd8
-			Z80__SET__N__REG8(3, m_registers.b);
+			Z80_SET_N_Reg8(3, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Set_3_C:		// 0xcb 0xd9
-			Z80__SET__N__REG8(3, m_registers.c);
+			Z80_SET_N_Reg8(3, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Set_3_D:		// 0xcb 0xda
-			Z80__SET__N__REG8(3, m_registers.d);
+			Z80_SET_N_Reg8(3, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Set_3_E:		// 0xcb 0xdb
-			Z80__SET__N__REG8(3, m_registers.e);
+			Z80_SET_N_Reg8(3, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Set_3_H:		// 0xcb 0xdc
-			Z80__SET__N__REG8(3, m_registers.h);
+			Z80_SET_N_Reg8(3, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Set_3_L:		// 0xcb 0xdd
-			Z80__SET__N__REG8(3, m_registers.l);
+			Z80_SET_N_Reg8(3, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Set_3_IndirectHl:		// 0xcb 0xde
-			Z80__SET__N_Indirect_REG16(3, m_registers.hl);
+			Z80_SET_N_IndirectReg16(3, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Set_3_A:		// 0xcb 0xdf
-			Z80__SET__N__REG8(3, m_registers.a);
+			Z80_SET_N_Reg8(3, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Set_4_B:		// 0xcb 0xe0
-			Z80__SET__N__REG8(4, m_registers.b);
+			Z80_SET_N_Reg8(4, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Set_4_C:		// 0xcb 0xe1
-			Z80__SET__N__REG8(4, m_registers.c);
+			Z80_SET_N_Reg8(4, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Set_4_D:		// 0xcb 0xe2
-			Z80__SET__N__REG8(4, m_registers.d);
+			Z80_SET_N_Reg8(4, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Set_4_E:		// 0xcb 0xe3
-			Z80__SET__N__REG8(4, m_registers.e);
+			Z80_SET_N_Reg8(4, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Set_4_H:		// 0xcb 0xe4
-			Z80__SET__N__REG8(4, m_registers.h);
+			Z80_SET_N_Reg8(4, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Set_4_L:		// 0xcb 0xe5
-			Z80__SET__N__REG8(4, m_registers.l);
+			Z80_SET_N_Reg8(4, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Set_4_IndirectHl:		// 0xcb 0xe6
-			Z80__SET__N_Indirect_REG16(4, m_registers.hl);
+			Z80_SET_N_IndirectReg16(4, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Set_4_A:		// 0xcb 0xe7
-			Z80__SET__N__REG8(4, m_registers.a);
+			Z80_SET_N_Reg8(4, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Set_5_B:		// 0xcb 0xe8
-			Z80__SET__N__REG8(5, m_registers.b);
+			Z80_SET_N_Reg8(5, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Set_5_C:		// 0xcb 0xe9
-			Z80__SET__N__REG8(5, m_registers.c);
+			Z80_SET_N_Reg8(5, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Set_5_D:		// 0xcb 0xea
-			Z80__SET__N__REG8(5, m_registers.d);
+			Z80_SET_N_Reg8(5, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Set_5_E:		// 0xcb 0xeb
-			Z80__SET__N__REG8(5, m_registers.e);
+			Z80_SET_N_Reg8(5, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Set_5_H:		// 0xcb 0xec
-			Z80__SET__N__REG8(5, m_registers.h);
+			Z80_SET_N_Reg8(5, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Set_5_L:		// 0xcb 0xed
-			Z80__SET__N__REG8(5, m_registers.l);
+			Z80_SET_N_Reg8(5, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Set_5_IndirectHl:		// 0xcb 0xee
-			Z80__SET__N_Indirect_REG16(5, m_registers.hl);
+			Z80_SET_N_IndirectReg16(5, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Set_5_A:		// 0xcb 0xef
-			Z80__SET__N__REG8(5, m_registers.a);
+			Z80_SET_N_Reg8(5, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Set_6_B:		// 0xcb 0xf0
-			Z80__SET__N__REG8(6, m_registers.b);
+			Z80_SET_N_Reg8(6, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Set_6_C:		// 0xcb 0xf1
-			Z80__SET__N__REG8(6, m_registers.c);
+			Z80_SET_N_Reg8(6, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Set_6_D:		// 0xcb 0xf2
-			Z80__SET__N__REG8(6, m_registers.d);
+			Z80_SET_N_Reg8(6, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Set_6_E:		// 0xcb 0xf3
-			Z80__SET__N__REG8(6, m_registers.e);
+			Z80_SET_N_Reg8(6, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Set_6_H:		// 0xcb 0xf4
-			Z80__SET__N__REG8(6, m_registers.h);
+			Z80_SET_N_Reg8(6, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Set_6_L:		// 0xcb 0xf5
-			Z80__SET__N__REG8(6, m_registers.l);
+			Z80_SET_N_Reg8(6, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Set_6_IndirectHl:		// 0xcb 0xf6
-			Z80__SET__N_Indirect_REG16(6, m_registers.hl);
+			Z80_SET_N_IndirectReg16(6, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Set_6_A:		// 0xcb 0xf7
-			Z80__SET__N__REG8(6, m_registers.a);
+			Z80_SET_N_Reg8(6, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Cb_Set_7_B:		// 0xcb 0xf8
-			Z80__SET__N__REG8(7, m_registers.b);
+			Z80_SET_N_Reg8(7, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Cb_Set_7_C:		// 0xcb 0xf9
-			Z80__SET__N__REG8(7, m_registers.c);
+			Z80_SET_N_Reg8(7, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Cb_Set_7_D:		// 0xcb 0xfa
-			Z80__SET__N__REG8(7, m_registers.d);
+			Z80_SET_N_Reg8(7, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Cb_Set_7_E:		// 0xcb 0xfb
-			Z80__SET__N__REG8(7, m_registers.e);
+			Z80_SET_N_Reg8(7, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Cb_Set_7_H:		// 0xcb 0xfc
-			Z80__SET__N__REG8(7, m_registers.h);
+			Z80_SET_N_Reg8(7, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Cb_Set_7_L:		// 0xcb 0xfd
-			Z80__SET__N__REG8(7, m_registers.l);
+			Z80_SET_N_Reg8(7, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Cb_Set_7_IndirectHl:		// 0xcb 0xfe
-			Z80__SET__N_Indirect_REG16(7, m_registers.hl);
+			Z80_SET_N_IndirectReg16(7, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Cb_Set_7_A:		// 0xcb 0xff
-			Z80__SET__N__REG8(7, m_registers.a);
+			Z80_SET_N_Reg8(7, m_registers.a);
 			break;
 
 		default:
@@ -3706,19 +3705,19 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Opcodes::Z80_Ed_In_B_IndirectC:					// 0xed 0x40
-            Z80__IN__REG8_Indirect_REG8(m_registers.b, m_registers.c);
+            Z80_IN_Reg8_IndirectReg8(m_registers.b, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Ed_Out_IndirectC_B:					// 0xed 0x41
-            Z80__OUT_Indirect_REG8__REG8(m_registers.c, m_registers.b);
+            Z80_OUT_IndirectReg8_Reg8(m_registers.c, m_registers.b);
 			break;
 
 		case Opcodes::Z80_Ed_Sbc_Hl_Bc:					// 0xed 0x42
-            Z80__SBC__REG16__REG16(m_registers.hl, m_registers.bc);
+            Z80_SBC_Reg16_Reg16(m_registers.hl, m_registers.bc);
 			break;
 
 		case Opcodes::Z80_Ed_Ld_IndirectNn_Bc:		// 0xed 0x43
-			Z80__LD_Indirect_NN__REG16(z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)), m_registers.bc);
+			Z80_LD_IndirectNn_Reg16(z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)), m_registers.bc);
 			break;
 
 		case Opcodes::Z80_Ed_Neg:							// 0xed 0x44
@@ -3726,7 +3725,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Opcodes::Z80_Ed_Retn:							// 0xed 0x45
-			Z80__RETN;
+			Z80_RETN;
 			Z80_DONT_UPDATE_PC;
 			break;
 
@@ -3735,23 +3734,23 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
         case Opcodes::Z80_Ed_Ld_I_A:				// 0xed 0x47
-            Z80__LD__REG8__REG8(m_registers.i, m_registers.a);
+            Z80_LD_Reg8_Reg8(m_registers.i, m_registers.a);
             break;
 
 		case Opcodes::Z80_Ed_In_C_IndirectC:        // 0xed 0x48
-            Z80__IN__REG8_Indirect_REG16(m_registers.c, m_registers.bc);
+            Z80_IN_Reg8_IndirectReg16(m_registers.c, m_registers.bc);
 			break;
 
 		case Opcodes::Z80_Ed_Out_IndirectC_C:        // 0xed 0x49
-            Z80__OUT_Indirect_REG8__REG8(m_registers.c, m_registers.c);
+            Z80_OUT_IndirectReg8_Reg8(m_registers.c, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Ed_Adc_Hl_Bc:       // 0xed 0x4a
-			Z80__ADC__REG16__REG16(m_registers.hl, m_registers.bc);
+			Z80_ADC_Reg16_Reg16(m_registers.hl, m_registers.bc);
 			break;
 
 		case Opcodes::Z80_Ed_Ld_Bc_IndirectNn:       // 0xed 0x4b
-			Z80__LD__REG16_Indirect_NN(m_registers.bc, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
+			Z80_LD_Reg16_IndirectNn(m_registers.bc, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_Ed_Neg_0xEd_0x4c:		// 0xed 0x4c
@@ -3759,7 +3758,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Opcodes::Z80_Ed_Reti:					// 0xed 0x4d
-			Z80__RETI;
+			Z80_RETI;
 			Z80_DONT_UPDATE_PC;
 			break;
 
@@ -3770,23 +3769,23 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
         case Opcodes::Z80_Ed_Ld_R_A:				// 0xed 0x4f
-            Z80__LD__REG8__REG8(m_registers.r, m_registers.a);
+            Z80_LD_Reg8_Reg8(m_registers.r, m_registers.a);
             break;
 
 		case Opcodes::Z80_Ed_In_D_IndirectC:					// 0xed 0x50
-            Z80__IN__REG8_Indirect_REG8(m_registers.d, m_registers.c);
+            Z80_IN_Reg8_IndirectReg8(m_registers.d, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Ed_Out_IndirectC_D:					// 0xed 0x52
-            Z80__OUT_Indirect_REG8__REG8(m_registers.c, m_registers.d);
+            Z80_OUT_IndirectReg8_Reg8(m_registers.c, m_registers.d);
 			break;
 
 		case Opcodes::Z80_Ed_Sbc_Hl_De:					// 0xed 0x52
-			Z80__SBC__REG16__REG16(m_registers.hl, m_registers.de);
+			Z80_SBC_Reg16_Reg16(m_registers.hl, m_registers.de);
 			break;
 
 		case Opcodes::Z80_Ed_Ld_IndirectNn_De:	// 0xed 0x53
-			Z80__LD_Indirect_NN__REG16(z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)), m_registers.de);
+			Z80_LD_IndirectNn_Reg16(z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)), m_registers.de);
 			break;
 
 		case Opcodes::Z80_Ed_Neg_0xEd_0x54:		// 0xed 0x54
@@ -3794,7 +3793,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Opcodes::Z80_Ed_Retn_0xEd_0x55:		// 0xed 0x55
-			Z80__RETN;
+			Z80_RETN;
 			Z80_DONT_UPDATE_PC;
 			break;
 
@@ -3803,7 +3802,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Opcodes::Z80_Ed_Ld_A_I:				// 0xed 0x57
-			Z80__LD__REG8__REG8(m_registers.a, m_registers.i);
+			Z80_LD_Reg8_Reg8(m_registers.a, m_registers.i);
 			Z80_FLAGS_S53_UPDATE(m_registers.a);
 			Z80_FLAG_Z_UPDATE(0 == m_registers.a);
 			Z80_FLAG_H_CLEAR;
@@ -3812,19 +3811,19 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Opcodes::Z80_Ed_In_E_IndirectC:					// 0xed 0x58
-            Z80__IN__REG8_Indirect_REG8(m_registers.e, m_registers.c);
+            Z80_IN_Reg8_IndirectReg8(m_registers.e, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Ed_Out_IndirectC_E:					// 0xed 0x59
-            Z80__OUT_Indirect_REG8__REG8(m_registers.c, m_registers.e);
+            Z80_OUT_IndirectReg8_Reg8(m_registers.c, m_registers.e);
 			break;
 
 		case Opcodes::Z80_Ed_Adc_Hl_De:					// 0xed 0x5a
-			Z80__ADC__REG16__REG16(m_registers.hl, m_registers.de);
+			Z80_ADC_Reg16_Reg16(m_registers.hl, m_registers.de);
 			break;
 
 		case Opcodes::Z80_Ed_Ld_De_IndirectNn:
-			Z80__LD__REG16_Indirect_NN(m_registers.de, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
+			Z80_LD_Reg16_IndirectNn(m_registers.de, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_Ed_Neg_0xEd_0x5c:		// 0xed 0x5c
@@ -3832,7 +3831,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Opcodes::Z80_Ed_Reti_0xEd_0x5d:		// 0xed 0x5d
-			Z80__RETI;
+			Z80_RETI;
 			Z80_DONT_UPDATE_PC;
 			break;
 
@@ -3841,7 +3840,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Opcodes::Z80_Ed_Ld_A_R:                  // 0xed 0x5f
-			Z80__LD__REG8__REG8(m_registers.a, m_registers.r);
+			Z80_LD_Reg8_Reg8(m_registers.a, m_registers.r);
 			// NOTE carry flag is unmodified
 			Z80_FLAGS_S53_UPDATE(m_registers.a);
 			Z80_FLAG_Z_UPDATE(0 == m_registers.a);
@@ -3851,19 +3850,19 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Opcodes::Z80_Ed_In_H_IndirectC:	// 0xed 0x60
-            Z80__IN__REG8_Indirect_REG8(m_registers.h, m_registers.c);
+            Z80_IN_Reg8_IndirectReg8(m_registers.h, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Ed_Out_IndirectC_H:
-            Z80__OUT_Indirect_REG8__REG8(m_registers.c, m_registers.h);
+            Z80_OUT_IndirectReg8_Reg8(m_registers.c, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Ed_Sbc_Hl_Hl:			// 0xed 0x62
-			Z80__SBC__REG16__REG16(m_registers.hl, m_registers.hl);
+			Z80_SBC_Reg16_Reg16(m_registers.hl, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Ed_Ld_IndirectNn_Hl:
-			Z80__LD_Indirect_NN__REG16(z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)), m_registers.hl);
+			Z80_LD_IndirectNn_Reg16(z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)), m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Ed_Neg_0xEd_0x64:	// 0xed 0x64
@@ -3871,7 +3870,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Opcodes::Z80_Ed_Retn_0xEd_0x65:	// 0xed 0x65
-			Z80__RETN;
+			Z80_RETN;
 			Z80_DONT_UPDATE_PC;
 			break;
 
@@ -3909,19 +3908,19 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Opcodes::Z80_Ed_In_L_IndirectC:
-            Z80__IN__REG8_Indirect_REG8(m_registers.l, m_registers.c);
+            Z80_IN_Reg8_IndirectReg8(m_registers.l, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Ed_Out_IndirectC_L:
-            Z80__OUT_Indirect_REG8__REG8(m_registers.c, m_registers.l);
+            Z80_OUT_IndirectReg8_Reg8(m_registers.c, m_registers.l);
 			break;
 
 		case Opcodes::Z80_Ed_Adc_Hl_Hl:
-			Z80__ADC__REG16__REG16(m_registers.hl, m_registers.hl);
+			Z80_ADC_Reg16_Reg16(m_registers.hl, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Ed_Ld_Hl_IndirectNn:
-			Z80__LD__REG16_Indirect_NN(m_registers.hl, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
+			Z80_LD_Reg16_IndirectNn(m_registers.hl, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_Ed_Neg_0xEd_0x6c:	// 0xed 0x6c
@@ -3929,7 +3928,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Opcodes::Z80_Ed_Reti_0xEd_0x6d:	// 0xed 0x6e
-			Z80__RETI;
+			Z80_RETI;
 			Z80_DONT_UPDATE_PC;
 			break;
 
@@ -3971,20 +3970,20 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
             {
                 Util::debugln("opcode 0xed 0x70 IN F,(C) - just setting flags");
                 UnsignedByte tmpInByte;
-                Z80__IN__REG8_Indirect_REG16(tmpInByte, m_registers.bc);
+                Z80_IN_Reg8_IndirectReg16(tmpInByte, m_registers.bc);
             }
 			break;
 
 		case Opcodes::Z80_Ed_Out_IndirectC_0:   	// 0xed 0x71
-            Z80__OUT_Indirect_REG8__REG8(m_registers.c, 0);
+            Z80_OUT_IndirectReg8_Reg8(m_registers.c, 0);
 			break;
 
 		case Opcodes::Z80_Ed_Sbc_Hl_Sp:
-			Z80__SBC__REG16__REG16(m_registers.hl, m_registers.sp);
+			Z80_SBC_Reg16_Reg16(m_registers.hl, m_registers.sp);
 			break;
 
 		case Opcodes::Z80_Ed_Ld_IndirectNn_Sp:
-			Z80__LD_Indirect_NN__REG16(z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)), m_registers.sp);
+			Z80_LD_IndirectNn_Reg16(z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)), m_registers.sp);
 			break;
 
 		case Opcodes::Z80_Ed_Neg_0xEd_0x74:	/* oxed 0x74 */
@@ -3992,7 +3991,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Opcodes::Z80_Ed_Retn_0xEd_0x75:	// 0xed 0x75
-			Z80__RETN;
+			Z80_RETN;
 			Z80_DONT_UPDATE_PC;
 			break;
 
@@ -4006,19 +4005,19 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Opcodes::Z80_Ed_In_A_IndirectC:   	    // 0xed 0x78
-            Z80__IN__REG8_Indirect_REG8(m_registers.a, m_registers.c);
+            Z80_IN_Reg8_IndirectReg8(m_registers.a, m_registers.c);
 			break;
 
 		case Opcodes::Z80_Ed_Out_IndirectC_A:   	// 0xed 0x79
-            Z80__OUT_Indirect_REG8__REG8(m_registers.c, m_registers.a);
+            Z80_OUT_IndirectReg8_Reg8(m_registers.c, m_registers.a);
 			break;
 
 		case Opcodes::Z80_Ed_Adc_Hl_Sp:   	        // 0xed 0x7a
-			Z80__ADC__REG16__REG16(m_registers.hl, m_registers.sp);
+			Z80_ADC_Reg16_Reg16(m_registers.hl, m_registers.sp);
 			break;
 
 		case Opcodes::Z80_Ed_Ld_Sp_IndirectNn:   	// 0xed 0x7b
-			Z80__LD__REG16_Indirect_NN(m_registers.sp, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
+			Z80_LD_Reg16_IndirectNn(m_registers.sp, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_Ed_Neg_0xEd_0x7c:	    	// 0xed 0x7c
@@ -4026,7 +4025,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Opcodes::Z80_Ed_Reti_0xEd_0x7d:	    	// 0xed 0x7d
-			Z80__RETI;
+			Z80_RETI;
 			Z80_DONT_UPDATE_PC;
 			break;
 
@@ -4089,7 +4088,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 		case Opcodes::Z80_Ed_Cpi:      // 0xed 0xa1
 			{
 				bool flagC = Z80_FLAG_C_ISSET;
-				Z80__CP_Indirect_REG16(m_registers.hl);
+				Z80_CP_IndirectReg16(m_registers.hl);
 
 				m_registers.hl++;
 				m_registers.bc--;
@@ -4104,7 +4103,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 		case Opcodes::Z80_Ed_Ini:      // 0xed 0xa2
             {
                 UnsignedByte result;
-                Z80__READ_IO_DEVICES(result, m_registers.bc);
+                Z80_READ_IO_DEVICES(result, m_registers.bc);
                 pokeUnsigned(m_registers.hl, result);
                 UnsignedByte carryCheck = result + m_registers.c + 1;
                 --m_registers.b;
@@ -4122,7 +4121,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 		case Opcodes::Z80_Ed_Outi:      // 0xed 0xa3
             {
                 UnsignedByte value = peekUnsigned(m_registers.hl);
-                Z80__WRITE_IO_DEVICES(value, m_registers.bc);
+                Z80_WRITE_IO_DEVICES(value, m_registers.bc);
                 --m_registers.b;
                 ++m_registers.hl;
                 UnsignedByte carryCheck = value + m_registers.l;
@@ -4183,7 +4182,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 		case Opcodes::Z80_Ed_Ind:      // 0xed 0xaa
             {
                 UnsignedByte result;
-                Z80__READ_IO_DEVICES(result, m_registers.bc);
+                Z80_READ_IO_DEVICES(result, m_registers.bc);
                 pokeUnsigned(m_registers.hl, result);
                 UnsignedByte carryCheck = result + m_registers.c - 1;
                 --m_registers.b;
@@ -4201,7 +4200,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 		case Opcodes::Z80_Ed_Outd:      // 0xed 0xab
             {
                 UnsignedByte value = peekUnsigned(m_registers.hl);
-                Z80__WRITE_IO_DEVICES(value, m_registers.bc);
+                Z80_WRITE_IO_DEVICES(value, m_registers.bc);
                 --m_registers.b;
                 --m_registers.hl;
                 UnsignedByte carryCheck = value + m_registers.l;
@@ -4273,7 +4272,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 		case Opcodes::Z80_Ed_Inir:     // 0xed 0xb2
             {
                 UnsignedByte result;
-                Z80__READ_IO_DEVICES(result, m_registers.bc);
+                Z80_READ_IO_DEVICES(result, m_registers.bc);
                 pokeUnsigned(m_registers.hl, result);
                 UnsignedByte carryCheck = result + m_registers.c + 1;
                 --m_registers.b;
@@ -4297,7 +4296,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 		case Opcodes::Z80_Ed_Otir:     // 0xed 0xb3
             {
                 UnsignedByte value = peekUnsigned(m_registers.hl);
-                Z80__WRITE_IO_DEVICES(value, m_registers.bc);
+                Z80_WRITE_IO_DEVICES(value, m_registers.bc);
                 --m_registers.b;
                 ++m_registers.hl;
                 UnsignedByte carryCheck = value + m_registers.l;
@@ -4375,7 +4374,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 		case Opcodes::Z80_Ed_Indr:     //0xed 0xba
         {
             UnsignedByte result;
-            Z80__READ_IO_DEVICES(result, m_registers.bc);
+            Z80_READ_IO_DEVICES(result, m_registers.bc);
             pokeUnsigned(m_registers.hl, result);
             UnsignedByte carryCheck = result + m_registers.c - 1;
             --m_registers.b;
@@ -4400,7 +4399,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
         {
             UnsignedByte value = peekUnsigned(m_registers.hl);
             --m_registers.b;
-            Z80__WRITE_IO_DEVICES(value, m_registers.bc);
+            Z80_WRITE_IO_DEVICES(value, m_registers.bc);
             --m_registers.hl;
             UnsignedByte carryCheck = value + m_registers.l;
 
@@ -4518,139 +4517,139 @@ Z80::InstructionCost Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, cons
 
 	switch (*instruction) {
 		case Opcodes::Z80_DdOrFd_Add_IxOrIy_Bc: /*  0x09 */
-			Z80__ADD__REG16__REG16(reg, m_registers.bc);
+			Z80_ADD_Reg16_Reg16(reg, m_registers.bc);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Add_IxOrIy_De: /*  0x19 */
-			Z80__ADD__REG16__REG16(reg, m_registers.de);
+			Z80_ADD_Reg16_Reg16(reg, m_registers.de);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IxOrIy_Nn: /*  0x21 */
-			Z80__LD__REG16__NN(reg, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
+			Z80_LD_Reg16_NN(reg, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IndirectNn_IxOrIy: /*  0x22 */
-			Z80__LD_Indirect_NN__REG16(z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)), reg);
+			Z80_LD_IndirectNn_Reg16(z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)), reg);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Inc_IxOrIy: /*  0x23 */
-			Z80__INC__REG16(reg);
+			Z80_INC_Reg16(reg);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Inc_IxhOrIyh: /*  0x24 */
-			Z80__INC__REG8(*regHigh);
+			Z80_INC_Reg8(*regHigh);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Dec_IxhOrIyh: /*  0x25 */
-			Z80__DEC__REG8(*regHigh);
+			Z80_DEC_Reg8(*regHigh);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IxhOrIyh_N: /*  0x26 */
-			Z80__LD__REG8__N(*regHigh, *(instruction + 1));
+			Z80_LD_Reg8_N(*regHigh, *(instruction + 1));
 			break;
 
 		case Opcodes::Z80_DdOrFd_Add_IxOrIy_IxOrIy: /*  0x29 */
-			Z80__ADD__REG16__REG16(reg, reg);
+			Z80_ADD_Reg16_Reg16(reg, reg);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IxOrIy_IndirectNn: /*  0x2a */
-			Z80__LD__REG16_Indirect_NN(reg, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
+			Z80_LD_Reg16_IndirectNn(reg, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_DdOrFd_Dec_IxOrIy: /*  0x2b */
-			Z80__DEC__REG16(reg);
+			Z80_DEC_Reg16(reg);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Inc_IxlOrIyl: /*  0x2c */
-			Z80__INC__REG8(*regLow);
+			Z80_INC_Reg8(*regLow);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Dec_IxlOrIyl: /*  0x2d */
-			Z80__DEC__REG8(*regLow);
+			Z80_DEC_Reg8(*regLow);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IxlOrIyl_N: /*  0x2e */
-			Z80__LD__REG8__N(*regLow, *(instruction + 1));
+			Z80_LD_Reg8_N(*regLow, *(instruction + 1));
 			break;
 
 		case Opcodes::Z80_DdOrFd_Inc_IndirectIxdOrIyd: /*  0x34 */
-			Z80__INC_Indirect_REG16_D(reg, SignedByte(*(instruction + 1)));
+			Z80_INC_IndirectReg16D(reg, static_cast<SignedByte>(*(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_DdOrFd_Dec_IndirectIxdOrIyd: /*  0x35 */
-			Z80__DEC_Indirect_REG16_D(reg, SignedByte(*(instruction + 1)));
+			Z80_DEC_IndirectReg16D(reg, static_cast<SignedByte>(*(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IndirectIxdOrIyd_N: /*  0x36 */
-			Z80__LD_Indirect_REG16_D__N(reg, SignedByte(*(instruction + 1)), *(instruction + 2));
+			Z80_LD_IndirectReg16D_N(reg, static_cast<SignedByte>(*(instruction + 1)), *(instruction + 2));
 			break;
 
 		case Opcodes::Z80_DdOrFd_Add_IxOrIy_Sp: /*  0x39 */
-			Z80__ADD__REG16__REG16(reg, m_registers.sp);
+			Z80_ADD_Reg16_Reg16(reg, m_registers.sp);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_B_IxhOrIyh: /*  0x44 */
-			Z80__LD__REG8__REG8(m_registers.b, *regHigh);
+			Z80_LD_Reg8_Reg8(m_registers.b, *regHigh);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_B_IxlOrIyl: /*  0x45 */
-			Z80__LD__REG8__REG8(m_registers.b, *regLow);
+			Z80_LD_Reg8_Reg8(m_registers.b, *regLow);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_B_IndirectIxdOrIyd: /*  0x46 */
-			Z80__LD__REG8_Indirect_REG16_D(m_registers.b, reg, SignedByte(*(instruction + 1)));
+			Z80_LD_Reg8_IndirectReg16D(m_registers.b, reg, static_cast<SignedByte>(*(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_C_IxhOrIyh: /*  0x4c */
-			Z80__LD__REG8__REG8(m_registers.c, *regHigh);
+			Z80_LD_Reg8_Reg8(m_registers.c, *regHigh);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_C_IxlOrIyl: /*  0x4d */
-			Z80__LD__REG8__REG8(m_registers.c, *regLow);
+			Z80_LD_Reg8_Reg8(m_registers.c, *regLow);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_C_IndirectIxdOrIyd: /*  0x4e */
-			Z80__LD__REG8_Indirect_REG16_D(m_registers.c, reg, SignedByte(*(instruction + 1)));
+			Z80_LD_Reg8_IndirectReg16D(m_registers.c, reg, static_cast<SignedByte>(*(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_D_IxhOrIyh: /*  0x54 */
-			Z80__LD__REG8__REG8(m_registers.d, *regHigh);
+			Z80_LD_Reg8_Reg8(m_registers.d, *regHigh);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_D_IxlOrIyl: /*  0x55 */
-			Z80__LD__REG8__REG8(m_registers.d, *regLow);
+			Z80_LD_Reg8_Reg8(m_registers.d, *regLow);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_D_IndirectIxdOrIyd: /*  0x56 */
-			Z80__LD__REG8_Indirect_REG16_D(m_registers.d, reg, SignedByte(*(instruction + 1)));
+			Z80_LD_Reg8_IndirectReg16D(m_registers.d, reg, static_cast<SignedByte>(*(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_E_IxhOrIyh: /*  0x5c */
-			Z80__LD__REG8__REG8(m_registers.e, *regHigh);
+			Z80_LD_Reg8_Reg8(m_registers.e, *regHigh);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_E_IxlOrIyl: /*  0x5d */
-			Z80__LD__REG8__REG8(m_registers.e, *regLow);
+			Z80_LD_Reg8_Reg8(m_registers.e, *regLow);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_E_IndirectIxdOrIyd: /*  0x5e */
-			Z80__LD__REG8_Indirect_REG16_D(m_registers.e, reg, SignedByte(*(instruction + 1)));
+			Z80_LD_Reg8_IndirectReg16D(m_registers.e, reg, static_cast<SignedByte>(*(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IxhOrIyh_B: /*  0x60 */
-			Z80__LD__REG8__REG8(*regHigh, m_registers.b);
+			Z80_LD_Reg8_Reg8(*regHigh, m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IxhOrIyh_C: /*  0x61 */
-			Z80__LD__REG8__REG8(*regHigh, m_registers.c);
+			Z80_LD_Reg8_Reg8(*regHigh, m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IxhOrIyh_D: /*  0x62 */
-			Z80__LD__REG8__REG8(*regHigh, m_registers.d);
+			Z80_LD_Reg8_Reg8(*regHigh, m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IxhOrIyh_E: /*  0x63 */
-			Z80__LD__REG8__REG8(*regHigh, m_registers.e);
+			Z80_LD_Reg8_Reg8(*regHigh, m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IxhOrIyh_IxhOrIyh: /*  0x64 */
@@ -4658,35 +4657,35 @@ Z80::InstructionCost Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, cons
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IxhOrIyh_IxlOrIyl: /*  0x65 */
-			Z80__LD__REG8__REG8(*regHigh, *regLow);
+			Z80_LD_Reg8_Reg8(*regHigh, *regLow);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_H_IndirectIxdOrIyd: /*  0x66 */
-			Z80__LD__REG8_Indirect_REG16_D(m_registers.h, reg, SignedByte(*(instruction + 1)));
+			Z80_LD_Reg8_IndirectReg16D(m_registers.h, reg, static_cast<SignedByte>(*(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IxhOrIyh_A: /*  0x67 */
-			Z80__LD__REG8__REG8(*regHigh, m_registers.a);
+			Z80_LD_Reg8_Reg8(*regHigh, m_registers.a);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IxlOrIyl_B: /*  0x68 */
-			Z80__LD__REG8__REG8(*regLow, m_registers.b);
+			Z80_LD_Reg8_Reg8(*regLow, m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IxlOrIyl_C: /*  0x69 */
-			Z80__LD__REG8__REG8(*regLow, m_registers.c);
+			Z80_LD_Reg8_Reg8(*regLow, m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IxlOrIyl_D: /*  0x6a */
-			Z80__LD__REG8__REG8(*regLow, m_registers.d);
+			Z80_LD_Reg8_Reg8(*regLow, m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IxlOrIyl_E: /*  0x6b */
-			Z80__LD__REG8__REG8(*regLow, m_registers.e);
+			Z80_LD_Reg8_Reg8(*regLow, m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IxlOrIyl_IxhOrIyh: /*  0x6c */
-			Z80__LD__REG8__REG8(*regLow, *regHigh);
+			Z80_LD_Reg8_Reg8(*regLow, *regHigh);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IxlOrIyl_IxlOrIyl: /*  0x6d */
@@ -4694,159 +4693,159 @@ Z80::InstructionCost Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, cons
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_L_IndirectIxdOrIyd: /*  0x6e */
-			Z80__LD__REG8_Indirect_REG16_D(m_registers.l, reg, SignedByte(*(instruction + 1)));
+			Z80_LD_Reg8_IndirectReg16D(m_registers.l, reg, static_cast<SignedByte>(*(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IxlOrIyl_A: /*  0x6f */
-			Z80__LD__REG8__REG8(*regLow, m_registers.a);
+			Z80_LD_Reg8_Reg8(*regLow, m_registers.a);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IndirectIxdOrIyd_B: /*  0x70 */
-			Z80__LD_Indirect_REG16_D__REG8(reg, SignedByte(*(instruction + 1)), m_registers.b);
+			Z80_LD_IndirectReg16D_Reg8(reg, static_cast<SignedByte>(*(instruction + 1)), m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IndirectIxdOrIyd_C: /*  0x71 */
-			Z80__LD_Indirect_REG16_D__REG8(reg, SignedByte(*(instruction + 1)), m_registers.c);
+			Z80_LD_IndirectReg16D_Reg8(reg, static_cast<SignedByte>(*(instruction + 1)), m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IndirectIxdOrIyd_D: /*  0x72 */
-			Z80__LD_Indirect_REG16_D__REG8(reg, SignedByte(*(instruction + 1)), m_registers.d);
+			Z80_LD_IndirectReg16D_Reg8(reg, static_cast<SignedByte>(*(instruction + 1)), m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IndirectIxdOrIyd_E: /*  0x73 */
-			Z80__LD_Indirect_REG16_D__REG8(reg, SignedByte(*(instruction + 1)), m_registers.e);
+			Z80_LD_IndirectReg16D_Reg8(reg, static_cast<SignedByte>(*(instruction + 1)), m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IndirectIxdOrIyd_H: /*  0x74 */
-			Z80__LD_Indirect_REG16_D__REG8(reg, SignedByte(*(instruction + 1)), m_registers.h);
+			Z80_LD_IndirectReg16D_Reg8(reg, static_cast<SignedByte>(*(instruction + 1)), m_registers.h);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IndirectIxdOrIyd_L: /*  0x75 */
-			Z80__LD_Indirect_REG16_D__REG8(reg, SignedByte(*(instruction + 1)), m_registers.l);
+			Z80_LD_IndirectReg16D_Reg8(reg, static_cast<SignedByte>(*(instruction + 1)), m_registers.l);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_IndirectIxdOrIyd_A: /*  0x77 */
-			Z80__LD_Indirect_REG16_D__REG8(reg, SignedByte(*(instruction + 1)), m_registers.a);
+			Z80_LD_IndirectReg16D_Reg8(reg, static_cast<SignedByte>(*(instruction + 1)), m_registers.a);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_A_IxhOrIyh: /*  0x7c */
-			Z80__LD__REG8__REG8(m_registers.a, *regHigh);
+			Z80_LD_Reg8_Reg8(m_registers.a, *regHigh);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_A_IxlOrIyl: /*  0x7d */
-			Z80__LD__REG8__REG8(m_registers.a, *regLow);
+			Z80_LD_Reg8_Reg8(m_registers.a, *regLow);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_A_IndirectIxdOrIyd: /*  0x7e */
-			Z80__LD__REG8_Indirect_REG16_D(m_registers.a, reg, SignedByte(*(instruction + 1)));
+			Z80_LD_Reg8_IndirectReg16D(m_registers.a, reg, static_cast<SignedByte>(*(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_DdOrFd_Add_A_IxhOrIyh: /*  0x84 */
-			Z80__ADD__REG8__REG8(m_registers.a, *regHigh);
+			Z80_ADD_Reg8_Reg8(m_registers.a, *regHigh);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Add_A_IxlOrIyl: /*  0x85 */
-			Z80__ADD__REG8__REG8(m_registers.a, *regLow);
+			Z80_ADD_Reg8_Reg8(m_registers.a, *regLow);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Add_A_IndirectIxdOrIyd: /*  0x86 */
-			Z80__ADD__REG8_Indirect_REG16_D(m_registers.a, reg, SignedByte(*(instruction + 1)));
+			Z80_ADD_Reg8_IndirectReg16D(m_registers.a, reg, static_cast<SignedByte>(*(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_DdOrFd_Adc_A_IxhOrIyh: /*  0x8c */
-			Z80__ADC__REG8__REG8(m_registers.a, *regHigh);
+			Z80_ADC_Reg8_Reg8(m_registers.a, *regHigh);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Adc_A_IxlOrIyl: /*  0x8d */
-			Z80__ADC__REG8__REG8(m_registers.a, *regLow);
+			Z80_ADC_Reg8_Reg8(m_registers.a, *regLow);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Adc_A_IndirectIxdOrIyd: /*  0x8e */
-			Z80__ADC__REG8_Indirect_REG16_D(m_registers.a, reg, SignedByte(*(instruction + 1)));
+			Z80_ADC_Reg8_IndirectReg16D(m_registers.a, reg, static_cast<SignedByte>(*(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_DdOrFd_Sub_IxhOrIyh: /*  0x94 */
-			Z80__SUB__REG8(*regHigh);
+			Z80_SUB_Reg8(*regHigh);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Sub_IxlOrIyl: /*  0x95 */
-			Z80__SUB__REG8(*regLow);
+			Z80_SUB_Reg8(*regLow);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Sub_IndirectIxdOrIyd: /*  0x96 */
-			Z80__SUB_Indirect_REG16_D(reg, SignedByte(*(instruction + 1)));
+			Z80_SUB_IndirectReg16D(reg, static_cast<SignedByte>(*(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_DdOrFd_Sbc_A_IxhOrIyh: /*  0x9c */
-			Z80__SBC__REG8__REG8(m_registers.a, *regHigh);
+			Z80_SBC_Reg8_Reg8(m_registers.a, *regHigh);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Sbc_A_IxlOrIyl: /*  0x9d */
-			Z80__SBC__REG8__REG8(m_registers.a, *regLow);
+			Z80_SBC_Reg8_Reg8(m_registers.a, *regLow);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Sbc_A_IndirectIxdOrIyd: /*  0x9e */
-			Z80__SBC__REG8_Indirect_REG16_D(m_registers.a, reg, SignedByte(*(instruction + 1)));
+			Z80_SBC_Reg8_IndirectReg16D(m_registers.a, reg, static_cast<SignedByte>(*(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_DdOrFd_And_IxhOrIyh: /*  0xa4 */
-			Z80__AND__REG8(*regHigh);
+			Z80_AND_Reg8(*regHigh);
 			break;
 
 		case Opcodes::Z80_DdOrFd_And_IxlOrIyl: /*  0xa5 */
-			Z80__AND__REG8(*regLow);
+			Z80_AND_Reg8(*regLow);
 			break;
 
 		case Opcodes::Z80_DdOrFd_And_IndirectIxdOrIyd: /*  0xa6 */
-			Z80__AND_Indirect_REG16_D(reg, SignedByte(*(instruction + 1)));
+			Z80_AND_IndirectReg16D(reg, static_cast<SignedByte>(*(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_DdOrFd_Xor_IxhOrIyh: /*  0xac */
-			Z80__XOR__REG8(*regHigh);
+			Z80_XOR_Reg8(*regHigh);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Xor_IxlOrIyl: /*  0xad */
-			Z80__XOR__REG8(*regLow);
+			Z80_XOR_Reg8(*regLow);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Xor_IndirectIxdOrIyd: /*  0xae */
-			Z80__XOR_Indirect_REG16_D(reg, SignedByte(*(instruction + 1)));
+			Z80_XOR_IndirectReg16D(reg, static_cast<SignedByte>(*(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_DdOrFd_Or_IxhOrIyh: /*  0xb4 */
-			Z80__OR__REG8(*regHigh);
+			Z80_OR_Reg8(*regHigh);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Or_IxlOrIyl: /*  0xb5 */
-			Z80__OR__REG8(*regLow);
+			Z80_OR_Reg8(*regLow);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Or_IndirectIxdOrIyd: /*  0xb6 */
-			Z80__OR_Indirect_REG16_D(reg, SignedByte(*(instruction + 1)));
+			Z80_OR_IndirectReg16D(reg, static_cast<SignedByte>(*(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cp_IxhOrIyh: /*  0xbc */
-			Z80__CP__REG8(*regHigh);
+			Z80_CP_Reg8(*regHigh);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cp_IxlOrIyl: /*  0xbd */
-			Z80__CP__REG8(*regLow);
+			Z80_CP_Reg8(*regLow);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cp_IndirectIxdOrIyd: /*  0xbe */
-			Z80__CP_Indirect_REG16_D(reg, SignedByte(*(instruction + 1)));
+			Z80_CP_IndirectReg16D(reg, static_cast<SignedByte>(*(instruction + 1)));
 			break;
 
 		case Opcodes::Z80_DdOrFd_Pop_IxOrIy: /*  0xe1 */
-			Z80__POP__REG16(reg);
+			Z80_POP_Reg16(reg);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ex_IndirectSp_IxOrIy: /*  0xe3 */
-            Z80__EX_Indirect_REG16__REG16(m_registers.sp, reg);
+            Z80_EX_IndirectReg16_Reg16(m_registers.sp, reg);
 			break;
 
         case Opcodes::Z80_DdOrFd_Push_IxOrIy:     //  0xe5
-            Z80__PUSH__REG16(reg);
+            Z80_PUSH_Reg16(reg);
             break;
 
 		case Opcodes::Z80_DdOrFd_Jp_IxOrIy: /*  0xe9 */
@@ -4856,7 +4855,7 @@ Z80::InstructionCost Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, cons
 			break;
 
 		case Opcodes::Z80_DdOrFd_Ld_Sp_IxOrIy: /*  0xf9 */
-			Z80__LD__REG16__REG16(m_registers.sp, reg);
+			Z80_LD_Reg16_Reg16(m_registers.sp, reg);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Prefix_Cb: /*  0xcb */
@@ -5101,259 +5100,259 @@ Z80::InstructionCost Z80::Z80::executeDdcbOrFdcbInstruction(UnsignedWord & reg, 
 
 	switch(opcodeByte) {
 		case Opcodes::Z80_DdOrFd_Cb_Rlc_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0x00 */
-			Z80__RLC_Indirect_REG16_D__REG8(reg, d, m_registers.b);
+			Z80_RLC_IndirectReg16D_Reg8(reg, d, m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rlc_IndirectIxdOrIyd_C:		/* 0xdd/0xfd 0xcb 0x01 */
-			Z80__RLC_Indirect_REG16_D__REG8(reg, d, m_registers.c);
+			Z80_RLC_IndirectReg16D_Reg8(reg, d, m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rlc_IndirectIxdOrIyd_D:		/* 0xdd/0xfd 0xcb 0x02 */
-			Z80__RLC_Indirect_REG16_D__REG8(reg, d, m_registers.d);
+			Z80_RLC_IndirectReg16D_Reg8(reg, d, m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rlc_IndirectIxdOrIyd_E:		/* 0xdd/0xfd 0xcb 0x03 */
-			Z80__RLC_Indirect_REG16_D__REG8(reg, d, m_registers.e);
+			Z80_RLC_IndirectReg16D_Reg8(reg, d, m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rlc_IndirectIxdOrIyd_H:		/* 0xdd/0xfd 0xcb 0x04 */
-			Z80__RLC_Indirect_REG16_D__REG8(reg, d, m_registers.h);
+			Z80_RLC_IndirectReg16D_Reg8(reg, d, m_registers.h);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rlc_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0x05 */
-			Z80__RLC_Indirect_REG16_D__REG8(reg, d, m_registers.l);
+			Z80_RLC_IndirectReg16D_Reg8(reg, d, m_registers.l);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rlc_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0x06 */
-			Z80__RLC_Indirect_REG16_D(reg, d);
+			Z80_RLC_IndirectReg16D(reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rlc_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0x07 */
-			Z80__RLC_Indirect_REG16_D__REG8(reg, d, m_registers.a);
+			Z80_RLC_IndirectReg16D_Reg8(reg, d, m_registers.a);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rrc_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0x08 */
-			Z80__RRC_Indirect_REG16_D__REG8(reg, d, m_registers.b);
+			Z80_RRC_IndirectReg16D_Reg8(reg, d, m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rrc_IndirectIxdOrIyd_C:		/* 0xdd/0xfd 0xcb 0x09 */
-			Z80__RRC_Indirect_REG16_D__REG8(reg, d, m_registers.c);
+			Z80_RRC_IndirectReg16D_Reg8(reg, d, m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rrc_IndirectIxdOrIyd_D:		/* 0xdd/0xfd 0xcb 0x0a */
-			Z80__RRC_Indirect_REG16_D__REG8(reg, d, m_registers.d);
+			Z80_RRC_IndirectReg16D_Reg8(reg, d, m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rrc_IndirectIxdOrIyd_E:		/* 0xdd/0xfd 0xcb 0x0b */
-			Z80__RRC_Indirect_REG16_D__REG8(reg, d, m_registers.e);
+			Z80_RRC_IndirectReg16D_Reg8(reg, d, m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rrc_IndirectIxdOrIyd_H:		/* 0xdd/0xfd 0xcb 0x0c */
-			Z80__RRC_Indirect_REG16_D__REG8(reg, d, m_registers.h);
+			Z80_RRC_IndirectReg16D_Reg8(reg, d, m_registers.h);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rrc_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0x0d */
-			Z80__RRC_Indirect_REG16_D__REG8(reg, d, m_registers.l);
+			Z80_RRC_IndirectReg16D_Reg8(reg, d, m_registers.l);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rrc_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0x0e */
-			Z80__RRC_Indirect_REG16_D(reg, d);
+			Z80_RRC_IndirectReg16D(reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rrc_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0x0f */
-			Z80__RRC_Indirect_REG16_D__REG8(reg, d, m_registers.a);
+			Z80_RRC_IndirectReg16D_Reg8(reg, d, m_registers.a);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rl_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0x10 */
-			Z80__RL_Indirect_REG16_D__REG8(reg, d, m_registers.b);
+			Z80_RL_IndirectReg16D_Reg8(reg, d, m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rl_IndirectIxdOrIyd_C:		/* 0xdd/0xfd 0xcb 0x11 */
-			Z80__RL_Indirect_REG16_D__REG8(reg, d, m_registers.c);
+			Z80_RL_IndirectReg16D_Reg8(reg, d, m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rl_IndirectIxdOrIyd_D:		/* 0xdd/0xfd 0xcb 0x12 */
-			Z80__RL_Indirect_REG16_D__REG8(reg, d, m_registers.d);
+			Z80_RL_IndirectReg16D_Reg8(reg, d, m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rl_IndirectIxdOrIyd_E:		/* 0xdd/0xfd 0xcb 0x13 */
-			Z80__RL_Indirect_REG16_D__REG8(reg, d, m_registers.e);
+			Z80_RL_IndirectReg16D_Reg8(reg, d, m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rl_IndirectIxdOrIyd_H:		/* 0xdd/0xfd 0xcb 0x14 */
-			Z80__RL_Indirect_REG16_D__REG8(reg, d, m_registers.h);
+			Z80_RL_IndirectReg16D_Reg8(reg, d, m_registers.h);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rl_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0x15 */
-			Z80__RL_Indirect_REG16_D__REG8(reg, d, m_registers.l);
+			Z80_RL_IndirectReg16D_Reg8(reg, d, m_registers.l);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rl_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0x16 */
-			Z80__RL_Indirect_REG16_D(reg, d);
+			Z80_RL_IndirectReg16D(reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rl_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0x17 */
-			Z80__RL_Indirect_REG16_D__REG8(reg, d, m_registers.a);
+			Z80_RL_IndirectReg16D_Reg8(reg, d, m_registers.a);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rr_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0x18 */
-			Z80__RR_Indirect_REG16_D__REG8(reg, d, m_registers.b);
+			Z80_RR_IndirectReg16D_Reg8(reg, d, m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rr_IndirectIxdOrIyd_C:		/* 0xdd/0xfd 0xcb 0x19 */
-			Z80__RR_Indirect_REG16_D__REG8(reg, d, m_registers.c);
+			Z80_RR_IndirectReg16D_Reg8(reg, d, m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rr_IndirectIxdOrIyd_D:		/* 0xdd/0xfd 0xcb 0x1a */
-			Z80__RR_Indirect_REG16_D__REG8(reg, d, m_registers.d);
+			Z80_RR_IndirectReg16D_Reg8(reg, d, m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rr_IndirectIxdOrIyd_E:		/* 0xdd/0xfd 0xcb 0x1b */
-			Z80__RR_Indirect_REG16_D__REG8(reg, d, m_registers.e);
+			Z80_RR_IndirectReg16D_Reg8(reg, d, m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rr_IndirectIxdOrIyd_H:		/* 0xdd/0xfd 0xcb 0x1c */
-			Z80__RR_Indirect_REG16_D__REG8(reg, d, m_registers.h);
+			Z80_RR_IndirectReg16D_Reg8(reg, d, m_registers.h);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rr_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0x1d */
-			Z80__RR_Indirect_REG16_D__REG8(reg, d, m_registers.l);
+			Z80_RR_IndirectReg16D_Reg8(reg, d, m_registers.l);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rr_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0x1e */
-			Z80__RR_Indirect_REG16_D(reg, d);
+			Z80_RR_IndirectReg16D(reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Rr_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0x1f */
-			Z80__RR_Indirect_REG16_D__REG8(reg, d, m_registers.a);
+			Z80_RR_IndirectReg16D_Reg8(reg, d, m_registers.a);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Sla_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0x21 */
-			Z80__SLA_Indirect_REG16_D__REG8(reg, d, m_registers.b);
+			Z80_SLA_IndirectReg16D_Reg8(reg, d, m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Sla_IndirectIxdOrIyd_C:		/* 0xdd/0xfd 0xcb 0x22 */
-			Z80__SLA_Indirect_REG16_D__REG8(reg, d, m_registers.c);
+			Z80_SLA_IndirectReg16D_Reg8(reg, d, m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Sla_IndirectIxdOrIyd_D:		/* 0xdd/0xfd 0xcb 0x23 */
-			Z80__SLA_Indirect_REG16_D__REG8(reg, d, m_registers.d);
+			Z80_SLA_IndirectReg16D_Reg8(reg, d, m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Sla_IndirectIxdOrIyd_E:		/* 0xdd/0xfd 0xcb 0x24 */
-			Z80__SLA_Indirect_REG16_D__REG8(reg, d, m_registers.e);
+			Z80_SLA_IndirectReg16D_Reg8(reg, d, m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Sla_IndirectIxdOrIyd_H:		/* 0xdd/0xfd 0xcb 0x25 */
-			Z80__SLA_Indirect_REG16_D__REG8(reg, d, m_registers.h);
+			Z80_SLA_IndirectReg16D_Reg8(reg, d, m_registers.h);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Sla_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0x26 */
-			Z80__SLA_Indirect_REG16_D__REG8(reg, d, m_registers.l);
+			Z80_SLA_IndirectReg16D_Reg8(reg, d, m_registers.l);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Sla_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0x26 */
-			Z80__SLA_Indirect_REG16_D(reg, d);
+			Z80_SLA_IndirectReg16D(reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Sla_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0x27 */
-			Z80__SLA_Indirect_REG16_D__REG8(reg, d, m_registers.a);
+			Z80_SLA_IndirectReg16D_Reg8(reg, d, m_registers.a);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Sra_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0x28 */
-			Z80__SRA_Indirect_REG16_D__REG8(reg, d, m_registers.b);
+			Z80_SRA_IndirectReg16D_Reg8(reg, d, m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Sra_IndirectIxdOrIyd_C:		/* 0xdd/0xfd 0xcb 0x29 */
-			Z80__SRA_Indirect_REG16_D__REG8(reg, d, m_registers.c);
+			Z80_SRA_IndirectReg16D_Reg8(reg, d, m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Sra_IndirectIxdOrIyd_D:		/* 0xdd/0xfd 0xcb 0x2a */
-			Z80__SRA_Indirect_REG16_D__REG8(reg, d, m_registers.d);
+			Z80_SRA_IndirectReg16D_Reg8(reg, d, m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Sra_IndirectIxdOrIyd_E:		/* 0xdd/0xfd 0xcb 0x2b */
-			Z80__SRA_Indirect_REG16_D__REG8(reg, d, m_registers.e);
+			Z80_SRA_IndirectReg16D_Reg8(reg, d, m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Sra_IndirectIxdOrIyd_H:		/* 0xdd/0xfd 0xcb 0x2c */
-			Z80__SRA_Indirect_REG16_D__REG8(reg, d, m_registers.h);
+			Z80_SRA_IndirectReg16D_Reg8(reg, d, m_registers.h);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Sra_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0x2d */
-			Z80__SRA_Indirect_REG16_D__REG8(reg, d, m_registers.l);
+			Z80_SRA_IndirectReg16D_Reg8(reg, d, m_registers.l);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Sra_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0x2e */
-			Z80__SRA_Indirect_REG16_D(reg, d);
+			Z80_SRA_IndirectReg16D(reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Sra_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0x2f */
-			Z80__SRA_Indirect_REG16_D__REG8(reg, d, m_registers.a);
+			Z80_SRA_IndirectReg16D_Reg8(reg, d, m_registers.a);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Sll_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0x30 */
-			Z80__SLL_Indirect_REG16_D__REG8(reg, d, m_registers.b);
+			Z80_SLL_IndirectReg16D_Reg8(reg, d, m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Sll_IndirectIxdOrIyd_C:		/* 0xdd/0xfd 0xcb 0x31 */
-			Z80__SLL_Indirect_REG16_D__REG8(reg, d, m_registers.c);
+			Z80_SLL_IndirectReg16D_Reg8(reg, d, m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Sll_IndirectIxdOrIyd_D:		/* 0xdd/0xfd 0xcb 0x32 */
-			Z80__SLL_Indirect_REG16_D__REG8(reg, d, m_registers.d);
+			Z80_SLL_IndirectReg16D_Reg8(reg, d, m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Sll_IndirectIxdOrIyd_E:		/* 0xdd/0xfd 0xcb 0x33 */
-			Z80__SLL_Indirect_REG16_D__REG8(reg, d, m_registers.e);
+			Z80_SLL_IndirectReg16D_Reg8(reg, d, m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Sll_IndirectIxdOrIyd_H:		/* 0xdd/0xfd 0xcb 0x34 */
-			Z80__SLL_Indirect_REG16_D__REG8(reg, d, m_registers.h);
+			Z80_SLL_IndirectReg16D_Reg8(reg, d, m_registers.h);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Sll_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0x35 */
-			Z80__SLL_Indirect_REG16_D__REG8(reg, d, m_registers.l);
+			Z80_SLL_IndirectReg16D_Reg8(reg, d, m_registers.l);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Sll_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0x36 */
-			Z80__SLL_Indirect_REG16_D(reg, d);
+			Z80_SLL_IndirectReg16D(reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Sll_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0x37 */
-			Z80__SLL_Indirect_REG16_D__REG8(reg, d, m_registers.a);
+			Z80_SLL_IndirectReg16D_Reg8(reg, d, m_registers.a);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Srl_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0x38 */
-			Z80__SRL_Indirect_REG16_D__REG8(reg, d, m_registers.b);
+			Z80_SRL_IndirectReg16D_Reg8(reg, d, m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Srl_IndirectIxdOrIyd_C:		/* 0xdd/0xfd 0xcb 0x39 */
-			Z80__SRL_Indirect_REG16_D__REG8(reg, d, m_registers.c);
+			Z80_SRL_IndirectReg16D_Reg8(reg, d, m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Srl_IndirectIxdOrIyd_D:		/* 0xdd/0xfd 0xcb 0x3a */
-			Z80__SRL_Indirect_REG16_D__REG8(reg, d, m_registers.d);
+			Z80_SRL_IndirectReg16D_Reg8(reg, d, m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Srl_IndirectIxdOrIyd_E:		/* 0xdd/0xfd 0xcb 0x3b */
-			Z80__SRL_Indirect_REG16_D__REG8(reg, d, m_registers.e);
+			Z80_SRL_IndirectReg16D_Reg8(reg, d, m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Srl_IndirectIxdOrIyd_H:		/* 0xdd/0xfd 0xcb 0x3c */
-			Z80__SRL_Indirect_REG16_D__REG8(reg, d, m_registers.h);
+			Z80_SRL_IndirectReg16D_Reg8(reg, d, m_registers.h);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Srl_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0x3d */
-			Z80__SRL_Indirect_REG16_D__REG8(reg, d, m_registers.l);
+			Z80_SRL_IndirectReg16D_Reg8(reg, d, m_registers.l);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Srl_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0x3e */
-			Z80__SRL_Indirect_REG16_D(reg, d);
+			Z80_SRL_IndirectReg16D(reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Srl_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0x3f */
-			Z80__SRL_Indirect_REG16_D__REG8(reg, d, m_registers.a);
+			Z80_SRL_IndirectReg16D_Reg8(reg, d, m_registers.a);
 			break;
 
 		// BIT opcodes
@@ -5368,7 +5367,7 @@ Z80::InstructionCost Z80::Z80::executeDdcbOrFdcbInstruction(UnsignedWord & reg, 
 		case Opcodes::Z80_DdOrFd_Cb_Bit_0_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0x45 */
 		case Opcodes::Z80_DdOrFd_Cb_Bit_0_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0x46 */
 		case Opcodes::Z80_DdOrFd_Cb_Bit_0_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0x47 */
-			Z80__BIT__N_Indirect_REG16_D(0, reg, d);
+			Z80_BIT_N_IndirectReg16D(0, reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Bit_1_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0x48 */
@@ -5379,7 +5378,7 @@ Z80::InstructionCost Z80::Z80::executeDdcbOrFdcbInstruction(UnsignedWord & reg, 
 		case Opcodes::Z80_DdOrFd_Cb_Bit_1_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0x4d */
 		case Opcodes::Z80_DdOrFd_Cb_Bit_1_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0x4e */
 		case Opcodes::Z80_DdOrFd_Cb_Bit_1_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0x4f */
-			Z80__BIT__N_Indirect_REG16_D(1, reg, d);
+			Z80_BIT_N_IndirectReg16D(1, reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Bit_2_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0x50 */
@@ -5390,7 +5389,7 @@ Z80::InstructionCost Z80::Z80::executeDdcbOrFdcbInstruction(UnsignedWord & reg, 
 		case Opcodes::Z80_DdOrFd_Cb_Bit_2_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0x55 */
 		case Opcodes::Z80_DdOrFd_Cb_Bit_2_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0x56 */
 		case Opcodes::Z80_DdOrFd_Cb_Bit_2_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0x57 */
-			Z80__BIT__N_Indirect_REG16_D(2, reg, d);
+			Z80_BIT_N_IndirectReg16D(2, reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Bit_3_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0x58 */
@@ -5401,7 +5400,7 @@ Z80::InstructionCost Z80::Z80::executeDdcbOrFdcbInstruction(UnsignedWord & reg, 
 		case Opcodes::Z80_DdOrFd_Cb_Bit_3_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0x5d */
 		case Opcodes::Z80_DdOrFd_Cb_Bit_3_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0x5e */
 		case Opcodes::Z80_DdOrFd_Cb_Bit_3_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0x5f */
-			Z80__BIT__N_Indirect_REG16_D(3, reg, d);
+			Z80_BIT_N_IndirectReg16D(3, reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Bit_4_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0x60 */
@@ -5412,7 +5411,7 @@ Z80::InstructionCost Z80::Z80::executeDdcbOrFdcbInstruction(UnsignedWord & reg, 
 		case Opcodes::Z80_DdOrFd_Cb_Bit_4_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0x65 */
 		case Opcodes::Z80_DdOrFd_Cb_Bit_4_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0x66 */
 		case Opcodes::Z80_DdOrFd_Cb_Bit_4_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0x67 */
-			Z80__BIT__N_Indirect_REG16_D(4, reg, d);
+			Z80_BIT_N_IndirectReg16D(4, reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Bit_5_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0x68 */
@@ -5423,7 +5422,7 @@ Z80::InstructionCost Z80::Z80::executeDdcbOrFdcbInstruction(UnsignedWord & reg, 
 		case Opcodes::Z80_DdOrFd_Cb_Bit_5_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0x6d */
 		case Opcodes::Z80_DdOrFd_Cb_Bit_5_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0x6e */
 		case Opcodes::Z80_DdOrFd_Cb_Bit_5_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0x6f */
-			Z80__BIT__N_Indirect_REG16_D(5, reg, d);
+			Z80_BIT_N_IndirectReg16D(5, reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Bit_6_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0x70 */
@@ -5434,7 +5433,7 @@ Z80::InstructionCost Z80::Z80::executeDdcbOrFdcbInstruction(UnsignedWord & reg, 
 		case Opcodes::Z80_DdOrFd_Cb_Bit_6_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0x75 */
 		case Opcodes::Z80_DdOrFd_Cb_Bit_6_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0x76 */
 		case Opcodes::Z80_DdOrFd_Cb_Bit_6_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0x77 */
-			Z80__BIT__N_Indirect_REG16_D(6, reg, d);
+			Z80_BIT_N_IndirectReg16D(6, reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Bit_7_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0x78 */
@@ -5445,521 +5444,521 @@ Z80::InstructionCost Z80::Z80::executeDdcbOrFdcbInstruction(UnsignedWord & reg, 
 		case Opcodes::Z80_DdOrFd_Cb_Bit_7_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0x7d */
 		case Opcodes::Z80_DdOrFd_Cb_Bit_7_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0x7e */
 		case Opcodes::Z80_DdOrFd_Cb_Bit_7_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0x7f */
-			Z80__BIT__N_Indirect_REG16_D(7, reg, d);
+			Z80_BIT_N_IndirectReg16D(7, reg, d);
 			break;
 
 		/* RES opcodes */
 		case Opcodes::Z80_DdOrFd_Cb_Res_0_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0x80 */
-			Z80__RES__N_Indirect_REG16_D__REG8(0, reg, d, m_registers.b);
+			Z80_RES_N_IndirectReg16D_Reg8(0, reg, d, m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_0_IndirectIxdOrIyd_C:		/* 0xdd/0xfd 0xcb 0x81 */
-			Z80__RES__N_Indirect_REG16_D__REG8(0, reg, d, m_registers.c);
+			Z80_RES_N_IndirectReg16D_Reg8(0, reg, d, m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_0_IndirectIxdOrIyd_D:		/* 0xdd/0xfd 0xcb 0x82 */
-			Z80__RES__N_Indirect_REG16_D__REG8(0, reg, d, m_registers.d);
+			Z80_RES_N_IndirectReg16D_Reg8(0, reg, d, m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_0_IndirectIxdOrIyd_E:		/* 0xdd/0xfd 0xcb 0x83 */
-			Z80__RES__N_Indirect_REG16_D__REG8(0, reg, d, m_registers.e);
+			Z80_RES_N_IndirectReg16D_Reg8(0, reg, d, m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_0_IndirectIxdOrIyd_H:		/* 0xdd/0xfd 0xcb 0x84 */
-			Z80__RES__N_Indirect_REG16_D__REG8(0, reg, d, m_registers.h);
+			Z80_RES_N_IndirectReg16D_Reg8(0, reg, d, m_registers.h);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_0_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0x85 */
-			Z80__RES__N_Indirect_REG16_D__REG8(0, reg, d, m_registers.l);
+			Z80_RES_N_IndirectReg16D_Reg8(0, reg, d, m_registers.l);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_0_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0x86 */
-			Z80__RES__N_Indirect_REG16_D(0, reg, d);
+			Z80_RES_N_IndirectReg16D(0, reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_0_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0x87 */
-			Z80__RES__N_Indirect_REG16_D__REG8(0, reg, d, m_registers.a);
+			Z80_RES_N_IndirectReg16D_Reg8(0, reg, d, m_registers.a);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_1_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0x88 */
-			Z80__RES__N_Indirect_REG16_D__REG8(1, reg, d, m_registers.b);
+			Z80_RES_N_IndirectReg16D_Reg8(1, reg, d, m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_1_IndirectIxdOrIyd_C:		/* 0xdd/0xfd 0xcb 0x89 */
-			Z80__RES__N_Indirect_REG16_D__REG8(1, reg, d, m_registers.c);
+			Z80_RES_N_IndirectReg16D_Reg8(1, reg, d, m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_1_IndirectIxdOrIyd_D:		/* 0xdd/0xfd 0xcb 0x8a */
-			Z80__RES__N_Indirect_REG16_D__REG8(1, reg, d, m_registers.d);
+			Z80_RES_N_IndirectReg16D_Reg8(1, reg, d, m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_1_IndirectIxdOrIyd_E:		/* 0xdd/0xfd 0xcb 0x8b */
-			Z80__RES__N_Indirect_REG16_D__REG8(1, reg, d, m_registers.e);
+			Z80_RES_N_IndirectReg16D_Reg8(1, reg, d, m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_1_IndirectIxdOrIyd_H:		/* 0xdd/0xfd 0xcb 0x8c */
-			Z80__RES__N_Indirect_REG16_D__REG8(1, reg, d, m_registers.h);
+			Z80_RES_N_IndirectReg16D_Reg8(1, reg, d, m_registers.h);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_1_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0x8d */
-			Z80__RES__N_Indirect_REG16_D__REG8(1, reg, d, m_registers.l);
+			Z80_RES_N_IndirectReg16D_Reg8(1, reg, d, m_registers.l);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_1_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0x8e */
-			Z80__RES__N_Indirect_REG16_D(1, reg, d);
+			Z80_RES_N_IndirectReg16D(1, reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_1_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0x8f */
-			Z80__RES__N_Indirect_REG16_D__REG8(1, reg, d, m_registers.a);
+			Z80_RES_N_IndirectReg16D_Reg8(1, reg, d, m_registers.a);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_2_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0x90 */
-			Z80__RES__N_Indirect_REG16_D__REG8(2, reg, d, m_registers.b);
+			Z80_RES_N_IndirectReg16D_Reg8(2, reg, d, m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_2_IndirectIxdOrIyd_C:		/* 0xdd/0xfd 0xcb 0x91 */
-			Z80__RES__N_Indirect_REG16_D__REG8(2, reg, d, m_registers.c);
+			Z80_RES_N_IndirectReg16D_Reg8(2, reg, d, m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_2_IndirectIxdOrIyd_D:		/* 0xdd/0xfd 0xcb 0x92 */
-			Z80__RES__N_Indirect_REG16_D__REG8(2, reg, d, m_registers.d);
+			Z80_RES_N_IndirectReg16D_Reg8(2, reg, d, m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_2_IndirectIxdOrIyd_E:		/* 0xdd/0xfd 0xcb 0x93 */
-			Z80__RES__N_Indirect_REG16_D__REG8(2, reg, d, m_registers.e);
+			Z80_RES_N_IndirectReg16D_Reg8(2, reg, d, m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_2_IndirectIxdOrIyd_H:		/* 0xdd/0xfd 0xcb 0x94 */
-			Z80__RES__N_Indirect_REG16_D__REG8(2, reg, d, m_registers.h);
+			Z80_RES_N_IndirectReg16D_Reg8(2, reg, d, m_registers.h);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_2_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0x95 */
-			Z80__RES__N_Indirect_REG16_D__REG8(2, reg, d, m_registers.l);
+			Z80_RES_N_IndirectReg16D_Reg8(2, reg, d, m_registers.l);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_2_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0x96 */
-			Z80__RES__N_Indirect_REG16_D(2, reg, d);
+			Z80_RES_N_IndirectReg16D(2, reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_2_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0x97 */
-			Z80__RES__N_Indirect_REG16_D__REG8(2, reg, d, m_registers.a);
+			Z80_RES_N_IndirectReg16D_Reg8(2, reg, d, m_registers.a);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_3_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0x98 */
-			Z80__RES__N_Indirect_REG16_D__REG8(3, reg, d, m_registers.b);
+			Z80_RES_N_IndirectReg16D_Reg8(3, reg, d, m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_3_IndirectIxdOrIyd_C:		/* 0xdd/0xfd 0xcb 0x99 */
-			Z80__RES__N_Indirect_REG16_D__REG8(3, reg, d, m_registers.c);
+			Z80_RES_N_IndirectReg16D_Reg8(3, reg, d, m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_3_IndirectIxdOrIyd_D:		/* 0xdd/0xfd 0xcb 0x9a */
-			Z80__RES__N_Indirect_REG16_D__REG8(3, reg, d, m_registers.d);
+			Z80_RES_N_IndirectReg16D_Reg8(3, reg, d, m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_3_IndirectIxdOrIyd_E:		/* 0xdd/0xfd 0xcb 0x9b */
-			Z80__RES__N_Indirect_REG16_D__REG8(3, reg, d, m_registers.e);
+			Z80_RES_N_IndirectReg16D_Reg8(3, reg, d, m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_3_IndirectIxdOrIyd_H:		/* 0xdd/0xfd 0xcb 0x9c */
-			Z80__RES__N_Indirect_REG16_D__REG8(3, reg, d, m_registers.h);
+			Z80_RES_N_IndirectReg16D_Reg8(3, reg, d, m_registers.h);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_3_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0x9d */
-			Z80__RES__N_Indirect_REG16_D__REG8(3, reg, d, m_registers.l);
+			Z80_RES_N_IndirectReg16D_Reg8(3, reg, d, m_registers.l);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_3_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0x9e */
-			Z80__RES__N_Indirect_REG16_D(3, reg, d);
+			Z80_RES_N_IndirectReg16D(3, reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_3_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0x9f */
-			Z80__RES__N_Indirect_REG16_D__REG8(3, reg, d, m_registers.a);
+			Z80_RES_N_IndirectReg16D_Reg8(3, reg, d, m_registers.a);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_4_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0xa0 */
-			Z80__RES__N_Indirect_REG16_D__REG8(4, reg, d, m_registers.b);
+			Z80_RES_N_IndirectReg16D_Reg8(4, reg, d, m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_4_IndirectIxdOrIyd_C:		/* 0xdd/0xfd 0xcb 0xa1 */
-			Z80__RES__N_Indirect_REG16_D__REG8(4, reg, d, m_registers.c);
+			Z80_RES_N_IndirectReg16D_Reg8(4, reg, d, m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_4_IndirectIxdOrIyd_D:		/* 0xdd/0xfd 0xcb 0xa2 */
-			Z80__RES__N_Indirect_REG16_D__REG8(4, reg, d, m_registers.d);
+			Z80_RES_N_IndirectReg16D_Reg8(4, reg, d, m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_4_IndirectIxdOrIyd_E:		/* 0xdd/0xfd 0xcb 0xa3 */
-			Z80__RES__N_Indirect_REG16_D__REG8(4, reg, d, m_registers.e);
+			Z80_RES_N_IndirectReg16D_Reg8(4, reg, d, m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_4_IndirectIxdOrIyd_H:		/* 0xdd/0xfd 0xcb 0xa4 */
-			Z80__RES__N_Indirect_REG16_D__REG8(4, reg, d, m_registers.h);
+			Z80_RES_N_IndirectReg16D_Reg8(4, reg, d, m_registers.h);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_4_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0xa5 */
-			Z80__RES__N_Indirect_REG16_D__REG8(4, reg, d, m_registers.l);
+			Z80_RES_N_IndirectReg16D_Reg8(4, reg, d, m_registers.l);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_4_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0xa6 */
-			Z80__RES__N_Indirect_REG16_D(4, reg, d);
+			Z80_RES_N_IndirectReg16D(4, reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_4_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0xa7 */
-			Z80__RES__N_Indirect_REG16_D__REG8(4, reg, d, m_registers.a);
+			Z80_RES_N_IndirectReg16D_Reg8(4, reg, d, m_registers.a);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_5_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0xa8 */
-			Z80__RES__N_Indirect_REG16_D__REG8(5, reg, d, m_registers.b);
+			Z80_RES_N_IndirectReg16D_Reg8(5, reg, d, m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_5_IndirectIxdOrIyd_C:		/* 0xdd/0xfd 0xcb 0xa9 */
-			Z80__RES__N_Indirect_REG16_D__REG8(5, reg, d, m_registers.c);
+			Z80_RES_N_IndirectReg16D_Reg8(5, reg, d, m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_5_IndirectIxdOrIyd_D:		/* 0xdd/0xfd 0xcb 0xaa */
-			Z80__RES__N_Indirect_REG16_D__REG8(5, reg, d, m_registers.d);
+			Z80_RES_N_IndirectReg16D_Reg8(5, reg, d, m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_5_IndirectIxdOrIyd_E:		/* 0xdd/0xfd 0xcb 0xab */
-			Z80__RES__N_Indirect_REG16_D__REG8(5, reg, d, m_registers.e);
+			Z80_RES_N_IndirectReg16D_Reg8(5, reg, d, m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_5_IndirectIxdOrIyd_H:		/* 0xdd/0xfd 0xcb 0xac */
-			Z80__RES__N_Indirect_REG16_D__REG8(5, reg, d, m_registers.h);
+			Z80_RES_N_IndirectReg16D_Reg8(5, reg, d, m_registers.h);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_5_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0xad */
-			Z80__RES__N_Indirect_REG16_D__REG8(5, reg, d, m_registers.l);
+			Z80_RES_N_IndirectReg16D_Reg8(5, reg, d, m_registers.l);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_5_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0xae */
-			Z80__RES__N_Indirect_REG16_D(5, reg, d);
+			Z80_RES_N_IndirectReg16D(5, reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_5_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0xaf */
-			Z80__RES__N_Indirect_REG16_D__REG8(5, reg, d, m_registers.a);
+			Z80_RES_N_IndirectReg16D_Reg8(5, reg, d, m_registers.a);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_6_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0xb0 */
-			Z80__RES__N_Indirect_REG16_D__REG8(6, reg, d, m_registers.b);
+			Z80_RES_N_IndirectReg16D_Reg8(6, reg, d, m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_6_IndirectIxdOrIyd_C:		/* 0xdd/0xfd 0xcb 0xb1 */
-			Z80__RES__N_Indirect_REG16_D__REG8(6, reg, d, m_registers.c);
+			Z80_RES_N_IndirectReg16D_Reg8(6, reg, d, m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_6_IndirectIxdOrIyd_D:		/* 0xdd/0xfd 0xcb 0xb2 */
-			Z80__RES__N_Indirect_REG16_D__REG8(6, reg, d, m_registers.d);
+			Z80_RES_N_IndirectReg16D_Reg8(6, reg, d, m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_6_IndirectIxdOrIyd_E:		/* 0xdd/0xfd 0xcb 0xb3 */
-			Z80__RES__N_Indirect_REG16_D__REG8(6, reg, d, m_registers.e);
+			Z80_RES_N_IndirectReg16D_Reg8(6, reg, d, m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_6_IndirectIxdOrIyd_H:		/* 0xdd/0xfd 0xcb 0xb4 */
-			Z80__RES__N_Indirect_REG16_D__REG8(6, reg, d, m_registers.h);
+			Z80_RES_N_IndirectReg16D_Reg8(6, reg, d, m_registers.h);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_6_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0xb5 */
-			Z80__RES__N_Indirect_REG16_D__REG8(6, reg, d, m_registers.l);
+			Z80_RES_N_IndirectReg16D_Reg8(6, reg, d, m_registers.l);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_6_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0xb6 */
-			Z80__RES__N_Indirect_REG16_D(6, reg, d);
+			Z80_RES_N_IndirectReg16D(6, reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_6_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0xb7 */
-			Z80__RES__N_Indirect_REG16_D__REG8(6, reg, d, m_registers.a);
+			Z80_RES_N_IndirectReg16D_Reg8(6, reg, d, m_registers.a);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_7_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0xb8 */
-			Z80__RES__N_Indirect_REG16_D__REG8(7, reg, d, m_registers.b);
+			Z80_RES_N_IndirectReg16D_Reg8(7, reg, d, m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_7_IndirectIxdOrIyd_C:		/* 0xdd/0xfd 0xcb 0xb9 */
-			Z80__RES__N_Indirect_REG16_D__REG8(7, reg, d, m_registers.c);
+			Z80_RES_N_IndirectReg16D_Reg8(7, reg, d, m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_7_IndirectIxdOrIyd_D:		/* 0xdd/0xfd 0xcb 0xba */
-			Z80__RES__N_Indirect_REG16_D__REG8(7, reg, d, m_registers.d);
+			Z80_RES_N_IndirectReg16D_Reg8(7, reg, d, m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_7_IndirectIxdOrIyd_E:		/* 0xdd/0xfd 0xcb 0xbb */
-			Z80__RES__N_Indirect_REG16_D__REG8(7, reg, d, m_registers.e);
+			Z80_RES_N_IndirectReg16D_Reg8(7, reg, d, m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_7_IndirectIxdOrIyd_H:		/* 0xdd/0xfd 0xcb 0xbc */
-			Z80__RES__N_Indirect_REG16_D__REG8(7, reg, d, m_registers.h);
+			Z80_RES_N_IndirectReg16D_Reg8(7, reg, d, m_registers.h);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_7_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0xbd */
-			Z80__RES__N_Indirect_REG16_D__REG8(7, reg, d, m_registers.l);
+			Z80_RES_N_IndirectReg16D_Reg8(7, reg, d, m_registers.l);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_7_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0xbe */
-			Z80__RES__N_Indirect_REG16_D(7, reg, d);
+			Z80_RES_N_IndirectReg16D(7, reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Res_7_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0xbf */
-			Z80__RES__N_Indirect_REG16_D__REG8(7, reg, d, m_registers.a);
+			Z80_RES_N_IndirectReg16D_Reg8(7, reg, d, m_registers.a);
 			break;
 
 		/* SET opcodes */
 		case Opcodes::Z80_DdOrFd_Cb_Set_0_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0xc0 */
-			Z80__SET__N_Indirect_REG16_D__REG8(0, reg, d, m_registers.b);
+			Z80_SET_N_IndirectReg16D_Reg8(0, reg, d, m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_0_IndirectIxdOrIyd_C:		/* 0xdd/0xfd 0xcb 0xc1 */
-			Z80__SET__N_Indirect_REG16_D__REG8(0, reg, d, m_registers.c);
+			Z80_SET_N_IndirectReg16D_Reg8(0, reg, d, m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_0_IndirectIxdOrIyd_D:		/* 0xdd/0xfd 0xcb 0xc2 */
-			Z80__SET__N_Indirect_REG16_D__REG8(0, reg, d, m_registers.d);
+			Z80_SET_N_IndirectReg16D_Reg8(0, reg, d, m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_0_IndirectIxdOrIyd_E:		/* 0xdd/0xfd 0xcb 0xc3 */
-			Z80__SET__N_Indirect_REG16_D__REG8(0, reg, d, m_registers.e);
+			Z80_SET_N_IndirectReg16D_Reg8(0, reg, d, m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_0_IndirectIxdOrIyd_H:		/* 0xdd/0xfd 0xcb 0xc4 */
-			Z80__SET__N_Indirect_REG16_D__REG8(0, reg, d, m_registers.h);
+			Z80_SET_N_IndirectReg16D_Reg8(0, reg, d, m_registers.h);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_0_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0xc5 */
-			Z80__SET__N_Indirect_REG16_D__REG8(0, reg, d, m_registers.l);
+			Z80_SET_N_IndirectReg16D_Reg8(0, reg, d, m_registers.l);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_0_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0xc6 */
-			Z80__SET__N_Indirect_REG16_D(0, reg, d);
+			Z80_SET_N_IndirectReg16D(0, reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_0_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0xc7 */
-			Z80__SET__N_Indirect_REG16_D__REG8(0, reg, d, m_registers.a);
+			Z80_SET_N_IndirectReg16D_Reg8(0, reg, d, m_registers.a);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_1_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0xc8 */
-			Z80__SET__N_Indirect_REG16_D__REG8(1, reg, d, m_registers.b);
+			Z80_SET_N_IndirectReg16D_Reg8(1, reg, d, m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_1_IndirectIxdOrIyd_C:		/* 0xdd/0xfd 0xcb 0xc9 */
-			Z80__SET__N_Indirect_REG16_D__REG8(1, reg, d, m_registers.c);
+			Z80_SET_N_IndirectReg16D_Reg8(1, reg, d, m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_1_IndirectIxdOrIyd_D:		/* 0xdd/0xfd 0xcb 0xca */
-			Z80__SET__N_Indirect_REG16_D__REG8(1, reg, d, m_registers.d);
+			Z80_SET_N_IndirectReg16D_Reg8(1, reg, d, m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_1_IndirectIxdOrIyd_E:		/* 0xdd/0xfd 0xcb 0xcb */
-			Z80__SET__N_Indirect_REG16_D__REG8(1, reg, d, m_registers.e);
+			Z80_SET_N_IndirectReg16D_Reg8(1, reg, d, m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_1_IndirectIxdOrIyd_H:		/* 0xdd/0xfd 0xcb 0xcc */
-			Z80__SET__N_Indirect_REG16_D__REG8(1, reg, d, m_registers.h);
+			Z80_SET_N_IndirectReg16D_Reg8(1, reg, d, m_registers.h);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_1_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0xcd */
-			Z80__SET__N_Indirect_REG16_D__REG8(1, reg, d, m_registers.l);
+			Z80_SET_N_IndirectReg16D_Reg8(1, reg, d, m_registers.l);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_1_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0xce */
-			Z80__SET__N_Indirect_REG16_D(1, reg, d);
+			Z80_SET_N_IndirectReg16D(1, reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_1_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0xcf */
-			Z80__SET__N_Indirect_REG16_D__REG8(1, reg, d, m_registers.a);
+			Z80_SET_N_IndirectReg16D_Reg8(1, reg, d, m_registers.a);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_2_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0xd0 */
-			Z80__SET__N_Indirect_REG16_D__REG8(2, reg, d, m_registers.b);
+			Z80_SET_N_IndirectReg16D_Reg8(2, reg, d, m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_2_IndirectIxdOrIyd_C:		/* 0xdd/0xfd 0xcb 0xd1 */
-			Z80__SET__N_Indirect_REG16_D__REG8(2, reg, d, m_registers.c);
+			Z80_SET_N_IndirectReg16D_Reg8(2, reg, d, m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_2_IndirectIxdOrIyd_D:		/* 0xdd/0xfd 0xcb 0xd2 */
-			Z80__SET__N_Indirect_REG16_D__REG8(2, reg, d, m_registers.d);
+			Z80_SET_N_IndirectReg16D_Reg8(2, reg, d, m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_2_IndirectIxdOrIyd_E:		/* 0xdd/0xfd 0xcb 0xd3 */
-			Z80__SET__N_Indirect_REG16_D__REG8(2, reg, d, m_registers.e);
+			Z80_SET_N_IndirectReg16D_Reg8(2, reg, d, m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_2_IndirectIxdOrIyd_H:		/* 0xdd/0xfd 0xcb 0xd4 */
-			Z80__SET__N_Indirect_REG16_D__REG8(2, reg, d, m_registers.h);
+			Z80_SET_N_IndirectReg16D_Reg8(2, reg, d, m_registers.h);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_2_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0xd5 */
-			Z80__SET__N_Indirect_REG16_D__REG8(2, reg, d, m_registers.l);
+			Z80_SET_N_IndirectReg16D_Reg8(2, reg, d, m_registers.l);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_2_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0xd6 */
-			Z80__SET__N_Indirect_REG16_D(2, reg, d);
+			Z80_SET_N_IndirectReg16D(2, reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_2_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0xd7 */
-			Z80__SET__N_Indirect_REG16_D__REG8(2, reg, d, m_registers.a);
+			Z80_SET_N_IndirectReg16D_Reg8(2, reg, d, m_registers.a);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_3_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0xd8 */
-			Z80__SET__N_Indirect_REG16_D__REG8(3, reg, d, m_registers.b);
+			Z80_SET_N_IndirectReg16D_Reg8(3, reg, d, m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_3_IndirectIxdOrIyd_C:		/* 0xdd/0xfd 0xcb 0xd9 */
-			Z80__SET__N_Indirect_REG16_D__REG8(3, reg, d, m_registers.c);
+			Z80_SET_N_IndirectReg16D_Reg8(3, reg, d, m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_3_IndirectIxdOrIyd_D:		/* 0xdd/0xfd 0xcb 0xda */
-			Z80__SET__N_Indirect_REG16_D__REG8(3, reg, d, m_registers.d);
+			Z80_SET_N_IndirectReg16D_Reg8(3, reg, d, m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_3_IndirectIxdOrIyd_E:		/* 0xdd/0xfd 0xcb 0xdb */
-			Z80__SET__N_Indirect_REG16_D__REG8(3, reg, d, m_registers.e);
+			Z80_SET_N_IndirectReg16D_Reg8(3, reg, d, m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_3_IndirectIxdOrIyd_H:		/* 0xdd/0xfd 0xcb 0xdc */
-			Z80__SET__N_Indirect_REG16_D__REG8(3, reg, d, m_registers.h);
+			Z80_SET_N_IndirectReg16D_Reg8(3, reg, d, m_registers.h);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_3_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0xdd */
-			Z80__SET__N_Indirect_REG16_D__REG8(3, reg, d, m_registers.l);
+			Z80_SET_N_IndirectReg16D_Reg8(3, reg, d, m_registers.l);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_3_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0xde */
-			Z80__SET__N_Indirect_REG16_D(3, reg, d);
+			Z80_SET_N_IndirectReg16D(3, reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_3_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0xdf */
-			Z80__SET__N_Indirect_REG16_D__REG8(3, reg, d, m_registers.a);
+			Z80_SET_N_IndirectReg16D_Reg8(3, reg, d, m_registers.a);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_4_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0xe0 */
-			Z80__SET__N_Indirect_REG16_D__REG8(4, reg, d, m_registers.b);
+			Z80_SET_N_IndirectReg16D_Reg8(4, reg, d, m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_4_IndirectIxdOrIyd_C:		/* 0xdd/0xfd 0xcb 0xe1 */
-			Z80__SET__N_Indirect_REG16_D__REG8(4, reg, d, m_registers.c);
+			Z80_SET_N_IndirectReg16D_Reg8(4, reg, d, m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_4_IndirectIxdOrIyd_D:		/* 0xdd/0xfd 0xcb 0xe2 */
-			Z80__SET__N_Indirect_REG16_D__REG8(4, reg, d, m_registers.d);
+			Z80_SET_N_IndirectReg16D_Reg8(4, reg, d, m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_4_IndirectIxdOrIyd_E:		/* 0xdd/0xfd 0xcb 0xe3 */
-			Z80__SET__N_Indirect_REG16_D__REG8(4, reg, d, m_registers.e);
+			Z80_SET_N_IndirectReg16D_Reg8(4, reg, d, m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_4_IndirectIxdOrIyd_H:		/* 0xdd/0xfd 0xcb 0xe4 */
-			Z80__SET__N_Indirect_REG16_D__REG8(4, reg, d, m_registers.h);
+			Z80_SET_N_IndirectReg16D_Reg8(4, reg, d, m_registers.h);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_4_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0xe5 */
-			Z80__SET__N_Indirect_REG16_D__REG8(4, reg, d, m_registers.l);
+			Z80_SET_N_IndirectReg16D_Reg8(4, reg, d, m_registers.l);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_4_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0xe6 */
-			Z80__SET__N_Indirect_REG16_D(4, reg, d);
+			Z80_SET_N_IndirectReg16D(4, reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_4_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0xe7 */
-			Z80__SET__N_Indirect_REG16_D__REG8(4, reg, d, m_registers.a);
+			Z80_SET_N_IndirectReg16D_Reg8(4, reg, d, m_registers.a);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_5_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0xe8 */
-			Z80__SET__N_Indirect_REG16_D__REG8(5, reg, d, m_registers.b);
+			Z80_SET_N_IndirectReg16D_Reg8(5, reg, d, m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_5_IndirectIxdOrIyd_C:		/* 0xdd/0xfd 0xcb 0xe9 */
-			Z80__SET__N_Indirect_REG16_D__REG8(5, reg, d, m_registers.c);
+			Z80_SET_N_IndirectReg16D_Reg8(5, reg, d, m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_5_IndirectIxdOrIyd_D:		/* 0xdd/0xfd 0xcb 0xea */
-			Z80__SET__N_Indirect_REG16_D__REG8(5, reg, d, m_registers.d);
+			Z80_SET_N_IndirectReg16D_Reg8(5, reg, d, m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_5_IndirectIxdOrIyd_E:		/* 0xdd/0xfd 0xcb 0xeb */
-			Z80__SET__N_Indirect_REG16_D__REG8(5, reg, d, m_registers.e);
+			Z80_SET_N_IndirectReg16D_Reg8(5, reg, d, m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_5_IndirectIxdOrIyd_H:		/* 0xdd/0xfd 0xcb 0xec */
-			Z80__SET__N_Indirect_REG16_D__REG8(5, reg, d, m_registers.h);
+			Z80_SET_N_IndirectReg16D_Reg8(5, reg, d, m_registers.h);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_5_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0xed */
-			Z80__SET__N_Indirect_REG16_D__REG8(5, reg, d, m_registers.l);
+			Z80_SET_N_IndirectReg16D_Reg8(5, reg, d, m_registers.l);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_5_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0xee */
-			Z80__SET__N_Indirect_REG16_D(5, reg, d);
+			Z80_SET_N_IndirectReg16D(5, reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_5_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0xef */
-			Z80__SET__N_Indirect_REG16_D__REG8(5, reg, d, m_registers.a);
+			Z80_SET_N_IndirectReg16D_Reg8(5, reg, d, m_registers.a);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_6_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0xf0 */
-			Z80__SET__N_Indirect_REG16_D__REG8(6, reg, d, m_registers.b);
+			Z80_SET_N_IndirectReg16D_Reg8(6, reg, d, m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_6_IndirectIxdOrIyd_C:		/* 0xdd/0xfd 0xcb 0xf1 */
-			Z80__SET__N_Indirect_REG16_D__REG8(6, reg, d, m_registers.c);
+			Z80_SET_N_IndirectReg16D_Reg8(6, reg, d, m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_6_IndirectIxdOrIyd_D:		/* 0xdd/0xfd 0xcb 0xf2 */
-			Z80__SET__N_Indirect_REG16_D__REG8(6, reg, d, m_registers.d);
+			Z80_SET_N_IndirectReg16D_Reg8(6, reg, d, m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_6_IndirectIxdOrIyd_E:		/* 0xdd/0xfd 0xcb 0xf3 */
-			Z80__SET__N_Indirect_REG16_D__REG8(6, reg, d, m_registers.e);
+			Z80_SET_N_IndirectReg16D_Reg8(6, reg, d, m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_6_IndirectIxdOrIyd_H:		/* 0xdd/0xfd 0xcb 0xf4 */
-			Z80__SET__N_Indirect_REG16_D__REG8(6, reg, d, m_registers.h);
+			Z80_SET_N_IndirectReg16D_Reg8(6, reg, d, m_registers.h);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_6_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0xf5 */
-			Z80__SET__N_Indirect_REG16_D__REG8(6, reg, d, m_registers.l);
+			Z80_SET_N_IndirectReg16D_Reg8(6, reg, d, m_registers.l);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_6_IndirectIxdOrIyd:		/* 0xdd/0xfd 0xcb 0xf6 */
-			Z80__SET__N_Indirect_REG16_D(6, reg, d);
+			Z80_SET_N_IndirectReg16D(6, reg, d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_6_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0xf7 */
-			Z80__SET__N_Indirect_REG16_D__REG8(6, reg, d, m_registers.a);
+			Z80_SET_N_IndirectReg16D_Reg8(6, reg, d, m_registers.a);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_7_IndirectIxdOrIyd_B:		/* 0xdd/0xfd 0xcb 0xf8 */
-			Z80__SET__N_Indirect_REG16_D__REG8(7, reg, d, m_registers.b);
+			Z80_SET_N_IndirectReg16D_Reg8(7, reg, d, m_registers.b);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_7_IndirectIxdOrIyd_C:		/* 0xdd/0xfd 0xcb 0xf9 */
-			Z80__SET__N_Indirect_REG16_D__REG8(7, reg, d, m_registers.c);
+			Z80_SET_N_IndirectReg16D_Reg8(7, reg, d, m_registers.c);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_7_IndirectIxdOrIyd_D:		/* 0xdd/0xfd 0xcb 0xfa */
-			Z80__SET__N_Indirect_REG16_D__REG8(7, reg, d, m_registers.d);
+			Z80_SET_N_IndirectReg16D_Reg8(7, reg, d, m_registers.d);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_7_IndirectIxdOrIyd_E:		/* 0xdd/0xfd 0xcb 0xfb */
-			Z80__SET__N_Indirect_REG16_D__REG8(7, reg, d, m_registers.e);
+			Z80_SET_N_IndirectReg16D_Reg8(7, reg, d, m_registers.e);
 			break;
 
 		case Opcodes::Z80_DdOrFd_Cb_Set_7_IndirectIxdOrIyd_H:		/* 0xdd/0xfd 0xcb 0xfc */
-			Z80__SET__N_Indirect_REG16_D__REG8(7, reg, d, m_registers.h);
+			Z80_SET_N_IndirectReg16D_Reg8(7, reg, d, m_registers.h);
 			break;
 
 	    case Opcodes::Z80_DdOrFd_Cb_Set_7_IndirectIxdOrIyd_L:		/* 0xdd/0xfd 0xcb 0xfd */
-            Z80__SET__N_Indirect_REG16_D__REG8(7, reg, d, m_registers.l);
+            Z80_SET_N_IndirectReg16D_Reg8(7, reg, d, m_registers.l);
             break;
 
 	    case Opcodes::Z80_DdOrFd_Cb_Set_7_IndirectIxdOrIyd:			/* 0xdd/0xfd 0xcb 0xfe */
-            Z80__SET__N_Indirect_REG16_D(7, reg, d);
+            Z80_SET_N_IndirectReg16D(7, reg, d);
             break;
 
 	    case Opcodes::Z80_DdOrFd_Cb_Set_7_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0xff */
-            Z80__SET__N_Indirect_REG16_D__REG8(7, reg, d, m_registers.a);
+            Z80_SET_N_IndirectReg16D_Reg8(7, reg, d, m_registers.a);
             break;
 	}
 
