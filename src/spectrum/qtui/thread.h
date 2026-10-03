@@ -40,7 +40,7 @@ namespace Spectrum::QtUi
             }
 
 	        [[nodiscard]]
-            bool isPaused() const
+            bool isPaused() const noexcept
             {
                 return m_pause;
             }
