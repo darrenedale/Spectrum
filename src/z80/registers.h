@@ -6,18 +6,13 @@
 #define Z80_REGISTERS_H
 
 #include <ostream>
-#include "types.h"
 
-namespace
-{
-    constexpr const bool ByteOrderMatch = (Z80::HostByteOrder == Z80::Z80ByteOrder);
-};
+#include "types.h"
 
 namespace Z80
 {
-//#if (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
-//    using RegisterZ80Endian = Z80::UnsignedWord &;
-//#elif (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+    constexpr bool ByteOrderMatch = (::Z80::HostByteOrder == ::Z80::Z80ByteOrder);
+
     /**
      * Utility class to abstract away differences in byte order between the host and Z80 platforms. If the host and
      * Z80 use different byte orders, instances of this class enable reading and writing of registers using Z80 byte
@@ -166,7 +161,6 @@ namespace Z80
             return (value & 0xff00 >> 8) | (value & 0x00ff << 8);
         }
     };
-//#endif
 
     /**
      * Set of Z80 registers.
@@ -187,27 +181,27 @@ namespace Z80
     struct Registers
     {
         // 16-bit register pairs in host byte order
-        UnsignedWord af;
-        UnsignedWord bc;
-        UnsignedWord de;
-        UnsignedWord hl;
-        UnsignedWord ix;
-        UnsignedWord iy;
-        UnsignedWord pc;
-        UnsignedWord sp;
+        UnsignedWord af = 0xffff;
+        UnsignedWord bc = 0x0000;
+        UnsignedWord de = 0x0000;
+        UnsignedWord hl = 0x0000;
+        UnsignedWord ix = 0x0000;
+        UnsignedWord iy = 0x0000;
+        UnsignedWord pc = 0x0000;
+        UnsignedWord sp = 0xffff;
 
         // 16-bit shadow register pairs in host byte order
-        UnsignedWord afShadow;
-        UnsignedWord bcShadow;
-        UnsignedWord deShadow;
-        UnsignedWord hlShadow;
+        UnsignedWord afShadow = 0xffff;
+        UnsignedWord bcShadow = 0x0000;
+        UnsignedWord deShadow = 0x0000;
+        UnsignedWord hlShadow = 0x0000;
 
         // memptr register in host byte order
-        UnsignedWord memptr;
+        UnsignedWord memptr = 0x0000;
 
         // interrupt vector and refresh registers
-        UnsignedByte i;
-        UnsignedByte r;
+        UnsignedByte i = 0;
+        UnsignedByte r = 0;
 
         // Individual bytes from each 16-bit register pair. These are all references to the actual byte in the register
         // pair above, so writing an 8-bit register will automatically update the appropriate 16-bit register pair at
@@ -291,7 +285,7 @@ namespace Z80
         /**
          * Reset the register values to their default state.
          */
-        void reset();
+        void reset() noexcept;
     };
 
     /**
