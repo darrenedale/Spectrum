@@ -1282,14 +1282,14 @@ void MainWindow::createDebugToolBar()
 
 void MainWindow::createSpeedToolBar()
 {
-    auto * tempToolBar = addToolBar(tr("Speed"));
-    tempToolBar->setObjectName(QStringLiteral("speed-toolbar"));
-    auto geom = tempToolBar->geometry();
+    auto * speedToolBar = addToolBar(tr("Speed"));
+    speedToolBar->setObjectName(QStringLiteral("speed-toolbar"));
+    auto geom = speedToolBar->geometry();
     geom.moveLeft(width() / 3 * 2);
-    tempToolBar->setGeometry(geom);
-    tempToolBar->addWidget(new QLabel(tr("Speed")));
-    tempToolBar->addWidget(&m_emulationSpeedSlider);
-    tempToolBar->addWidget(&m_emulationSpeedSpin);
+    speedToolBar->setGeometry(geom);
+    speedToolBar->addWidget(new QLabel(tr("Speed")));
+    speedToolBar->addWidget(&m_emulationSpeedSlider);
+    speedToolBar->addWidget(&m_emulationSpeedSpin);
 }
 
 void MainWindow::createDockWidgets()
@@ -1819,9 +1819,16 @@ void MainWindow::closeEvent(QCloseEvent * ev)
 
 void MainWindow::keyPressEvent(QKeyEvent * event)
 {
-    if (!event->isAutoRepeat() && Qt::Key::Key_Tab == event->key()) {
-        m_spectrum->setExecutionSpeedConstrained(false);
-        updateStatusBarSpeedWidget();
+    if (!event->isAutoRepeat()) {
+        if (Qt::Key::Key_Tab == event->key()) {
+            m_spectrum->setExecutionSpeedConstrained(false);
+            updateStatusBarSpeedWidget();
+        } else if (Qt::Key::Key_PageUp == event->key()) {
+            m_emulationSpeedSpin.setValue(m_emulationSpeedSpin.value() + 10);
+        } else if (Qt::Key::Key_PageDown == event->key()) {
+            m_emulationSpeedSpin.setValue(m_emulationSpeedSpin.value() - 10);
+        }
+
         return;
     }
 
