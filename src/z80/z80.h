@@ -95,7 +95,7 @@ namespace Z80
             [[nodiscard]]
             std::uint32_t tStates() const noexcept
             {
-                return m_tStates;
+                return m_tStateCounter;
             }
 
             /**
@@ -105,7 +105,7 @@ namespace Z80
              */
             void setTStates(const std::uint32_t tStates) noexcept
             {
-                m_tStates = tStates;
+                m_tStateCounter = tStates;
             }
 
             /**
@@ -1146,7 +1146,7 @@ namespace Z80
              *   - the accumulator and the shadow accumulator are set to 0xff
              *   - all flags and shadow flags are set
              */
-            void reset();
+            void reset() noexcept;
 
             /**
              * Connect an IO device to the Z80.
@@ -1176,7 +1176,10 @@ namespace Z80
              *
              * The NMI will be handled the next time an instruction completes executing.
              */
-            void nmi();
+            void nmi() noexcept
+            {
+                m_nmiPending = true;
+            }
 
             /**
              * Trigger a maskable interrupt.
@@ -1186,7 +1189,11 @@ namespace Z80
              *
              * @param data The data placed on the data bus by the interrupting device.
              */
-            void interrupt(UnsignedByte data = 0x00);
+            void interrupt(const UnsignedByte data = 0x00) noexcept
+            {
+                m_interruptData = data;
+                m_interruptRequested = true;
+            }
 
             /**
              * Execute a single instruction.
@@ -1320,7 +1327,7 @@ namespace Z80
              *
              * Client code can use this to determine interrupt timing, for example.
              */
-            std::uint32_t m_tStates;
+            std::uint32_t m_tStateCounter;
 
             /**
              * Primary interrupt flip-flop.

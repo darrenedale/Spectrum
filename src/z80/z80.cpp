@@ -596,9 +596,7 @@ Z80_RES_N_IndirectReg16D(n,(reg16),(d));               \
 	Z80_FLAG_Z_UPDATE(0 == (reg));\
 }
 
-/*
- * re-use RL instruction for 8-bit reg to do the actual work
- */
+/* re-use RL instruction for 8-bit reg to do the actual work */
 #define Z80_RL_IndirectReg16(reg) \
 {      \
     UnsignedByte * tmpValue = memory()->pointerTo(reg);\
@@ -854,44 +852,44 @@ namespace
     }
 }
 
-constexpr const std::uint8_t Z80::Z80::PlainOpcodeSizes[256] = {
+constexpr std::uint8_t Z80::Z80::PlainOpcodeSizes[256] = {
 #include "includes/z80_plain_opcode_sizes.inc"
 };
 
 // NOTE all 0xcb opcodes are 2 bytes in size
 
-constexpr const std::uint8_t Z80::Z80::EdOpcodeSizes[256] = {
+constexpr std::uint8_t Z80::Z80::EdOpcodeSizes[256] = {
 #include "includes/z80_ed_opcode_sizes.inc"
 };
 
-constexpr const std::uint8_t Z80::Z80::DdOrFdOpcodeSizes[256] = {
+constexpr std::uint8_t Z80::Z80::DdOrFdOpcodeSizes[256] = {
 #include "includes/z80_ddorfd_opcode_sizes.inc"
 };
 
-constexpr const int Z80::Z80::PlainOpcodeTStates[256] = {
+constexpr int Z80::Z80::PlainOpcodeTStates[256] = {
 #include "includes/z80_plain_opcode_tstates.inc"
 };
 
-constexpr const std::uint8_t Z80::Z80::CbOpcodeTStates[256] = {
+constexpr std::uint8_t Z80::Z80::CbOpcodeTStates[256] = {
 #include "includes/z80_cb_opcode_tstates.inc"
 };
 
-constexpr const std::uint8_t Z80::Z80::EdOpcodeTStates[256] = {
+constexpr std::uint8_t Z80::Z80::EdOpcodeTStates[256] = {
 #include "includes/z80_ed_opcode_tstates.inc"
 };
 
-constexpr const int Z80::Z80::DdOrFdOpcodeTStates[256] = {
+constexpr int Z80::Z80::DdOrFdOpcodeTStates[256] = {
 #include "includes/z80_ddorfd_opcode_tstates.inc"
 };
 
-constexpr const std::uint8_t Z80::Z80::DdCbOrFdCbOpcodeTStates[256] = {
+constexpr std::uint8_t Z80::Z80::DdCbOrFdCbOpcodeTStates[256] = {
 #include "includes/z80_ddorfd_cb_opcode_tstates.inc"
 };
 
 Z80::Z80::Z80(Memory * memory)
 : Cpu(memory),
   m_registers(),
-  m_tStates(0),
+  m_tStateCounter(0),
   m_iff1(false),
   m_iff2(false),
   m_interruptMode(InterruptMode::IM0),
@@ -927,20 +925,9 @@ void Z80::Z80::disconnectIODevice(IODevice * device)
     m_ioDevices.erase(deviceIterator);
 }
 
-void Z80::Z80::interrupt(UnsignedByte data)
+void Z80::Z80::reset() noexcept
 {
-    m_interruptData = data;
-	m_interruptRequested = true;
-}
-
-void Z80::Z80::nmi()
-{
-	m_nmiPending = true;
-}
-
-void Z80::Z80::reset()
-{
-    m_tStates = 0;
+    m_tStateCounter = 0;
 	m_nmiPending = false;
     m_interruptMode = InterruptMode::IM0;
     m_interruptData = 0x00;
@@ -1088,7 +1075,12 @@ void Z80::Z80::handleNmi()
     Z80_PUSH_Reg16(m_registers.pc);
     m_registers.pc = 0x0066;
     ++m_registers.r;
-    m_tStates += 5;
+
+    // Z80 NMI timings
+    // - 5 t-states to read opcode and dec SP
+    // - 3 t-states to write low byte of PC to stack and dec SP
+    // - 3 t-states to write high byte of PC to stack and jump to $0066
+    m_tStateCounter += 11;
 }
 
 int Z80::Z80::handleInterrupt()
@@ -1199,7 +1191,8 @@ int Z80::Z80::fetchExecuteCycle()
     // currently paged in
 	static UnsignedByte machineCode[4];
 
-	int tStates = 0;
+	std::uint8_t tStates = 0;
+
     // the Z80 defers a pending interrupt by one instruction after EI to allow for a RET to be executed - EI instruction
     // handling code sets this to ensure the interrupt is delayed
     m_delayInterruptOneInstruction = false;
@@ -1221,7 +1214,6 @@ int Z80::Z80::fetchExecuteCycle()
 
     if (m_nmiPending) {
         handleNmi();
-        tStates += 11;
         m_nmiPending = false;
     }
 
@@ -1243,7 +1235,7 @@ int Z80::Z80::fetchExecuteCycle()
     }
 #endif
 
-    m_tStates += tStates;
+    m_tStateCounter += tStates;
 	return tStates;
 }
 
