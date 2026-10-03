@@ -5,7 +5,7 @@
 #include <format>
 
 #include "disassembler.h"
-#include "../opcodes.h"
+#include "../opcodes/opcodes.h"
 #include "../z80.h"
 #include "../../util/debug.h"
 
@@ -102,14 +102,14 @@ Mnemonic Disassembler::disassembleOne(const UnsignedByte * machineCode)
 Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
 {
     switch (*machineCode) {
-        case Z80__PLAIN__NOP:                // 0x00
+        case Opcodes::Z80_Plain_Nop:                // 0x00
             return {
                 .instruction = Instruction::NOP,
                 .operands = {},
                 .size = 1,
             };
 
-        case Z80__PLAIN__LD__BC__NN:         // 0x01
+        case Opcodes::Z80_Plain_Ld_Bc_Nn:         // 0x01
             return {
                 .instruction = Instruction::LD,
                 .operands = {
@@ -119,7 +119,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 3,
             };
         
-        case Z80__PLAIN__LD__INDIRECT_BC__A:                // 0x02
+        case Opcodes::Z80_Plain_Ld_IndirectBc_A:                // 0x02
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -129,7 +129,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
         
-        case Z80__PLAIN__INC__BC:                // 0x03
+        case Opcodes::Z80_Plain_Inc_Bc:                // 0x03
             return {
                     .instruction = Instruction::INC,
                     .operands = {
@@ -138,7 +138,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__INC__B:                // 0x04
+        case Opcodes::Z80_Plain_Inc_B:                // 0x04
             return {
                     .instruction = Instruction::INC,
                     .operands = {
@@ -147,7 +147,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__DEC__B:                // 0x05
+        case Opcodes::Z80_Plain_Dec_B:                // 0x05
             return {
                     .instruction = Instruction::DEC,
                     .operands = {
@@ -156,7 +156,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__B__N:                // 0x06
+        case Opcodes::Z80_Plain_Ld_B_N:                // 0x06
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -166,14 +166,14 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__PLAIN__RLCA:                // 0x07
+        case Opcodes::Z80_Plain_Rlca:                // 0x07
             return {
                     .instruction = Instruction::RLCA,
                     .operands = {},
                     .size = 1,
             };
 
-        case Z80__PLAIN__EX__AF__AF_SHADOW:                // 0x08
+        case Opcodes::Z80_Plain_Ex_Af_AfShadow:                // 0x08
             return {
                     .instruction = Instruction::EX,
                     .operands = {
@@ -183,7 +183,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__ADD__HL__BC:                // 0x09
+        case Opcodes::Z80_Plain_Add_Hl_Bc:                // 0x09
             return {
                     .instruction = Instruction::ADD,
                     .operands = {
@@ -193,7 +193,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__A__INDIRECT_BC:                // 0x0a
+        case Opcodes::Z80_Plain_Ld_A_IndirectBc:                // 0x0a
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -203,7 +203,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__DEC__BC:                // 0x0b
+        case Opcodes::Z80_Plain_Dec_Bc:                // 0x0b
             return {
                     .instruction = Instruction::DEC,
                     .operands = {
@@ -212,7 +212,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__INC__C:                // 0x0c
+        case Opcodes::Z80_Plain_Inc_C:                // 0x0c
             return {
                     .instruction = Instruction::INC,
                     .operands = {
@@ -221,7 +221,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__DEC__C:                // 0x0d
+        case Opcodes::Z80_Plain_Dec_C:                // 0x0d
             return {
                     .instruction = Instruction::DEC,
                     .operands = {
@@ -230,7 +230,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__C__N:                // 0x0e
+        case Opcodes::Z80_Plain_Ld_C_N:                // 0x0e
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -240,14 +240,14 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__PLAIN__RRCA:                // 0x0f
+        case Opcodes::Z80_Plain_Rrca:                // 0x0f
             return {
                     .instruction = Instruction::RRCA,
                     .operands = {},
                     .size = 1,
             };
 
-        case Z80__PLAIN__DJNZ__d:                // 0x10
+        case Opcodes::Z80_Plain_Djnz_d:                // 0x10
             return {
                 .instruction = Instruction::DJNZ,
                 .operands = {
@@ -256,7 +256,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 1,
             };
 
-        case Z80__PLAIN__LD__DE__NN:                // 0x11
+        case Opcodes::Z80_Plain_Ld_De_Nn:                // 0x11
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -266,7 +266,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 3,
             };
 
-        case Z80__PLAIN__LD__INDIRECT_DE__A:                // 0x12
+        case Opcodes::Z80_Plain_Ld_IndirectDe_A:                // 0x12
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -276,7 +276,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__INC__DE:                // 0x13
+        case Opcodes::Z80_Plain_Inc_De:                // 0x13
             return {
                     .instruction = Instruction::INC,
                     .operands = {
@@ -285,7 +285,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__INC__D:                // 0x14
+        case Opcodes::Z80_Plain_Inc_D:                // 0x14
             return {
                     .instruction = Instruction::INC,
                     .operands = {
@@ -294,7 +294,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__DEC__D:                // 0x15
+        case Opcodes::Z80_Plain_Dec_D:                // 0x15
             return {
                     .instruction = Instruction::DEC,
                     .operands = {
@@ -303,7 +303,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__D__N:                // 0x16
+        case Opcodes::Z80_Plain_Ld_D_N:                // 0x16
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -313,14 +313,14 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__PLAIN__RLA:                // 0x17
+        case Opcodes::Z80_Plain_Rla:                // 0x17
             return {
                 .instruction = Instruction::RLA,
                 .operands = {},
                 .size = 1,
             };
 
-        case Z80__PLAIN__JR__d:                // 0x18
+        case Opcodes::Z80_Plain_Jr_d:                // 0x18
             return {
                 .instruction = Instruction::JR,
                 .operands = {
@@ -329,7 +329,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 2,
             };
 
-        case Z80__PLAIN__ADD__HL__DE:                // 0x19
+        case Opcodes::Z80_Plain_Add_Hl_De:                // 0x19
             return {
                     .instruction = Instruction::ADD,
                     .operands = {
@@ -339,7 +339,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__A__INDIRECT_DE:                // 0x1a
+        case Opcodes::Z80_Plain_Ld_A_IndirectDe:                // 0x1a
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -349,7 +349,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__DEC__DE:                // 0x1b
+        case Opcodes::Z80_Plain_Dec_De:                // 0x1b
             return {
                 .instruction = Instruction::DEC,
                 .operands = {
@@ -358,7 +358,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 1,
             };
 
-        case Z80__PLAIN__INC__E:                // 0x1c
+        case Opcodes::Z80_Plain_Inc_E:                // 0x1c
             return {
                     .instruction = Instruction::INC,
                     .operands = {
@@ -367,7 +367,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__DEC__E:                // 0x1d
+        case Opcodes::Z80_Plain_Dec_E:                // 0x1d
             return {
                     .instruction = Instruction::DEC,
                     .operands = {
@@ -376,7 +376,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__E__N:                // 0x1e
+        case Opcodes::Z80_Plain_Ld_E_N:                // 0x1e
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -386,14 +386,14 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__PLAIN__RRA:                // 0x1f
+        case Opcodes::Z80_Plain_Rra:                // 0x1f
             return {
                 .instruction = Instruction::RRA,
                 .operands = {},
                 .size = 1,
             };
 
-        case Z80__PLAIN__JR__NZ__d:                // 0x20
+        case Opcodes::Z80_Plain_Jr_Nz_d:                // 0x20
             return {
                     .instruction = Instruction::JRNZ,
                     .operands = {
@@ -402,7 +402,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__PLAIN__LD__HL__NN:                // 0x21
+        case Opcodes::Z80_Plain_Ld_Hl_Nn:                // 0x21
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -412,7 +412,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 3,
             };
 
-        case Z80__PLAIN__LD__INDIRECT_NN__HL:                // 0x22
+        case Opcodes::Z80_Plain_Ld_IndirectNn_Hl:                // 0x22
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -422,7 +422,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 3,
             };
 
-        case Z80__PLAIN__INC__HL:                // 0x23
+        case Opcodes::Z80_Plain_Inc_Hl:                // 0x23
             return {
                     .instruction = Instruction::INC,
                     .operands = {
@@ -431,7 +431,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__INC__H:                // 0x24
+        case Opcodes::Z80_Plain_Inc_H:                // 0x24
             return {
                     .instruction = Instruction::INC,
                     .operands = {
@@ -440,7 +440,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__DEC__H:                // 0x25
+        case Opcodes::Z80_Plain_Dec_H:                // 0x25
             return {
                     .instruction = Instruction::DEC,
                     .operands = {
@@ -449,7 +449,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__H__N:                // 0x26
+        case Opcodes::Z80_Plain_Ld_H_N:                // 0x26
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -459,14 +459,14 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__PLAIN__DAA:                // 0x27
+        case Opcodes::Z80_Plain_Daa:                // 0x27
             return {
                 .instruction = Instruction::DAA,
                 .operands = {},
                 .size = 1,
             };
             
-        case Z80__PLAIN__JR__Z__d:                // 0x28
+        case Opcodes::Z80_Plain_Jr_Z_d:                // 0x28
             return {
                     .instruction = Instruction::JRZ,
                     .operands = {
@@ -475,7 +475,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__PLAIN__ADD__HL__HL:                // 0x29
+        case Opcodes::Z80_Plain_Add_Hl_Hl:                // 0x29
             return {
                     .instruction = Instruction::ADD,
                     .operands = {
@@ -485,7 +485,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__HL__INDIRECT_NN:                // 0x2a
+        case Opcodes::Z80_Plain_Ld_Hl_IndirectNn:                // 0x2a
             return {
                 .instruction = Instruction::LD,
                 .operands = {
@@ -495,7 +495,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 3,
             };
 
-        case Z80__PLAIN__DEC__HL:                // 0x2b
+        case Opcodes::Z80_Plain_Dec_Hl:                // 0x2b
             return {
                     .instruction = Instruction::DEC,
                     .operands = {
@@ -504,7 +504,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
             
-        case Z80__PLAIN__INC__L:                // 0x2c
+        case Opcodes::Z80_Plain_Inc_L:                // 0x2c
             return {
                     .instruction = Instruction::INC,
                     .operands = {
@@ -513,7 +513,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
             
-        case Z80__PLAIN__DEC__L:                // 0x2d
+        case Opcodes::Z80_Plain_Dec_L:                // 0x2d
             return {
                     .instruction = Instruction::DEC,
                     .operands = {
@@ -522,7 +522,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__L__N:                // 0x2e
+        case Opcodes::Z80_Plain_Ld_L_N:                // 0x2e
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -532,14 +532,14 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__PLAIN__CPL:                // 0x2f
+        case Opcodes::Z80_Plain_Cpl:                // 0x2f
             return {
                 .instruction = Instruction::CPL,
                 .operands = {},
                 .size = 1,
             };
             
-        case Z80__PLAIN__JR__NC__d:                // 0x30
+        case Opcodes::Z80_Plain_Jr_Nc_d:                // 0x30
             return {
                 .instruction = Instruction::JRNC,
                 .operands = {
@@ -548,7 +548,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 2,
             };
 
-        case Z80__PLAIN__LD__SP__NN:                // 0x31
+        case Opcodes::Z80_Plain_Ld_Sp_Nn:                // 0x31
             return {
                 .instruction = Instruction::LD,
                 .operands = {
@@ -558,7 +558,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 1,
             };
 
-        case Z80__PLAIN__LD__INDIRECT_NN__A:                // 0x32
+        case Opcodes::Z80_Plain_Ld_IndirectNn_A:                // 0x32
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -568,7 +568,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 3,
             };
 
-        case Z80__PLAIN__INC__SP:                // 0x33
+        case Opcodes::Z80_Plain_Inc_Sp:                // 0x33
             return {
                     .instruction = Instruction::INC,
                     .operands = {
@@ -577,7 +577,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__INC__INDIRECT_HL:                // 0x34
+        case Opcodes::Z80_Plain_Inc_IndirectHl:                // 0x34
             return {
                     .instruction = Instruction::INC,
                     .operands = {
@@ -586,7 +586,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__DEC__INDIRECT_HL:                // 0x35
+        case Opcodes::Z80_Plain_Dec_IndirectHl:                // 0x35
             return {
                     .instruction = Instruction::DEC,
                     .operands = {
@@ -595,7 +595,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__INDIRECT_HL__N:                // 0x36
+        case Opcodes::Z80_Plain_Ld_IndirectHl_N:                // 0x36
             return {
                 .instruction = Instruction::LD,
                 .operands = {
@@ -605,14 +605,14 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 2,
             };
 
-        case Z80__PLAIN__SCF:                // 0x37
+        case Opcodes::Z80_Plain_Scf:                // 0x37
             return {
                 .instruction = Instruction::SCF,
                 .operands = {},
                 .size = 1,
             };
 
-        case Z80__PLAIN__JR__C__d:                // 0x38
+        case Opcodes::Z80_Plain_Jr_C_d:                // 0x38
             return {
                     .instruction = Instruction::JRC,
                     .operands = {
@@ -621,7 +621,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__PLAIN__ADD__HL__SP:                // 0x39
+        case Opcodes::Z80_Plain_Add_Hl_Sp:                // 0x39
             return {
                     .instruction = Instruction::ADD,
                     .operands = {
@@ -631,7 +631,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__A__INDIRECT_NN:                // 0x3a
+        case Opcodes::Z80_Plain_Ld_A_IndirectNn:                // 0x3a
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -641,7 +641,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 3,
             };
 
-        case Z80__PLAIN__DEC__SP:                // 0x3b
+        case Opcodes::Z80_Plain_Dec_Sp:                // 0x3b
             return {
                     .instruction = Instruction::DEC,
                     .operands = {
@@ -650,7 +650,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__INC__A:                // 0x3c
+        case Opcodes::Z80_Plain_Inc_A:                // 0x3c
             return {
                 .instruction = Instruction::INC,
                 .operands = {
@@ -659,7 +659,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 1,
             };
 
-        case Z80__PLAIN__DEC__A:                // 0x3d
+        case Opcodes::Z80_Plain_Dec_A:                // 0x3d
             return {
                     .instruction = Instruction::DEC,
                     .operands = {
@@ -668,7 +668,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__A__N:                // 0x3e
+        case Opcodes::Z80_Plain_Ld_A_N:                // 0x3e
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -678,14 +678,14 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__PLAIN__CCF:                // 0x3f
+        case Opcodes::Z80_Plain_Ccf:                // 0x3f
             return {
                 .instruction = Instruction::CCF,
                 .operands = {},
                 .size = 1,
             };
 
-        case Z80__PLAIN__LD__B__B:                // 0x40
+        case Opcodes::Z80_Plain_Ld_B_B:                // 0x40
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -695,7 +695,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__B__C:                // 0x41
+        case Opcodes::Z80_Plain_Ld_B_C:                // 0x41
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -705,7 +705,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__B__D:                // 0x42
+        case Opcodes::Z80_Plain_Ld_B_D:                // 0x42
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -715,7 +715,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__B__E:                // 0x43
+        case Opcodes::Z80_Plain_Ld_B_E:                // 0x43
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -725,7 +725,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__B__H:                // 0x44
+        case Opcodes::Z80_Plain_Ld_B_H:                // 0x44
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -735,7 +735,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__B__L:                // 0x45
+        case Opcodes::Z80_Plain_Ld_B_L:                // 0x45
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -745,7 +745,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__B__INDIRECT_HL:                // 0x46
+        case Opcodes::Z80_Plain_Ld_B_IndirectHl:                // 0x46
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -755,7 +755,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__B__A:                // 0x47
+        case Opcodes::Z80_Plain_Ld_B_A:                // 0x47
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -765,7 +765,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__C__B:                // 0x48
+        case Opcodes::Z80_Plain_Ld_C_B:                // 0x48
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -775,7 +775,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__C__C:                // 0x49
+        case Opcodes::Z80_Plain_Ld_C_C:                // 0x49
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -785,7 +785,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__C__D:                // 0x4a
+        case Opcodes::Z80_Plain_Ld_C_D:                // 0x4a
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -795,7 +795,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__C__E:                // 0x4b
+        case Opcodes::Z80_Plain_Ld_C_E:                // 0x4b
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -805,7 +805,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__C__H:                // 0x4c
+        case Opcodes::Z80_Plain_Ld_C_H:                // 0x4c
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -815,7 +815,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__C__L:                // 0x4d
+        case Opcodes::Z80_Plain_Ld_C_L:                // 0x4d
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -825,7 +825,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__C__INDIRECT_HL:                // 0x4e
+        case Opcodes::Z80_Plain_Ld_C_IndirectHl:                // 0x4e
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -835,7 +835,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__C__A:                // 0x4f
+        case Opcodes::Z80_Plain_Ld_C_A:                // 0x4f
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -845,7 +845,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__D__B:                // 0x50
+        case Opcodes::Z80_Plain_Ld_D_B:                // 0x50
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -855,7 +855,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__D__C:                // 0x51
+        case Opcodes::Z80_Plain_Ld_D_C:                // 0x51
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -865,7 +865,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__D__D:                // 0x52
+        case Opcodes::Z80_Plain_Ld_D_D:                // 0x52
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -875,7 +875,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__D__E:                // 0x53
+        case Opcodes::Z80_Plain_Ld_D_E:                // 0x53
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -885,7 +885,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__D__H:                // 0x54
+        case Opcodes::Z80_Plain_Ld_D_H:                // 0x54
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -895,7 +895,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__D__L:                // 0x55
+        case Opcodes::Z80_Plain_Ld_D_L:                // 0x55
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -905,7 +905,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__D__INDIRECT_HL:                // 0x56
+        case Opcodes::Z80_Plain_Ld_D_IndirectHl:                // 0x56
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -915,7 +915,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__D__A:                // 0x57
+        case Opcodes::Z80_Plain_Ld_D_A:                // 0x57
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -925,7 +925,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__E__B:                // 0x58
+        case Opcodes::Z80_Plain_Ld_E_B:                // 0x58
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -935,7 +935,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__E__C:                // 0x59
+        case Opcodes::Z80_Plain_Ld_E_C:                // 0x59
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -945,7 +945,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__E__D:                // 0x5a
+        case Opcodes::Z80_Plain_Ld_E_D:                // 0x5a
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -955,7 +955,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__E__E:                // 0x5b
+        case Opcodes::Z80_Plain_Ld_E_E:                // 0x5b
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -965,7 +965,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__E__H:                // 0x5c
+        case Opcodes::Z80_Plain_Ld_E_H:                // 0x5c
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -975,7 +975,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__E__L:                // 0x5d
+        case Opcodes::Z80_Plain_Ld_E_L:                // 0x5d
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -985,7 +985,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__E__INDIRECT_HL:                // 0x5e
+        case Opcodes::Z80_Plain_Ld_E_IndirectHl:                // 0x5e
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -995,7 +995,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__E__A:                // 0x5f
+        case Opcodes::Z80_Plain_Ld_E_A:                // 0x5f
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1005,7 +1005,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__H__B:                // 0x60
+        case Opcodes::Z80_Plain_Ld_H_B:                // 0x60
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1015,7 +1015,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__H__C:                // 0x61
+        case Opcodes::Z80_Plain_Ld_H_C:                // 0x61
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1025,7 +1025,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__H__D:                // 0x62
+        case Opcodes::Z80_Plain_Ld_H_D:                // 0x62
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1035,7 +1035,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__H__E:                // 0x63
+        case Opcodes::Z80_Plain_Ld_H_E:                // 0x63
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1045,7 +1045,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__H__H:                // 0x64
+        case Opcodes::Z80_Plain_Ld_H_H:                // 0x64
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1055,7 +1055,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__H__L:                // 0x65
+        case Opcodes::Z80_Plain_Ld_H_L:                // 0x65
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1065,7 +1065,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__H__INDIRECT_HL:                // 0x66
+        case Opcodes::Z80_Plain_Ld_H_IndirectHl:                // 0x66
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1075,7 +1075,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__H__A:                // 0x67
+        case Opcodes::Z80_Plain_Ld_H_A:                // 0x67
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1085,7 +1085,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__L__B:                // 0x68
+        case Opcodes::Z80_Plain_Ld_L_B:                // 0x68
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1095,7 +1095,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__L__C:                // 0x69
+        case Opcodes::Z80_Plain_Ld_L_C:                // 0x69
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1105,7 +1105,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__L__D:                // 0x6a
+        case Opcodes::Z80_Plain_Ld_L_D:                // 0x6a
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1115,7 +1115,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__L__E:                // 0x6b
+        case Opcodes::Z80_Plain_Ld_L_E:                // 0x6b
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1125,7 +1125,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__L__H:                // 0x6c
+        case Opcodes::Z80_Plain_Ld_L_H:                // 0x6c
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1135,7 +1135,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__L__L:                // 0x6d
+        case Opcodes::Z80_Plain_Ld_L_L:                // 0x6d
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1145,7 +1145,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__L__INDIRECT_HL:                // 0x6e
+        case Opcodes::Z80_Plain_Ld_L_IndirectHl:                // 0x6e
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1155,7 +1155,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__L__A:                // 0x6f
+        case Opcodes::Z80_Plain_Ld_L_A:                // 0x6f
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1165,7 +1165,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__INDIRECT_HL__B:                // 0x70
+        case Opcodes::Z80_Plain_Ld_IndirectHl_B:                // 0x70
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1175,7 +1175,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__INDIRECT_HL__C:                // 0x71
+        case Opcodes::Z80_Plain_Ld_IndirectHl_C:                // 0x71
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1185,7 +1185,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__INDIRECT_HL__D:                // 0x72
+        case Opcodes::Z80_Plain_Ld_IndirectHl_D:                // 0x72
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1195,7 +1195,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__INDIRECT_HL__E:                // 0x73
+        case Opcodes::Z80_Plain_Ld_IndirectHl_E:                // 0x73
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1205,7 +1205,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__INDIRECT_HL__H:                // 0x74
+        case Opcodes::Z80_Plain_Ld_IndirectHl_H:                // 0x74
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1215,7 +1215,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__INDIRECT_HL__L:                // 0x75
+        case Opcodes::Z80_Plain_Ld_IndirectHl_L:                // 0x75
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1225,14 +1225,14 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__HALT:                // 0x76
+        case Opcodes::Z80_Plain_Halt:                // 0x76
             return {
                 .instruction = Instruction::HALT,
                 .operands = {},
                 .size = 1,
             };
 
-        case Z80__PLAIN__LD__INDIRECT_HL__A:                // 0x77
+        case Opcodes::Z80_Plain_Ld_IndirectHl_A:                // 0x77
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1242,7 +1242,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__A__B:                // 0x78
+        case Opcodes::Z80_Plain_Ld_A_B:                // 0x78
             return {
                 .instruction = Instruction::LD,
                 .operands = {
@@ -1252,7 +1252,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 1,
             };
 
-        case Z80__PLAIN__LD__A__C:                // 0x79
+        case Opcodes::Z80_Plain_Ld_A_C:                // 0x79
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1262,7 +1262,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__A__D:                // 0x7a
+        case Opcodes::Z80_Plain_Ld_A_D:                // 0x7a
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1272,7 +1272,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__A__E:                // 0x7b
+        case Opcodes::Z80_Plain_Ld_A_E:                // 0x7b
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1282,7 +1282,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__A__H:                // 0x7c
+        case Opcodes::Z80_Plain_Ld_A_H:                // 0x7c
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1292,7 +1292,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__A__L:                // 0x7d
+        case Opcodes::Z80_Plain_Ld_A_L:                // 0x7d
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1302,7 +1302,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__A__INDIRECT_HL:                // 0x7e
+        case Opcodes::Z80_Plain_Ld_A_IndirectHl:                // 0x7e
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1312,7 +1312,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__LD__A__A:                // 0x7f
+        case Opcodes::Z80_Plain_Ld_A_A:                // 0x7f
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -1322,7 +1322,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__ADD__A__B:                // 0x80
+        case Opcodes::Z80_Plain_Add_A_B:                // 0x80
             return {
                     .instruction = Instruction::ADD,
                     .operands = {
@@ -1332,7 +1332,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__ADD__A__C:                // 0x81
+        case Opcodes::Z80_Plain_Add_A_C:                // 0x81
             return {
                     .instruction = Instruction::ADD,
                     .operands = {
@@ -1342,7 +1342,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__ADD__A__D:                // 0x82
+        case Opcodes::Z80_Plain_Add_A_D:                // 0x82
             return {
                     .instruction = Instruction::ADD,
                     .operands = {
@@ -1352,7 +1352,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__ADD__A__E:                // 0x83
+        case Opcodes::Z80_Plain_Add_A_E:                // 0x83
             return {
                     .instruction = Instruction::ADD,
                     .operands = {
@@ -1362,7 +1362,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__ADD__A__H:                // 0x84
+        case Opcodes::Z80_Plain_Add_A_H:                // 0x84
             return {
                     .instruction = Instruction::ADD,
                     .operands = {
@@ -1372,7 +1372,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__ADD__A__L:                // 0x85
+        case Opcodes::Z80_Plain_Add_A_L:                // 0x85
             return {
                     .instruction = Instruction::ADD,
                     .operands = {
@@ -1382,7 +1382,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__ADD__A__INDIRECT_HL:                // 0x86
+        case Opcodes::Z80_Plain_Add_A_IndirectHl:                // 0x86
             return {
                     .instruction = Instruction::ADD,
                     .operands = {
@@ -1392,7 +1392,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__ADD__A__A:                // 0x87
+        case Opcodes::Z80_Plain_Add_A_A:                // 0x87
             return {
                     .instruction = Instruction::ADD,
                     .operands = {
@@ -1402,7 +1402,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__ADC__A__B:                // 0x88
+        case Opcodes::Z80_Plain_Adc_A_B:                // 0x88
             return {
                     .instruction = Instruction::ADC,
                     .operands = {
@@ -1412,7 +1412,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__ADC__A__C:                // 0x89
+        case Opcodes::Z80_Plain_Adc_A_C:                // 0x89
             return {
                     .instruction = Instruction::ADC,
                     .operands = {
@@ -1422,7 +1422,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__ADC__A__D:                // 0x8a
+        case Opcodes::Z80_Plain_Adc_A_D:                // 0x8a
             return {
                     .instruction = Instruction::ADC,
                     .operands = {
@@ -1432,7 +1432,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__ADC__A__E:                // 0x8b
+        case Opcodes::Z80_Plain_Adc_A_E:                // 0x8b
             return {
                     .instruction = Instruction::ADC,
                     .operands = {
@@ -1442,7 +1442,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__ADC__A__H:                // 0x8c
+        case Opcodes::Z80_Plain_Adc_A_H:                // 0x8c
             return {
                     .instruction = Instruction::ADC,
                     .operands = {
@@ -1452,7 +1452,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__ADC__A__L:                // 0x8d
+        case Opcodes::Z80_Plain_Adc_A_L:                // 0x8d
             return {
                     .instruction = Instruction::ADC,
                     .operands = {
@@ -1462,7 +1462,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__ADC__A__INDIRECT_HL:                // 0x8e
+        case Opcodes::Z80_Plain_Adc_A_IndirectHl:                // 0x8e
             return {
                     .instruction = Instruction::ADC,
                     .operands = {
@@ -1472,7 +1472,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__ADC__A__A:                // 0x8f
+        case Opcodes::Z80_Plain_Adc_A_A:                // 0x8f
             return {
                     .instruction = Instruction::ADC,
                     .operands = {
@@ -1482,7 +1482,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__SUB__B:                // 0x90
+        case Opcodes::Z80_Plain_Sub_B:                // 0x90
             return {
                     .instruction = Instruction::SUB,
                     .operands = {
@@ -1492,7 +1492,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__SUB__C:                // 0x91
+        case Opcodes::Z80_Plain_Sub_C:                // 0x91
             return {
                     .instruction = Instruction::SUB,
                     .operands = {
@@ -1502,7 +1502,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__SUB__D:                // 0x92
+        case Opcodes::Z80_Plain_Sub_D:                // 0x92
             return {
                     .instruction = Instruction::SUB,
                     .operands = {
@@ -1512,7 +1512,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__SUB__E:                // 0x93
+        case Opcodes::Z80_Plain_Sub_E:                // 0x93
             return {
                     .instruction = Instruction::SUB,
                     .operands = {
@@ -1522,7 +1522,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__SUB__H:                // 0x94
+        case Opcodes::Z80_Plain_Sub_H:                // 0x94
             return {
                     .instruction = Instruction::SUB,
                     .operands = {
@@ -1532,7 +1532,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__SUB__L:                // 0x95
+        case Opcodes::Z80_Plain_Sub_L:                // 0x95
             return {
                     .instruction = Instruction::SUB,
                     .operands = {
@@ -1542,7 +1542,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__SUB__INDIRECT_HL:                // 0x96
+        case Opcodes::Z80_Plain_Sub_IndirectHl:                // 0x96
             return {
                     .instruction = Instruction::SUB,
                     .operands = {
@@ -1552,7 +1552,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__SUB__A:                // 0x97
+        case Opcodes::Z80_Plain_Sub_A:                // 0x97
             return {
                     .instruction = Instruction::SUB,
                     .operands = {
@@ -1562,7 +1562,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__SBC__A__B:                // 0x98
+        case Opcodes::Z80_Plain_Sbc_A_B:                // 0x98
             return {
                     .instruction = Instruction::SBC,
                     .operands = {
@@ -1572,7 +1572,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__SBC__A__C:                // 0x99
+        case Opcodes::Z80_Plain_Sbc_A_C:                // 0x99
             return {
                     .instruction = Instruction::SBC,
                     .operands = {
@@ -1582,7 +1582,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__SBC__A__D:                // 0x9a
+        case Opcodes::Z80_Plain_Sbc_A_D:                // 0x9a
             return {
                     .instruction = Instruction::SBC,
                     .operands = {
@@ -1592,7 +1592,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__SBC__A__E:                // 0x9b
+        case Opcodes::Z80_Plain_Sbc_A_E:                // 0x9b
             return {
                     .instruction = Instruction::SBC,
                     .operands = {
@@ -1602,7 +1602,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__SBC__A__H:                // 0x9c
+        case Opcodes::Z80_Plain_Sbc_A_H:                // 0x9c
             return {
                     .instruction = Instruction::SBC,
                     .operands = {
@@ -1612,7 +1612,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__SBC__A__L:                // 0x9d
+        case Opcodes::Z80_Plain_Sbc_A_L:                // 0x9d
             return {
                     .instruction = Instruction::SBC,
                     .operands = {
@@ -1622,7 +1622,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__SBC__A__INDIRECT_HL:                // 0x9e
+        case Opcodes::Z80_Plain_Sbc_A_IndirectHl:                // 0x9e
             return {
                     .instruction = Instruction::SBC,
                     .operands = {
@@ -1632,7 +1632,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__SBC__A__A:                // 0x9f
+        case Opcodes::Z80_Plain_Sbc_A_A:                // 0x9f
             return {
                     .instruction = Instruction::SBC,
                     .operands = {
@@ -1642,7 +1642,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__AND__B:                // 0xa0
+        case Opcodes::Z80_Plain_And_B:                // 0xa0
             return {
                     .instruction = Instruction::AND,
                     .operands = {
@@ -1651,7 +1651,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__AND__C:                // 0xa1
+        case Opcodes::Z80_Plain_And_C:                // 0xa1
             return {
                     .instruction = Instruction::AND,
                     .operands = {
@@ -1660,7 +1660,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__AND__D:                // 0xa2
+        case Opcodes::Z80_Plain_And_D:                // 0xa2
             return {
                     .instruction = Instruction::AND,
                     .operands = {
@@ -1669,7 +1669,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__AND__E:                // 0xa3
+        case Opcodes::Z80_Plain_And_E:                // 0xa3
             return {
                     .instruction = Instruction::AND,
                     .operands = {
@@ -1678,7 +1678,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__AND__H:                // 0xa4
+        case Opcodes::Z80_Plain_And_H:                // 0xa4
             return {
                     .instruction = Instruction::AND,
                     .operands = {
@@ -1687,7 +1687,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__AND__L:                // 0xa5
+        case Opcodes::Z80_Plain_And_L:                // 0xa5
             return {
                     .instruction = Instruction::AND,
                     .operands = {
@@ -1696,7 +1696,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__AND__INDIRECT_HL:                // 0xa6
+        case Opcodes::Z80_Plain_And_IndirectHl:                // 0xa6
             return {
                     .instruction = Instruction::AND,
                     .operands = {
@@ -1705,7 +1705,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__AND__A:                // 0xa7
+        case Opcodes::Z80_Plain_And_A:                // 0xa7
             return {
                 .instruction = Instruction::AND,
                 .operands = {
@@ -1714,7 +1714,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 1,
             };
 
-        case Z80__PLAIN__XOR__B:                // 0xa8
+        case Opcodes::Z80_Plain_Xor_B:                // 0xa8
             return {
                     .instruction = Instruction::XOR,
                     .operands = {
@@ -1723,7 +1723,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__XOR__C:                // 0xa9
+        case Opcodes::Z80_Plain_Xor_C:                // 0xa9
             return {
                     .instruction = Instruction::XOR,
                     .operands = {
@@ -1732,7 +1732,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__XOR__D:                // 0xaa
+        case Opcodes::Z80_Plain_Xor_D:                // 0xaa
             return {
                     .instruction = Instruction::XOR,
                     .operands = {
@@ -1741,7 +1741,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__XOR__E:                // 0xab
+        case Opcodes::Z80_Plain_Xor_E:                // 0xab
             return {
                     .instruction = Instruction::XOR,
                     .operands = {
@@ -1750,7 +1750,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__XOR__H:                // 0xac
+        case Opcodes::Z80_Plain_Xor_H:                // 0xac
             return {
                     .instruction = Instruction::XOR,
                     .operands = {
@@ -1759,7 +1759,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__XOR__L:                // 0xad
+        case Opcodes::Z80_Plain_Xor_L:                // 0xad
             return {
                     .instruction = Instruction::XOR,
                     .operands = {
@@ -1768,7 +1768,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__XOR__INDIRECT_HL:                // 0xae
+        case Opcodes::Z80_Plain_Xor_IndirectHl:                // 0xae
             return {
                     .instruction = Instruction::XOR,
                     .operands = {
@@ -1777,7 +1777,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__XOR__A:                // 0xaf
+        case Opcodes::Z80_Plain_Xor_A:                // 0xaf
             return {
                     .instruction = Instruction::XOR,
                     .operands = {
@@ -1786,7 +1786,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__OR__B:                // 0xb0
+        case Opcodes::Z80_Plain_Or_B:                // 0xb0
             return {
                     .instruction = Instruction::OR,
                     .operands = {
@@ -1795,7 +1795,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__OR__C:                // 0xb1
+        case Opcodes::Z80_Plain_Or_C:                // 0xb1
             return {
                     .instruction = Instruction::OR,
                     .operands = {
@@ -1804,7 +1804,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__OR__D:                // 0xb2
+        case Opcodes::Z80_Plain_Or_D:                // 0xb2
             return {
                     .instruction = Instruction::OR,
                     .operands = {
@@ -1813,7 +1813,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__OR__E:                // 0xb3
+        case Opcodes::Z80_Plain_Or_E:                // 0xb3
             return {
                     .instruction = Instruction::OR,
                     .operands = {
@@ -1822,7 +1822,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__OR__H:                // 0xb4
+        case Opcodes::Z80_Plain_Or_H:                // 0xb4
             return {
                     .instruction = Instruction::OR,
                     .operands = {
@@ -1831,7 +1831,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__OR__L:                // 0xb5
+        case Opcodes::Z80_Plain_Or_L:                // 0xb5
             return {
                     .instruction = Instruction::OR,
                     .operands = {
@@ -1840,7 +1840,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__OR__INDIRECT_HL:                // 0xb6
+        case Opcodes::Z80_Plain_Or_IndirectHl:                // 0xb6
             return {
                     .instruction = Instruction::OR,
                     .operands = {
@@ -1849,7 +1849,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__OR__A:                // 0xb7
+        case Opcodes::Z80_Plain_Or_A:                // 0xb7
             return {
                     .instruction = Instruction::OR,
                     .operands = {
@@ -1858,7 +1858,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__CP__B:                // 0xb8
+        case Opcodes::Z80_Plain_Cp_B:                // 0xb8
             return {
                     .instruction = Instruction::CP,
                     .operands = {
@@ -1867,7 +1867,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__CP__C:                // 0xb9
+        case Opcodes::Z80_Plain_Cp_C:                // 0xb9
             return {
                     .instruction = Instruction::CP,
                     .operands = {
@@ -1876,7 +1876,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__CP__D:                // 0xba
+        case Opcodes::Z80_Plain_Cp_D:                // 0xba
             return {
                     .instruction = Instruction::CP,
                     .operands = {
@@ -1885,7 +1885,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__CP__E:                // 0xbb
+        case Opcodes::Z80_Plain_Cp_E:                // 0xbb
             return {
                     .instruction = Instruction::CP,
                     .operands = {
@@ -1894,7 +1894,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__CP__H:                // 0xbc
+        case Opcodes::Z80_Plain_Cp_H:                // 0xbc
             return {
                     .instruction = Instruction::CP,
                     .operands = {
@@ -1903,7 +1903,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__CP__L:                // 0xbd
+        case Opcodes::Z80_Plain_Cp_L:                // 0xbd
             return {
                     .instruction = Instruction::CP,
                     .operands = {
@@ -1912,7 +1912,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__CP__INDIRECT_HL:                // 0xbe
+        case Opcodes::Z80_Plain_Cp_IndirectHl:                // 0xbe
             return {
                     .instruction = Instruction::CP,
                     .operands = {
@@ -1921,7 +1921,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__CP__A:                // 0xbf
+        case Opcodes::Z80_Plain_Cp_A:                // 0xbf
             return {
                     .instruction = Instruction::CP,
                     .operands = {
@@ -1930,14 +1930,14 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__RET__NZ:                // 0xc0
+        case Opcodes::Z80_Plain_Ret_Nz:                // 0xc0
             return {
                 .instruction = Instruction::RETNZ,
                 .operands = {},
                 .size = 1,
             };
 
-        case Z80__PLAIN__POP__BC:                // 0xc1
+        case Opcodes::Z80_Plain_Pop_Bc:                // 0xc1
             return {
                 .instruction = Instruction::POP,
                 .operands = {
@@ -1946,7 +1946,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 1,
             };
 
-        case Z80__PLAIN__JP__NZ__NN:                // 0xc2
+        case Opcodes::Z80_Plain_Jp_Nz_Nn:                // 0xc2
             return {
                     .instruction = Instruction::JPNZ,
                     .operands = {
@@ -1955,7 +1955,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 3,
             };
 
-        case Z80__PLAIN__JP__NN:                // 0xc3
+        case Opcodes::Z80_Plain_Jp_Nn:                // 0xc3
             return {
                     .instruction = Instruction::JP,
                     .operands = {
@@ -1964,7 +1964,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 3,
             };
 
-        case Z80__PLAIN__CALL__NZ__NN:                // 0xc4
+        case Opcodes::Z80_Plain_Call_Nz_Nn:                // 0xc4
             return {
                     .instruction = Instruction::CALLNZ,
                     .operands = {
@@ -1973,7 +1973,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 3,
             };
 
-        case Z80__PLAIN__PUSH__BC:                // 0xc5
+        case Opcodes::Z80_Plain_Push_Bc:                // 0xc5
             return {
                     .instruction = Instruction::PUSH,
                     .operands = {
@@ -1982,7 +1982,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__ADD__A__N:                // 0xc6
+        case Opcodes::Z80_Plain_Add_A_N:                // 0xc6
             return {
                 .instruction = Instruction::ADD,
                 .operands = {
@@ -1992,7 +1992,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 2,
             };
 
-        case Z80__PLAIN__RST__00:                // 0xc7
+        case Opcodes::Z80_Plain_Rst_00:                // 0xc7
             return {
                     .instruction = Instruction::RST,
                     .operands = {
@@ -2002,21 +2002,21 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__RET__Z:                // 0xc8
+        case Opcodes::Z80_Plain_Ret_Z:                // 0xc8
             return {
                 .instruction = Instruction::RETZ,
                 .operands = {},
                 .size = 1,
             };
 
-        case Z80__PLAIN__RET:                // 0xc9
+        case Opcodes::Z80_Plain_Ret:                // 0xc9
             return {
                     .instruction = Instruction::RET,
                     .operands = {},
                     .size = 1,
             };
 
-        case Z80__PLAIN__JP__Z__NN:                // 0xca
+        case Opcodes::Z80_Plain_Jp_Z_Nn:                // 0xca
             return {
                     .instruction = Instruction::JPZ,
                     .operands = {
@@ -2025,11 +2025,11 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 3,
             };
 
-        case Z80__PLAIN__PREFIX__CB:                // 0xcb
+        case Opcodes::Z80_Plain_Prefix_Cb:                // 0xcb
             // NOTE should never get here
             return disassembleOneCb(machineCode + 1);
 
-        case Z80__PLAIN__CALL__Z__NN:                // 0xcc
+        case Opcodes::Z80_Plain_Call_Z_Nn:                // 0xcc
             return {
                     .instruction = Instruction::CALLZ,
                     .operands = {
@@ -2038,7 +2038,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 3,
             };
 
-        case Z80__PLAIN__CALL__NN:                // 0xcd
+        case Opcodes::Z80_Plain_Call_Nn:                // 0xcd
             return {
                 .instruction = Instruction::CALL,
                 .operands = {
@@ -2047,7 +2047,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 3,
             };
 
-        case Z80__PLAIN__ADC__A__N:                // 0xce
+        case Opcodes::Z80_Plain_Adc_A_N:                // 0xce
             return {
                 .instruction = Instruction::ADC,
                 .operands = {
@@ -2057,7 +2057,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 2,
             };
 
-        case Z80__PLAIN__RST__08:                // 0xcf
+        case Opcodes::Z80_Plain_Rst_08:                // 0xcf
             return {
                     .instruction = Instruction::RST,
                     .operands = {
@@ -2066,14 +2066,14 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__RET__NC:                // 0xd0
+        case Opcodes::Z80_Plain_Ret_Nc:                // 0xd0
             return {
                     .instruction = Instruction::RETNC,
                     .operands = {},
                     .size = 1,
             };
 
-        case Z80__PLAIN__POP__DE:                // 0xd1
+        case Opcodes::Z80_Plain_Pop_De:                // 0xd1
             return {
                 .instruction = Instruction::POP,
                 .operands = {
@@ -2082,7 +2082,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 1,
             };
 
-        case Z80__PLAIN__JP__NC__NN:                // 0xd2
+        case Opcodes::Z80_Plain_Jp_Nc_Nn:                // 0xd2
             return {
                     .instruction = Instruction::JPNC,
                     .operands = {
@@ -2091,7 +2091,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 3,
             };
 
-        case Z80__PLAIN__OUT__INDIRECT_N__A:                // 0xd3
+        case Opcodes::Z80_Plain_Out_IndirectN_A:                // 0xd3
             return {
                 .instruction = Instruction::OUT,
                 .operands = {
@@ -2101,7 +2101,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 2,
             };
 
-        case Z80__PLAIN__CALL__NC__NN:                // 0xd4
+        case Opcodes::Z80_Plain_Call_Nc_Nn:                // 0xd4
             return {
                 .instruction = Instruction::CALLNC,
                 .operands = {
@@ -2110,7 +2110,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 3,
             };
 
-        case Z80__PLAIN__PUSH__DE:                // 0xd5
+        case Opcodes::Z80_Plain_Push_De:                // 0xd5
             return {
                 .instruction = Instruction::PUSH,
                 .operands = {
@@ -2119,7 +2119,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 1,
             };
 
-        case Z80__PLAIN__SUB__N:                // 0xd6
+        case Opcodes::Z80_Plain_Sub_N:                // 0xd6
             return {
                     .instruction = Instruction::SUB,
                     .operands = {
@@ -2128,7 +2128,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__PLAIN__RST__10:                // 0xd7
+        case Opcodes::Z80_Plain_Rst_10:                // 0xd7
             return {
                     .instruction = Instruction::RST,
                     .operands = {
@@ -2137,21 +2137,21 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__RET__C:                // 0xd8
+        case Opcodes::Z80_Plain_Ret_C:                // 0xd8
             return {
                     .instruction = Instruction::RETC,
                     .operands = {},
                     .size = 1,
             };
 
-        case Z80__PLAIN__EXX:                // 0xd9
+        case Opcodes::Z80_Plain_Exx:                // 0xd9
             return {
                 .instruction = Instruction::EXX,
                 .operands = {},
                 .size = 1,
             };
 
-        case Z80__PLAIN__JP__C__NN:                // 0xda
+        case Opcodes::Z80_Plain_Jp_C_Nn:                // 0xda
             return {
                     .instruction = Instruction::JPC,
                     .operands = {
@@ -2160,7 +2160,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 3,
             };
         
-        case Z80__PLAIN__IN__A__INDIRECT_N:                // 0xdb
+        case Opcodes::Z80_Plain_In_A_IndirectN:                // 0xdb
             return {
                     .instruction = Instruction::IN,
                     .operands = {
@@ -2170,7 +2170,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 2,
             };
             
-        case Z80__PLAIN__CALL__C__NN:                // 0xdc
+        case Opcodes::Z80_Plain_Call_C_Nn:                // 0xdc
             return {
                     .instruction = Instruction::CALLC,
                     .operands = {
@@ -2179,11 +2179,11 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 3,
             };
             
-        case Z80__PLAIN__PREFIX__DD:                // 0xdd
+        case Opcodes::Z80_Plain_Prefix_Dd:                // 0xdd
             // NOTE should never get here
             return disassembleOneDdOrFd(Register16::IX, machineCode + 1);
             
-        case Z80__PLAIN__SBC__A__N:                // 0xde
+        case Opcodes::Z80_Plain_Sbc_A_N:                // 0xde
             return {
                     .instruction = Instruction::SBC,
                     .operands = {
@@ -2193,7 +2193,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 2,
             };
             
-        case Z80__PLAIN__RST__18:                // 0xdf
+        case Opcodes::Z80_Plain_Rst_18:                // 0xdf
             return {
                     .instruction = Instruction::RST,
                     .operands = {
@@ -2202,14 +2202,14 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
             
-        case Z80__PLAIN__RET__PO:                // 0xe0
+        case Opcodes::Z80_Plain_Ret_Po:                // 0xe0
             return {
                     .instruction = Instruction::RETPO,
                     .operands = {},
                     .size = 1,
             };
 
-        case Z80__PLAIN__POP__HL:                // 0xe1
+        case Opcodes::Z80_Plain_Pop_Hl:                // 0xe1
             return {
                 .instruction = Instruction::POP,
                 .operands = {
@@ -2218,7 +2218,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 1,
             };
 
-        case Z80__PLAIN__JP__PO__NN:                // 0xe2
+        case Opcodes::Z80_Plain_Jp_Po_Nn:                // 0xe2
             return {
                     .instruction = Instruction::JPPO,
                     .operands = {
@@ -2227,7 +2227,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 3,
             };
 
-        case Z80__PLAIN__EX__INDIRECT_SP__HL:                // 0xe3
+        case Opcodes::Z80_Plain_Ex_IndirectSp_Hl:                // 0xe3
             return {
                     .instruction = Instruction::EX,
                     .operands = {
@@ -2237,7 +2237,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__CALL__PO__NN:                // 0xe4
+        case Opcodes::Z80_Plain_Call_Po_Nn:                // 0xe4
             return {
                     .instruction = Instruction::CALLPO,
                     .operands = {
@@ -2246,7 +2246,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 3,
             };
 
-        case Z80__PLAIN__PUSH__HL:                // 0xe5
+        case Opcodes::Z80_Plain_Push_Hl:                // 0xe5
             return {
                 .instruction = Instruction::PUSH,
                 .operands = {
@@ -2255,7 +2255,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 1,
             };
 
-        case Z80__PLAIN__AND__N:                // 0xe6
+        case Opcodes::Z80_Plain_And_N:                // 0xe6
             return {
                     .instruction = Instruction::AND,
                     .operands = {
@@ -2264,7 +2264,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__PLAIN__RST__20:                // 0xe7
+        case Opcodes::Z80_Plain_Rst_20:                // 0xe7
             return {
                     .instruction = Instruction::RST,
                     .operands = {
@@ -2273,14 +2273,14 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
 
-        case Z80__PLAIN__RET__PE:                // 0xe8
+        case Opcodes::Z80_Plain_Ret_Pe:                // 0xe8
             return {
                     .instruction = Instruction::RETPE,
                     .operands = {},
                     .size = 1,
             };
 
-        case Z80__PLAIN__JP__INDIRECT_HL:                // 0xe9
+        case Opcodes::Z80_Plain_Jp_IndirectHl:                // 0xe9
             return {
                 .instruction = Instruction::JPM,
                 .operands = {
@@ -2289,7 +2289,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 1,
             };
 
-        case Z80__PLAIN__JP__PE__NN:                // 0xea
+        case Opcodes::Z80_Plain_Jp_Pe_Nn:                // 0xea
             return {
                 .instruction = Instruction::JPPE,
                 .operands{
@@ -2298,7 +2298,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 3,
             };
             
-        case Z80__PLAIN__EX__DE__HL:                // 0xeb
+        case Opcodes::Z80_Plain_Ex_De_Hl:                // 0xeb
             return {
                     .instruction = Instruction::EX,
                     .operands = {
@@ -2308,7 +2308,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
         
-        case Z80__PLAIN__CALL__PE__NN:                // 0xec
+        case Opcodes::Z80_Plain_Call_Pe_Nn:                // 0xec
             return {
                 .instruction = Instruction::CALLPE,
                 .operands = {
@@ -2317,11 +2317,11 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 3,
             };
             
-        case Z80__PLAIN__PREFIX__ED:                // 0xed
+        case Opcodes::Z80_Plain_Prefix_Ed:                // 0xed
             // NOTE should never get here
             return disassembleOneEd(machineCode + 1);
             
-        case Z80__PLAIN__XOR__N:                // 0xee
+        case Opcodes::Z80_Plain_Xor_N:                // 0xee
             return {
                     .instruction = Instruction::XOR,
                     .operands = {
@@ -2330,7 +2330,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 2,
             };
             
-        case Z80__PLAIN__RST__28:                // 0xef
+        case Opcodes::Z80_Plain_Rst_28:                // 0xef
             return {
                     .instruction = Instruction::RST,
                     .operands = {
@@ -2339,14 +2339,14 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
         
-        case Z80__PLAIN__RET__P:                // 0xf0
+        case Opcodes::Z80_Plain_Ret_P:                // 0xf0
             return {
                     .instruction = Instruction::RETP,
                     .operands = {},
                     .size = 1,
             };
         
-        case Z80__PLAIN__POP__AF:                // 0xf1
+        case Opcodes::Z80_Plain_Pop_Af:                // 0xf1
             return {
                 .instruction = Instruction::POP,
                 .operands = {
@@ -2355,7 +2355,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 1,
             };
         
-        case Z80__PLAIN__JP__P__NN:                // 0xf2
+        case Opcodes::Z80_Plain_Jp_P_Nn:                // 0xf2
             return {
                 .instruction = Instruction::JPP,
                 .operands = {
@@ -2364,14 +2364,14 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 3,
             };
             
-        case Z80__PLAIN__DI:                // 0xf3
+        case Opcodes::Z80_Plain_Di:                // 0xf3
             return {
                 .instruction = Instruction::DI,
                 .operands = {},
                 .size = 1,
             };
             
-        case Z80__PLAIN__CALL__P__NN:                // 0xf4
+        case Opcodes::Z80_Plain_Call_P_Nn:                // 0xf4
             return {
                     .instruction = Instruction::CALLP,
                     .operands = {
@@ -2380,7 +2380,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 3,
             };
             
-        case Z80__PLAIN__PUSH__AF:                // 0xf5
+        case Opcodes::Z80_Plain_Push_Af:                // 0xf5
             return {
                     .instruction = Instruction::PUSH,
                     .operands = {
@@ -2389,7 +2389,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
             
-        case Z80__PLAIN__OR__N:                // 0xf6
+        case Opcodes::Z80_Plain_Or_N:                // 0xf6
             return {
                     .instruction = Instruction::OR,
                     .operands = {
@@ -2398,7 +2398,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 2,
             };
             
-        case Z80__PLAIN__RST__30:                // 0xf7
+        case Opcodes::Z80_Plain_Rst_30:                // 0xf7
             return {
                     .instruction = Instruction::RST,
                     .operands = {
@@ -2407,14 +2407,14 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
             
-        case Z80__PLAIN__RET__M:                // 0xf8
+        case Opcodes::Z80_Plain_Ret_M:                // 0xf8
             return {
                 .instruction = Instruction::RETM,
                 .operands = {},
                 .size = 1,
             };
 
-        case Z80__PLAIN__LD__SP__HL:                // 0xf9
+        case Opcodes::Z80_Plain_Ld_Sp_Hl:                // 0xf9
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -2424,7 +2424,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 1,
             };
             
-        case Z80__PLAIN__JP__M__NN:                // 0xfa
+        case Opcodes::Z80_Plain_Jp_M_Nn:                // 0xfa
             return {
                 .instruction = Instruction::JPM,
                 .operands = {
@@ -2433,14 +2433,14 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 3,
             };
             
-        case Z80__PLAIN__EI:                // 0xfb
+        case Opcodes::Z80_Plain_Ei:                // 0xfb
             return {
                 .instruction = Instruction::EI,
                 .operands = {},
                 .size = 1,
             };
             
-        case Z80__PLAIN__CALL__M__NN:                // 0xfc
+        case Opcodes::Z80_Plain_Call_M_Nn:                // 0xfc
             return {
                 .instruction = Instruction::CALLM,
                 .operands = {
@@ -2449,11 +2449,11 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                 .size = 3,
             };
             
-        case Z80__PLAIN__PREFIX__FD:                // 0xfd
+        case Opcodes::Z80_Plain_Prefix_Fd:                // 0xfd
             // NOTE should never get here
             return disassembleOneDdOrFd(Register16::IY, machineCode + 1);
             
-        case Z80__PLAIN__CP__N:                // 0xfe
+        case Opcodes::Z80_Plain_Cp_N:                // 0xfe
             return {
                     .instruction = Instruction::CP,
                     .operands = {
@@ -2462,7 +2462,7 @@ Mnemonic Disassembler::disassembleOnePlain(const UnsignedByte * machineCode)
                     .size = 2,
             };
             
-        case Z80__PLAIN__RST__38:                // 0xff
+        case Opcodes::Z80_Plain_Rst_38:                // 0xff
             return {
                 .instruction = Instruction::RST,
                 .operands = {
@@ -2489,7 +2489,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
     static constexpr const UnsignedByte OpcodeSize = 2;
 
     switch (*machineCode) {
-        case Z80__CB__RLC__B:					// 0x00
+        case Opcodes::Z80_Cb_Rlc_B:					// 0x00
             return {
                 .instruction = Instruction::RLC,
                 .operands = {
@@ -2498,7 +2498,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                 .size = OpcodeSize,
             };
 
-        case Z80__CB__RLC__C:					// 0x01
+        case Opcodes::Z80_Cb_Rlc_C:					// 0x01
             return {
                     .instruction = Instruction::RLC,
                     .operands = {
@@ -2507,7 +2507,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RLC__D:					// 0x02
+        case Opcodes::Z80_Cb_Rlc_D:					// 0x02
             return {
                     .instruction = Instruction::RLC,
                     .operands = {
@@ -2516,7 +2516,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RLC__E:					// 0x03
+        case Opcodes::Z80_Cb_Rlc_E:					// 0x03
             return {
                     .instruction = Instruction::RLC,
                     .operands = {
@@ -2525,7 +2525,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RLC__H:					// 0x04
+        case Opcodes::Z80_Cb_Rlc_H:					// 0x04
             return {
                     .instruction = Instruction::RLC,
                     .operands = {
@@ -2534,7 +2534,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RLC__L:					// 0x05
+        case Opcodes::Z80_Cb_Rlc_L:					// 0x05
             return {
                     .instruction = Instruction::RLC,
                     .operands = {
@@ -2543,7 +2543,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RLC__INDIRECT_HL:	// 0x06
+        case Opcodes::Z80_Cb_Rlc_IndirectHl:	// 0x06
             return {
                     .instruction = Instruction::RLC,
                     .operands = {
@@ -2552,7 +2552,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RLC__A:					// 0x07
+        case Opcodes::Z80_Cb_Rlc_A:					// 0x07
             return {
                     .instruction = Instruction::RLC,
                     .operands = {
@@ -2561,7 +2561,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RRC__B:					// 0x08
+        case Opcodes::Z80_Cb_Rrc_B:					// 0x08
             return {
                     .instruction = Instruction::RRC,
                     .operands = {
@@ -2570,7 +2570,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RRC__C:					// 0x09
+        case Opcodes::Z80_Cb_Rrc_C:					// 0x09
             return {
                     .instruction = Instruction::RRC,
                     .operands = {
@@ -2579,7 +2579,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RRC__D:					// 0x0a
+        case Opcodes::Z80_Cb_Rrc_D:					// 0x0a
             return {
                     .instruction = Instruction::RRC,
                     .operands = {
@@ -2588,7 +2588,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RRC__E:					// 0x0b
+        case Opcodes::Z80_Cb_Rrc_E:					// 0x0b
             return {
                     .instruction = Instruction::RRC,
                     .operands = {
@@ -2597,7 +2597,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RRC__H:					// 0x0c
+        case Opcodes::Z80_Cb_Rrc_H:					// 0x0c
             return {
                     .instruction = Instruction::RRC,
                     .operands = {
@@ -2606,7 +2606,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RRC__L:					// 0x0d
+        case Opcodes::Z80_Cb_Rrc_L:					// 0x0d
             return {
                     .instruction = Instruction::RRC,
                     .operands = {
@@ -2615,7 +2615,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RRC__INDIRECT_HL:	// 0x0e
+        case Opcodes::Z80_Cb_Rrc_IndirectHl:	// 0x0e
             return {
                     .instruction = Instruction::RRC,
                     .operands = {
@@ -2624,7 +2624,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RRC__A:					// 0x0f
+        case Opcodes::Z80_Cb_Rrc_A:					// 0x0f
             return {
                     .instruction = Instruction::RRC,
                     .operands = {
@@ -2633,7 +2633,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RL__B:					// 0x10
+        case Opcodes::Z80_Cb_Rl_B:					// 0x10
             return {
                     .instruction = Instruction::RL,
                     .operands = {
@@ -2642,7 +2642,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RL__C:					// 0x11
+        case Opcodes::Z80_Cb_Rl_C:					// 0x11
             return {
                 .instruction = Instruction::RL,
                 .operands = {
@@ -2651,7 +2651,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                 .size = OpcodeSize,
             };
 
-        case Z80__CB__RL__D:					// 0x12
+        case Opcodes::Z80_Cb_Rl_D:					// 0x12
             return {
                     .instruction = Instruction::RL,
                     .operands = {
@@ -2660,7 +2660,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RL__E:					// 0x13
+        case Opcodes::Z80_Cb_Rl_E:					// 0x13
             return {
                     .instruction = Instruction::RL,
                     .operands = {
@@ -2669,7 +2669,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RL__H:					// 0x14
+        case Opcodes::Z80_Cb_Rl_H:					// 0x14
             return {
                     .instruction = Instruction::RL,
                     .operands = {
@@ -2678,7 +2678,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RL__L:					// 0x15
+        case Opcodes::Z80_Cb_Rl_L:					// 0x15
             return {
                     .instruction = Instruction::RL,
                     .operands = {
@@ -2687,7 +2687,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RL__INDIRECT_HL:		// 0x16
+        case Opcodes::Z80_Cb_Rl_IndirectHl:		// 0x16
             return {
                     .instruction = Instruction::RL,
                     .operands = {
@@ -2696,7 +2696,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RL__A:					// 0x17
+        case Opcodes::Z80_Cb_Rl_A:					// 0x17
             return {
                     .instruction = Instruction::RL,
                     .operands = {
@@ -2705,7 +2705,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RR__B:					// 0x18
+        case Opcodes::Z80_Cb_Rr_B:					// 0x18
             return {
                     .instruction = Instruction::RR,
                     .operands = {
@@ -2714,7 +2714,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RR__C:					// 0x19
+        case Opcodes::Z80_Cb_Rr_C:					// 0x19
             return {
                     .instruction = Instruction::RR,
                     .operands = {
@@ -2723,7 +2723,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RR__D:					// 0x1a
+        case Opcodes::Z80_Cb_Rr_D:					// 0x1a
             return {
                     .instruction = Instruction::RR,
                     .operands = {
@@ -2732,7 +2732,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RR__E:					// 0x1b
+        case Opcodes::Z80_Cb_Rr_E:					// 0x1b
             return {
                     .instruction = Instruction::RR,
                     .operands = {
@@ -2741,7 +2741,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RR__H:					// 0x1c
+        case Opcodes::Z80_Cb_Rr_H:					// 0x1c
             return {
                     .instruction = Instruction::RR,
                     .operands = {
@@ -2750,7 +2750,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RR__L:					// 0x1d
+        case Opcodes::Z80_Cb_Rr_L:					// 0x1d
             return {
                     .instruction = Instruction::RR,
                     .operands = {
@@ -2759,7 +2759,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RR__INDIRECT_HL:		// 0x1e
+        case Opcodes::Z80_Cb_Rr_IndirectHl:		// 0x1e
             return {
                     .instruction = Instruction::RR,
                     .operands = {
@@ -2768,7 +2768,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RR__A:					// 0x1f
+        case Opcodes::Z80_Cb_Rr_A:					// 0x1f
             return {
                     .instruction = Instruction::RR,
                     .operands = {
@@ -2777,7 +2777,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SLA__B:					// 0x20
+        case Opcodes::Z80_Cb_Sla_B:					// 0x20
             return {
                     .instruction = Instruction::SLA,
                     .operands = {
@@ -2786,7 +2786,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SLA__C:					// 0x21
+        case Opcodes::Z80_Cb_Sla_C:					// 0x21
             return {
                     .instruction = Instruction::SLA,
                     .operands = {
@@ -2795,7 +2795,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SLA__D:					// 0x22
+        case Opcodes::Z80_Cb_Sla_D:					// 0x22
             return {
                     .instruction = Instruction::SLA,
                     .operands = {
@@ -2804,7 +2804,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SLA__E:					// 0x23
+        case Opcodes::Z80_Cb_Sla_E:					// 0x23
             return {
                     .instruction = Instruction::SLA,
                     .operands = {
@@ -2813,7 +2813,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SLA__H:					// 0x24
+        case Opcodes::Z80_Cb_Sla_H:					// 0x24
             return {
                     .instruction = Instruction::SLA,
                     .operands = {
@@ -2822,7 +2822,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SLA__L:					// 0x25
+        case Opcodes::Z80_Cb_Sla_L:					// 0x25
             return {
                     .instruction = Instruction::SLA,
                     .operands = {
@@ -2831,7 +2831,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SLA__INDIRECT_HL:	// 0x26
+        case Opcodes::Z80_Cb_Sla_IndirectHl:	// 0x26
             return {
                     .instruction = Instruction::SLA,
                     .operands = {
@@ -2840,7 +2840,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SLA__A:					// 0x27
+        case Opcodes::Z80_Cb_Sla_A:					// 0x27
             return {
                     .instruction = Instruction::SLA,
                     .operands = {
@@ -2849,7 +2849,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SRA__B:					// 0x28
+        case Opcodes::Z80_Cb_Sra_B:					// 0x28
             return {
                     .instruction = Instruction::SRA,
                     .operands = {
@@ -2858,7 +2858,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SRA__C:					// 0x29
+        case Opcodes::Z80_Cb_Sra_C:					// 0x29
             return {
                     .instruction = Instruction::SRA,
                     .operands = {
@@ -2867,7 +2867,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SRA__D:					// 0x2a
+        case Opcodes::Z80_Cb_Sra_D:					// 0x2a
             return {
                     .instruction = Instruction::SRA,
                     .operands = {
@@ -2876,7 +2876,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SRA__E:					// 0x2b
+        case Opcodes::Z80_Cb_Sra_E:					// 0x2b
             return {
                     .instruction = Instruction::SRA,
                     .operands = {
@@ -2885,7 +2885,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SRA__H:					// 0x2c
+        case Opcodes::Z80_Cb_Sra_H:					// 0x2c
             return {
                     .instruction = Instruction::SRA,
                     .operands = {
@@ -2894,7 +2894,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SRA__L:					// 0x2d
+        case Opcodes::Z80_Cb_Sra_L:					// 0x2d
             return {
                     .instruction = Instruction::SRA,
                     .operands = {
@@ -2903,7 +2903,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SRA__INDIRECT_HL:	// 0x2e
+        case Opcodes::Z80_Cb_Sra_IndirectHl:	// 0x2e
             return {
                     .instruction = Instruction::SRA,
                     .operands = {
@@ -2912,7 +2912,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SRA__A:					// 0x2f
+        case Opcodes::Z80_Cb_Sra_A:					// 0x2f
             return {
                     .instruction = Instruction::SRA,
                     .operands = {
@@ -2921,7 +2921,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SLL__B:					// 0x30
+        case Opcodes::Z80_Cb_Sll_B:					// 0x30
             return {
                     .instruction = Instruction::SLL,
                     .operands = {
@@ -2930,7 +2930,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SLL__C:					// 0x31
+        case Opcodes::Z80_Cb_Sll_C:					// 0x31
             return {
                     .instruction = Instruction::SLL,
                     .operands = {
@@ -2939,7 +2939,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SLL__D:					// 0x32
+        case Opcodes::Z80_Cb_Sll_D:					// 0x32
             return {
                     .instruction = Instruction::SLL,
                     .operands = {
@@ -2948,7 +2948,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SLL__E:					// 0x33
+        case Opcodes::Z80_Cb_Sll_E:					// 0x33
             return {
                     .instruction = Instruction::SLL,
                     .operands = {
@@ -2957,7 +2957,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SLL__H:					// 0x34
+        case Opcodes::Z80_Cb_Sll_H:					// 0x34
             return {
                     .instruction = Instruction::SLL,
                     .operands = {
@@ -2966,7 +2966,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SLL__L:					// 0x35
+        case Opcodes::Z80_Cb_Sll_L:					// 0x35
             return {
                     .instruction = Instruction::SLL,
                     .operands = {
@@ -2975,7 +2975,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SLL__INDIRECT_HL:	// 0x36
+        case Opcodes::Z80_Cb_Sll_IndirectHl:	// 0x36
             return {
                     .instruction = Instruction::SLL,
                     .operands = {
@@ -2984,7 +2984,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SLL__A:					// 0x37
+        case Opcodes::Z80_Cb_Sll_A:					// 0x37
             return {
                     .instruction = Instruction::SLL,
                     .operands = {
@@ -2993,7 +2993,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SRL__B:					// 0x38
+        case Opcodes::Z80_Cb_Srl_B:					// 0x38
             return {
                     .instruction = Instruction::SRL,
                     .operands = {
@@ -3002,7 +3002,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SRL__C:					// 0x39
+        case Opcodes::Z80_Cb_Srl_C:					// 0x39
             return {
                     .instruction = Instruction::SRL,
                     .operands = {
@@ -3011,7 +3011,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SRL__D:					// 0x3a
+        case Opcodes::Z80_Cb_Srl_D:					// 0x3a
             return {
                     .instruction = Instruction::SRL,
                     .operands = {
@@ -3020,7 +3020,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SRL__E:					// 0x3b
+        case Opcodes::Z80_Cb_Srl_E:					// 0x3b
             return {
                     .instruction = Instruction::SRL,
                     .operands = {
@@ -3029,7 +3029,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SRL__H:					// 0x3c
+        case Opcodes::Z80_Cb_Srl_H:					// 0x3c
             return {
                     .instruction = Instruction::SRL,
                     .operands = {
@@ -3038,7 +3038,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SRL__L:					// 0x3d
+        case Opcodes::Z80_Cb_Srl_L:					// 0x3d
             return {
                     .instruction = Instruction::SRL,
                     .operands = {
@@ -3047,7 +3047,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SRL__INDIRECT_HL:	// 0x3e
+        case Opcodes::Z80_Cb_Srl_IndirectHl:	// 0x3e
             return {
                     .instruction = Instruction::SRL,
                     .operands = {
@@ -3056,7 +3056,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SRL__A:					// 0x3f
+        case Opcodes::Z80_Cb_Srl_A:					// 0x3f
             return {
                     .instruction = Instruction::SRL,
                     .operands = {
@@ -3065,7 +3065,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__0__B:					// 0x40
+        case Opcodes::Z80_Cb_Bit_0_B:					// 0x40
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3075,7 +3075,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__0__C:					// 0x41
+        case Opcodes::Z80_Cb_Bit_0_C:					// 0x41
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3085,7 +3085,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__0__D:					// 0x42
+        case Opcodes::Z80_Cb_Bit_0_D:					// 0x42
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3095,7 +3095,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__0__E:					// 0x43
+        case Opcodes::Z80_Cb_Bit_0_E:					// 0x43
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3105,7 +3105,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__0__H:					// 0x44
+        case Opcodes::Z80_Cb_Bit_0_H:					// 0x44
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3115,7 +3115,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__0__L:					// 0x45
+        case Opcodes::Z80_Cb_Bit_0_L:					// 0x45
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3125,7 +3125,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__0__INDIRECT_HL:	// 0x46
+        case Opcodes::Z80_Cb_Bit_0_IndirectHl:	// 0x46
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3135,7 +3135,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__0__A:					// 0x47
+        case Opcodes::Z80_Cb_Bit_0_A:					// 0x47
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3145,7 +3145,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__1__B:					// 0x48
+        case Opcodes::Z80_Cb_Bit_1_B:					// 0x48
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3155,7 +3155,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__1__C:					// 0x49
+        case Opcodes::Z80_Cb_Bit_1_C:					// 0x49
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3165,7 +3165,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__1__D:					// 0x4a
+        case Opcodes::Z80_Cb_Bit_1_D:					// 0x4a
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3175,7 +3175,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__1__E:					// 0x4b
+        case Opcodes::Z80_Cb_Bit_1_E:					// 0x4b
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3185,7 +3185,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__1__H:					// 0x4c
+        case Opcodes::Z80_Cb_Bit_1_H:					// 0x4c
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3195,7 +3195,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__1__L:					// 0x4d
+        case Opcodes::Z80_Cb_Bit_1_L:					// 0x4d
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3205,7 +3205,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__1__INDIRECT_HL:	// 0x4e
+        case Opcodes::Z80_Cb_Bit_1_IndirectHl:	// 0x4e
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3215,7 +3215,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__1__A:					// 0x4f
+        case Opcodes::Z80_Cb_Bit_1_A:					// 0x4f
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3225,7 +3225,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__2__B:					// 0x50
+        case Opcodes::Z80_Cb_Bit_2_B:					// 0x50
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3235,7 +3235,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__2__C:					// 0x51
+        case Opcodes::Z80_Cb_Bit_2_C:					// 0x51
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3245,7 +3245,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__2__D:					// 0x52
+        case Opcodes::Z80_Cb_Bit_2_D:					// 0x52
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3255,7 +3255,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__2__E:					// 0x53
+        case Opcodes::Z80_Cb_Bit_2_E:					// 0x53
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3265,7 +3265,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__2__H:					// 0x54
+        case Opcodes::Z80_Cb_Bit_2_H:					// 0x54
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3275,7 +3275,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__2__L:					// 0x55
+        case Opcodes::Z80_Cb_Bit_2_L:					// 0x55
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3285,7 +3285,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__2__INDIRECT_HL:	// 0x56
+        case Opcodes::Z80_Cb_Bit_2_IndirectHl:	// 0x56
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3295,7 +3295,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__2__A:					// 0x57
+        case Opcodes::Z80_Cb_Bit_2_A:					// 0x57
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3305,7 +3305,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__3__B:					// 0x58
+        case Opcodes::Z80_Cb_Bit_3_B:					// 0x58
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3315,7 +3315,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__3__C:					// 0x59
+        case Opcodes::Z80_Cb_Bit_3_C:					// 0x59
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3325,7 +3325,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__3__D:					// 0x5a
+        case Opcodes::Z80_Cb_Bit_3_D:					// 0x5a
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3335,7 +3335,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__3__E:					// 0x5b
+        case Opcodes::Z80_Cb_Bit_3_E:					// 0x5b
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3345,7 +3345,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__3__H:					// 0x5c
+        case Opcodes::Z80_Cb_Bit_3_H:					// 0x5c
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3355,7 +3355,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__3__L:					// 0x5d
+        case Opcodes::Z80_Cb_Bit_3_L:					// 0x5d
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3365,7 +3365,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__3__INDIRECT_HL:	// 0x5e
+        case Opcodes::Z80_Cb_Bit_3_IndirectHl:	// 0x5e
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3375,7 +3375,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__3__A:					// 0x5f
+        case Opcodes::Z80_Cb_Bit_3_A:					// 0x5f
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3385,7 +3385,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__4__B:					// 0x60
+        case Opcodes::Z80_Cb_Bit_4_B:					// 0x60
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3395,7 +3395,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__4__C:					// 0x61
+        case Opcodes::Z80_Cb_Bit_4_C:					// 0x61
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3405,7 +3405,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__4__D:					// 0x62
+        case Opcodes::Z80_Cb_Bit_4_D:					// 0x62
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3415,7 +3415,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__4__E:					// 0x63
+        case Opcodes::Z80_Cb_Bit_4_E:					// 0x63
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3425,7 +3425,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__4__H:					// 0x64
+        case Opcodes::Z80_Cb_Bit_4_H:					// 0x64
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3435,7 +3435,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__4__L:					// 0x65
+        case Opcodes::Z80_Cb_Bit_4_L:					// 0x65
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3445,7 +3445,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__4__INDIRECT_HL:	// 0x66
+        case Opcodes::Z80_Cb_Bit_4_IndirectHl:	// 0x66
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3455,7 +3455,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__4__A:					// 0x67
+        case Opcodes::Z80_Cb_Bit_4_A:					// 0x67
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3465,7 +3465,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__5__B:					// 0x68
+        case Opcodes::Z80_Cb_Bit_5_B:					// 0x68
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3475,7 +3475,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__5__C:					// 0x69
+        case Opcodes::Z80_Cb_Bit_5_C:					// 0x69
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3485,7 +3485,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__5__D:					// 0x6a
+        case Opcodes::Z80_Cb_Bit_5_D:					// 0x6a
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3495,7 +3495,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__5__E:					// 0x6b
+        case Opcodes::Z80_Cb_Bit_5_E:					// 0x6b
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3505,7 +3505,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__5__H:					// 0x6c
+        case Opcodes::Z80_Cb_Bit_5_H:					// 0x6c
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3515,7 +3515,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__5__L:					// 0x6d
+        case Opcodes::Z80_Cb_Bit_5_L:					// 0x6d
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3525,7 +3525,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__5__INDIRECT_HL:	// 0x6e
+        case Opcodes::Z80_Cb_Bit_5_IndirectHl:	// 0x6e
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3535,7 +3535,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__5__A:					// 0x6f
+        case Opcodes::Z80_Cb_Bit_5_A:					// 0x6f
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3545,7 +3545,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__6__B:					// 0x70
+        case Opcodes::Z80_Cb_Bit_6_B:					// 0x70
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3555,7 +3555,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__6__C:					// 0x71
+        case Opcodes::Z80_Cb_Bit_6_C:					// 0x71
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3565,7 +3565,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__6__D:					// 0x72
+        case Opcodes::Z80_Cb_Bit_6_D:					// 0x72
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3575,7 +3575,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__6__E:					// 0x73
+        case Opcodes::Z80_Cb_Bit_6_E:					// 0x73
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3585,7 +3585,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__6__H:					// 0x74
+        case Opcodes::Z80_Cb_Bit_6_H:					// 0x74
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3595,7 +3595,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__6__L:					// 0x75
+        case Opcodes::Z80_Cb_Bit_6_L:					// 0x75
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3605,7 +3605,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__6__INDIRECT_HL:	// 0x76
+        case Opcodes::Z80_Cb_Bit_6_IndirectHl:	// 0x76
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3615,7 +3615,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__6__A:					// 0x77
+        case Opcodes::Z80_Cb_Bit_6_A:					// 0x77
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3625,7 +3625,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__7__B:					// 0x78
+        case Opcodes::Z80_Cb_Bit_7_B:					// 0x78
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3635,7 +3635,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__7__C:					// 0x79
+        case Opcodes::Z80_Cb_Bit_7_C:					// 0x79
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3645,7 +3645,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__7__D:					// 0x7a
+        case Opcodes::Z80_Cb_Bit_7_D:					// 0x7a
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3655,7 +3655,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__7__E:					// 0x7b
+        case Opcodes::Z80_Cb_Bit_7_E:					// 0x7b
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3665,7 +3665,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__7__H:					// 0x7c
+        case Opcodes::Z80_Cb_Bit_7_H:					// 0x7c
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3675,7 +3675,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__7__L:					// 0x7d
+        case Opcodes::Z80_Cb_Bit_7_L:					// 0x7d
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3685,7 +3685,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__7__INDIRECT_HL:	// 0x7e
+        case Opcodes::Z80_Cb_Bit_7_IndirectHl:	// 0x7e
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3695,7 +3695,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__BIT__7__A:					// 0x7f
+        case Opcodes::Z80_Cb_Bit_7_A:					// 0x7f
             return {
                     .instruction = Instruction::BIT,
                     .operands = {
@@ -3705,7 +3705,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__0__B:					// 0x80
+        case Opcodes::Z80_Cb_Res_0_B:					// 0x80
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3715,7 +3715,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__0__C:					// 0x81
+        case Opcodes::Z80_Cb_Res_0_C:					// 0x81
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3725,7 +3725,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__0__D:					// 0x82
+        case Opcodes::Z80_Cb_Res_0_D:					// 0x82
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3735,7 +3735,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__0__E:					// 0x83
+        case Opcodes::Z80_Cb_Res_0_E:					// 0x83
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3745,7 +3745,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__0__H:					// 0x84
+        case Opcodes::Z80_Cb_Res_0_H:					// 0x84
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3755,7 +3755,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__0__L:					// 0x85
+        case Opcodes::Z80_Cb_Res_0_L:					// 0x85
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3765,7 +3765,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__0__INDIRECT_HL:	// 0x86
+        case Opcodes::Z80_Cb_Res_0_IndirectHl:	// 0x86
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3775,7 +3775,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__0__A:					// 0x87
+        case Opcodes::Z80_Cb_Res_0_A:					// 0x87
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3785,7 +3785,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__1__B:					// 0x88
+        case Opcodes::Z80_Cb_Res_1_B:					// 0x88
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3795,7 +3795,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__1__C:					// 0x89
+        case Opcodes::Z80_Cb_Res_1_C:					// 0x89
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3805,7 +3805,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__1__D:					// 0x8a
+        case Opcodes::Z80_Cb_Res_1_D:					// 0x8a
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3815,7 +3815,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__1__E:					// 0x8b
+        case Opcodes::Z80_Cb_Res_1_E:					// 0x8b
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3825,7 +3825,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__1__H:					// 0x8c
+        case Opcodes::Z80_Cb_Res_1_H:					// 0x8c
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3835,7 +3835,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__1__L:					// 0x8d
+        case Opcodes::Z80_Cb_Res_1_L:					// 0x8d
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3845,7 +3845,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__1__INDIRECT_HL:	// 0x8e
+        case Opcodes::Z80_Cb_Res_1_IndirectHl:	// 0x8e
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3855,7 +3855,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__1__A:					// 0x8f
+        case Opcodes::Z80_Cb_Res_1_A:					// 0x8f
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3865,7 +3865,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__2__B:					// 0x90
+        case Opcodes::Z80_Cb_Res_2_B:					// 0x90
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3875,7 +3875,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__2__C:					// 0x91
+        case Opcodes::Z80_Cb_Res_2_C:					// 0x91
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3885,7 +3885,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__2__D:					// 0x92
+        case Opcodes::Z80_Cb_Res_2_D:					// 0x92
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3895,7 +3895,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__2__E:					// 0x93
+        case Opcodes::Z80_Cb_Res_2_E:					// 0x93
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3905,7 +3905,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__2__H:					// 0x94
+        case Opcodes::Z80_Cb_Res_2_H:					// 0x94
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3915,7 +3915,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__2__L:					// 0x95
+        case Opcodes::Z80_Cb_Res_2_L:					// 0x95
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3925,7 +3925,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__2__INDIRECT_HL:	// 0x96
+        case Opcodes::Z80_Cb_Res_2_IndirectHl:	// 0x96
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3935,7 +3935,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__2__A:					// 0x97
+        case Opcodes::Z80_Cb_Res_2_A:					// 0x97
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3945,7 +3945,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__3__B:					// 0x98
+        case Opcodes::Z80_Cb_Res_3_B:					// 0x98
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3955,7 +3955,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__3__C:					// 0x99
+        case Opcodes::Z80_Cb_Res_3_C:					// 0x99
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3965,7 +3965,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__3__D:					// 0x9a
+        case Opcodes::Z80_Cb_Res_3_D:					// 0x9a
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3975,7 +3975,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__3__E:					// 0x9b
+        case Opcodes::Z80_Cb_Res_3_E:					// 0x9b
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3985,7 +3985,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__3__H:					// 0x9c
+        case Opcodes::Z80_Cb_Res_3_H:					// 0x9c
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -3995,7 +3995,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__3__L:					// 0x9d
+        case Opcodes::Z80_Cb_Res_3_L:					// 0x9d
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4005,7 +4005,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__3__INDIRECT_HL:	// 0x9e
+        case Opcodes::Z80_Cb_Res_3_IndirectHl:	// 0x9e
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4015,7 +4015,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__3__A:					// 0x9f
+        case Opcodes::Z80_Cb_Res_3_A:					// 0x9f
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4025,7 +4025,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__4__B:					// 0xa0
+        case Opcodes::Z80_Cb_Res_4_B:					// 0xa0
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4035,7 +4035,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__4__C:					// 0xa1
+        case Opcodes::Z80_Cb_Res_4_C:					// 0xa1
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4045,7 +4045,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__4__D:					// 0xa2
+        case Opcodes::Z80_Cb_Res_4_D:					// 0xa2
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4055,7 +4055,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__4__E:					// 0xa3
+        case Opcodes::Z80_Cb_Res_4_E:					// 0xa3
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4065,7 +4065,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__4__H:					// 0xa4
+        case Opcodes::Z80_Cb_Res_4_H:					// 0xa4
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4075,7 +4075,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__4__L:					// 0xa5
+        case Opcodes::Z80_Cb_Res_4_L:					// 0xa5
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4085,7 +4085,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__4__INDIRECT_HL:	// 0xa6
+        case Opcodes::Z80_Cb_Res_4_IndirectHl:	// 0xa6
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4095,7 +4095,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__4__A:					// 0xa7
+        case Opcodes::Z80_Cb_Res_4_A:					// 0xa7
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4105,7 +4105,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__5__B:					// 0xa8
+        case Opcodes::Z80_Cb_Res_5_B:					// 0xa8
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4115,7 +4115,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__5__C:					// 0xa9
+        case Opcodes::Z80_Cb_Res_5_C:					// 0xa9
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4125,7 +4125,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__5__D:					// 0xaa
+        case Opcodes::Z80_Cb_Res_5_D:					// 0xaa
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4135,7 +4135,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__5__E:					// 0xab
+        case Opcodes::Z80_Cb_Res_5_E:					// 0xab
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4145,7 +4145,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__5__H:					// 0xac
+        case Opcodes::Z80_Cb_Res_5_H:					// 0xac
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4155,7 +4155,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__5__L:					// 0xad
+        case Opcodes::Z80_Cb_Res_5_L:					// 0xad
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4165,7 +4165,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__5__INDIRECT_HL:	// 0xae
+        case Opcodes::Z80_Cb_Res_5_IndirectHl:	// 0xae
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4175,7 +4175,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__5__A:					// 0xaf
+        case Opcodes::Z80_Cb_Res_5_A:					// 0xaf
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4185,7 +4185,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__6__B:					// 0xb0
+        case Opcodes::Z80_Cb_Res_6_B:					// 0xb0
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4195,7 +4195,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__6__C:					// 0xb1
+        case Opcodes::Z80_Cb_Res_6_C:					// 0xb1
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4205,7 +4205,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__6__D:					// 0xb2
+        case Opcodes::Z80_Cb_Res_6_D:					// 0xb2
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4215,7 +4215,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__6__E:					// 0xb3
+        case Opcodes::Z80_Cb_Res_6_E:					// 0xb3
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4225,7 +4225,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__6__H:					// 0xb4
+        case Opcodes::Z80_Cb_Res_6_H:					// 0xb4
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4235,7 +4235,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__6__L:					// 0xb5
+        case Opcodes::Z80_Cb_Res_6_L:					// 0xb5
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4245,7 +4245,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__6__INDIRECT_HL:	// 0xb6
+        case Opcodes::Z80_Cb_Res_6_IndirectHl:	// 0xb6
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4255,7 +4255,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__6__A:					// 0xb7
+        case Opcodes::Z80_Cb_Res_6_A:					// 0xb7
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4265,7 +4265,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__7__B:					// 0xb8
+        case Opcodes::Z80_Cb_Res_7_B:					// 0xb8
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4275,7 +4275,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__7__C:					// 0xb9
+        case Opcodes::Z80_Cb_Res_7_C:					// 0xb9
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4285,7 +4285,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__7__D:					// 0xba
+        case Opcodes::Z80_Cb_Res_7_D:					// 0xba
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4295,7 +4295,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__7__E:					// 0xbb
+        case Opcodes::Z80_Cb_Res_7_E:					// 0xbb
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4305,7 +4305,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__7__H:					// 0xbc
+        case Opcodes::Z80_Cb_Res_7_H:					// 0xbc
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4315,7 +4315,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__7__L:					// 0xbd
+        case Opcodes::Z80_Cb_Res_7_L:					// 0xbd
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4325,7 +4325,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__7__INDIRECT_HL:	// 0xbe
+        case Opcodes::Z80_Cb_Res_7_IndirectHl:	// 0xbe
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4335,7 +4335,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__RES__7__A:					// 0xbf
+        case Opcodes::Z80_Cb_Res_7_A:					// 0xbf
             return {
                     .instruction = Instruction::RES,
                     .operands = {
@@ -4345,7 +4345,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__0__B:					// 0xc0
+        case Opcodes::Z80_Cb_Set_0_B:					// 0xc0
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4355,7 +4355,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__0__C:					// 0xc1
+        case Opcodes::Z80_Cb_Set_0_C:					// 0xc1
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4365,7 +4365,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__0__D:					// 0xc2
+        case Opcodes::Z80_Cb_Set_0_D:					// 0xc2
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4375,7 +4375,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__0__E:					// 0xc3
+        case Opcodes::Z80_Cb_Set_0_E:					// 0xc3
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4385,7 +4385,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__0__H:					// 0xc4
+        case Opcodes::Z80_Cb_Set_0_H:					// 0xc4
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4395,7 +4395,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__0__L:					// 0xc5
+        case Opcodes::Z80_Cb_Set_0_L:					// 0xc5
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4405,7 +4405,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__0__INDIRECT_HL:	// 0xc6
+        case Opcodes::Z80_Cb_Set_0_IndirectHl:	// 0xc6
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4415,7 +4415,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__0__A:					// 0xc7
+        case Opcodes::Z80_Cb_Set_0_A:					// 0xc7
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4425,7 +4425,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__1__B:					// 0xc8
+        case Opcodes::Z80_Cb_Set_1_B:					// 0xc8
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4435,7 +4435,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__1__C:					// 0xc9
+        case Opcodes::Z80_Cb_Set_1_C:					// 0xc9
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4445,7 +4445,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__1__D:					// 0xca
+        case Opcodes::Z80_Cb_Set_1_D:					// 0xca
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4455,7 +4455,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__1__E:					// 0xcb
+        case Opcodes::Z80_Cb_Set_1_E:					// 0xcb
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4465,7 +4465,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__1__H:					// 0xcc
+        case Opcodes::Z80_Cb_Set_1_H:					// 0xcc
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4475,7 +4475,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__1__L:					// 0xcd
+        case Opcodes::Z80_Cb_Set_1_L:					// 0xcd
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4485,7 +4485,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__1__INDIRECT_HL:	// 0xce
+        case Opcodes::Z80_Cb_Set_1_IndirectHl:	// 0xce
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4495,7 +4495,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__1__A:					// 0xcf
+        case Opcodes::Z80_Cb_Set_1_A:					// 0xcf
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4505,7 +4505,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__2__B:					// 0xd0
+        case Opcodes::Z80_Cb_Set_2_B:					// 0xd0
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4515,7 +4515,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__2__C:					// 0xd1
+        case Opcodes::Z80_Cb_Set_2_C:					// 0xd1
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4525,7 +4525,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__2__D:					// 0xd2
+        case Opcodes::Z80_Cb_Set_2_D:					// 0xd2
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4535,7 +4535,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__2__E:					// 0xd3
+        case Opcodes::Z80_Cb_Set_2_E:					// 0xd3
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4545,7 +4545,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__2__H:					// 0xd4
+        case Opcodes::Z80_Cb_Set_2_H:					// 0xd4
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4555,7 +4555,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__2__L:					// 0xd5
+        case Opcodes::Z80_Cb_Set_2_L:					// 0xd5
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4565,7 +4565,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__2__INDIRECT_HL:	// 0xd6
+        case Opcodes::Z80_Cb_Set_2_IndirectHl:	// 0xd6
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4575,7 +4575,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__2__A:					// 0xd7
+        case Opcodes::Z80_Cb_Set_2_A:					// 0xd7
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4585,7 +4585,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__3__B:					// 0xd8
+        case Opcodes::Z80_Cb_Set_3_B:					// 0xd8
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4595,7 +4595,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__3__C:					// 0xd9
+        case Opcodes::Z80_Cb_Set_3_C:					// 0xd9
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4605,7 +4605,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__3__D:					// 0xda
+        case Opcodes::Z80_Cb_Set_3_D:					// 0xda
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4615,7 +4615,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__3__E:					// 0xdb
+        case Opcodes::Z80_Cb_Set_3_E:					// 0xdb
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4625,7 +4625,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__3__H:					// 0xdc
+        case Opcodes::Z80_Cb_Set_3_H:					// 0xdc
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4635,7 +4635,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__3__L:					// 0xdd
+        case Opcodes::Z80_Cb_Set_3_L:					// 0xdd
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4645,7 +4645,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__3__INDIRECT_HL:	// 0xde
+        case Opcodes::Z80_Cb_Set_3_IndirectHl:	// 0xde
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4655,7 +4655,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__3__A:					// 0xdf
+        case Opcodes::Z80_Cb_Set_3_A:					// 0xdf
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4665,7 +4665,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__4__B:					// 0xe0
+        case Opcodes::Z80_Cb_Set_4_B:					// 0xe0
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -4675,7 +4675,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                 .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__4__C:					// 0xe1
+        case Opcodes::Z80_Cb_Set_4_C:					// 0xe1
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4685,7 +4685,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__4__D:					// 0xe2
+        case Opcodes::Z80_Cb_Set_4_D:					// 0xe2
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4695,7 +4695,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__4__E:					// 0xe3
+        case Opcodes::Z80_Cb_Set_4_E:					// 0xe3
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4705,7 +4705,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__4__H:					// 0xe4
+        case Opcodes::Z80_Cb_Set_4_H:					// 0xe4
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4715,7 +4715,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__4__L:					// 0xe5
+        case Opcodes::Z80_Cb_Set_4_L:					// 0xe5
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4725,7 +4725,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__4__INDIRECT_HL:	// 0xe6
+        case Opcodes::Z80_Cb_Set_4_IndirectHl:	// 0xe6
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4735,7 +4735,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__4__A:					// 0xe7
+        case Opcodes::Z80_Cb_Set_4_A:					// 0xe7
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4745,7 +4745,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__5__B:					// 0xe8
+        case Opcodes::Z80_Cb_Set_5_B:					// 0xe8
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4755,7 +4755,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__5__C:					// 0xe9
+        case Opcodes::Z80_Cb_Set_5_C:					// 0xe9
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4765,7 +4765,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__5__D:					// 0xea
+        case Opcodes::Z80_Cb_Set_5_D:					// 0xea
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4775,7 +4775,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__5__E:					// 0xeb
+        case Opcodes::Z80_Cb_Set_5_E:					// 0xeb
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4785,7 +4785,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__5__H:					// 0xec
+        case Opcodes::Z80_Cb_Set_5_H:					// 0xec
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4795,7 +4795,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__5__L:					// 0xed
+        case Opcodes::Z80_Cb_Set_5_L:					// 0xed
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4805,7 +4805,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__5__INDIRECT_HL:	// 0xee
+        case Opcodes::Z80_Cb_Set_5_IndirectHl:	// 0xee
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4815,7 +4815,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__5__A:					// 0xef
+        case Opcodes::Z80_Cb_Set_5_A:					// 0xef
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4825,7 +4825,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__6__B:					// 0xf0
+        case Opcodes::Z80_Cb_Set_6_B:					// 0xf0
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -4835,7 +4835,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                 .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__6__C:					// 0xf1
+        case Opcodes::Z80_Cb_Set_6_C:					// 0xf1
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4845,7 +4845,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__6__D:					// 0xf2
+        case Opcodes::Z80_Cb_Set_6_D:					// 0xf2
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4855,7 +4855,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__6__E:					// 0xf3
+        case Opcodes::Z80_Cb_Set_6_E:					// 0xf3
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4865,7 +4865,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__6__H:					// 0xf4
+        case Opcodes::Z80_Cb_Set_6_H:					// 0xf4
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4875,7 +4875,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__6__L:					// 0xf5
+        case Opcodes::Z80_Cb_Set_6_L:					// 0xf5
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4885,7 +4885,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__6__INDIRECT_HL:	// 0xf6
+        case Opcodes::Z80_Cb_Set_6_IndirectHl:	// 0xf6
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4895,7 +4895,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__6__A:					// 0xf7
+        case Opcodes::Z80_Cb_Set_6_A:					// 0xf7
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4905,7 +4905,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__7__B:					// 0xf8
+        case Opcodes::Z80_Cb_Set_7_B:					// 0xf8
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4915,7 +4915,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__7__C:					// 0xf9
+        case Opcodes::Z80_Cb_Set_7_C:					// 0xf9
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4925,7 +4925,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__7__D:					// 0xfa
+        case Opcodes::Z80_Cb_Set_7_D:					// 0xfa
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4935,7 +4935,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__7__E:					// 0xfb
+        case Opcodes::Z80_Cb_Set_7_E:					// 0xfb
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4945,7 +4945,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__7__H:					// 0xfc
+        case Opcodes::Z80_Cb_Set_7_H:					// 0xfc
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4955,7 +4955,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__7__L:					// 0xfd
+        case Opcodes::Z80_Cb_Set_7_L:					// 0xfd
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4965,7 +4965,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__7__INDIRECT_HL:	// 0xfe
+        case Opcodes::Z80_Cb_Set_7_IndirectHl:	// 0xfe
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -4975,7 +4975,7 @@ Mnemonic Disassembler::disassembleOneCb(const UnsignedByte * machineCode)
                     .size = OpcodeSize,
             };
 
-        case Z80__CB__SET__7__A:					// 0xff
+        case Opcodes::Z80_Cb_Set_7_A:					// 0xff
             return {
                     .instruction = Instruction::SET,
                     .operands = {
@@ -5002,7 +5002,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
 {
     switch (*machineCode)
     {
-        case Z80__ED__IN__B__INDIRECT_C:            // 0x40
+        case Opcodes::Z80_Ed_In_B_IndirectC:            // 0x40
             return {
                     .instruction = Instruction::IN,
                     .operands = {
@@ -5012,7 +5012,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__OUT__INDIRECT_C__B:            // 0x41
+        case Opcodes::Z80_Ed_Out_IndirectC_B:            // 0x41
             return {
                     .instruction = Instruction::OUT,
                     .operands = {
@@ -5022,7 +5022,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__SBC__HL__BC:                    // 0x42
+        case Opcodes::Z80_Ed_Sbc_Hl_Bc:                    // 0x42
             return {
                     .instruction = Instruction::SBC,
                     .operands = {
@@ -5032,7 +5032,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__LD__INDIRECT_NN__BC:        // 0x43
+        case Opcodes::Z80_Ed_Ld_IndirectNn_Bc:        // 0x43
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -5042,28 +5042,28 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 4,
             };
 
-        case Z80__ED__NEG:                                // 0x44
+        case Opcodes::Z80_Ed_Neg:                                // 0x44
             return {
                 .instruction = Instruction::NEG,
                 .operands = {},
                 .size = 2,
             };
 
-        case Z80__ED__RETN:                            // 0x45
+        case Opcodes::Z80_Ed_Retn:                            // 0x45
             return {
                     .instruction = Instruction::RETN,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__IM__0:                            // 0x46
+        case Opcodes::Z80_Ed_Im_0:                            // 0x46
             return {
                     .instruction = Instruction::IM0,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__LD__I__A:                        // 0x47
+        case Opcodes::Z80_Ed_Ld_I_A:                        // 0x47
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -5073,7 +5073,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__IN__C__INDIRECT_C:            // 0x48
+        case Opcodes::Z80_Ed_In_C_IndirectC:            // 0x48
             return {
                     .instruction = Instruction::IN,
                     .operands = {
@@ -5083,7 +5083,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__OUT__INDIRECT_C__C:            // 0x49
+        case Opcodes::Z80_Ed_Out_IndirectC_C:            // 0x49
             return {
                     .instruction = Instruction::OUT,
                     .operands = {
@@ -5093,7 +5093,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__ADC__HL__BC:                    // 0x4a
+        case Opcodes::Z80_Ed_Adc_Hl_Bc:                    // 0x4a
             return {
                     .instruction = Instruction::ADC,
                     .operands = {
@@ -5103,7 +5103,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__LD__BC__INDIRECT_NN:        // 0x4b
+        case Opcodes::Z80_Ed_Ld_Bc_IndirectNn:        // 0x4b
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -5113,28 +5113,28 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 4,
             };
 
-        case Z80__ED__NEG__0XED__0X4C:                // 0x4c
+        case Opcodes::Z80_Ed_Neg_0xEd_0x4c:                // 0x4c
             return {
                     .instruction = Instruction::NEG,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__RETI:                            // 0x4d
+        case Opcodes::Z80_Ed_Reti:                            // 0x4d
             return {
                     .instruction = Instruction::RETI,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__IM__0__0XED__0X4E:            // 0x4e
+        case Opcodes::Z80_Ed_Im_0_0xEd_0x4e:            // 0x4e
             return {
                     .instruction = Instruction::IM0,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__LD__R__A:                        // 0x4f
+        case Opcodes::Z80_Ed_Ld_R_A:                        // 0x4f
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -5144,7 +5144,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__IN__D__INDIRECT_C:            // 0x50
+        case Opcodes::Z80_Ed_In_D_IndirectC:            // 0x50
             return {
                     .instruction = Instruction::IN,
                     .operands = {
@@ -5154,7 +5154,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__OUT__INDIRECT_C__D:            // 0x51
+        case Opcodes::Z80_Ed_Out_IndirectC_D:            // 0x51
             return {
                     .instruction = Instruction::OUT,
                     .operands = {
@@ -5164,7 +5164,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__SBC__HL__DE:                    // 0x52
+        case Opcodes::Z80_Ed_Sbc_Hl_De:                    // 0x52
             return {
                     .instruction = Instruction::SBC,
                     .operands = {
@@ -5174,7 +5174,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__LD__INDIRECT_NN__DE:        // 0x53
+        case Opcodes::Z80_Ed_Ld_IndirectNn_De:        // 0x53
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -5184,28 +5184,28 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 4,
             };
 
-        case Z80__ED__NEG__0XED__0X54:                // 0x54
+        case Opcodes::Z80_Ed_Neg_0xEd_0x54:                // 0x54
             return {
                     .instruction = Instruction::NEG,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__RETN__0XED__0X55:            // 0x55
+        case Opcodes::Z80_Ed_Retn_0xEd_0x55:            // 0x55
             return {
                     .instruction = Instruction::RETN,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__IM__1:                            // 0x56
+        case Opcodes::Z80_Ed_Im_1:                            // 0x56
             return {
                     .instruction = Instruction::IM1,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__LD__A__I:                        // 0x57
+        case Opcodes::Z80_Ed_Ld_A_I:                        // 0x57
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -5215,7 +5215,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 4,
             };
 
-        case Z80__ED__IN__E__INDIRECT_C:            // 0x58
+        case Opcodes::Z80_Ed_In_E_IndirectC:            // 0x58
             return {
                     .instruction = Instruction::IN,
                     .operands = {
@@ -5225,7 +5225,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__OUT__INDIRECT_C__E:            // 0x59
+        case Opcodes::Z80_Ed_Out_IndirectC_E:            // 0x59
             return {
                     .instruction = Instruction::OUT,
                     .operands = {
@@ -5235,7 +5235,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__ADC__HL__DE:                    // 0x5a
+        case Opcodes::Z80_Ed_Adc_Hl_De:                    // 0x5a
             return {
                     .instruction = Instruction::ADC,
                     .operands = {
@@ -5245,7 +5245,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__LD__DE__INDIRECT_NN:        // 0x5b
+        case Opcodes::Z80_Ed_Ld_De_IndirectNn:        // 0x5b
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -5255,28 +5255,28 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 4,
             };
 
-        case Z80__ED__NEG__0XED__0X5C:                // 0x5c
+        case Opcodes::Z80_Ed_Neg_0xEd_0x5c:                // 0x5c
             return {
                     .instruction = Instruction::NEG,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__RETI__0XED__0X5D:            // 0x5d
+        case Opcodes::Z80_Ed_Reti_0xEd_0x5d:            // 0x5d
             return {
                     .instruction = Instruction::RETI,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__IM__2:                            // 0x5e
+        case Opcodes::Z80_Ed_Im_2:                            // 0x5e
             return {
                     .instruction = Instruction::IM2,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__LD__A__R:                        // 0x5f
+        case Opcodes::Z80_Ed_Ld_A_R:                        // 0x5f
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -5286,7 +5286,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__IN__H__INDIRECT_C:            // 0x60
+        case Opcodes::Z80_Ed_In_H_IndirectC:            // 0x60
             return {
                     .instruction = Instruction::IN,
                     .operands = {
@@ -5296,7 +5296,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__OUT__INDIRECT_C__H:            // 0x61
+        case Opcodes::Z80_Ed_Out_IndirectC_H:            // 0x61
             return {
                     .instruction = Instruction::OUT,
                     .operands = {
@@ -5306,7 +5306,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__SBC__HL__HL:                    // 0x62
+        case Opcodes::Z80_Ed_Sbc_Hl_Hl:                    // 0x62
             return {
                     .instruction = Instruction::SBC,
                     .operands = {
@@ -5316,7 +5316,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__LD__INDIRECT_NN__HL:        // 0x63
+        case Opcodes::Z80_Ed_Ld_IndirectNn_Hl:        // 0x63
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -5326,35 +5326,35 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 4,
             };
 
-        case Z80__ED__NEG__0XED__0X64:                // 0x64
+        case Opcodes::Z80_Ed_Neg_0xEd_0x64:                // 0x64
             return {
                     .instruction = Instruction::NEG,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__RETN__0XED__0X65:            // 0x65
+        case Opcodes::Z80_Ed_Retn_0xEd_0x65:            // 0x65
             return {
                     .instruction = Instruction::RETN,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__IM__0__0XED__0X66:            // 0x66
+        case Opcodes::Z80_Ed_Im_0_0xEd_0x66:            // 0x66
             return {
                     .instruction = Instruction::IM0,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__RRD:                                // 0x67
+        case Opcodes::Z80_Ed_Rrd:                                // 0x67
             return {
                     .instruction = Instruction::RRD,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__IN__L__INDIRECT_C:            // 0x68
+        case Opcodes::Z80_Ed_In_L_IndirectC:            // 0x68
             return {
                     .instruction = Instruction::IN,
                     .operands = {
@@ -5364,7 +5364,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__OUT__INDIRECT_C__L:            // 0x69
+        case Opcodes::Z80_Ed_Out_IndirectC_L:            // 0x69
             return {
                     .instruction = Instruction::OUT,
                     .operands = {
@@ -5374,7 +5374,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__ADC__HL__HL:                    // 0x6a
+        case Opcodes::Z80_Ed_Adc_Hl_Hl:                    // 0x6a
             return {
                     .instruction = Instruction::ADC,
                     .operands = {
@@ -5384,7 +5384,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__LD__HL__INDIRECT_NN:        // 0x6b
+        case Opcodes::Z80_Ed_Ld_Hl_IndirectNn:        // 0x6b
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -5394,35 +5394,35 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 4,
             };
 
-        case Z80__ED__NEG__0XED__0X6C:                // 0x6c
+        case Opcodes::Z80_Ed_Neg_0xEd_0x6c:                // 0x6c
             return {
                     .instruction = Instruction::NEG,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__RETI__0XED__0X6D:            // 0x6d
+        case Opcodes::Z80_Ed_Reti_0xEd_0x6d:            // 0x6d
             return {
                     .instruction = Instruction::RETI,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__IM__0__0XED__0X6E:            // 0x6e
+        case Opcodes::Z80_Ed_Im_0_0xEd_0x6e:            // 0x6e
             return {
                     .instruction = Instruction::IM0,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__RLD:                                // 0x6f
+        case Opcodes::Z80_Ed_Rld:                                // 0x6f
             return {
                     .instruction = Instruction::RLD,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__IN__INDIRECT_C:                // 0x70
+        case Opcodes::Z80_Ed_In_IndirectC:                // 0x70
             return {
                     .instruction = Instruction::IN,
                     .operands = {
@@ -5431,7 +5431,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__OUT__INDIRECT_C__0:            // 0x71
+        case Opcodes::Z80_Ed_Out_IndirectC_0:            // 0x71
             return {
                     .instruction = Instruction::OUT,
                     .operands = {
@@ -5441,7 +5441,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__SBC__HL__SP:                    // 0x72
+        case Opcodes::Z80_Ed_Sbc_Hl_Sp:                    // 0x72
             return {
                     .instruction = Instruction::SBC,
                     .operands = {
@@ -5451,7 +5451,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__LD__INDIRECT_NN__SP:        // 0x73
+        case Opcodes::Z80_Ed_Ld_IndirectNn_Sp:        // 0x73
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -5461,28 +5461,28 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 4,
             };
 
-        case Z80__ED__NEG__0XED__0X74:                // 0x74
+        case Opcodes::Z80_Ed_Neg_0xEd_0x74:                // 0x74
             return {
                     .instruction = Instruction::NEG,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__RETN__0XED__0X75:            // 0x75
+        case Opcodes::Z80_Ed_Retn_0xEd_0x75:            // 0x75
             return {
                     .instruction = Instruction::RETN,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__IM__1__0XED__0X76:            // 0x76
+        case Opcodes::Z80_Ed_Im_1_0xEd_0x76:            // 0x76
             return {
                     .instruction = Instruction::IM1,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__IN__A__INDIRECT_C:            // 0x78
+        case Opcodes::Z80_Ed_In_A_IndirectC:            // 0x78
             return {
                     .instruction = Instruction::IN,
                     .operands = {
@@ -5492,7 +5492,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__OUT__INDIRECT_C__A:            // 0x79
+        case Opcodes::Z80_Ed_Out_IndirectC_A:            // 0x79
             return {
                     .instruction = Instruction::OUT,
                     .operands = {
@@ -5502,7 +5502,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__ADC__HL__SP:                    // 0x7a
+        case Opcodes::Z80_Ed_Adc_Hl_Sp:                    // 0x7a
             return {
                     .instruction = Instruction::ADC,
                     .operands = {
@@ -5512,7 +5512,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 2,
             };
 
-        case Z80__ED__LD__SP__INDIRECT_NN:        // 0x7b
+        case Opcodes::Z80_Ed_Ld_Sp_IndirectNn:        // 0x7b
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -5522,322 +5522,322 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
                     .size = 4,
             };
 
-        case Z80__ED__NEG__0XED__0X7C:                // 0x7c
+        case Opcodes::Z80_Ed_Neg_0xEd_0x7c:                // 0x7c
             return {
                     .instruction = Instruction::NEG,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__RETI__0XED__0X7D:            // 0x7d
+        case Opcodes::Z80_Ed_Reti_0xEd_0x7d:            // 0x7d
             return {
                     .instruction = Instruction::RETI,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__IM__2__0XED__0X7E:            // 0x7e
+        case Opcodes::Z80_Ed_Im_2_0xEd_0x7e:            // 0x7e
             return {
                     .instruction = Instruction::IM2,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__LDI:                                // 0xa0
+        case Opcodes::Z80_Ed_Ldi:                                // 0xa0
             return {
                     .instruction = Instruction::LDI,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__CPI:                                // 0xa1
+        case Opcodes::Z80_Ed_Cpi:                                // 0xa1
             return {
                     .instruction = Instruction::CPI,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__INI:                                // 0xa2
+        case Opcodes::Z80_Ed_Ini:                                // 0xa2
             return {
                     .instruction = Instruction::INI,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__OUTI:                            // 0xa3
+        case Opcodes::Z80_Ed_Outi:                            // 0xa3
             return {
                     .instruction = Instruction::OUTI,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__LDD:                                // 0xa8
+        case Opcodes::Z80_Ed_Ldd:                                // 0xa8
             return {
                     .instruction = Instruction::LDD,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__CPD:                                // 0xa9
+        case Opcodes::Z80_Ed_Cpd:                                // 0xa9
             return {
                     .instruction = Instruction::CPD,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__IND:                                // 0xaa
+        case Opcodes::Z80_Ed_Ind:                                // 0xaa
             return {
                     .instruction = Instruction::IND,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__OUTD:                            // 0xab
+        case Opcodes::Z80_Ed_Outd:                            // 0xab
             return {
                     .instruction = Instruction::OUTD,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__LDIR:                            // 0xb0
+        case Opcodes::Z80_Ed_Ldir:                            // 0xb0
             return {
                     .instruction = Instruction::LDIR,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__CPIR:                            // 0xb1
+        case Opcodes::Z80_Ed_Cpir:                            // 0xb1
             return {
                     .instruction = Instruction::CPIR,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__INIR:                            // 0xb2
+        case Opcodes::Z80_Ed_Inir:                            // 0xb2
             return {
                     .instruction = Instruction::INIR,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__OTIR:                            // 0xb3
+        case Opcodes::Z80_Ed_Otir:                            // 0xb3
             return {
                     .instruction = Instruction::OTIR,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__LDDR:                            // 0xb8
+        case Opcodes::Z80_Ed_Lddr:                            // 0xb8
             return {
                     .instruction = Instruction::LDDR,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__CPDR:                            // 0xb9
+        case Opcodes::Z80_Ed_Cpdr:                            // 0xb9
             return {
                     .instruction = Instruction::CPDR,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__INDR:                            // 0xba
+        case Opcodes::Z80_Ed_Indr:                            // 0xba
             return {
                     .instruction = Instruction::INDR,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__OTDR:                            // 0xbb
+        case Opcodes::Z80_Ed_Otdr:                            // 0xbb
             return {
                     .instruction = Instruction::OTDR,
                     .operands = {},
                     .size = 2,
             };
 
-        case Z80__ED__NOP__0XED__0X00:                // 0x00
-        case Z80__ED__NOP__0XED__0X01:                // 0x01
-        case Z80__ED__NOP__0XED__0X02:                // 0x02
-        case Z80__ED__NOP__0XED__0X03:                // 0x03
-        case Z80__ED__NOP__0XED__0X04:                // 0x04
-        case Z80__ED__NOP__0XED__0X05:                // 0x05
-        case Z80__ED__NOP__0XED__0X06:                // 0x06
-        case Z80__ED__NOP__0XED__0X07:                // 0x07
-        case Z80__ED__NOP__0XED__0X08:                // 0x08
-        case Z80__ED__NOP__0XED__0X09:                // 0x09
-        case Z80__ED__NOP__0XED__0X0A:                // 0x0a
-        case Z80__ED__NOP__0XED__0X0B:                // 0x0b
-        case Z80__ED__NOP__0XED__0X0C:                // 0x0c
-        case Z80__ED__NOP__0XED__0X0D:                // 0x0d
-        case Z80__ED__NOP__0XED__0X0E:                // 0x0e
-        case Z80__ED__NOP__0XED__0X0F:                // 0x0f
-        case Z80__ED__NOP__0XED__0X10:                // 0x10
-        case Z80__ED__NOP__0XED__0X11:                // 0x11
-        case Z80__ED__NOP__0XED__0X12:                // 0x12
-        case Z80__ED__NOP__0XED__0X13:                // 0x13
-        case Z80__ED__NOP__0XED__0X14:                // 0x14
-        case Z80__ED__NOP__0XED__0X15:                // 0x15
-        case Z80__ED__NOP__0XED__0X16:                // 0x16
-        case Z80__ED__NOP__0XED__0X17:                // 0x17
-        case Z80__ED__NOP__0XED__0X18:                // 0x18
-        case Z80__ED__NOP__0XED__0X19:                // 0x19
-        case Z80__ED__NOP__0XED__0X1A:                // 0x1a
-        case Z80__ED__NOP__0XED__0X1B:                // 0x1b
-        case Z80__ED__NOP__0XED__0X1C:                // 0x1c
-        case Z80__ED__NOP__0XED__0X1D:                // 0x1d
-        case Z80__ED__NOP__0XED__0X1E:                // 0x1e
-        case Z80__ED__NOP__0XED__0X1F:                // 0x1f
-        case Z80__ED__NOP__0XED__0X20:                // 0x20
-        case Z80__ED__NOP__0XED__0X21:                // 0x21
-        case Z80__ED__NOP__0XED__0X22:                // 0x22
-        case Z80__ED__NOP__0XED__0X23:                // 0x23
-        case Z80__ED__NOP__0XED__0X24:                // 0x24
-        case Z80__ED__NOP__0XED__0X25:                // 0x25
-        case Z80__ED__NOP__0XED__0X26:                // 0x26
-        case Z80__ED__NOP__0XED__0X27:                // 0x27
-        case Z80__ED__NOP__0XED__0X28:                // 0x28
-        case Z80__ED__NOP__0XED__0X29:                // 0x29
-        case Z80__ED__NOP__0XED__0X2A:                // 0x2a
-        case Z80__ED__NOP__0XED__0X2B:                // 0x2b
-        case Z80__ED__NOP__0XED__0X2C:                // 0x2c
-        case Z80__ED__NOP__0XED__0X2D:                // 0x2d
-        case Z80__ED__NOP__0XED__0X2E:                // 0x2e
-        case Z80__ED__NOP__0XED__0X2F:                // 0x2f
-        case Z80__ED__NOP__0XED__0X30:                // 0x30
-        case Z80__ED__NOP__0XED__0X31:                // 0x31
-        case Z80__ED__NOP__0XED__0X32:                // 0x32
-        case Z80__ED__NOP__0XED__0X33:                // 0x33
-        case Z80__ED__NOP__0XED__0X34:                // 0x34
-        case Z80__ED__NOP__0XED__0X35:                // 0x35
-        case Z80__ED__NOP__0XED__0X36:                // 0x36
-        case Z80__ED__NOP__0XED__0X37:                // 0x37
-        case Z80__ED__NOP__0XED__0X38:                // 0x38
-        case Z80__ED__NOP__0XED__0X39:                // 0x39
-        case Z80__ED__NOP__0XED__0X3A:                // 0x3a
-        case Z80__ED__NOP__0XED__0X3B:                // 0x3b
-        case Z80__ED__NOP__0XED__0X3C:                // 0x3c
-        case Z80__ED__NOP__0XED__0X3D:                // 0x3d
-        case Z80__ED__NOP__0XED__0X3E:                // 0x3e
-        case Z80__ED__NOP__0XED__0X3F:                // 0x3f
+        case Opcodes::Z80_Ed_Nop_0xEd_0x00:                // 0x00
+        case Opcodes::Z80_Ed_Nop_0xEd_0x01:                // 0x01
+        case Opcodes::Z80_Ed_Nop_0xEd_0x02:                // 0x02
+        case Opcodes::Z80_Ed_Nop_0xEd_0x03:                // 0x03
+        case Opcodes::Z80_Ed_Nop_0xEd_0x04:                // 0x04
+        case Opcodes::Z80_Ed_Nop_0xEd_0x05:                // 0x05
+        case Opcodes::Z80_Ed_Nop_0xEd_0x06:                // 0x06
+        case Opcodes::Z80_Ed_Nop_0xEd_0x07:                // 0x07
+        case Opcodes::Z80_Ed_Nop_0xEd_0x08:                // 0x08
+        case Opcodes::Z80_Ed_Nop_0xEd_0x09:                // 0x09
+        case Opcodes::Z80_Ed_Nop_0xEd_0x0a:                // 0x0a
+        case Opcodes::Z80_Ed_Nop_0xEd_0x0b:                // 0x0b
+        case Opcodes::Z80_Ed_Nop_0xEd_0x0c:                // 0x0c
+        case Opcodes::Z80_Ed_Nop_0xEd_0x0d:                // 0x0d
+        case Opcodes::Z80_Ed_Nop_0xEd_0x0e:                // 0x0e
+        case Opcodes::Z80_Ed_Nop_0xEd_0x0f:                // 0x0f
+        case Opcodes::Z80_Ed_Nop_0xEd_0x10:                // 0x10
+        case Opcodes::Z80_Ed_Nop_0xEd_0x11:                // 0x11
+        case Opcodes::Z80_Ed_Nop_0xEd_0x12:                // 0x12
+        case Opcodes::Z80_Ed_Nop_0xEd_0x13:                // 0x13
+        case Opcodes::Z80_Ed_Nop_0xEd_0x14:                // 0x14
+        case Opcodes::Z80_Ed_Nop_0xEd_0x15:                // 0x15
+        case Opcodes::Z80_Ed_Nop_0xEd_0x16:                // 0x16
+        case Opcodes::Z80_Ed_Nop_0xEd_0x17:                // 0x17
+        case Opcodes::Z80_Ed_Nop_0xEd_0x18:                // 0x18
+        case Opcodes::Z80_Ed_Nop_0xEd_0x19:                // 0x19
+        case Opcodes::Z80_Ed_Nop_0xEd_0x1a:                // 0x1a
+        case Opcodes::Z80_Ed_Nop_0xEd_0x1b:                // 0x1b
+        case Opcodes::Z80_Ed_Nop_0xEd_0x1c:                // 0x1c
+        case Opcodes::Z80_Ed_Nop_0xEd_0x1d:                // 0x1d
+        case Opcodes::Z80_Ed_Nop_0xEd_0x1e:                // 0x1e
+        case Opcodes::Z80_Ed_Nop_0xEd_0x1f:                // 0x1f
+        case Opcodes::Z80_Ed_Nop_0xEd_0x20:                // 0x20
+        case Opcodes::Z80_Ed_Nop_0xEd_0x21:                // 0x21
+        case Opcodes::Z80_Ed_Nop_0xEd_0x22:                // 0x22
+        case Opcodes::Z80_Ed_Nop_0xEd_0x23:                // 0x23
+        case Opcodes::Z80_Ed_Nop_0xEd_0x24:                // 0x24
+        case Opcodes::Z80_Ed_Nop_0xEd_0x25:                // 0x25
+        case Opcodes::Z80_Ed_Nop_0xEd_0x26:                // 0x26
+        case Opcodes::Z80_Ed_Nop_0xEd_0x27:                // 0x27
+        case Opcodes::Z80_Ed_Nop_0xEd_0x28:                // 0x28
+        case Opcodes::Z80_Ed_Nop_0xEd_0x29:                // 0x29
+        case Opcodes::Z80_Ed_Nop_0xEd_0x2a:                // 0x2a
+        case Opcodes::Z80_Ed_Nop_0xEd_0x2b:                // 0x2b
+        case Opcodes::Z80_Ed_Nop_0xEd_0x2c:                // 0x2c
+        case Opcodes::Z80_Ed_Nop_0xEd_0x2d:                // 0x2d
+        case Opcodes::Z80_Ed_Nop_0xEd_0x2e:                // 0x2e
+        case Opcodes::Z80_Ed_Nop_0xEd_0x2f:                // 0x2f
+        case Opcodes::Z80_Ed_Nop_0xEd_0x30:                // 0x30
+        case Opcodes::Z80_Ed_Nop_0xEd_0x31:                // 0x31
+        case Opcodes::Z80_Ed_Nop_0xEd_0x32:                // 0x32
+        case Opcodes::Z80_Ed_Nop_0xEd_0x33:                // 0x33
+        case Opcodes::Z80_Ed_Nop_0xEd_0x34:                // 0x34
+        case Opcodes::Z80_Ed_Nop_0xEd_0x35:                // 0x35
+        case Opcodes::Z80_Ed_Nop_0xEd_0x36:                // 0x36
+        case Opcodes::Z80_Ed_Nop_0xEd_0x37:                // 0x37
+        case Opcodes::Z80_Ed_Nop_0xEd_0x38:                // 0x38
+        case Opcodes::Z80_Ed_Nop_0xEd_0x39:                // 0x39
+        case Opcodes::Z80_Ed_Nop_0xEd_0x3a:                // 0x3a
+        case Opcodes::Z80_Ed_Nop_0xEd_0x3b:                // 0x3b
+        case Opcodes::Z80_Ed_Nop_0xEd_0x3c:                // 0x3c
+        case Opcodes::Z80_Ed_Nop_0xEd_0x3d:                // 0x3d
+        case Opcodes::Z80_Ed_Nop_0xEd_0x3e:                // 0x3e
+        case Opcodes::Z80_Ed_Nop_0xEd_0x3f:                // 0x3f
 
-        case Z80__ED__NOP__0XED__0x77:                // 0x77
-        case Z80__ED__NOP__0XED__0X7F:                // 0x7f
-        case Z80__ED__NOP__0XED__0X80:                // 0x80
-        case Z80__ED__NOP__0XED__0X81:                // 0x81
-        case Z80__ED__NOP__0XED__0X82:                // 0x82
-        case Z80__ED__NOP__0XED__0X83:                // 0x83
-        case Z80__ED__NOP__0XED__0X84:                // 0x84
-        case Z80__ED__NOP__0XED__0X85:                // 0x85
-        case Z80__ED__NOP__0XED__0X86:                // 0x86
-        case Z80__ED__NOP__0XED__0X87:                // 0x87
-        case Z80__ED__NOP__0XED__0X88:                // 0x88
-        case Z80__ED__NOP__0XED__0X89:                // 0x89
-        case Z80__ED__NOP__0XED__0X8A:                // 0x8a
-        case Z80__ED__NOP__0XED__0X8B:                // 0x8b
-        case Z80__ED__NOP__0XED__0X8C:                // 0x8c
-        case Z80__ED__NOP__0XED__0X8D:                // 0x8d
-        case Z80__ED__NOP__0XED__0X8E:                // 0x8e
-        case Z80__ED__NOP__0XED__0X8F:                // 0x8f
-        case Z80__ED__NOP__0XED__0X90:                // 0x90
-        case Z80__ED__NOP__0XED__0X91:                // 0x91
-        case Z80__ED__NOP__0XED__0X92:                // 0x92
-        case Z80__ED__NOP__0XED__0X93:                // 0x93
-        case Z80__ED__NOP__0XED__0X94:                // 0x94
-        case Z80__ED__NOP__0XED__0X95:                // 0x95
-        case Z80__ED__NOP__0XED__0X96:                // 0x96
-        case Z80__ED__NOP__0XED__0X97:                // 0x97
-        case Z80__ED__NOP__0XED__0X98:                // 0x98
-        case Z80__ED__NOP__0XED__0X99:                // 0x99
-        case Z80__ED__NOP__0XED__0X9A:                // 0x9a
-        case Z80__ED__NOP__0XED__0X9B:                // 0x9b
-        case Z80__ED__NOP__0XED__0X9C:                // 0x9c
-        case Z80__ED__NOP__0XED__0X9D:                // 0x9d
-        case Z80__ED__NOP__0XED__0X9E:                // 0x9e
-        case Z80__ED__NOP__0XED__0X9F:                // 0x9f
+        case Opcodes::Z80_Ed_Nop_0xEd_0x77:
+        case Opcodes::Z80_Ed_Nop_0xEd_0x7f:                // 0x7f
+        case Opcodes::Z80_Ed_Nop_0xEd_0x80:                // 0x80
+        case Opcodes::Z80_Ed_Nop_0xEd_0x81:                // 0x81
+        case Opcodes::Z80_Ed_Nop_0xEd_0x82:                // 0x82
+        case Opcodes::Z80_Ed_Nop_0xEd_0x83:                // 0x83
+        case Opcodes::Z80_Ed_Nop_0xEd_0x84:                // 0x84
+        case Opcodes::Z80_Ed_Nop_0xEd_0x85:                // 0x85
+        case Opcodes::Z80_Ed_Nop_0xEd_0x86:                // 0x86
+        case Opcodes::Z80_Ed_Nop_0xEd_0x87:                // 0x87
+        case Opcodes::Z80_Ed_Nop_0xEd_0x88:                // 0x88
+        case Opcodes::Z80_Ed_Nop_0xEd_0x89:                // 0x89
+        case Opcodes::Z80_Ed_Nop_0xEd_0x8a:                // 0x8a
+        case Opcodes::Z80_Ed_Nop_0xEd_0x8b:                // 0x8b
+        case Opcodes::Z80_Ed_Nop_0xEd_0x8c:                // 0x8c
+        case Opcodes::Z80_Ed_Nop_0xEd_0x8d:                // 0x8d
+        case Opcodes::Z80_Ed_Nop_0xEd_0x8e:                // 0x8e
+        case Opcodes::Z80_Ed_Nop_0xEd_0x8f:                // 0x8f
+        case Opcodes::Z80_Ed_Nop_0xEd_0x90:                // 0x90
+        case Opcodes::Z80_Ed_Nop_0xEd_0x91:                // 0x91
+        case Opcodes::Z80_Ed_Nop_0xEd_0x92:                // 0x92
+        case Opcodes::Z80_Ed_Nop_0xEd_0x93:                // 0x93
+        case Opcodes::Z80_Ed_Nop_0xEd_0x94:                // 0x94
+        case Opcodes::Z80_Ed_Nop_0xEd_0x95:                // 0x95
+        case Opcodes::Z80_Ed_Nop_0xEd_0x96:                // 0x96
+        case Opcodes::Z80_Ed_Nop_0xEd_0x97:                // 0x97
+        case Opcodes::Z80_Ed_Nop_0xEd_0x98:                // 0x98
+        case Opcodes::Z80_Ed_Nop_0xEd_0x99:                // 0x99
+        case Opcodes::Z80_Ed_Nop_0xEd_0x9a:                // 0x9a
+        case Opcodes::Z80_Ed_Nop_0xEd_0x9b:                // 0x9b
+        case Opcodes::Z80_Ed_Nop_0xEd_0x9c:                // 0x9c
+        case Opcodes::Z80_Ed_Nop_0xEd_0x9d:                // 0x9d
+        case Opcodes::Z80_Ed_Nop_0xEd_0x9e:                // 0x9e
+        case Opcodes::Z80_Ed_Nop_0xEd_0x9f:                // 0x9f
 
-        case Z80__ED__NOP__0XED__0XA4:                // 0xa4
-        case Z80__ED__NOP__0XED__0XA5:                // 0xa5
-        case Z80__ED__NOP__0XED__0XA6:                // 0xa6
-        case Z80__ED__NOP__0XED__0XA7:                // 0xa7
+        case Opcodes::Z80_Ed_Nop_0xEd_0xA4:                // 0xa4
+        case Opcodes::Z80_Ed_Nop_0xEd_0xA5:                // 0xa5
+        case Opcodes::Z80_Ed_Nop_0xEd_0xA6:                // 0xa6
+        case Opcodes::Z80_Ed_Nop_0xEd_0xA7:                // 0xa7
         
-        case Z80__ED__NOP__0XED__0XAC:                // 0xac
-        case Z80__ED__NOP__0XED__0XAD:                // 0xad
-        case Z80__ED__NOP__0XED__0XAE:                // 0xae
-        case Z80__ED__NOP__0XED__0XAF:                // 0xaf
+        case Opcodes::Z80_Ed_Nop_0xEd_0xAc:                // 0xac
+        case Opcodes::Z80_Ed_Nop_0xEd_0xAd:                // 0xad
+        case Opcodes::Z80_Ed_Nop_0xEd_0xAe:                // 0xae
+        case Opcodes::Z80_Ed_Nop_0xEd_0xAf:                // 0xaf
 
-        case Z80__ED__NOP__0XED__0XB4:                // 0xb4
-        case Z80__ED__NOP__0XED__0XB5:                // 0xb5
-        case Z80__ED__NOP__0XED__0XB6:                // 0xb6
-        case Z80__ED__NOP__0XED__0XB7:                // 0xb7
+        case Opcodes::Z80_Ed_Nop_0xEd_0xB4:                // 0xb4
+        case Opcodes::Z80_Ed_Nop_0xEd_0xB5:                // 0xb5
+        case Opcodes::Z80_Ed_Nop_0xEd_0xB6:                // 0xb6
+        case Opcodes::Z80_Ed_Nop_0xEd_0xB7:                // 0xb7
 
-        case Z80__ED__NOP__0XED__0XBC:                // 0xbc
-        case Z80__ED__NOP__0XED__0XBD:                // 0xbd
-        case Z80__ED__NOP__0XED__0XBE:                // 0xbe
-        case Z80__ED__NOP__0XED__0XBF:                // 0xbf
-        case Z80__ED__NOP__0XED__0XC0:                // 0xc0
-        case Z80__ED__NOP__0XED__0XC1:                // 0xc1
-        case Z80__ED__NOP__0XED__0XC2:                // 0xc2
-        case Z80__ED__NOP__0XED__0XC3:                // 0xc3
-        case Z80__ED__NOP__0XED__0XC4:                // 0xc4
-        case Z80__ED__NOP__0XED__0XC5:                // 0xc5
-        case Z80__ED__NOP__0XED__0XC6:                // 0xc6
-        case Z80__ED__NOP__0XED__0XC7:                // 0xc7
-        case Z80__ED__NOP__0XED__0XC8:                // 0xc8
-        case Z80__ED__NOP__0XED__0XC9:                // 0xc9
-        case Z80__ED__NOP__0XED__0XCA:                // 0xca
-        case Z80__ED__NOP__0XED__0XCB:                // 0xcb
-        case Z80__ED__NOP__0XED__0XCC:                // 0xcc
-        case Z80__ED__NOP__0XED__0XCD:                // 0xcd
-        case Z80__ED__NOP__0XED__0XCE:                // 0xce
-        case Z80__ED__NOP__0XED__0XCF:                // 0xcf
-        case Z80__ED__NOP__0XED__0XD0:                // 0xd0
-        case Z80__ED__NOP__0XED__0XD1:                // 0xd1
-        case Z80__ED__NOP__0XED__0XD2:                // 0xd2
-        case Z80__ED__NOP__0XED__0XD3:                // 0xd3
-        case Z80__ED__NOP__0XED__0XD4:                // 0xd4
-        case Z80__ED__NOP__0XED__0XD5:                // 0xd5
-        case Z80__ED__NOP__0XED__0XD6:                // 0xd6
-        case Z80__ED__NOP__0XED__0XD7:                // 0xd7
-        case Z80__ED__NOP__0XED__0XD8:                // 0xd8
-        case Z80__ED__NOP__0XED__0XD9:                // 0xd9
-        case Z80__ED__NOP__0XED__0XDA:                // 0xda
-        case Z80__ED__NOP__0XED__0XDB:                // 0xdb
-        case Z80__ED__NOP__0XED__0XDC:                // 0xdc
-        case Z80__ED__NOP__0XED__0XDD:                // 0xdd
-        case Z80__ED__NOP__0XED__0XDE:                // 0xde
-        case Z80__ED__NOP__0XED__0XDF:                // 0xdf
-        case Z80__ED__NOP__0XED__0XE0:                // 0xe0
-        case Z80__ED__NOP__0XED__0XE1:                // 0xe1
-        case Z80__ED__NOP__0XED__0XE2:                // 0xe2
-        case Z80__ED__NOP__0XED__0XE3:                // 0xe3
-        case Z80__ED__NOP__0XED__0XE4:                // 0xe4
-        case Z80__ED__NOP__0XED__0XE5:                // 0xe5
-        case Z80__ED__NOP__0XED__0XE6:                // 0xe6
-        case Z80__ED__NOP__0XED__0XE7:                // 0xe7
-        case Z80__ED__NOP__0XED__0XE8:                // 0xe8
-        case Z80__ED__NOP__0XED__0XE9:                // 0xe9
-        case Z80__ED__NOP__0XED__0XEA:                // 0xea
-        case Z80__ED__NOP__0XED__0XEB:                // 0xeb
-        case Z80__ED__NOP__0XED__0XEC:                // 0xec
-        case Z80__ED__NOP__0XED__0XED:                // 0xed
-        case Z80__ED__NOP__0XED__0XEE:                // 0xee
-        case Z80__ED__NOP__0XED__0XEF:                // 0xef
-        case Z80__ED__NOP__0XED__0XF0:                // 0xf0
-        case Z80__ED__NOP__0XED__0XF1:                // 0xf1
-        case Z80__ED__NOP__0XED__0XF2:                // 0xf2
-        case Z80__ED__NOP__0XED__0XF3:                // 0xf3
-        case Z80__ED__NOP__0XED__0XF4:                // 0xf4
-        case Z80__ED__NOP__0XED__0XF5:                // 0xf5
-        case Z80__ED__NOP__0XED__0XF6:                // 0xf6
-        case Z80__ED__NOP__0XED__0XF7:                // 0xf7
-        case Z80__ED__NOP__0XED__0XF8:                // 0xf8
-        case Z80__ED__NOP__0XED__0XF9:                // 0xf9
-        case Z80__ED__NOP__0XED__0XFA:                // 0xfa
-        case Z80__ED__NOP__0XED__0XFB:                // 0xfb
-        case Z80__ED__NOP__0XED__0XFC:                // 0xfc
-        case Z80__ED__NOP__0XED__0XFD:                // 0xfd
-        case Z80__ED__NOP__0XED__0XFE:                // 0xfe
-        case Z80__ED__NOP__0XED__0XFF:                // 0xff
+        case Opcodes::Z80_Ed_Nop_0xEd_0xBc:                // 0xbc
+        case Opcodes::Z80_Ed_Nop_0xEd_0xBd:                // 0xbd
+        case Opcodes::Z80_Ed_Nop_0xEd_0xBe:                // 0xbe
+        case Opcodes::Z80_Ed_Nop_0xEd_0xBf:                // 0xbf
+        case Opcodes::Z80_Ed_Nop_0xEd_0xC0:                // 0xc0
+        case Opcodes::Z80_Ed_Nop_0xEd_0xC1:                // 0xc1
+        case Opcodes::Z80_Ed_Nop_0xEd_0xC2:                // 0xc2
+        case Opcodes::Z80_Ed_Nop_0xEd_0xC3:                // 0xc3
+        case Opcodes::Z80_Ed_Nop_0xEd_0xC4:                // 0xc4
+        case Opcodes::Z80_Ed_Nop_0xEd_0xC5:                // 0xc5
+        case Opcodes::Z80_Ed_Nop_0xEd_0xC6:                // 0xc6
+        case Opcodes::Z80_Ed_Nop_0xEd_0xC7:                // 0xc7
+        case Opcodes::Z80_Ed_Nop_0xEd_0xC8:                // 0xc8
+        case Opcodes::Z80_Ed_Nop_0xEd_0xC9:                // 0xc9
+        case Opcodes::Z80_Ed_Nop_0xEd_0xCa:                // 0xca
+        case Opcodes::Z80_Ed_Nop_0xEd_0xCb:                // 0xcb
+        case Opcodes::Z80_Ed_Nop_0xEd_0xCc:                // 0xcc
+        case Opcodes::Z80_Ed_Nop_0xEd_0xCd:                // 0xcd
+        case Opcodes::Z80_Ed_Nop_0xEd_0xCe:                // 0xce
+        case Opcodes::Z80_Ed_Nop_0xEd_0xCf:                // 0xcf
+        case Opcodes::Z80_Ed_Nop_0xEd_0xD0:                // 0xd0
+        case Opcodes::Z80_Ed_Nop_0xEd_0xD1:                // 0xd1
+        case Opcodes::Z80_Ed_Nop_0xEd_0xD2:                // 0xd2
+        case Opcodes::Z80_Ed_Nop_0xEd_0xD3:                // 0xd3
+        case Opcodes::Z80_Ed_Nop_0xEd_0xD4:                // 0xd4
+        case Opcodes::Z80_Ed_Nop_0xEd_0xD5:                // 0xd5
+        case Opcodes::Z80_Ed_Nop_0xEd_0xD6:                // 0xd6
+        case Opcodes::Z80_Ed_Nop_0xEd_0xD7:                // 0xd7
+        case Opcodes::Z80_Ed_Nop_0xEd_0xD8:                // 0xd8
+        case Opcodes::Z80_Ed_Nop_0xEd_0xD9:                // 0xd9
+        case Opcodes::Z80_Ed_Nop_0xEd_0xDa:                // 0xda
+        case Opcodes::Z80_Ed_Nop_0xEd_0xDb:                // 0xdb
+        case Opcodes::Z80_Ed_Nop_0xEd_0xDc:                // 0xdc
+        case Opcodes::Z80_Ed_Nop_0xEd_0xDd:                // 0xdd
+        case Opcodes::Z80_Ed_Nop_0xEd_0xDe:                // 0xde
+        case Opcodes::Z80_Ed_Nop_0xEd_0xDf:                // 0xdf
+        case Opcodes::Z80_Ed_Nop_0xEd_0xE0:                // 0xe0
+        case Opcodes::Z80_Ed_Nop_0xEd_0xE1:                // 0xe1
+        case Opcodes::Z80_Ed_Nop_0xEd_0xE2:                // 0xe2
+        case Opcodes::Z80_Ed_Nop_0xEd_0xE3:                // 0xe3
+        case Opcodes::Z80_Ed_Nop_0xEd_0xE4:                // 0xe4
+        case Opcodes::Z80_Ed_Nop_0xEd_0xE5:                // 0xe5
+        case Opcodes::Z80_Ed_Nop_0xEd_0xE6:                // 0xe6
+        case Opcodes::Z80_Ed_Nop_0xEd_0xE7:                // 0xe7
+        case Opcodes::Z80_Ed_Nop_0xEd_0xE8:                // 0xe8
+        case Opcodes::Z80_Ed_Nop_0xEd_0xE9:                // 0xe9
+        case Opcodes::Z80_Ed_Nop_0xEd_0xEa:                // 0xea
+        case Opcodes::Z80_Ed_Nop_0xEd_0xEb:                // 0xeb
+        case Opcodes::Z80_Ed_Nop_0xEd_0xEc:                // 0xec
+        case Opcodes::Z80_Ed_Nop_0xEd_0xEd:                // 0xed
+        case Opcodes::Z80_Ed_Nop_0xEd_0xEe:                // 0xee
+        case Opcodes::Z80_Ed_Nop_0xEd_0xEf:                // 0xef
+        case Opcodes::Z80_Ed_Nop_0xEd_0xF0:                // 0xf0
+        case Opcodes::Z80_Ed_Nop_0xEd_0xF1:                // 0xf1
+        case Opcodes::Z80_Ed_Nop_0xEd_0xF2:                // 0xf2
+        case Opcodes::Z80_Ed_Nop_0xEd_0xF3:                // 0xf3
+        case Opcodes::Z80_Ed_Nop_0xEd_0xF4:                // 0xf4
+        case Opcodes::Z80_Ed_Nop_0xEd_0xF5:                // 0xf5
+        case Opcodes::Z80_Ed_Nop_0xEd_0xF6:                // 0xf6
+        case Opcodes::Z80_Ed_Nop_0xEd_0xF7:                // 0xf7
+        case Opcodes::Z80_Ed_Nop_0xEd_0xF8:                // 0xf8
+        case Opcodes::Z80_Ed_Nop_0xEd_0xF9:                // 0xf9
+        case Opcodes::Z80_Ed_Nop_0xEd_0xFa:                // 0xfa
+        case Opcodes::Z80_Ed_Nop_0xEd_0xFb:                // 0xfb
+        case Opcodes::Z80_Ed_Nop_0xEd_0xFc:                // 0xfc
+        case Opcodes::Z80_Ed_Nop_0xEd_0xFd:                // 0xfd
+        case Opcodes::Z80_Ed_Nop_0xEd_0xFe:                // 0xfe
+        case Opcodes::Z80_Ed_Nop_0xEd_0xFf:                // 0xff
             return {
                     .instruction = Instruction::NOP,
                     .operands = {},
@@ -5859,7 +5859,7 @@ Mnemonic Disassembler::disassembleOneEd(const UnsignedByte * machineCode)
 Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const UnsignedByte * machineCode)
 {
     switch (*machineCode) {
-        case Z80__DD_OR_FD__INC__INDIRECT_IX_d_OR_IY_d:                // 0x34
+        case Opcodes::Z80_DdOrFd_Inc_IndirectIxdOrIyd:                // 0x34
             return {
                 .instruction = Instruction::INC,
                 .operands = {
@@ -5868,7 +5868,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const Unsigned
                 .size = 3,
             };
 
-        case Z80__DD_OR_FD__DEC__INDIRECT_IX_d_OR_IY_d:                // 0x35
+        case Opcodes::Z80_DdOrFd_Dec_IndirectIxdOrIyd:                // 0x35
             return {
                 .instruction = Instruction::DEC,
                 .operands = {
@@ -5877,7 +5877,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const Unsigned
                 .size = 3,
             };
 
-        case Z80__DD_OR_FD__LD__INDIRECT_IX_d_OR_IY_d__N:                // 0x36
+        case Opcodes::Z80_DdOrFd_Ld_IndirectIxdOrIyd_N:                // 0x36
             return {
                 .instruction = Instruction::LD,
                 .operands = {
@@ -5887,7 +5887,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const Unsigned
                 .size = 4,
             };
 
-        case Z80__DD_OR_FD__JR__C__d:                // 0x38
+        case Opcodes::Z80_DdOrFd_Jr_C_d:                // 0x38
             return {
                 .instruction = Instruction::JRC,
                 .operands = {
@@ -5896,7 +5896,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const Unsigned
                 .size = 3,
             };
 
-        case Z80__DD_OR_FD__LD__B__INDIRECT_IX_d_OR_IY_d:                // 0x46
+        case Opcodes::Z80_DdOrFd_Ld_B_IndirectIxdOrIyd:                // 0x46
             return {
                 .instruction = Instruction::LD,
                 .operands = {
@@ -5906,7 +5906,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const Unsigned
                 .size = 3,
             };
 
-        case Z80__DD_OR_FD__LD__C__INDIRECT_IX_d_OR_IY_d:                // 0x4e
+        case Opcodes::Z80_DdOrFd_Ld_C_IndirectIxdOrIyd:                // 0x4e
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -5916,7 +5916,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const Unsigned
                     .size = 3,
             };
 
-        case Z80__DD_OR_FD__LD__D__INDIRECT_IX_d_OR_IY_d:                // 0x56
+        case Opcodes::Z80_DdOrFd_Ld_D_IndirectIxdOrIyd:                // 0x56
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -5926,7 +5926,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const Unsigned
                     .size = 3,
             };
 
-        case Z80__DD_OR_FD__LD__E__INDIRECT_IX_d_OR_IY_d:                // 0x5e
+        case Opcodes::Z80_DdOrFd_Ld_E_IndirectIxdOrIyd:                // 0x5e
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -5936,7 +5936,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const Unsigned
                     .size = 3,
             };
 
-        case Z80__DD_OR_FD__LD__H__INDIRECT_IX_d_OR_IY_d:                // 0x66
+        case Opcodes::Z80_DdOrFd_Ld_H_IndirectIxdOrIyd:                // 0x66
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -5946,7 +5946,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const Unsigned
                     .size = 3,
             };
 
-        case Z80__DD_OR_FD__LD__L__INDIRECT_IX_d_OR_IY_d:                // 0x6e
+        case Opcodes::Z80_DdOrFd_Ld_L_IndirectIxdOrIyd:                // 0x6e
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -5956,7 +5956,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const Unsigned
                     .size = 3,
             };
 
-        case Z80__DD_OR_FD__LD__INDIRECT_IX_d_OR_IY_d__B:                // 0x70
+        case Opcodes::Z80_DdOrFd_Ld_IndirectIxdOrIyd_B:                // 0x70
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -5966,7 +5966,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const Unsigned
                     .size = 3,
             };
 
-        case Z80__DD_OR_FD__LD__INDIRECT_IX_d_OR_IY_d__C:                // 0x71
+        case Opcodes::Z80_DdOrFd_Ld_IndirectIxdOrIyd_C:                // 0x71
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -5976,7 +5976,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const Unsigned
                     .size = 3,
             };
 
-        case Z80__DD_OR_FD__LD__INDIRECT_IX_d_OR_IY_d__D:                // 0x72
+        case Opcodes::Z80_DdOrFd_Ld_IndirectIxdOrIyd_D:                // 0x72
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -5986,7 +5986,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const Unsigned
                     .size = 3,
             };
 
-        case Z80__DD_OR_FD__LD__INDIRECT_IX_d_OR_IY_d__E:                // 0x73
+        case Opcodes::Z80_DdOrFd_Ld_IndirectIxdOrIyd_E:                // 0x73
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -5996,7 +5996,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const Unsigned
                     .size = 3,
             };
 
-        case Z80__DD_OR_FD__LD__INDIRECT_IX_d_OR_IY_d__H:                // 0x74
+        case Opcodes::Z80_DdOrFd_Ld_IndirectIxdOrIyd_H:                // 0x74
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -6006,7 +6006,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const Unsigned
                     .size = 3,
             };
 
-        case Z80__DD_OR_FD__LD__INDIRECT_IX_d_OR_IY_d__L:                // 0x75
+        case Opcodes::Z80_DdOrFd_Ld_IndirectIxdOrIyd_L:                // 0x75
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -6016,7 +6016,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const Unsigned
                     .size = 3,
             };
 
-        case Z80__DD_OR_FD__LD__INDIRECT_IX_d_OR_IY_d__A:                // 0x77
+        case Opcodes::Z80_DdOrFd_Ld_IndirectIxdOrIyd_A:                // 0x77
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -6026,7 +6026,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const Unsigned
                     .size = 3,
             };
 
-        case Z80__DD_OR_FD__LD__A__INDIRECT_IX_d_OR_IY_d:                // 0x7e
+        case Opcodes::Z80_DdOrFd_Ld_A_IndirectIxdOrIyd:                // 0x7e
             return {
                     .instruction = Instruction::LD,
                     .operands = {
@@ -6036,7 +6036,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const Unsigned
                     .size = 3,
             };
 
-        case Z80__DD_OR_FD__ADD__A__INDIRECT_IX_d_OR_IY_d:                // 0x86
+        case Opcodes::Z80_DdOrFd_Add_A_IndirectIxdOrIyd:                // 0x86
             return {
                 .instruction = Instruction::ADD,
                     .operands = {
@@ -6046,7 +6046,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const Unsigned
                     .size = 3,
             };
 
-        case Z80__DD_OR_FD__ADC__A__INDIRECT_IX_d_OR_IY_d:                // 0x8e
+        case Opcodes::Z80_DdOrFd_Adc_A_IndirectIxdOrIyd:                // 0x8e
             return {
                     .instruction = Instruction::ADC,
                     .operands = {
@@ -6056,7 +6056,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const Unsigned
                     .size = 3,
             };
 
-        case Z80__DD_OR_FD__SUB__INDIRECT_IX_d_OR_IY_d:                // 0x96
+        case Opcodes::Z80_DdOrFd_Sub_IndirectIxdOrIyd:                // 0x96
             return {
                     .instruction = Instruction::SUB,
                     .operands = {
@@ -6066,7 +6066,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const Unsigned
                     .size = 3,
             };
 
-        case Z80__DD_OR_FD__SBC__A__INDIRECT_IX_d_OR_IY_d:                // 0x9e
+        case Opcodes::Z80_DdOrFd_Sbc_A_IndirectIxdOrIyd:                // 0x9e
             return {
                     .instruction = Instruction::SBC,
                     .operands = {
@@ -6076,7 +6076,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const Unsigned
                     .size = 3,
             };
 
-        case Z80__DD_OR_FD__AND__INDIRECT_IX_d_OR_IY_d:                // 0xa6
+        case Opcodes::Z80_DdOrFd_And_IndirectIxdOrIyd:                // 0xa6
             return {
                 .instruction = Instruction::AND,
                 .operands = {
@@ -6085,7 +6085,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const Unsigned
                 .size = 3,
             };
 
-        case Z80__DD_OR_FD__XOR__INDIRECT_IX_d_OR_IY_d:                // 0xae
+        case Opcodes::Z80_DdOrFd_Xor_IndirectIxdOrIyd:                // 0xae
             return {
                 .instruction = Instruction::XOR,
                 .operands = {
@@ -6094,7 +6094,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const Unsigned
                 .size = 3,
             };
 
-        case Z80__DD_OR_FD__OR__INDIRECT_IX_d_OR_IY_d:                // 0xb6
+        case Opcodes::Z80_DdOrFd_Or_IndirectIxdOrIyd:                // 0xb6
             return {
                 .instruction = Instruction::OR,
                 .operands = {
@@ -6103,7 +6103,7 @@ Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const Unsigned
                 .size = 3,
             };
 
-        case Z80__DD_OR_FD__CP__INDIRECT_IX_d_OR_IY_d:                // 0xbe
+        case Opcodes::Z80_DdOrFd_Cp_IndirectIxdOrIyd:                // 0xbe
             return {
                 .instruction = Instruction::CP,
                 .operands = {
@@ -6112,245 +6112,245 @@ Mnemonic Disassembler::disassembleOneDdOrFd(const Register16 reg, const Unsigned
                 .size = 3,
             };
 
-        case Z80__DD_OR_FD__PREFIX__CB:                // 0xcb
+        case Opcodes::Z80_DdOrFd_Prefix_Cb:                // 0xcb
             return disassembleOneDdCbOrFdCb(reg, machineCode + 1);
 
         // these are all expensive replicas of the plain instructions
-        case Z80__DD_OR_FD__NOP:                // 0x00
-        case Z80__DD_OR_FD__LD__BC__NN:                // 0x01
-        case Z80__DD_OR_FD__LD__INDIRECT_BC__A:                // 0x02
-        case Z80__DD_OR_FD__INC__BC:                // 0x03
-        case Z80__DD_OR_FD__INC__B:                // 0x04
-        case Z80__DD_OR_FD__DEC__B:                // 0x05
-        case Z80__DD_OR_FD__LD__B__N:                // 0x06
-        case Z80__DD_OR_FD__RLCA:                // 0x07
-        case Z80__DD_OR_FD__EX__AF__AF_SHADOW:                // 0x08
-        case Z80__DD_OR_FD__ADD__IX_OR_IY__BC:                // 0x09
-        case Z80__DD_OR_FD__LD__A__INDIRECT_BC:                // 0x0a
-        case Z80__DD_OR_FD__DEC__BC:                // 0x0b
-        case Z80__DD_OR_FD__INC__C:                // 0x0c
-        case Z80__DD_OR_FD__DEC__C:                // 0x0d
-        case Z80__DD_OR_FD__LD__C__N:                // 0x0e
-        case Z80__DD_OR_FD__RRCA:                // 0x0f
-        case Z80__DD_OR_FD__DJNZ__d:                // 0x10
-        case Z80__DD_OR_FD__LD__DE__NN:                // 0x11
-        case Z80__DD_OR_FD__LD__INDIRECT_DE__A:                // 0x12
-        case Z80__DD_OR_FD__INC__DE:                // 0x13
-        case Z80__DD_OR_FD__INC__D:                // 0x14
-        case Z80__DD_OR_FD__DEC__D:                // 0x15
-        case Z80__DD_OR_FD__LD__D__N:                // 0x16
-        case Z80__DD_OR_FD__RLA:                // 0x17
-        case Z80__DD_OR_FD__JR__d:                // 0x18
-        case Z80__DD_OR_FD__ADD__IX_OR_IY__DE:                // 0x19
-        case Z80__DD_OR_FD__LD__A__INDIRECT_DE:                // 0x1a
-        case Z80__DD_OR_FD__DEC__DE:                // 0x1b
-        case Z80__DD_OR_FD__INC__E:                // 0x1c
-        case Z80__DD_OR_FD__DEC__E:                // 0x1d
-        case Z80__DD_OR_FD__LD__E__N:                // 0x1e
-        case Z80__DD_OR_FD__RRA:                // 0x1f
-        case Z80__DD_OR_FD__JR__NZ__d:                // 0x20
-        case Z80__DD_OR_FD__LD__IX_OR_IY__NN:                // 0x21
-        case Z80__DD_OR_FD__LD__INDIRECT_NN__IX_OR_IY:                // 0x22
-        case Z80__DD_OR_FD__INC__IX_OR_IY:                // 0x23
-        case Z80__DD_OR_FD__INC__IXH_OR_IYH:                // 0x24
-        case Z80__DD_OR_FD__DEC__IXH_OR_IYH:                // 0x25
-        case Z80__DD_OR_FD__LD__IXH_OR_IYH__N:                // 0x26
-        case Z80__DD_OR_FD__DAA:                // 0x27
-        case Z80__DD_OR_FD__JR__Z__d:                // 0x28
-        case Z80__DD_OR_FD__ADD__IX_OR_IY__IX_OR_IY:                // 0x29
-        case Z80__DD_OR_FD__LD__IX_OR_IY__INDIRECT_NN:                // 0x2a
-        case Z80__DD_OR_FD__DEC__IX_OR_IY:                // 0x2b
-        case Z80__DD_OR_FD__INC__IXL_OR_IYL:                // 0x2c
-        case Z80__DD_OR_FD__DEC__IXL_OR_IYL:                // 0x2d
-        case Z80__DD_OR_FD__LD__IXL_OR_IYL__N:                // 0x2e
-        case Z80__DD_OR_FD__CPL:                // 0x2f
-        case Z80__DD_OR_FD__JR__NC__d:                // 0x30
-        case Z80__DD_OR_FD__LD__SP__NN:                // 0x31
-        case Z80__DD_OR_FD__LD__INDIRECT_NN__A:                // 0x32
-        case Z80__DD_OR_FD__INC__SP:                // 0x33
-        case Z80__DD_OR_FD__SCF:                // 0x37
-        case Z80__DD_OR_FD__ADD__IX_OR_IY__SP:                // 0x39
-        case Z80__DD_OR_FD__LD__A__INDIRECT_NN:                // 0x3a
-        case Z80__DD_OR_FD__DEC__SP:                // 0x3b
-        case Z80__DD_OR_FD__INC__A:                // 0x3c
-        case Z80__DD_OR_FD__DEC__A:                // 0x3d
-        case Z80__DD_OR_FD__LD__A__N:                // 0x3e
-        case Z80__DD_OR_FD__CCF:                // 0x3f
-        case Z80__DD_OR_FD__LD__B__B:                // 0x40
-        case Z80__DD_OR_FD__LD__B__C:                // 0x41
-        case Z80__DD_OR_FD__LD__B__D:                // 0x42
-        case Z80__DD_OR_FD__LD__B__E:                // 0x43
-        case Z80__DD_OR_FD__LD__B__IXH_OR_IYH:                // 0x44
-        case Z80__DD_OR_FD__LD__B__IXL_OR_IYL:                // 0x45
-        case Z80__DD_OR_FD__LD__B__A:                // 0x47
-        case Z80__DD_OR_FD__LD__C__B:                // 0x48
-        case Z80__DD_OR_FD__LD__C__C:                // 0x49
-        case Z80__DD_OR_FD__LD__C__D:                // 0x4a
-        case Z80__DD_OR_FD__LD__C__E:                // 0x4b
-        case Z80__DD_OR_FD__LD__C__IXH_OR_IYH:                // 0x4c
-        case Z80__DD_OR_FD__LD__C__IXL_OR_IYL:                // 0x4d
-        case Z80__DD_OR_FD__LD__C__A:                // 0x4f
-        case Z80__DD_OR_FD__LD__D__B:                // 0x50
-        case Z80__DD_OR_FD__LD__D__C:                // 0x51
-        case Z80__DD_OR_FD__LD__D__D:                // 0x52
-        case Z80__DD_OR_FD__LD__D__E:                // 0x53
-        case Z80__DD_OR_FD__LD__D__IXH_OR_IYH:                // 0x54
-        case Z80__DD_OR_FD__LD__D__IXL_OR_IYL:                // 0x55
-        case Z80__DD_OR_FD__LD__D__A:                // 0x57
-        case Z80__DD_OR_FD__LD__E__B:                // 0x58
-        case Z80__DD_OR_FD__LD__E__C:                // 0x59
-        case Z80__DD_OR_FD__LD__E__D:                // 0x5a
-        case Z80__DD_OR_FD__LD__E__E:                // 0x5b
-        case Z80__DD_OR_FD__LD__E__IXH_OR_IYH:                // 0x5c
-        case Z80__DD_OR_FD__LD__E__IXL_OR_IYL:                // 0x5d
-        case Z80__DD_OR_FD__LD__E__A:                // 0x5f
-        case Z80__DD_OR_FD__LD__IXH_OR_IYH__B:                // 0x60
-        case Z80__DD_OR_FD__LD__IXH_OR_IYH__C:                // 0x61
-        case Z80__DD_OR_FD__LD__IXH_OR_IYH__D:                // 0x62
-        case Z80__DD_OR_FD__LD__IXH_OR_IYH__E:                // 0x63
-        case Z80__DD_OR_FD__LD__IXH_OR_IYH__IXH_OR_IYH:                // 0x64
-        case Z80__DD_OR_FD__LD__IXH_OR_IYH__IXL_OR_IYL:                // 0x65
-        case Z80__DD_OR_FD__LD__IXH_OR_IYH__A:                // 0x67
-        case Z80__DD_OR_FD__LD__IXL_OR_IYL__B:                // 0x68
-        case Z80__DD_OR_FD__LD__IXL_OR_IYL__C:                // 0x69
-        case Z80__DD_OR_FD__LD__IXL_OR_IYL__D:                // 0x6a
-        case Z80__DD_OR_FD__LD__IXL_OR_IYL__E:                // 0x6b
-        case Z80__DD_OR_FD__LD__IXL_OR_IYL__IXH_OR_IYH:                // 0x6c
-        case Z80__DD_OR_FD__LD__IXL_OR_IYL__IXL_OR_IYL:                // 0x6d
-        case Z80__DD_OR_FD__LD__IXL_OR_IYL__A:                // 0x6f
-        case Z80__DD_OR_FD__HALT:                // 0x76
-        case Z80__DD_OR_FD__LD__A__B:                // 0x78
-        case Z80__DD_OR_FD__LD__A__C:                // 0x79
-        case Z80__DD_OR_FD__LD__A__D:                // 0x7a
-        case Z80__DD_OR_FD__LD__A__E:                // 0x7b
-        case Z80__DD_OR_FD__LD__A__IXH_OR_IYH:                // 0x7c
-        case Z80__DD_OR_FD__LD__A__IXL_OR_IYL:                // 0x7d
-        case Z80__DD_OR_FD__LD__A__A:                // 0x7f
-        case Z80__DD_OR_FD__ADD__A__B:                // 0x80
-        case Z80__DD_OR_FD__ADD__A__C:                // 0x81
-        case Z80__DD_OR_FD__ADD__A__D:                // 0x82
-        case Z80__DD_OR_FD__ADD__A__E:                // 0x83
-        case Z80__DD_OR_FD__ADD__A__IXH_OR_IYH:                // 0x84
-        case Z80__DD_OR_FD__ADD__A__IXL_OR_IYL:                // 0x85
-        case Z80__DD_OR_FD__ADD__A__A:                // 0x87
-        case Z80__DD_OR_FD__ADC__A__B:                // 0x88
-        case Z80__DD_OR_FD__ADC__A__C:                // 0x89
-        case Z80__DD_OR_FD__ADC__A__D:                // 0x8a
-        case Z80__DD_OR_FD__ADC__A__E:                // 0x8b
-        case Z80__DD_OR_FD__ADC__A__IXH_OR_IYH:                // 0x8c
-        case Z80__DD_OR_FD__ADC__A__IXL_OR_IYL:                // 0x8d
-        case Z80__DD_OR_FD__ADC__A__A:                // 0x8f
-        case Z80__DD_OR_FD__SUB__B:                // 0x90
-        case Z80__DD_OR_FD__SUB__C:                // 0x91
-        case Z80__DD_OR_FD__SUB__D:                // 0x92
-        case Z80__DD_OR_FD__SUB__E:                // 0x93
-        case Z80__DD_OR_FD__SUB__IXH_OR_IYH:                // 0x94
-        case Z80__DD_OR_FD__SUB__IXL_OR_IYL:                // 0x95
-        case Z80__DD_OR_FD__SUB__A:                // 0x97
-        case Z80__DD_OR_FD__SBC__A__B:                // 0x98
-        case Z80__DD_OR_FD__SBC__A__C:                // 0x99
-        case Z80__DD_OR_FD__SBC__A__D:                // 0x9a
-        case Z80__DD_OR_FD__SBC__A__E:                // 0x9b
-        case Z80__DD_OR_FD__SBC__A__IXH_OR_IYH:                // 0x9c
-        case Z80__DD_OR_FD__SBC__A__IXL_OR_IYL:                // 0x9d
-        case Z80__DD_OR_FD__SBC__A__A:                // 0x9f
-        case Z80__DD_OR_FD__AND__B:                // 0xa0
-        case Z80__DD_OR_FD__AND__C:                // 0xa1
-        case Z80__DD_OR_FD__AND__D:                // 0xa2
-        case Z80__DD_OR_FD__AND__E:                // 0xa3
-        case Z80__DD_OR_FD__AND__IXH_OR_IYH:                // 0xa4
-        case Z80__DD_OR_FD__AND__IXL_OR_IYL:                // 0xa5
-        case Z80__DD_OR_FD__AND__A:                // 0xa7
-        case Z80__DD_OR_FD__XOR__B:                // 0xa8
-        case Z80__DD_OR_FD__XOR__C:                // 0xa9
-        case Z80__DD_OR_FD__XOR__D:                // 0xaa
-        case Z80__DD_OR_FD__XOR__E:                // 0xab
-        case Z80__DD_OR_FD__XOR__IXH_OR_IYH:                // 0xac
-        case Z80__DD_OR_FD__XOR__IXL_OR_IYL:                // 0xad
-        case Z80__DD_OR_FD__XOR__A:                // 0xaf
-        case Z80__DD_OR_FD__OR__B:                // 0xb0
-        case Z80__DD_OR_FD__OR__C:                // 0xb1
-        case Z80__DD_OR_FD__OR__D:                // 0xb2
-        case Z80__DD_OR_FD__OR__E:                // 0xb3
-        case Z80__DD_OR_FD__OR__IXH_OR_IYH:                // 0xb4
-        case Z80__DD_OR_FD__OR__IXL_OR_IYL:                // 0xb5
-        case Z80__DD_OR_FD__OR__A:                // 0xb7
-        case Z80__DD_OR_FD__CP__B:                // 0xb8
-        case Z80__DD_OR_FD__CP__C:                // 0xb9
-        case Z80__DD_OR_FD__CP__D:                // 0xba
-        case Z80__DD_OR_FD__CP__E:                // 0xbb
-        case Z80__DD_OR_FD__CP__IXH_OR_IYH:                // 0xbc
-        case Z80__DD_OR_FD__CP__IXL_OR_IYL:                // 0xbd
-        case Z80__DD_OR_FD__CP__A:                // 0xbf
-        case Z80__DD_OR_FD__RET__NZ:                // 0xc0
-        case Z80__DD_OR_FD__POP__BC:                // 0xc1
-        case Z80__DD_OR_FD__JP__NZ__NN:                // 0xc2
-        case Z80__DD_OR_FD__JP__NN:                // 0xc3
-        case Z80__DD_OR_FD__CALL__NZ__NN:                // 0xc4
-        case Z80__DD_OR_FD__PUSH__BC:                // 0xc5
-        case Z80__DD_OR_FD__ADD__A__N:                // 0xc6
-        case Z80__DD_OR_FD__RST__00:                // 0xc7
-        case Z80__DD_OR_FD__RET__Z:                // 0xc8
-        case Z80__DD_OR_FD__RET:                // 0xc9
-        case Z80__DD_OR_FD__JP__Z__NN:                // 0xca
-        case Z80__DD_OR_FD__CALL__Z__NN:                // 0xcc
-        case Z80__DD_OR_FD__CALL__NN:                // 0xcd
-        case Z80__DD_OR_FD__ADC__A__N:                // 0xce
-        case Z80__DD_OR_FD__RST__08:                // 0xcf
-        case Z80__DD_OR_FD__RET__NC:                // 0xd0
-        case Z80__DD_OR_FD__POP__DE:                // 0xd1
-        case Z80__DD_OR_FD__JP__NC__NN:                // 0xd2
-        case Z80__DD_OR_FD__OUT__INDIRECT_N__A:                // 0xd3
-        case Z80__DD_OR_FD__CALL__NC__NN:                // 0xd4
-        case Z80__DD_OR_FD__PUSH__DE:                // 0xd5
-        case Z80__DD_OR_FD__SUB__N:                // 0xd6
-        case Z80__DD_OR_FD__RST__10:                // 0xd7
-        case Z80__DD_OR_FD__RET__C:                // 0xd8
-        case Z80__DD_OR_FD__EXX:                // 0xd9
-        case Z80__DD_OR_FD__JP__C__NN:                // 0xda
-        case Z80__DD_OR_FD__IN__A__INDIRECT_N:                // 0xdb
-        case Z80__DD_OR_FD__CALL__C__NN:                // 0xdc
-        case Z80__DD_OR_FD__SBC__A__N:                // 0xde
-        case Z80__DD_OR_FD__RST__18:                // 0xdf
-        case Z80__DD_OR_FD__RET__PO:                // 0xe0
-        case Z80__DD_OR_FD__POP__IX_OR_IY:                // 0xe1
-        case Z80__DD_OR_FD__JP__PO__NN:                // 0xe2
-        case Z80__DD_OR_FD__EX__INDIRECT_SP__IX_OR_IY:                // 0xe3
-        case Z80__DD_OR_FD__CALL__PO__NN:                // 0xe4
-        case Z80__DD_OR_FD__PUSH__IX_OR_IY:                // 0xe5
-        case Z80__DD_OR_FD__AND__N:                // 0xe6
-        case Z80__DD_OR_FD__RST__20:                // 0xe7
-        case Z80__DD_OR_FD__RET__PE:                // 0xe8
-        case Z80__DD_OR_FD__JP__IX_OR_IY:                // 0xe9
-        case Z80__DD_OR_FD__JP__PE__NN:                // 0xea
-        case Z80__DD_OR_FD__EX__DE__HL:                // 0xeb
-        case Z80__DD_OR_FD__CALL__PE__NN:                // 0xec
-        case Z80__DD_OR_FD__PREFIX__ED:                // 0xed
-        case Z80__DD_OR_FD__XOR__N:                // 0xee
-        case Z80__DD_OR_FD__RST__28:                // 0xef
-        case Z80__DD_OR_FD__RET__P:                // 0xf0
-        case Z80__DD_OR_FD__POP__AF:                // 0xf1
-        case Z80__DD_OR_FD__JP__P__NN:                // 0xf2
-        case Z80__DD_OR_FD__DI:                // 0xf3
-        case Z80__DD_OR_FD__CALL__P__NN:                // 0xf4
-        case Z80__DD_OR_FD__PUSH__AF:                // 0xf5
-        case Z80__DD_OR_FD__OR__N:                // 0xf6
-        case Z80__DD_OR_FD__RST__30:                // 0xf7
-        case Z80__DD_OR_FD__RET__M:                // 0xf8
-        case Z80__DD_OR_FD__LD__SP__IX_OR_IY:                // 0xf9
-        case Z80__DD_OR_FD__JP__M__NN:                // 0xfa
-        case Z80__DD_OR_FD__EI:                // 0xfb
-        case Z80__DD_OR_FD__CALL__M__NN:                // 0xfc
-        case Z80__DD_OR_FD__CP__N:                // 0xfe
-        case Z80__DD_OR_FD__RST__38:                // 0xff
+        case Opcodes::Z80_DdOrFd_Nop:                // 0x00
+        case Opcodes::Z80_DdOrFd_Ld_Bc_Nn:                // 0x01
+        case Opcodes::Z80_DdOrFd_Ld_IndirectBc_A:                // 0x02
+        case Opcodes::Z80_DdOrFd_Inc_Bc:                // 0x03
+        case Opcodes::Z80_DdOrFd_Inc_B:                // 0x04
+        case Opcodes::Z80_DdOrFd_Dec_B:                // 0x05
+        case Opcodes::Z80_DdOrFd_Ld_B_N:                // 0x06
+        case Opcodes::Z80_DdOrFd_Rlca:                // 0x07
+        case Opcodes::Z80_DdOrFd_Ex_Af_AfShadow:                // 0x08
+        case Opcodes::Z80_DdOrFd_Add_IxOrIy_Bc:                // 0x09
+        case Opcodes::Z80_DdOrFd_Ld_A_IndirectBc:                // 0x0a
+        case Opcodes::Z80_DdOrFd_Dec_Bc:                // 0x0b
+        case Opcodes::Z80_DdOrFd_Inc_C:                // 0x0c
+        case Opcodes::Z80_DdOrFd_Dec_C:                // 0x0d
+        case Opcodes::Z80_DdOrFd_Ld_C_N:                // 0x0e
+        case Opcodes::Z80_DdOrFd_Rrca:                // 0x0f
+        case Opcodes::Z80_DdOrFd_Djnz_d:                // 0x10
+        case Opcodes::Z80_DdOrFd_Ld_De_Nn:                // 0x11
+        case Opcodes::Z80_DdOrFd_Ld_IndirectDe_A:                // 0x12
+        case Opcodes::Z80_DdOrFd_Inc_De:                // 0x13
+        case Opcodes::Z80_DdOrFd_Inc_D:                // 0x14
+        case Opcodes::Z80_DdOrFd_Dec_D:                // 0x15
+        case Opcodes::Z80_DdOrFd_Ld_D_N:                // 0x16
+        case Opcodes::Z80_DdOrFd_Rla:                // 0x17
+        case Opcodes::Z80_DdOrFd_Jr_d:                // 0x18
+        case Opcodes::Z80_DdOrFd_Add_IxOrIy_De:                // 0x19
+        case Opcodes::Z80_DdOrFd_Ld_A_IndirectDe:                // 0x1a
+        case Opcodes::Z80_DdOrFd_Dec_De:                // 0x1b
+        case Opcodes::Z80_DdOrFd_Inc_E:                // 0x1c
+        case Opcodes::Z80_DdOrFd_Dec_E:                // 0x1d
+        case Opcodes::Z80_DdOrFd_Ld_E_N:                // 0x1e
+        case Opcodes::Z80_DdOrFd_Rra:                // 0x1f
+        case Opcodes::Z80_DdOrFd_Jr_Nz_d:                // 0x20
+        case Opcodes::Z80_DdOrFd_Ld_IxOrIy_Nn:                // 0x21
+        case Opcodes::Z80_DdOrFd_Ld_IndirectNn_IxOrIy:                // 0x22
+        case Opcodes::Z80_DdOrFd_Inc_IxOrIy:                // 0x23
+        case Opcodes::Z80_DdOrFd_Inc_IxhOrIyh:                // 0x24
+        case Opcodes::Z80_DdOrFd_Dec_IxhOrIyh:                // 0x25
+        case Opcodes::Z80_DdOrFd_Ld_IxhOrIyh_N:                // 0x26
+        case Opcodes::Z80_DdOrFd_Daa:                // 0x27
+        case Opcodes::Z80_DdOrFd_Jr_Z_d:                // 0x28
+        case Opcodes::Z80_DdOrFd_Add_IxOrIy_IxOrIy:                // 0x29
+        case Opcodes::Z80_DdOrFd_Ld_IxOrIy_IndirectNn:                // 0x2a
+        case Opcodes::Z80_DdOrFd_Dec_IxOrIy:                // 0x2b
+        case Opcodes::Z80_DdOrFd_Inc_IxlOrIyl:                // 0x2c
+        case Opcodes::Z80_DdOrFd_Dec_IxlOrIyl:                // 0x2d
+        case Opcodes::Z80_DdOrFd_Ld_IxlOrIyl_N:                // 0x2e
+        case Opcodes::Z80_DdOrFd_Cpl:                // 0x2f
+        case Opcodes::Z80_DdOrFd_Jr_Nc_d:                // 0x30
+        case Opcodes::Z80_DdOrFd_Ld_Sp_Nn:                // 0x31
+        case Opcodes::Z80_DdOrFd_Ld_IndirectNn_A:                // 0x32
+        case Opcodes::Z80_DdOrFd_Inc_Sp:                // 0x33
+        case Opcodes::Z80_DdOrFd_Scf:                // 0x37
+        case Opcodes::Z80_DdOrFd_Add_IxOrIy_Sp:                // 0x39
+        case Opcodes::Z80_DdOrFd_Ld_A_IndirectNn:                // 0x3a
+        case Opcodes::Z80_DdOrFd_Dec_Sp:                // 0x3b
+        case Opcodes::Z80_DdOrFd_Inc_A:                // 0x3c
+        case Opcodes::Z80_DdOrFd_Dec_A:                // 0x3d
+        case Opcodes::Z80_DdOrFd_Ld_A_N:                // 0x3e
+        case Opcodes::Z80_DdOrFd_Ccf:                // 0x3f
+        case Opcodes::Z80_DdOrFd_Ld_B_B:                // 0x40
+        case Opcodes::Z80_DdOrFd_Ld_B_C:                // 0x41
+        case Opcodes::Z80_DdOrFd_Ld_B_D:                // 0x42
+        case Opcodes::Z80_DdOrFd_Ld_B_E:                // 0x43
+        case Opcodes::Z80_DdOrFd_Ld_B_IxhOrIyh:                // 0x44
+        case Opcodes::Z80_DdOrFd_Ld_B_IxlOrIyl:                // 0x45
+        case Opcodes::Z80_DdOrFd_Ld_B_A:                // 0x47
+        case Opcodes::Z80_DdOrFd_Ld_C_B:                // 0x48
+        case Opcodes::Z80_DdOrFd_Ld_C_C:                // 0x49
+        case Opcodes::Z80_DdOrFd_Ld_C_D:                // 0x4a
+        case Opcodes::Z80_DdOrFd_Ld_C_E:                // 0x4b
+        case Opcodes::Z80_DdOrFd_Ld_C_IxhOrIyh:                // 0x4c
+        case Opcodes::Z80_DdOrFd_Ld_C_IxlOrIyl:                // 0x4d
+        case Opcodes::Z80_DdOrFd_Ld_C_A:                // 0x4f
+        case Opcodes::Z80_DdOrFd_Ld_D_B:                // 0x50
+        case Opcodes::Z80_DdOrFd_Ld_D_C:                // 0x51
+        case Opcodes::Z80_DdOrFd_Ld_D_D:                // 0x52
+        case Opcodes::Z80_DdOrFd_Ld_D_E:                // 0x53
+        case Opcodes::Z80_DdOrFd_Ld_D_IxhOrIyh:                // 0x54
+        case Opcodes::Z80_DdOrFd_Ld_D_IxlOrIyl:                // 0x55
+        case Opcodes::Z80_DdOrFd_Ld_D_A:                // 0x57
+        case Opcodes::Z80_DdOrFd_Ld_E_B:                // 0x58
+        case Opcodes::Z80_DdOrFd_Ld_E_C:                // 0x59
+        case Opcodes::Z80_DdOrFd_Ld_E_D:                // 0x5a
+        case Opcodes::Z80_DdOrFd_Ld_E_E:                // 0x5b
+        case Opcodes::Z80_DdOrFd_Ld_E_IxhOrIyh:                // 0x5c
+        case Opcodes::Z80_DdOrFd_Ld_E_IxlOrIyl:                // 0x5d
+        case Opcodes::Z80_DdOrFd_Ld_E_A:                // 0x5f
+        case Opcodes::Z80_DdOrFd_Ld_IxhOrIyh_B:                // 0x60
+        case Opcodes::Z80_DdOrFd_Ld_IxhOrIyh_C:                // 0x61
+        case Opcodes::Z80_DdOrFd_Ld_IxhOrIyh_D:                // 0x62
+        case Opcodes::Z80_DdOrFd_Ld_IxhOrIyh_E:                // 0x63
+        case Opcodes::Z80_DdOrFd_Ld_IxhOrIyh_IxhOrIyh:                // 0x64
+        case Opcodes::Z80_DdOrFd_Ld_IxhOrIyh_IxlOrIyl:                // 0x65
+        case Opcodes::Z80_DdOrFd_Ld_IxhOrIyh_A:                // 0x67
+        case Opcodes::Z80_DdOrFd_Ld_IxlOrIyl_B:                // 0x68
+        case Opcodes::Z80_DdOrFd_Ld_IxlOrIyl_C:                // 0x69
+        case Opcodes::Z80_DdOrFd_Ld_IxlOrIyl_D:                // 0x6a
+        case Opcodes::Z80_DdOrFd_Ld_IxlOrIyl_E:                // 0x6b
+        case Opcodes::Z80_DdOrFd_Ld_IxlOrIyl_IxhOrIyh:                // 0x6c
+        case Opcodes::Z80_DdOrFd_Ld_IxlOrIyl_IxlOrIyl:                // 0x6d
+        case Opcodes::Z80_DdOrFd_Ld_IxlOrIyl_A:                // 0x6f
+        case Opcodes::Z80_DdOrFd_Halt:                // 0x76
+        case Opcodes::Z80_DdOrFd_Ld_A_B:                // 0x78
+        case Opcodes::Z80_DdOrFd_Ld_A_C:                // 0x79
+        case Opcodes::Z80_DdOrFd_Ld_A_D:                // 0x7a
+        case Opcodes::Z80_DdOrFd_Ld_A_E:                // 0x7b
+        case Opcodes::Z80_DdOrFd_Ld_A_IxhOrIyh:                // 0x7c
+        case Opcodes::Z80_DdOrFd_Ld_A_IxlOrIyl:                // 0x7d
+        case Opcodes::Z80_DdOrFd_Ld_A_A:                // 0x7f
+        case Opcodes::Z80_DdOrFd_Add_A_B:                // 0x80
+        case Opcodes::Z80_DdOrFd_Add_A_C:                // 0x81
+        case Opcodes::Z80_DdOrFd_Add_A_D:                // 0x82
+        case Opcodes::Z80_DdOrFd_Add_A_E:                // 0x83
+        case Opcodes::Z80_DdOrFd_Add_A_IxhOrIyh:                // 0x84
+        case Opcodes::Z80_DdOrFd_Add_A_IxlOrIyl:                // 0x85
+        case Opcodes::Z80_DdOrFd_Add_A_A:                // 0x87
+        case Opcodes::Z80_DdOrFd_Adc_A_B:                // 0x88
+        case Opcodes::Z80_DdOrFd_Adc_A_C:                // 0x89
+        case Opcodes::Z80_DdOrFd_Adc_A_D:                // 0x8a
+        case Opcodes::Z80_DdOrFd_Adc_A_E:                // 0x8b
+        case Opcodes::Z80_DdOrFd_Adc_A_IxhOrIyh:                // 0x8c
+        case Opcodes::Z80_DdOrFd_Adc_A_IxlOrIyl:                // 0x8d
+        case Opcodes::Z80_DdOrFd_Adc_A_A:                // 0x8f
+        case Opcodes::Z80_DdOrFd_Sub_B:                // 0x90
+        case Opcodes::Z80_DdOrFd_Sub_C:                // 0x91
+        case Opcodes::Z80_DdOrFd_Sub_D:                // 0x92
+        case Opcodes::Z80_DdOrFd_Sub_E:                // 0x93
+        case Opcodes::Z80_DdOrFd_Sub_IxhOrIyh:                // 0x94
+        case Opcodes::Z80_DdOrFd_Sub_IxlOrIyl:                // 0x95
+        case Opcodes::Z80_DdOrFd_Sub_A:                // 0x97
+        case Opcodes::Z80_DdOrFd_Sbc_A_B:                // 0x98
+        case Opcodes::Z80_DdOrFd_Sbc_A_C:                // 0x99
+        case Opcodes::Z80_DdOrFd_Sbc_A_D:                // 0x9a
+        case Opcodes::Z80_DdOrFd_Sbc_A_E:                // 0x9b
+        case Opcodes::Z80_DdOrFd_Sbc_A_IxhOrIyh:                // 0x9c
+        case Opcodes::Z80_DdOrFd_Sbc_A_IxlOrIyl:                // 0x9d
+        case Opcodes::Z80_DdOrFd_Sbc_A_A:                // 0x9f
+        case Opcodes::Z80_DdOrFd_And_B:                // 0xa0
+        case Opcodes::Z80_DdOrFd_And_C:                // 0xa1
+        case Opcodes::Z80_DdOrFd_And_D:                // 0xa2
+        case Opcodes::Z80_DdOrFd_And_E:                // 0xa3
+        case Opcodes::Z80_DdOrFd_And_IxhOrIyh:                // 0xa4
+        case Opcodes::Z80_DdOrFd_And_IxlOrIyl:                // 0xa5
+        case Opcodes::Z80_DdOrFd_And_A:                // 0xa7
+        case Opcodes::Z80_DdOrFd_Xor_B:                // 0xa8
+        case Opcodes::Z80_DdOrFd_Xor_C:                // 0xa9
+        case Opcodes::Z80_DdOrFd_Xor_D:                // 0xaa
+        case Opcodes::Z80_DdOrFd_Xor_E:                // 0xab
+        case Opcodes::Z80_DdOrFd_Xor_IxhOrIyh:                // 0xac
+        case Opcodes::Z80_DdOrFd_Xor_IxlOrIyl:                // 0xad
+        case Opcodes::Z80_DdOrFd_Xor_A:                // 0xaf
+        case Opcodes::Z80_DdOrFd_Or_B:                // 0xb0
+        case Opcodes::Z80_DdOrFd_Or_C:                // 0xb1
+        case Opcodes::Z80_DdOrFd_Or_D:                // 0xb2
+        case Opcodes::Z80_DdOrFd_Or_E:                // 0xb3
+        case Opcodes::Z80_DdOrFd_Or_IxhOrIyh:                // 0xb4
+        case Opcodes::Z80_DdOrFd_Or_IxlOrIyl:                // 0xb5
+        case Opcodes::Z80_DdOrFd_Or_A:                // 0xb7
+        case Opcodes::Z80_DdOrFd_Cp_B:                // 0xb8
+        case Opcodes::Z80_DdOrFd_Cp_C:                // 0xb9
+        case Opcodes::Z80_DdOrFd_Cp_D:                // 0xba
+        case Opcodes::Z80_DdOrFd_Cp_E:                // 0xbb
+        case Opcodes::Z80_DdOrFd_Cp_IxhOrIyh:                // 0xbc
+        case Opcodes::Z80_DdOrFd_Cp_IxlOrIyl:                // 0xbd
+        case Opcodes::Z80_DdOrFd_Cp_A:                // 0xbf
+        case Opcodes::Z80_DdOrFd_Ret_Nz:                // 0xc0
+        case Opcodes::Z80_DdOrFd_Pop_Bc:                // 0xc1
+        case Opcodes::Z80_DdOrFd_Jp_Nz_Nn:                // 0xc2
+        case Opcodes::Z80_DdOrFd_Jp_Nn:                // 0xc3
+        case Opcodes::Z80_DdOrFd_Call_Nz_Nn:                // 0xc4
+        case Opcodes::Z80_DdOrFd_Push_Bc:                // 0xc5
+        case Opcodes::Z80_DdOrFd_Add_A_N:                // 0xc6
+        case Opcodes::Z80_DdOrFd_Rst_00:                // 0xc7
+        case Opcodes::Z80_DdOrFd_Ret_Z:                // 0xc8
+        case Opcodes::Z80_DdOrFd_Ret:                // 0xc9
+        case Opcodes::Z80_DdOrFd_Jp_Z_Nn:                // 0xca
+        case Opcodes::Z80_DdOrFd_Call_Z_Nn:                // 0xcc
+        case Opcodes::Z80_DdOrFd_Call_Nn:                // 0xcd
+        case Opcodes::Z80_DdOrFd_Adc_A_N:                // 0xce
+        case Opcodes::Z80_DdOrFd_Rst_08:                // 0xcf
+        case Opcodes::Z80_DdOrFd_Ret_Nc:                // 0xd0
+        case Opcodes::Z80_DdOrFd_Pop_De:                // 0xd1
+        case Opcodes::Z80_DdOrFd_Jp_Nc_Nn:                // 0xd2
+        case Opcodes::Z80_DdOrFd_Out_IndirectN_A:                // 0xd3
+        case Opcodes::Z80_DdOrFd_Call_Nc_Nn:                // 0xd4
+        case Opcodes::Z80_DdOrFd_Push_De:                // 0xd5
+        case Opcodes::Z80_DdOrFd_Sub_N:                // 0xd6
+        case Opcodes::Z80_DdOrFd_Rst_10:                // 0xd7
+        case Opcodes::Z80_DdOrFd_Ret_C:                // 0xd8
+        case Opcodes::Z80_DdOrFd_Exx:                // 0xd9
+        case Opcodes::Z80_DdOrFd_Jp_C_Nn:                // 0xda
+        case Opcodes::Z80_DdOrFd_In_A_IndirectN:                // 0xdb
+        case Opcodes::Z80_DdOrFd_Call_C_Nn:                // 0xdc
+        case Opcodes::Z80_DdOrFd_Sbc_A_N:                // 0xde
+        case Opcodes::Z80_DdOrFd_Rst_18:                // 0xdf
+        case Opcodes::Z80_DdOrFd_Ret_Po:                // 0xe0
+        case Opcodes::Z80_DdOrFd_Pop_IxOrIy:                // 0xe1
+        case Opcodes::Z80_DdOrFd_Jp_Po_Nn:                // 0xe2
+        case Opcodes::Z80_DdOrFd_Ex_IndirectSp_IxOrIy:                // 0xe3
+        case Opcodes::Z80_DdOrFd_Call_Po_Nn:                // 0xe4
+        case Opcodes::Z80_DdOrFd_Push_IxOrIy:                // 0xe5
+        case Opcodes::Z80_DdOrFd_And_N:                // 0xe6
+        case Opcodes::Z80_DdOrFd_Rst_20:                // 0xe7
+        case Opcodes::Z80_DdOrFd_Ret_Pe:                // 0xe8
+        case Opcodes::Z80_DdOrFd_Jp_IxOrIy:                // 0xe9
+        case Opcodes::Z80_DdOrFd_Jp_Pe_Nn:                // 0xea
+        case Opcodes::Z80_DdOrFd_Ex_De_Hl:                // 0xeb
+        case Opcodes::Z80_DdOrFd_Call_Pe_Nn:                // 0xec
+        case Opcodes::Z80_DdOrFd_Prefix_Ed:                // 0xed
+        case Opcodes::Z80_DdOrFd_Xor_N:                // 0xee
+        case Opcodes::Z80_DdOrFd_Rst_28:                // 0xef
+        case Opcodes::Z80_DdOrFd_Ret_P:                // 0xf0
+        case Opcodes::Z80_DdOrFd_Pop_Af:                // 0xf1
+        case Opcodes::Z80_DdOrFd_Jp_P_Nn:                // 0xf2
+        case Opcodes::Z80_DdOrFd_Di:                // 0xf3
+        case Opcodes::Z80_DdOrFd_Call_P_Nn:                // 0xf4
+        case Opcodes::Z80_DdOrFd_Push_Af:                // 0xf5
+        case Opcodes::Z80_DdOrFd_Or_N:                // 0xf6
+        case Opcodes::Z80_DdOrFd_Rst_30:                // 0xf7
+        case Opcodes::Z80_DdOrFd_Ret_M:                // 0xf8
+        case Opcodes::Z80_DdOrFd_Ld_Sp_IxOrIy:                // 0xf9
+        case Opcodes::Z80_DdOrFd_Jp_M_Nn:                // 0xfa
+        case Opcodes::Z80_DdOrFd_Ei:                // 0xfb
+        case Opcodes::Z80_DdOrFd_Call_M_Nn:                // 0xfc
+        case Opcodes::Z80_DdOrFd_Cp_N:                // 0xfe
+        case Opcodes::Z80_DdOrFd_Rst_38:                // 0xff
         {
             auto mnemonic = disassembleOnePlain(machineCode);
             ++mnemonic.size;
             return mnemonic;
         }
 
-        case Z80__DD_OR_FD__PREFIX__DD:                // 0xdd
-        case Z80__DD_OR_FD__PREFIX__FD:                // 0xfd
+        case Opcodes::Z80_DdOrFd_Prefix_Dd:                // 0xdd
+        case Opcodes::Z80_DdOrFd_Prefix_Fd:                // 0xfd
         {
             // TODO this is not strictly correct - sequences of 0xdd/0xfd result in an IX/IY instruction based on the
             //  byte following the last 0xdd/0xfd in the sequence.
@@ -6386,7 +6386,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
     const auto offset = *(machineCode);
     
     switch (opcode) {
-        case Z80__DD_OR_FD__CB__RLC__INDIRECT_IX_d_OR_IY_d__B:                       // 0x00
+        case Opcodes::Z80_DdOrFd_Cb_Rlc_IndirectIxdOrIyd_B:                       // 0x00
             return {
                 .instruction = Instruction::RLC,
                 .operands = {
@@ -6396,7 +6396,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RLC__INDIRECT_IX_d_OR_IY_d__C:                       // 0x01
+        case Opcodes::Z80_DdOrFd_Cb_Rlc_IndirectIxdOrIyd_C:                       // 0x01
             return {
                 .instruction = Instruction::RLC,
                 .operands = {
@@ -6406,7 +6406,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RLC__INDIRECT_IX_d_OR_IY_d__D:                       // 0x02
+        case Opcodes::Z80_DdOrFd_Cb_Rlc_IndirectIxdOrIyd_D:                       // 0x02
             return {
                 .instruction = Instruction::RLC,
                 .operands = {
@@ -6416,7 +6416,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RLC__INDIRECT_IX_d_OR_IY_d__E:                       // 0x03
+        case Opcodes::Z80_DdOrFd_Cb_Rlc_IndirectIxdOrIyd_E:                       // 0x03
             return {
                 .instruction = Instruction::RLC,
                 .operands = {
@@ -6426,7 +6426,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RLC__INDIRECT_IX_d_OR_IY_d__H:                       // 0x04
+        case Opcodes::Z80_DdOrFd_Cb_Rlc_IndirectIxdOrIyd_H:                       // 0x04
             return {
                 .instruction = Instruction::RLC,
                 .operands = {
@@ -6436,7 +6436,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RLC__INDIRECT_IX_d_OR_IY_d__L:                       // 0x05
+        case Opcodes::Z80_DdOrFd_Cb_Rlc_IndirectIxdOrIyd_L:                       // 0x05
             return {
                 .instruction = Instruction::RLC,
                 .operands = {
@@ -6446,7 +6446,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RLC__INDIRECT_IX_d_OR_IY_d:                          // 0x06
+        case Opcodes::Z80_DdOrFd_Cb_Rlc_IndirectIxdOrIyd:                          // 0x06
             return {
                 .instruction = Instruction::RLC,
                 .operands = {
@@ -6455,7 +6455,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RLC__INDIRECT_IX_d_OR_IY_d__A:                       // 0x07
+        case Opcodes::Z80_DdOrFd_Cb_Rlc_IndirectIxdOrIyd_A:                       // 0x07
             return {
                 .instruction = Instruction::RLC,
                 .operands = {
@@ -6465,7 +6465,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RRC__INDIRECT_IX_d_OR_IY_d__B:                       // 0x08
+        case Opcodes::Z80_DdOrFd_Cb_Rrc_IndirectIxdOrIyd_B:                       // 0x08
             return {
                 .instruction = Instruction::RRC,
                 .operands = {
@@ -6475,7 +6475,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RRC__INDIRECT_IX_d_OR_IY_d__C:                       // 0x09
+        case Opcodes::Z80_DdOrFd_Cb_Rrc_IndirectIxdOrIyd_C:                       // 0x09
             return {
                 .instruction = Instruction::RRC,
                 .operands = {
@@ -6485,7 +6485,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RRC__INDIRECT_IX_d_OR_IY_d__D:                       // 0x0a
+        case Opcodes::Z80_DdOrFd_Cb_Rrc_IndirectIxdOrIyd_D:                       // 0x0a
             return {
                 .instruction = Instruction::RRC,
                 .operands = {
@@ -6495,7 +6495,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RRC__INDIRECT_IX_d_OR_IY_d__E:                       // 0x0b
+        case Opcodes::Z80_DdOrFd_Cb_Rrc_IndirectIxdOrIyd_E:                       // 0x0b
             return {
                 .instruction = Instruction::RRC,
                 .operands = {
@@ -6505,7 +6505,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RRC__INDIRECT_IX_d_OR_IY_d__H:                       // 0x0c
+        case Opcodes::Z80_DdOrFd_Cb_Rrc_IndirectIxdOrIyd_H:                       // 0x0c
             return {
                 .instruction = Instruction::RRC,
                 .operands = {
@@ -6515,7 +6515,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RRC__INDIRECT_IX_d_OR_IY_d__L:                       // 0x0d
+        case Opcodes::Z80_DdOrFd_Cb_Rrc_IndirectIxdOrIyd_L:                       // 0x0d
             return {
                 .instruction = Instruction::RRC,
                 .operands = {
@@ -6525,7 +6525,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RRC__INDIRECT_IX_d_OR_IY_d:                          // 0x0e
+        case Opcodes::Z80_DdOrFd_Cb_Rrc_IndirectIxdOrIyd:                          // 0x0e
             return {
                 .instruction = Instruction::RRC,
                 .operands = {
@@ -6534,7 +6534,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RRC__INDIRECT_IX_d_OR_IY_d__A:                       // 0x0f
+        case Opcodes::Z80_DdOrFd_Cb_Rrc_IndirectIxdOrIyd_A:                       // 0x0f
             return {
                 .instruction = Instruction::RRC,
                 .operands = {
@@ -6545,7 +6545,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__RL__INDIRECT_IX_d_OR_IY_d__B:                        // 0x10
+        case Opcodes::Z80_DdOrFd_Cb_Rl_IndirectIxdOrIyd_B:                        // 0x10
             return {
                 .instruction = Instruction::RL,
                 .operands = {
@@ -6555,7 +6555,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RL__INDIRECT_IX_d_OR_IY_d__C:                        // 0x11
+        case Opcodes::Z80_DdOrFd_Cb_Rl_IndirectIxdOrIyd_C:                        // 0x11
             return {
                 .instruction = Instruction::RL,
                 .operands = {
@@ -6565,7 +6565,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RL__INDIRECT_IX_d_OR_IY_d__D:                        // 0x12
+        case Opcodes::Z80_DdOrFd_Cb_Rl_IndirectIxdOrIyd_D:                        // 0x12
             return {
                 .instruction = Instruction::RL,
                 .operands = {
@@ -6575,7 +6575,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RL__INDIRECT_IX_d_OR_IY_d__E:                        // 0x13
+        case Opcodes::Z80_DdOrFd_Cb_Rl_IndirectIxdOrIyd_E:                        // 0x13
             return {
                 .instruction = Instruction::RL,
                 .operands = {
@@ -6585,7 +6585,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RL__INDIRECT_IX_d_OR_IY_d__H:                        // 0x14
+        case Opcodes::Z80_DdOrFd_Cb_Rl_IndirectIxdOrIyd_H:                        // 0x14
             return {
                 .instruction = Instruction::RL,
                 .operands = {
@@ -6595,7 +6595,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RL__INDIRECT_IX_d_OR_IY_d__L:                        // 0x15
+        case Opcodes::Z80_DdOrFd_Cb_Rl_IndirectIxdOrIyd_L:                        // 0x15
             return {
                 .instruction = Instruction::RL,
                 .operands = {
@@ -6605,7 +6605,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RL__INDIRECT_IX_d_OR_IY_d:                           // 0x16
+        case Opcodes::Z80_DdOrFd_Cb_Rl_IndirectIxdOrIyd:                           // 0x16
             return {
                 .instruction = Instruction::RL,
                 .operands = {
@@ -6614,7 +6614,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RL__INDIRECT_IX_d_OR_IY_d__A:                        // 0x17
+        case Opcodes::Z80_DdOrFd_Cb_Rl_IndirectIxdOrIyd_A:                        // 0x17
             return {
                 .instruction = Instruction::RL,
                 .operands = {
@@ -6625,7 +6625,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__RR__INDIRECT_IX_d_OR_IY_d__B:                        // 0x18
+        case Opcodes::Z80_DdOrFd_Cb_Rr_IndirectIxdOrIyd_B:                        // 0x18
             return {
                 .instruction = Instruction::RR,
                 .operands = {
@@ -6635,7 +6635,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RR__INDIRECT_IX_d_OR_IY_d__C:                        // 0x19
+        case Opcodes::Z80_DdOrFd_Cb_Rr_IndirectIxdOrIyd_C:                        // 0x19
             return {
                 .instruction = Instruction::RR,
                 .operands = {
@@ -6645,7 +6645,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RR__INDIRECT_IX_d_OR_IY_d__D:                        // 0x1a
+        case Opcodes::Z80_DdOrFd_Cb_Rr_IndirectIxdOrIyd_D:                        // 0x1a
             return {
                 .instruction = Instruction::RR,
                 .operands = {
@@ -6655,7 +6655,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RR__INDIRECT_IX_d_OR_IY_d__E:                        // 0x1b
+        case Opcodes::Z80_DdOrFd_Cb_Rr_IndirectIxdOrIyd_E:                        // 0x1b
             return {
                 .instruction = Instruction::RR,
                 .operands = {
@@ -6665,7 +6665,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RR__INDIRECT_IX_d_OR_IY_d__H:                        // 0x1c
+        case Opcodes::Z80_DdOrFd_Cb_Rr_IndirectIxdOrIyd_H:                        // 0x1c
             return {
                 .instruction = Instruction::RR,
                 .operands = {
@@ -6675,7 +6675,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RR__INDIRECT_IX_d_OR_IY_d__L:                        // 0x1d
+        case Opcodes::Z80_DdOrFd_Cb_Rr_IndirectIxdOrIyd_L:                        // 0x1d
             return {
                 .instruction = Instruction::RR,
                 .operands = {
@@ -6685,7 +6685,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RR__INDIRECT_IX_d_OR_IY_d:                          // 0x1e
+        case Opcodes::Z80_DdOrFd_Cb_Rr_IndirectIxdOrIyd:                          // 0x1e
             return {
                 .instruction = Instruction::RR,
                 .operands = {
@@ -6694,7 +6694,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RR__INDIRECT_IX_d_OR_IY_d__A:                        // 0x1f
+        case Opcodes::Z80_DdOrFd_Cb_Rr_IndirectIxdOrIyd_A:                        // 0x1f
             return {
                 .instruction = Instruction::RR,
                 .operands = {
@@ -6705,7 +6705,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__SLA__INDIRECT_IX_d_OR_IY_d__B:                       // 0x20
+        case Opcodes::Z80_DdOrFd_Cb_Sla_IndirectIxdOrIyd_B:                       // 0x20
             return {
                 .instruction = Instruction::SLA,
                 .operands = {
@@ -6715,7 +6715,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SLA__INDIRECT_IX_d_OR_IY_d__C:                       // 0x21
+        case Opcodes::Z80_DdOrFd_Cb_Sla_IndirectIxdOrIyd_C:                       // 0x21
             return {
                 .instruction = Instruction::SLA,
                 .operands = {
@@ -6725,7 +6725,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SLA__INDIRECT_IX_d_OR_IY_d__D:                       // 0x22
+        case Opcodes::Z80_DdOrFd_Cb_Sla_IndirectIxdOrIyd_D:                       // 0x22
             return {
                 .instruction = Instruction::SLA,
                 .operands = {
@@ -6735,7 +6735,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SLA__INDIRECT_IX_d_OR_IY_d__E:                       // 0x23
+        case Opcodes::Z80_DdOrFd_Cb_Sla_IndirectIxdOrIyd_E:                       // 0x23
             return {
                 .instruction = Instruction::SLA,
                 .operands = {
@@ -6745,7 +6745,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SLA__INDIRECT_IX_d_OR_IY_d__H:                       // 0x24
+        case Opcodes::Z80_DdOrFd_Cb_Sla_IndirectIxdOrIyd_H:                       // 0x24
             return {
                 .instruction = Instruction::SLA,
                 .operands = {
@@ -6755,7 +6755,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SLA__INDIRECT_IX_d_OR_IY_d__L:                       // 0x25
+        case Opcodes::Z80_DdOrFd_Cb_Sla_IndirectIxdOrIyd_L:                       // 0x25
             return {
                 .instruction = Instruction::SLA,
                 .operands = {
@@ -6765,7 +6765,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SLA__INDIRECT_IX_d_OR_IY_d:                          // 0x26
+        case Opcodes::Z80_DdOrFd_Cb_Sla_IndirectIxdOrIyd:                          // 0x26
             return {
                 .instruction = Instruction::SLA,
                 .operands = {
@@ -6774,7 +6774,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SLA__INDIRECT_IX_d_OR_IY_d__A:                       // 0x27
+        case Opcodes::Z80_DdOrFd_Cb_Sla_IndirectIxdOrIyd_A:                       // 0x27
             return {
                 .instruction = Instruction::SLA,
                 .operands = {
@@ -6785,7 +6785,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__SRA__INDIRECT_IX_d_OR_IY_d__B:                       // 0x28
+        case Opcodes::Z80_DdOrFd_Cb_Sra_IndirectIxdOrIyd_B:                       // 0x28
             return {
                 .instruction = Instruction::SRA,
                 .operands = {
@@ -6795,7 +6795,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SRA__INDIRECT_IX_d_OR_IY_d__C:                       // 0x29
+        case Opcodes::Z80_DdOrFd_Cb_Sra_IndirectIxdOrIyd_C:                       // 0x29
             return {
                 .instruction = Instruction::SRA,
                 .operands = {
@@ -6805,7 +6805,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SRA__INDIRECT_IX_d_OR_IY_d__D:                       // 0x2a
+        case Opcodes::Z80_DdOrFd_Cb_Sra_IndirectIxdOrIyd_D:                       // 0x2a
             return {
                 .instruction = Instruction::SRA,
                 .operands = {
@@ -6815,7 +6815,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SRA__INDIRECT_IX_d_OR_IY_d__E:                       // 0x2b
+        case Opcodes::Z80_DdOrFd_Cb_Sra_IndirectIxdOrIyd_E:                       // 0x2b
             return {
                 .instruction = Instruction::SRA,
                 .operands = {
@@ -6825,7 +6825,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SRA__INDIRECT_IX_d_OR_IY_d__H:                       // 0x2c
+        case Opcodes::Z80_DdOrFd_Cb_Sra_IndirectIxdOrIyd_H:                       // 0x2c
             return {
                 .instruction = Instruction::SRA,
                 .operands = {
@@ -6835,7 +6835,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SRA__INDIRECT_IX_d_OR_IY_d__L:                       // 0x2d
+        case Opcodes::Z80_DdOrFd_Cb_Sra_IndirectIxdOrIyd_L:                       // 0x2d
             return {
                 .instruction = Instruction::SRA,
                 .operands = {
@@ -6845,7 +6845,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SRA__INDIRECT_IX_d_OR_IY_d:                          // 0x2e
+        case Opcodes::Z80_DdOrFd_Cb_Sra_IndirectIxdOrIyd:                          // 0x2e
             return {
                 .instruction = Instruction::SRA,
                 .operands = {
@@ -6854,7 +6854,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SRA__INDIRECT_IX_d_OR_IY_d__A:                       // 0x2f
+        case Opcodes::Z80_DdOrFd_Cb_Sra_IndirectIxdOrIyd_A:                       // 0x2f
             return {
                 .instruction = Instruction::SRA,
                 .operands = {
@@ -6865,7 +6865,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__SLL__INDIRECT_IX_d_OR_IY_d__B:                       // 0x30
+        case Opcodes::Z80_DdOrFd_Cb_Sll_IndirectIxdOrIyd_B:                       // 0x30
             return {
                 .instruction = Instruction::SLL,
                 .operands = {
@@ -6875,7 +6875,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SLL__INDIRECT_IX_d_OR_IY_d__C:                       // 0x31
+        case Opcodes::Z80_DdOrFd_Cb_Sll_IndirectIxdOrIyd_C:                       // 0x31
             return {
                 .instruction = Instruction::SLL,
                 .operands = {
@@ -6885,7 +6885,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SLL__INDIRECT_IX_d_OR_IY_d__D:                       // 0x32
+        case Opcodes::Z80_DdOrFd_Cb_Sll_IndirectIxdOrIyd_D:                       // 0x32
             return {
                 .instruction = Instruction::SLL,
                 .operands = {
@@ -6895,7 +6895,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SLL__INDIRECT_IX_d_OR_IY_d__E:                       // 0x33
+        case Opcodes::Z80_DdOrFd_Cb_Sll_IndirectIxdOrIyd_E:                       // 0x33
             return {
                 .instruction = Instruction::SLL,
                 .operands = {
@@ -6905,7 +6905,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SLL__INDIRECT_IX_d_OR_IY_d__H:                       // 0x34
+        case Opcodes::Z80_DdOrFd_Cb_Sll_IndirectIxdOrIyd_H:                       // 0x34
             return {
                 .instruction = Instruction::SLL,
                 .operands = {
@@ -6915,7 +6915,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SLL__INDIRECT_IX_d_OR_IY_d__L:                       // 0x35
+        case Opcodes::Z80_DdOrFd_Cb_Sll_IndirectIxdOrIyd_L:                       // 0x35
             return {
                 .instruction = Instruction::SLL,
                 .operands = {
@@ -6925,7 +6925,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SLL__INDIRECT_IX_d_OR_IY_d:                          // 0x36
+        case Opcodes::Z80_DdOrFd_Cb_Sll_IndirectIxdOrIyd:                          // 0x36
             return {
                 .instruction = Instruction::SLL,
                 .operands = {
@@ -6934,7 +6934,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SLL__INDIRECT_IX_d_OR_IY_d__A:                       // 0x37
+        case Opcodes::Z80_DdOrFd_Cb_Sll_IndirectIxdOrIyd_A:                       // 0x37
             return {
                 .instruction = Instruction::SLL,
                 .operands = {
@@ -6944,7 +6944,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SRL__INDIRECT_IX_d_OR_IY_d__B:                       // 0x38
+        case Opcodes::Z80_DdOrFd_Cb_Srl_IndirectIxdOrIyd_B:                       // 0x38
             return {
                 .instruction = Instruction::SRL,
                 .operands = {
@@ -6954,7 +6954,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SRL__INDIRECT_IX_d_OR_IY_d__C:                       // 0x39
+        case Opcodes::Z80_DdOrFd_Cb_Srl_IndirectIxdOrIyd_C:                       // 0x39
             return {
                 .instruction = Instruction::SRL,
                 .operands = {
@@ -6964,7 +6964,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SRL__INDIRECT_IX_d_OR_IY_d__D:                       // 0x3a
+        case Opcodes::Z80_DdOrFd_Cb_Srl_IndirectIxdOrIyd_D:                       // 0x3a
             return {
                 .instruction = Instruction::SRL,
                 .operands = {
@@ -6974,7 +6974,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SRL__INDIRECT_IX_d_OR_IY_d__E:                       // 0x3b
+        case Opcodes::Z80_DdOrFd_Cb_Srl_IndirectIxdOrIyd_E:                       // 0x3b
             return {
                 .instruction = Instruction::SRL,
                 .operands = {
@@ -6984,7 +6984,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SRL__INDIRECT_IX_d_OR_IY_d__H:                       // 0x3c
+        case Opcodes::Z80_DdOrFd_Cb_Srl_IndirectIxdOrIyd_H:                       // 0x3c
             return {
                 .instruction = Instruction::SRL,
                 .operands = {
@@ -6994,7 +6994,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SRL__INDIRECT_IX_d_OR_IY_d__L:                       // 0x3d
+        case Opcodes::Z80_DdOrFd_Cb_Srl_IndirectIxdOrIyd_L:                       // 0x3d
             return {
                 .instruction = Instruction::SRL,
                 .operands = {
@@ -7004,7 +7004,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SRL__INDIRECT_IX_d_OR_IY_d:                          // 0x3e
+        case Opcodes::Z80_DdOrFd_Cb_Srl_IndirectIxdOrIyd:                          // 0x3e
             return {
                 .instruction = Instruction::SRL,
                 .operands = {
@@ -7013,7 +7013,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SRL__INDIRECT_IX_d_OR_IY_d__A:                       // 0x3f
+        case Opcodes::Z80_DdOrFd_Cb_Srl_IndirectIxdOrIyd_A:                       // 0x3f
             return {
                 .instruction = Instruction::SRL,
                 .operands = {
@@ -7023,7 +7023,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__B:                    // 0x40
+        case Opcodes::Z80_DdOrFd_Cb_Bit_0_IndirectIxdOrIyd_B:                    // 0x40
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7034,7 +7034,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__C:                    // 0x41
+        case Opcodes::Z80_DdOrFd_Cb_Bit_0_IndirectIxdOrIyd_C:                    // 0x41
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7045,7 +7045,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__D:                    // 0x42
+        case Opcodes::Z80_DdOrFd_Cb_Bit_0_IndirectIxdOrIyd_D:                    // 0x42
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7056,7 +7056,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__E:                    // 0x43
+        case Opcodes::Z80_DdOrFd_Cb_Bit_0_IndirectIxdOrIyd_E:                    // 0x43
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7067,7 +7067,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__H:                    // 0x44
+        case Opcodes::Z80_DdOrFd_Cb_Bit_0_IndirectIxdOrIyd_H:                    // 0x44
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7078,7 +7078,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__L:                    // 0x45
+        case Opcodes::Z80_DdOrFd_Cb_Bit_0_IndirectIxdOrIyd_L:                    // 0x45
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7089,7 +7089,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d:                          // 0x06
+        case Opcodes::Z80_DdOrFd_Cb_Bit_0_IndirectIxdOrIyd:                          // 0x06
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7099,7 +7099,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__BIT__0__INDIRECT_IX_d_OR_IY_d__A:                    // 0x47
+        case Opcodes::Z80_DdOrFd_Cb_Bit_0_IndirectIxdOrIyd_A:                    // 0x47
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7111,7 +7111,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__B:                    // 0x48
+        case Opcodes::Z80_DdOrFd_Cb_Bit_1_IndirectIxdOrIyd_B:                    // 0x48
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7122,7 +7122,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__C:                    // 0x49
+        case Opcodes::Z80_DdOrFd_Cb_Bit_1_IndirectIxdOrIyd_C:                    // 0x49
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7133,7 +7133,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__D:                    // 0x4a
+        case Opcodes::Z80_DdOrFd_Cb_Bit_1_IndirectIxdOrIyd_D:                    // 0x4a
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7144,7 +7144,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__E:                    // 0x4b
+        case Opcodes::Z80_DdOrFd_Cb_Bit_1_IndirectIxdOrIyd_E:                    // 0x4b
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7155,7 +7155,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__H:                    // 0x4c
+        case Opcodes::Z80_DdOrFd_Cb_Bit_1_IndirectIxdOrIyd_H:                    // 0x4c
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7166,7 +7166,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__L:                    // 0x4d
+        case Opcodes::Z80_DdOrFd_Cb_Bit_1_IndirectIxdOrIyd_L:                    // 0x4d
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7177,7 +7177,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d:                          // 0x4e
+        case Opcodes::Z80_DdOrFd_Cb_Bit_1_IndirectIxdOrIyd:                          // 0x4e
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7187,7 +7187,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__BIT__1__INDIRECT_IX_d_OR_IY_d__A:                    // 0x4f
+        case Opcodes::Z80_DdOrFd_Cb_Bit_1_IndirectIxdOrIyd_A:                    // 0x4f
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7199,7 +7199,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__B:                    // 0x50
+        case Opcodes::Z80_DdOrFd_Cb_Bit_2_IndirectIxdOrIyd_B:                    // 0x50
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7210,7 +7210,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__C:                    // 0x51
+        case Opcodes::Z80_DdOrFd_Cb_Bit_2_IndirectIxdOrIyd_C:                    // 0x51
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7221,7 +7221,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__D:                    // 0x52
+        case Opcodes::Z80_DdOrFd_Cb_Bit_2_IndirectIxdOrIyd_D:                    // 0x52
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7232,7 +7232,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__E:                    // 0x53
+        case Opcodes::Z80_DdOrFd_Cb_Bit_2_IndirectIxdOrIyd_E:                    // 0x53
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7243,7 +7243,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__H:                    // 0x54
+        case Opcodes::Z80_DdOrFd_Cb_Bit_2_IndirectIxdOrIyd_H:                    // 0x54
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7254,7 +7254,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__L:                    // 0x55
+        case Opcodes::Z80_DdOrFd_Cb_Bit_2_IndirectIxdOrIyd_L:                    // 0x55
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7265,7 +7265,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d:                          // 0x56
+        case Opcodes::Z80_DdOrFd_Cb_Bit_2_IndirectIxdOrIyd:                          // 0x56
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7275,7 +7275,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__BIT__2__INDIRECT_IX_d_OR_IY_d__A:                    // 0x57
+        case Opcodes::Z80_DdOrFd_Cb_Bit_2_IndirectIxdOrIyd_A:                    // 0x57
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7287,7 +7287,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__B:                    // 0x58
+        case Opcodes::Z80_DdOrFd_Cb_Bit_3_IndirectIxdOrIyd_B:                    // 0x58
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7298,7 +7298,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__C:                    // 0x59
+        case Opcodes::Z80_DdOrFd_Cb_Bit_3_IndirectIxdOrIyd_C:                    // 0x59
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7309,7 +7309,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__D:                    // 0x5a
+        case Opcodes::Z80_DdOrFd_Cb_Bit_3_IndirectIxdOrIyd_D:                    // 0x5a
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7320,7 +7320,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__E:                    // 0x5b
+        case Opcodes::Z80_DdOrFd_Cb_Bit_3_IndirectIxdOrIyd_E:                    // 0x5b
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7331,7 +7331,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__H:                    // 0x5c
+        case Opcodes::Z80_DdOrFd_Cb_Bit_3_IndirectIxdOrIyd_H:                    // 0x5c
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7342,7 +7342,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__L:                    // 0x5d
+        case Opcodes::Z80_DdOrFd_Cb_Bit_3_IndirectIxdOrIyd_L:                    // 0x5d
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7353,7 +7353,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d:                          // 0x5e
+        case Opcodes::Z80_DdOrFd_Cb_Bit_3_IndirectIxdOrIyd:                          // 0x5e
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7363,7 +7363,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__BIT__3__INDIRECT_IX_d_OR_IY_d__A:                    // 0x5f
+        case Opcodes::Z80_DdOrFd_Cb_Bit_3_IndirectIxdOrIyd_A:                    // 0x5f
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7375,7 +7375,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__B:                    // 0x60
+        case Opcodes::Z80_DdOrFd_Cb_Bit_4_IndirectIxdOrIyd_B:                    // 0x60
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7386,7 +7386,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__C:                    // 0x61
+        case Opcodes::Z80_DdOrFd_Cb_Bit_4_IndirectIxdOrIyd_C:                    // 0x61
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7397,7 +7397,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__D:                    // 0x62
+        case Opcodes::Z80_DdOrFd_Cb_Bit_4_IndirectIxdOrIyd_D:                    // 0x62
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7408,7 +7408,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__E:                    // 0x63
+        case Opcodes::Z80_DdOrFd_Cb_Bit_4_IndirectIxdOrIyd_E:                    // 0x63
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7419,7 +7419,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__H:                    // 0x64
+        case Opcodes::Z80_DdOrFd_Cb_Bit_4_IndirectIxdOrIyd_H:                    // 0x64
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7430,7 +7430,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__L:                    // 0x65
+        case Opcodes::Z80_DdOrFd_Cb_Bit_4_IndirectIxdOrIyd_L:                    // 0x65
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7441,7 +7441,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d:                          // 0x66
+        case Opcodes::Z80_DdOrFd_Cb_Bit_4_IndirectIxdOrIyd:                          // 0x66
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7451,7 +7451,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__BIT__4__INDIRECT_IX_d_OR_IY_d__A:                    // 0x67
+        case Opcodes::Z80_DdOrFd_Cb_Bit_4_IndirectIxdOrIyd_A:                    // 0x67
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7463,7 +7463,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__B:                    // 0x68
+        case Opcodes::Z80_DdOrFd_Cb_Bit_5_IndirectIxdOrIyd_B:                    // 0x68
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7474,7 +7474,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__C:                    // 0x69
+        case Opcodes::Z80_DdOrFd_Cb_Bit_5_IndirectIxdOrIyd_C:                    // 0x69
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7485,7 +7485,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__D:                    // 0x6a
+        case Opcodes::Z80_DdOrFd_Cb_Bit_5_IndirectIxdOrIyd_D:                    // 0x6a
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7496,7 +7496,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__E:                    // 0x6b
+        case Opcodes::Z80_DdOrFd_Cb_Bit_5_IndirectIxdOrIyd_E:                    // 0x6b
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7507,7 +7507,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__H:                    // 0x6c
+        case Opcodes::Z80_DdOrFd_Cb_Bit_5_IndirectIxdOrIyd_H:                    // 0x6c
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7518,7 +7518,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__L:                    // 0x6d
+        case Opcodes::Z80_DdOrFd_Cb_Bit_5_IndirectIxdOrIyd_L:                    // 0x6d
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7529,7 +7529,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d:                          // 0x6e
+        case Opcodes::Z80_DdOrFd_Cb_Bit_5_IndirectIxdOrIyd:                          // 0x6e
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7539,7 +7539,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__BIT__5__INDIRECT_IX_d_OR_IY_d__A:                    // 0x6f
+        case Opcodes::Z80_DdOrFd_Cb_Bit_5_IndirectIxdOrIyd_A:                    // 0x6f
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7551,7 +7551,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__B:                    // 0x70
+        case Opcodes::Z80_DdOrFd_Cb_Bit_6_IndirectIxdOrIyd_B:                    // 0x70
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7562,7 +7562,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__C:                    // 0x71
+        case Opcodes::Z80_DdOrFd_Cb_Bit_6_IndirectIxdOrIyd_C:                    // 0x71
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7573,7 +7573,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__D:                    // 0x72
+        case Opcodes::Z80_DdOrFd_Cb_Bit_6_IndirectIxdOrIyd_D:                    // 0x72
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7584,7 +7584,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__E:                    // 0x73
+        case Opcodes::Z80_DdOrFd_Cb_Bit_6_IndirectIxdOrIyd_E:                    // 0x73
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7595,7 +7595,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__H:                    // 0x74
+        case Opcodes::Z80_DdOrFd_Cb_Bit_6_IndirectIxdOrIyd_H:                    // 0x74
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7606,7 +7606,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__L:                    // 0x75
+        case Opcodes::Z80_DdOrFd_Cb_Bit_6_IndirectIxdOrIyd_L:                    // 0x75
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7617,7 +7617,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d:                          // 0x76
+        case Opcodes::Z80_DdOrFd_Cb_Bit_6_IndirectIxdOrIyd:                          // 0x76
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7627,7 +7627,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__BIT__6__INDIRECT_IX_d_OR_IY_d__A:                    // 0x77
+        case Opcodes::Z80_DdOrFd_Cb_Bit_6_IndirectIxdOrIyd_A:                    // 0x77
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7639,7 +7639,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__B:                    // 0x78
+        case Opcodes::Z80_DdOrFd_Cb_Bit_7_IndirectIxdOrIyd_B:                    // 0x78
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7650,7 +7650,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__C:                    // 0x79
+        case Opcodes::Z80_DdOrFd_Cb_Bit_7_IndirectIxdOrIyd_C:                    // 0x79
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7661,7 +7661,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__D:                    // 0x7a
+        case Opcodes::Z80_DdOrFd_Cb_Bit_7_IndirectIxdOrIyd_D:                    // 0x7a
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7672,7 +7672,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__E:                    // 0x7b
+        case Opcodes::Z80_DdOrFd_Cb_Bit_7_IndirectIxdOrIyd_E:                    // 0x7b
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7683,7 +7683,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__H:                    // 0x7c
+        case Opcodes::Z80_DdOrFd_Cb_Bit_7_IndirectIxdOrIyd_H:                    // 0x7c
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7694,7 +7694,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__L:                    // 0x7d
+        case Opcodes::Z80_DdOrFd_Cb_Bit_7_IndirectIxdOrIyd_L:                    // 0x7d
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7705,7 +7705,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d:                          // 0x7e
+        case Opcodes::Z80_DdOrFd_Cb_Bit_7_IndirectIxdOrIyd:                          // 0x7e
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7715,7 +7715,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__BIT__7__INDIRECT_IX_d_OR_IY_d__A:                    // 0x7f
+        case Opcodes::Z80_DdOrFd_Cb_Bit_7_IndirectIxdOrIyd_A:                    // 0x7f
             return {
                 .instruction = Instruction::BIT,
                 .operands = {
@@ -7727,7 +7727,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__RES__0__INDIRECT_IX_d_OR_IY_d__B:                    // 0x80
+        case Opcodes::Z80_DdOrFd_Cb_Res_0_IndirectIxdOrIyd_B:                    // 0x80
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -7738,7 +7738,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__0__INDIRECT_IX_d_OR_IY_d__C:                    // 0x81
+        case Opcodes::Z80_DdOrFd_Cb_Res_0_IndirectIxdOrIyd_C:                    // 0x81
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -7749,7 +7749,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__0__INDIRECT_IX_d_OR_IY_d__D:                    // 0x82
+        case Opcodes::Z80_DdOrFd_Cb_Res_0_IndirectIxdOrIyd_D:                    // 0x82
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -7760,7 +7760,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__0__INDIRECT_IX_d_OR_IY_d__E:                    // 0x83
+        case Opcodes::Z80_DdOrFd_Cb_Res_0_IndirectIxdOrIyd_E:                    // 0x83
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -7771,7 +7771,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__0__INDIRECT_IX_d_OR_IY_d__H:                    // 0x84
+        case Opcodes::Z80_DdOrFd_Cb_Res_0_IndirectIxdOrIyd_H:                    // 0x84
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -7782,7 +7782,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__0__INDIRECT_IX_d_OR_IY_d__L:                    // 0x85
+        case Opcodes::Z80_DdOrFd_Cb_Res_0_IndirectIxdOrIyd_L:                    // 0x85
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -7793,7 +7793,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__0__INDIRECT_IX_d_OR_IY_d:                          // 0x86
+        case Opcodes::Z80_DdOrFd_Cb_Res_0_IndirectIxdOrIyd:                          // 0x86
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -7803,7 +7803,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RES__0__INDIRECT_IX_d_OR_IY_d__A:                    // 0x87
+        case Opcodes::Z80_DdOrFd_Cb_Res_0_IndirectIxdOrIyd_A:                    // 0x87
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -7815,7 +7815,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__RES__1__INDIRECT_IX_d_OR_IY_d__B:                    // 0x88
+        case Opcodes::Z80_DdOrFd_Cb_Res_1_IndirectIxdOrIyd_B:                    // 0x88
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -7826,7 +7826,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__1__INDIRECT_IX_d_OR_IY_d__C:                    // 0x89
+        case Opcodes::Z80_DdOrFd_Cb_Res_1_IndirectIxdOrIyd_C:                    // 0x89
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -7837,7 +7837,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__1__INDIRECT_IX_d_OR_IY_d__D:                    // 0x8a
+        case Opcodes::Z80_DdOrFd_Cb_Res_1_IndirectIxdOrIyd_D:                    // 0x8a
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -7848,7 +7848,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__1__INDIRECT_IX_d_OR_IY_d__E:                    // 0x8b
+        case Opcodes::Z80_DdOrFd_Cb_Res_1_IndirectIxdOrIyd_E:                    // 0x8b
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -7859,7 +7859,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__1__INDIRECT_IX_d_OR_IY_d__H:                    // 0x8c
+        case Opcodes::Z80_DdOrFd_Cb_Res_1_IndirectIxdOrIyd_H:                    // 0x8c
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -7870,7 +7870,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__1__INDIRECT_IX_d_OR_IY_d__L:                    // 0x8d
+        case Opcodes::Z80_DdOrFd_Cb_Res_1_IndirectIxdOrIyd_L:                    // 0x8d
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -7881,7 +7881,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__1__INDIRECT_IX_d_OR_IY_d:                          // 0x8e
+        case Opcodes::Z80_DdOrFd_Cb_Res_1_IndirectIxdOrIyd:                          // 0x8e
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -7891,7 +7891,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RES__1__INDIRECT_IX_d_OR_IY_d__A:                    // 0x8f
+        case Opcodes::Z80_DdOrFd_Cb_Res_1_IndirectIxdOrIyd_A:                    // 0x8f
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -7903,7 +7903,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__RES__2__INDIRECT_IX_d_OR_IY_d__B:                    // 0x90
+        case Opcodes::Z80_DdOrFd_Cb_Res_2_IndirectIxdOrIyd_B:                    // 0x90
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -7914,7 +7914,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__2__INDIRECT_IX_d_OR_IY_d__C:                    // 0x91
+        case Opcodes::Z80_DdOrFd_Cb_Res_2_IndirectIxdOrIyd_C:                    // 0x91
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -7925,7 +7925,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__2__INDIRECT_IX_d_OR_IY_d__D:                    // 0x92
+        case Opcodes::Z80_DdOrFd_Cb_Res_2_IndirectIxdOrIyd_D:                    // 0x92
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -7936,7 +7936,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__2__INDIRECT_IX_d_OR_IY_d__E:                    // 0x93
+        case Opcodes::Z80_DdOrFd_Cb_Res_2_IndirectIxdOrIyd_E:                    // 0x93
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -7947,7 +7947,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__2__INDIRECT_IX_d_OR_IY_d__H:                    // 0x94
+        case Opcodes::Z80_DdOrFd_Cb_Res_2_IndirectIxdOrIyd_H:                    // 0x94
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -7958,7 +7958,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__2__INDIRECT_IX_d_OR_IY_d__L:                    // 0x95
+        case Opcodes::Z80_DdOrFd_Cb_Res_2_IndirectIxdOrIyd_L:                    // 0x95
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -7969,7 +7969,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__2__INDIRECT_IX_d_OR_IY_d:                          // 0x96
+        case Opcodes::Z80_DdOrFd_Cb_Res_2_IndirectIxdOrIyd:                          // 0x96
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -7979,7 +7979,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RES__2__INDIRECT_IX_d_OR_IY_d__A:                    // 0x97
+        case Opcodes::Z80_DdOrFd_Cb_Res_2_IndirectIxdOrIyd_A:                    // 0x97
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -7991,7 +7991,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__RES__3__INDIRECT_IX_d_OR_IY_d__B:                    // 0x98
+        case Opcodes::Z80_DdOrFd_Cb_Res_3_IndirectIxdOrIyd_B:                    // 0x98
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8002,7 +8002,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__3__INDIRECT_IX_d_OR_IY_d__C:                    // 0x99
+        case Opcodes::Z80_DdOrFd_Cb_Res_3_IndirectIxdOrIyd_C:                    // 0x99
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8013,7 +8013,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__3__INDIRECT_IX_d_OR_IY_d__D:                    // 0x9a
+        case Opcodes::Z80_DdOrFd_Cb_Res_3_IndirectIxdOrIyd_D:                    // 0x9a
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8024,7 +8024,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__3__INDIRECT_IX_d_OR_IY_d__E:                    // 0x9b
+        case Opcodes::Z80_DdOrFd_Cb_Res_3_IndirectIxdOrIyd_E:                    // 0x9b
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8035,7 +8035,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__3__INDIRECT_IX_d_OR_IY_d__H:                    // 0x9c
+        case Opcodes::Z80_DdOrFd_Cb_Res_3_IndirectIxdOrIyd_H:                    // 0x9c
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8046,7 +8046,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__3__INDIRECT_IX_d_OR_IY_d__L:                    // 0x9d
+        case Opcodes::Z80_DdOrFd_Cb_Res_3_IndirectIxdOrIyd_L:                    // 0x9d
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8057,7 +8057,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__3__INDIRECT_IX_d_OR_IY_d:                          // 0x9e
+        case Opcodes::Z80_DdOrFd_Cb_Res_3_IndirectIxdOrIyd:                          // 0x9e
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8067,7 +8067,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RES__3__INDIRECT_IX_d_OR_IY_d__A:                    // 0x9f
+        case Opcodes::Z80_DdOrFd_Cb_Res_3_IndirectIxdOrIyd_A:                    // 0x9f
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8079,7 +8079,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__RES__4__INDIRECT_IX_d_OR_IY_d__B:                    // 0xa0
+        case Opcodes::Z80_DdOrFd_Cb_Res_4_IndirectIxdOrIyd_B:                    // 0xa0
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8090,7 +8090,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__4__INDIRECT_IX_d_OR_IY_d__C:                    // 0xa1
+        case Opcodes::Z80_DdOrFd_Cb_Res_4_IndirectIxdOrIyd_C:                    // 0xa1
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8101,7 +8101,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__4__INDIRECT_IX_d_OR_IY_d__D:                    // 0xa2
+        case Opcodes::Z80_DdOrFd_Cb_Res_4_IndirectIxdOrIyd_D:                    // 0xa2
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8112,7 +8112,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__4__INDIRECT_IX_d_OR_IY_d__E:                    // 0xa3
+        case Opcodes::Z80_DdOrFd_Cb_Res_4_IndirectIxdOrIyd_E:                    // 0xa3
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8123,7 +8123,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__4__INDIRECT_IX_d_OR_IY_d__H:                    // 0xa4
+        case Opcodes::Z80_DdOrFd_Cb_Res_4_IndirectIxdOrIyd_H:                    // 0xa4
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8134,7 +8134,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__4__INDIRECT_IX_d_OR_IY_d__L:                    // 0xa5
+        case Opcodes::Z80_DdOrFd_Cb_Res_4_IndirectIxdOrIyd_L:                    // 0xa5
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8145,7 +8145,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__4__INDIRECT_IX_d_OR_IY_d:                          // 0xa6
+        case Opcodes::Z80_DdOrFd_Cb_Res_4_IndirectIxdOrIyd:                          // 0xa6
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8155,7 +8155,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RES__4__INDIRECT_IX_d_OR_IY_d__A:                    // 0xa7
+        case Opcodes::Z80_DdOrFd_Cb_Res_4_IndirectIxdOrIyd_A:                    // 0xa7
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8167,7 +8167,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__RES__5__INDIRECT_IX_d_OR_IY_d__B:                    // 0xa8
+        case Opcodes::Z80_DdOrFd_Cb_Res_5_IndirectIxdOrIyd_B:                    // 0xa8
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8178,7 +8178,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__5__INDIRECT_IX_d_OR_IY_d__C:                    // 0xa9
+        case Opcodes::Z80_DdOrFd_Cb_Res_5_IndirectIxdOrIyd_C:                    // 0xa9
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8189,7 +8189,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__5__INDIRECT_IX_d_OR_IY_d__D:                    // 0xaa
+        case Opcodes::Z80_DdOrFd_Cb_Res_5_IndirectIxdOrIyd_D:                    // 0xaa
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8200,7 +8200,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__5__INDIRECT_IX_d_OR_IY_d__E:                    // 0xab
+        case Opcodes::Z80_DdOrFd_Cb_Res_5_IndirectIxdOrIyd_E:                    // 0xab
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8211,7 +8211,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__5__INDIRECT_IX_d_OR_IY_d__H:                    // 0xac
+        case Opcodes::Z80_DdOrFd_Cb_Res_5_IndirectIxdOrIyd_H:                    // 0xac
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8222,7 +8222,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__5__INDIRECT_IX_d_OR_IY_d__L:                    // 0xad
+        case Opcodes::Z80_DdOrFd_Cb_Res_5_IndirectIxdOrIyd_L:                    // 0xad
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8233,7 +8233,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__5__INDIRECT_IX_d_OR_IY_d:                          // 0xae
+        case Opcodes::Z80_DdOrFd_Cb_Res_5_IndirectIxdOrIyd:                          // 0xae
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8243,7 +8243,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RES__5__INDIRECT_IX_d_OR_IY_d__A:                    // 0xaf
+        case Opcodes::Z80_DdOrFd_Cb_Res_5_IndirectIxdOrIyd_A:                    // 0xaf
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8255,7 +8255,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__RES__6__INDIRECT_IX_d_OR_IY_d__B:                    // 0xb0
+        case Opcodes::Z80_DdOrFd_Cb_Res_6_IndirectIxdOrIyd_B:                    // 0xb0
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8266,7 +8266,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__6__INDIRECT_IX_d_OR_IY_d__C:                    // 0xb1
+        case Opcodes::Z80_DdOrFd_Cb_Res_6_IndirectIxdOrIyd_C:                    // 0xb1
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8277,7 +8277,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__6__INDIRECT_IX_d_OR_IY_d__D:                    // 0xb2
+        case Opcodes::Z80_DdOrFd_Cb_Res_6_IndirectIxdOrIyd_D:                    // 0xb2
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8288,7 +8288,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__6__INDIRECT_IX_d_OR_IY_d__E:                    // 0xb3
+        case Opcodes::Z80_DdOrFd_Cb_Res_6_IndirectIxdOrIyd_E:                    // 0xb3
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8299,7 +8299,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__6__INDIRECT_IX_d_OR_IY_d__H:                    // 0xb4
+        case Opcodes::Z80_DdOrFd_Cb_Res_6_IndirectIxdOrIyd_H:                    // 0xb4
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8310,7 +8310,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__6__INDIRECT_IX_d_OR_IY_d__L:                    // 0xb5
+        case Opcodes::Z80_DdOrFd_Cb_Res_6_IndirectIxdOrIyd_L:                    // 0xb5
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8321,7 +8321,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__6__INDIRECT_IX_d_OR_IY_d:                          // 0xb6
+        case Opcodes::Z80_DdOrFd_Cb_Res_6_IndirectIxdOrIyd:                          // 0xb6
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8331,7 +8331,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RES__6__INDIRECT_IX_d_OR_IY_d__A:                    // 0xb7
+        case Opcodes::Z80_DdOrFd_Cb_Res_6_IndirectIxdOrIyd_A:                    // 0xb7
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8343,7 +8343,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__RES__7__INDIRECT_IX_d_OR_IY_d__B:                    // 0xb8
+        case Opcodes::Z80_DdOrFd_Cb_Res_7_IndirectIxdOrIyd_B:                    // 0xb8
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8354,7 +8354,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__7__INDIRECT_IX_d_OR_IY_d__C:                    // 0xb9
+        case Opcodes::Z80_DdOrFd_Cb_Res_7_IndirectIxdOrIyd_C:                    // 0xb9
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8365,7 +8365,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__7__INDIRECT_IX_d_OR_IY_d__D:                    // 0xba
+        case Opcodes::Z80_DdOrFd_Cb_Res_7_IndirectIxdOrIyd_D:                    // 0xba
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8376,7 +8376,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__7__INDIRECT_IX_d_OR_IY_d__E:                    // 0xbb
+        case Opcodes::Z80_DdOrFd_Cb_Res_7_IndirectIxdOrIyd_E:                    // 0xbb
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8387,7 +8387,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__7__INDIRECT_IX_d_OR_IY_d__H:                    // 0xbc
+        case Opcodes::Z80_DdOrFd_Cb_Res_7_IndirectIxdOrIyd_H:                    // 0xbc
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8398,7 +8398,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__7__INDIRECT_IX_d_OR_IY_d__L:                    // 0xbd
+        case Opcodes::Z80_DdOrFd_Cb_Res_7_IndirectIxdOrIyd_L:                    // 0xbd
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8409,7 +8409,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__RES__7__INDIRECT_IX_d_OR_IY_d:                          // 0xbe
+        case Opcodes::Z80_DdOrFd_Cb_Res_7_IndirectIxdOrIyd:                          // 0xbe
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8419,7 +8419,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__RES__7__INDIRECT_IX_d_OR_IY_d__A:                    // 0xbf
+        case Opcodes::Z80_DdOrFd_Cb_Res_7_IndirectIxdOrIyd_A:                    // 0xbf
             return {
                 .instruction = Instruction::RES,
                 .operands = {
@@ -8431,7 +8431,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__SET__0__INDIRECT_IX_d_OR_IY_d__B:                    // 0xc0
+        case Opcodes::Z80_DdOrFd_Cb_Set_0_IndirectIxdOrIyd_B:                    // 0xc0
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8442,7 +8442,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__0__INDIRECT_IX_d_OR_IY_d__C:                    // 0xc1
+        case Opcodes::Z80_DdOrFd_Cb_Set_0_IndirectIxdOrIyd_C:                    // 0xc1
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8453,7 +8453,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__0__INDIRECT_IX_d_OR_IY_d__D:                    // 0xc2
+        case Opcodes::Z80_DdOrFd_Cb_Set_0_IndirectIxdOrIyd_D:                    // 0xc2
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8464,7 +8464,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__0__INDIRECT_IX_d_OR_IY_d__E:                    // 0xc3
+        case Opcodes::Z80_DdOrFd_Cb_Set_0_IndirectIxdOrIyd_E:                    // 0xc3
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8475,7 +8475,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__0__INDIRECT_IX_d_OR_IY_d__H:                    // 0xc4
+        case Opcodes::Z80_DdOrFd_Cb_Set_0_IndirectIxdOrIyd_H:                    // 0xc4
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8486,7 +8486,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__0__INDIRECT_IX_d_OR_IY_d__L:                    // 0xc5
+        case Opcodes::Z80_DdOrFd_Cb_Set_0_IndirectIxdOrIyd_L:                    // 0xc5
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8497,7 +8497,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__0__INDIRECT_IX_d_OR_IY_d:                          // 0xc6
+        case Opcodes::Z80_DdOrFd_Cb_Set_0_IndirectIxdOrIyd:                          // 0xc6
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8507,7 +8507,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SET__0__INDIRECT_IX_d_OR_IY_d__A:                    // 0xc7
+        case Opcodes::Z80_DdOrFd_Cb_Set_0_IndirectIxdOrIyd_A:                    // 0xc7
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8519,7 +8519,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__SET__1__INDIRECT_IX_d_OR_IY_d__B:                    // 0xc8
+        case Opcodes::Z80_DdOrFd_Cb_Set_1_IndirectIxdOrIyd_B:                    // 0xc8
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8530,7 +8530,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__1__INDIRECT_IX_d_OR_IY_d__C:                    // 0xc9
+        case Opcodes::Z80_DdOrFd_Cb_Set_1_IndirectIxdOrIyd_C:                    // 0xc9
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8541,7 +8541,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__1__INDIRECT_IX_d_OR_IY_d__D:                    // 0xca
+        case Opcodes::Z80_DdOrFd_Cb_Set_1_IndirectIxdOrIyd_D:                    // 0xca
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8552,7 +8552,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__1__INDIRECT_IX_d_OR_IY_d__E:                    // 0xcb
+        case Opcodes::Z80_DdOrFd_Cb_Set_1_IndirectIxdOrIyd_E:                    // 0xcb
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8563,7 +8563,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__1__INDIRECT_IX_d_OR_IY_d__H:                    // 0xcc
+        case Opcodes::Z80_DdOrFd_Cb_Set_1_IndirectIxdOrIyd_H:                    // 0xcc
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8574,7 +8574,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__1__INDIRECT_IX_d_OR_IY_d__L:                    // 0xcd
+        case Opcodes::Z80_DdOrFd_Cb_Set_1_IndirectIxdOrIyd_L:                    // 0xcd
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8585,7 +8585,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__1__INDIRECT_IX_d_OR_IY_d:                          // 0xce
+        case Opcodes::Z80_DdOrFd_Cb_Set_1_IndirectIxdOrIyd:                          // 0xce
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8595,7 +8595,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SET__1__INDIRECT_IX_d_OR_IY_d__A:                    // 0xcf
+        case Opcodes::Z80_DdOrFd_Cb_Set_1_IndirectIxdOrIyd_A:                    // 0xcf
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8607,7 +8607,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__SET__2__INDIRECT_IX_d_OR_IY_d__B:                    // 0xd0
+        case Opcodes::Z80_DdOrFd_Cb_Set_2_IndirectIxdOrIyd_B:                    // 0xd0
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8618,7 +8618,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__2__INDIRECT_IX_d_OR_IY_d__C:                    // 0xd1
+        case Opcodes::Z80_DdOrFd_Cb_Set_2_IndirectIxdOrIyd_C:                    // 0xd1
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8629,7 +8629,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__2__INDIRECT_IX_d_OR_IY_d__D:                    // 0xd2
+        case Opcodes::Z80_DdOrFd_Cb_Set_2_IndirectIxdOrIyd_D:                    // 0xd2
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8640,7 +8640,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__2__INDIRECT_IX_d_OR_IY_d__E:                    // 0xd3
+        case Opcodes::Z80_DdOrFd_Cb_Set_2_IndirectIxdOrIyd_E:                    // 0xd3
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8651,7 +8651,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__2__INDIRECT_IX_d_OR_IY_d__H:                    // 0xd4
+        case Opcodes::Z80_DdOrFd_Cb_Set_2_IndirectIxdOrIyd_H:                    // 0xd4
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8662,7 +8662,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__2__INDIRECT_IX_d_OR_IY_d__L:                    // 0xd5
+        case Opcodes::Z80_DdOrFd_Cb_Set_2_IndirectIxdOrIyd_L:                    // 0xd5
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8673,7 +8673,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__2__INDIRECT_IX_d_OR_IY_d:                          // 0xd6
+        case Opcodes::Z80_DdOrFd_Cb_Set_2_IndirectIxdOrIyd:                          // 0xd6
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8683,7 +8683,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SET__2__INDIRECT_IX_d_OR_IY_d__A:                    // 0xd7
+        case Opcodes::Z80_DdOrFd_Cb_Set_2_IndirectIxdOrIyd_A:                    // 0xd7
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8695,7 +8695,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__SET__3__INDIRECT_IX_d_OR_IY_d__B:                    // 0xd8
+        case Opcodes::Z80_DdOrFd_Cb_Set_3_IndirectIxdOrIyd_B:                    // 0xd8
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8706,7 +8706,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__3__INDIRECT_IX_d_OR_IY_d__C:                    // 0xd9
+        case Opcodes::Z80_DdOrFd_Cb_Set_3_IndirectIxdOrIyd_C:                    // 0xd9
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8717,7 +8717,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__3__INDIRECT_IX_d_OR_IY_d__D:                    // 0xda
+        case Opcodes::Z80_DdOrFd_Cb_Set_3_IndirectIxdOrIyd_D:                    // 0xda
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8728,7 +8728,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__3__INDIRECT_IX_d_OR_IY_d__E:                    // 0xdb
+        case Opcodes::Z80_DdOrFd_Cb_Set_3_IndirectIxdOrIyd_E:                    // 0xdb
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8739,7 +8739,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__3__INDIRECT_IX_d_OR_IY_d__H:                    // 0xdc
+        case Opcodes::Z80_DdOrFd_Cb_Set_3_IndirectIxdOrIyd_H:                    // 0xdc
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8750,7 +8750,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__3__INDIRECT_IX_d_OR_IY_d__L:                    // 0xdd
+        case Opcodes::Z80_DdOrFd_Cb_Set_3_IndirectIxdOrIyd_L:                    // 0xdd
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8761,7 +8761,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__3__INDIRECT_IX_d_OR_IY_d:                          // 0xde
+        case Opcodes::Z80_DdOrFd_Cb_Set_3_IndirectIxdOrIyd:                          // 0xde
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8771,7 +8771,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SET__3__INDIRECT_IX_d_OR_IY_d__A:                    // 0xdf
+        case Opcodes::Z80_DdOrFd_Cb_Set_3_IndirectIxdOrIyd_A:                    // 0xdf
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8783,7 +8783,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__SET__4__INDIRECT_IX_d_OR_IY_d__B:                    // 0xe0
+        case Opcodes::Z80_DdOrFd_Cb_Set_4_IndirectIxdOrIyd_B:                    // 0xe0
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8794,7 +8794,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__4__INDIRECT_IX_d_OR_IY_d__C:                    // 0xe1
+        case Opcodes::Z80_DdOrFd_Cb_Set_4_IndirectIxdOrIyd_C:                    // 0xe1
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8805,7 +8805,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__4__INDIRECT_IX_d_OR_IY_d__D:                    // 0xe2
+        case Opcodes::Z80_DdOrFd_Cb_Set_4_IndirectIxdOrIyd_D:                    // 0xe2
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8816,7 +8816,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__4__INDIRECT_IX_d_OR_IY_d__E:                    // 0xe3
+        case Opcodes::Z80_DdOrFd_Cb_Set_4_IndirectIxdOrIyd_E:                    // 0xe3
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8827,7 +8827,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__4__INDIRECT_IX_d_OR_IY_d__H:                    // 0xe4
+        case Opcodes::Z80_DdOrFd_Cb_Set_4_IndirectIxdOrIyd_H:                    // 0xe4
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8838,7 +8838,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__4__INDIRECT_IX_d_OR_IY_d__L:                    // 0xe5
+        case Opcodes::Z80_DdOrFd_Cb_Set_4_IndirectIxdOrIyd_L:                    // 0xe5
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8849,7 +8849,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__4__INDIRECT_IX_d_OR_IY_d:                          // 0xe6
+        case Opcodes::Z80_DdOrFd_Cb_Set_4_IndirectIxdOrIyd:                          // 0xe6
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8859,7 +8859,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SET__4__INDIRECT_IX_d_OR_IY_d__A:                    // 0xe7
+        case Opcodes::Z80_DdOrFd_Cb_Set_4_IndirectIxdOrIyd_A:                    // 0xe7
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8871,7 +8871,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__SET__5__INDIRECT_IX_d_OR_IY_d__B:                    // 0xe8
+        case Opcodes::Z80_DdOrFd_Cb_Set_5_IndirectIxdOrIyd_B:                    // 0xe8
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8882,7 +8882,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__5__INDIRECT_IX_d_OR_IY_d__C:                    // 0xe9
+        case Opcodes::Z80_DdOrFd_Cb_Set_5_IndirectIxdOrIyd_C:                    // 0xe9
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8893,7 +8893,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__5__INDIRECT_IX_d_OR_IY_d__D:                    // 0xea
+        case Opcodes::Z80_DdOrFd_Cb_Set_5_IndirectIxdOrIyd_D:                    // 0xea
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8904,7 +8904,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__5__INDIRECT_IX_d_OR_IY_d__E:                    // 0xeb
+        case Opcodes::Z80_DdOrFd_Cb_Set_5_IndirectIxdOrIyd_E:                    // 0xeb
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8915,7 +8915,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__5__INDIRECT_IX_d_OR_IY_d__H:                    // 0xec
+        case Opcodes::Z80_DdOrFd_Cb_Set_5_IndirectIxdOrIyd_H:                    // 0xec
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8926,7 +8926,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__5__INDIRECT_IX_d_OR_IY_d__L:                    // 0xed
+        case Opcodes::Z80_DdOrFd_Cb_Set_5_IndirectIxdOrIyd_L:                    // 0xed
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8937,7 +8937,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__5__INDIRECT_IX_d_OR_IY_d:                          // 0xee
+        case Opcodes::Z80_DdOrFd_Cb_Set_5_IndirectIxdOrIyd:                          // 0xee
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8947,7 +8947,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SET__5__INDIRECT_IX_d_OR_IY_d__A:                    // 0xef
+        case Opcodes::Z80_DdOrFd_Cb_Set_5_IndirectIxdOrIyd_A:                    // 0xef
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8959,7 +8959,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__SET__6__INDIRECT_IX_d_OR_IY_d__B:                    // 0xf0
+        case Opcodes::Z80_DdOrFd_Cb_Set_6_IndirectIxdOrIyd_B:                    // 0xf0
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8970,7 +8970,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__6__INDIRECT_IX_d_OR_IY_d__C:                    // 0xf1
+        case Opcodes::Z80_DdOrFd_Cb_Set_6_IndirectIxdOrIyd_C:                    // 0xf1
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8981,7 +8981,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__6__INDIRECT_IX_d_OR_IY_d__D:                    // 0xf2
+        case Opcodes::Z80_DdOrFd_Cb_Set_6_IndirectIxdOrIyd_D:                    // 0xf2
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -8992,7 +8992,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__6__INDIRECT_IX_d_OR_IY_d__E:                    // 0xf3
+        case Opcodes::Z80_DdOrFd_Cb_Set_6_IndirectIxdOrIyd_E:                    // 0xf3
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -9003,7 +9003,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__6__INDIRECT_IX_d_OR_IY_d__H:                    // 0xf4
+        case Opcodes::Z80_DdOrFd_Cb_Set_6_IndirectIxdOrIyd_H:                    // 0xf4
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -9014,7 +9014,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__6__INDIRECT_IX_d_OR_IY_d__L:                    // 0xf5
+        case Opcodes::Z80_DdOrFd_Cb_Set_6_IndirectIxdOrIyd_L:                    // 0xf5
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -9025,7 +9025,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__6__INDIRECT_IX_d_OR_IY_d:                          // 0xf6
+        case Opcodes::Z80_DdOrFd_Cb_Set_6_IndirectIxdOrIyd:                          // 0xf6
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -9035,7 +9035,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SET__6__INDIRECT_IX_d_OR_IY_d__A:                    // 0xf7
+        case Opcodes::Z80_DdOrFd_Cb_Set_6_IndirectIxdOrIyd_A:                    // 0xf7
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -9047,7 +9047,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
             };
 
 
-        case Z80__DD_OR_FD__CB__SET__7__INDIRECT_IX_d_OR_IY_d__B:                    // 0xf8
+        case Opcodes::Z80_DdOrFd_Cb_Set_7_IndirectIxdOrIyd_B:                    // 0xf8
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -9058,7 +9058,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__7__INDIRECT_IX_d_OR_IY_d__C:                    // 0xf9
+        case Opcodes::Z80_DdOrFd_Cb_Set_7_IndirectIxdOrIyd_C:                    // 0xf9
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -9069,7 +9069,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__7__INDIRECT_IX_d_OR_IY_d__D:                    // 0xfa
+        case Opcodes::Z80_DdOrFd_Cb_Set_7_IndirectIxdOrIyd_D:                    // 0xfa
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -9080,7 +9080,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__7__INDIRECT_IX_d_OR_IY_d__E:                    // 0xfb
+        case Opcodes::Z80_DdOrFd_Cb_Set_7_IndirectIxdOrIyd_E:                    // 0xfb
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -9091,7 +9091,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__7__INDIRECT_IX_d_OR_IY_d__H:                    // 0xfc
+        case Opcodes::Z80_DdOrFd_Cb_Set_7_IndirectIxdOrIyd_H:                    // 0xfc
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -9102,7 +9102,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__7__INDIRECT_IX_d_OR_IY_d__L:                    // 0xfd
+        case Opcodes::Z80_DdOrFd_Cb_Set_7_IndirectIxdOrIyd_L:                    // 0xfd
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -9113,7 +9113,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize
             };
 
-        case Z80__DD_OR_FD__CB__SET__7__INDIRECT_IX_d_OR_IY_d:                          // 0x06
+        case Opcodes::Z80_DdOrFd_Cb_Set_7_IndirectIxdOrIyd:                          // 0x06
             return {
                 .instruction = Instruction::SET,
                 .operands = {
@@ -9123,7 +9123,7 @@ Mnemonic Disassembler::disassembleOneDdCbOrFdCb(const Register16 reg, const ::Z8
                 .size = OpcodeSize,
             };
 
-        case Z80__DD_OR_FD__CB__SET__7__INDIRECT_IX_d_OR_IY_d__A:                    // 0xff
+        case Opcodes::Z80_DdOrFd_Cb_Set_7_IndirectIxdOrIyd_A:                    // 0xff
             return {
                 .instruction = Instruction::SET,
                 .operands = {
