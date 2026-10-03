@@ -2,7 +2,6 @@
 
 #include <chrono>
 #include <fstream>
-#include <print>
 #include <thread>
 
 #include "snapshot.h"
@@ -25,8 +24,8 @@ namespace Spectrum
     : Computer(std::move(memory)),
       m_executionSpeed(1.0),
       m_interruptTStateCounter(0),
-      m_displayDevices(),
       m_constrainExecutionSpeed(true),
+      m_displayDevices(),
       m_keyboard(nullptr),
       m_joystick(nullptr),
       m_mouse(nullptr)
@@ -81,7 +80,7 @@ namespace Spectrum
 
         static steady_clock::time_point lastInterrupt = steady_clock::now();
         // standard spectrum refresh is not exactly 50FPS it's 50.08 (69888 t-states)
-        int interruptThreshold = static_cast<int>(static_cast<double>(z80()->clockSpeed()) / 50.08);
+        const int interruptThreshold = static_cast<int>(static_cast<double>(z80()->clockSpeed()) / 50.08);
 
         while (0 < instructionCount) {
             m_interruptTStateCounter += z80()->fetchExecuteCycle();
@@ -94,9 +93,7 @@ namespace Spectrum
 
                 if (m_constrainExecutionSpeed) {
                     // pause based on requested execution speed
-                    auto actualInterruptInterval = steady_clock::now() - lastInterrupt;
-
-                    if (actualInterruptInterval < 20ms) {
+                    if (auto actualInterruptInterval = steady_clock::now() - lastInterrupt; actualInterruptInterval < 20ms) {
                         duration sleepFor = (20ms - actualInterruptInterval) / m_executionSpeed;
                         std::this_thread::sleep_for(sleepFor);
                     }
