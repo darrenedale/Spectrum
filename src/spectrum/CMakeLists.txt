@@ -61,6 +61,7 @@ add_executable(
         basespectrum.cpp
         main.cpp
         pokedefinition.cpp
+        pokefinder.cpp
         snapshot.cpp
         spectrum128k.cpp
         spectrum16k.cpp
@@ -169,6 +170,7 @@ add_executable(
         ../cpu.cpp
         ../memory.h
         ../simplememory.h
+        ../util/assert.h
         ../util/crc32.h
         ../util/debug.h
         ../util/endian.h
@@ -184,7 +186,6 @@ add_executable(
 
         ${SPECTRUM_QT_GAMEPAD_SOURCES}
         ${EXECUTION_HISTORY_SOURCES}
-        ../util/assert.h
 )
 
 target_link_libraries(spectrum ${SPECTRUM_QT_LIBS})

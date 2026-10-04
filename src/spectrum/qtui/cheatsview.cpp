@@ -36,18 +36,20 @@ namespace
 
 CheatsView::CheatsView(QWidget * parent)
 : QWidget(parent),
+  m_cheats(),
   m_layout(),
   m_loadCheats(QIcon::fromTheme(QStringLiteral("document-open"), Application::icon(QStringLiteral("open"))), tr("Load cheats")),
   m_clearCheats(QIcon::fromTheme(QStringLiteral("edit-clear-list"), Application::icon(QStringLiteral("clear"))), tr("Clear cheats")),
-  m_cheats(),
+  m_findCheats(QIcon::fromTheme(QStringLiteral("system-search"), Application::icon(QStringLiteral("search"))), tr("Find cheats")),
   m_actionIconSize()
 {
-    int iconSize = style()->pixelMetric(QStyle::PM_ButtonIconSize, nullptr, this);
+    const int iconSize = style()->pixelMetric(QStyle::PM_ButtonIconSize, nullptr, this);
     m_actionIconSize.setWidth(iconSize);
     m_actionIconSize.setHeight(iconSize);
 
     m_toolBar.setIconSize(m_actionIconSize);
     m_toolBar.addStretch(10);
+    m_toolBar.addAction(&m_findCheats);
     m_toolBar.addAction(&m_loadCheats);
     m_toolBar.addAction(&m_clearCheats);
     m_layout.addWidget(&m_toolBar);
@@ -56,6 +58,7 @@ CheatsView::CheatsView(QWidget * parent)
     m_layout.setSpacing(0);
 
     setLayout(&m_layout);
+    connect(&m_findCheats, &QAction::triggered, this, &CheatsView::findCheatsRequested);
     connect(&m_loadCheats, &QAction::triggered, this, &CheatsView::loadCheatsTriggered);
     connect(&m_clearCheats, &QAction::triggered, this, &CheatsView::clearCheatsTriggered);
 
@@ -149,15 +152,15 @@ void CheatsView::setActionIconSize(const QSize & size)
 
 void CheatsView::addCheat(Spectrum::PokeDefinition && poke)
 {
-    auto name = QString::fromStdString(poke.name());
-    auto uuid = QUuid::createUuid().toString();
+    const auto name = QString::fromStdString(poke.name());
+    const auto uuid = QUuid::createUuid().toString();
     m_cheats.insert({uuid.toStdString(), std::move(poke)});
     addCheatWidget(name, uuid);
 }
 
 void CheatsView::addCheat(const Spectrum::PokeDefinition & poke)
 {
-    auto uuid = QUuid::createUuid().toString();
+    const auto uuid = QUuid::createUuid().toString();
     m_cheats.insert({uuid.toStdString(), poke});
     addCheatWidget(QString::fromStdString(poke.name()), uuid);
 }

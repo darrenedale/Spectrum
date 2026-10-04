@@ -137,14 +137,13 @@ namespace Spectrum::QtUi
         }
 
     Q_SIGNALS:
-        /**
-         * Emitted when the apply action for a given cheat is triggered.
-         */
+        /** Emitted when the find cheats action is triggered. */
+        void findCheatsRequested();
+
+        /** Emitted when the apply action for a given cheat is triggered. */
         void applyCheatRequested(const Spectrum::PokeDefinition &);
 
-        /**
-         * Emitted when the undo action for a given cheat is triggered.
-         */
+        /** Emitted when the undo action for a given cheat is triggered. */
         void undoCheatRequested(const Spectrum::PokeDefinition &);
 
     protected:
@@ -212,14 +211,10 @@ namespace Spectrum::QtUi
          */
         using Cheats = std::unordered_map<std::string, PokeDefinition>;
 
-        /**
-         * Handler for when the load cheats action is triggered.
-         */
+        /** Handler for when the load cheats action is triggered. */
         void loadCheatsTriggered();
 
-        /**
-         * Handler for when the clear cheats action is triggered.
-         */
+        /** Handler for when the clear cheats action is triggered. */
         void clearCheatsTriggered();
 
         /**
@@ -230,39 +225,28 @@ namespace Spectrum::QtUi
          */
         void addCheatWidget(const QString & name, const QString & uuid);
 
-        /**
-         * The loaded cheats.
-         */
+        /** The loaded cheats. */
         Cheats m_cheats;
 
-        /**
-         * The main layout for the cheats.
-         */
+        /** The main layout for the cheats. */
         QVBoxLayout m_layout;
 
-        /**
-         * Action to load cheats.
-         */
+        /** Action to load cheats. */
         QAction m_loadCheats;
 
-        /**
-         * Action to clear all loaded cheats.
-         */
+        /** Action to clear all loaded cheats. */
         QAction m_clearCheats;
 
-        /**
-         * The toolbar for the load/clear, etc. actions.
-         */
+        /** Action to find cheats by scanning the Spectrum's memory. */
+        QAction m_findCheats;
+
+        /** The toolbar for the load/clear, etc. actions. */
         ActionBar m_toolBar;
 
-        /**
-         * The last directory from which a cheat file was loaded for this widget.
-         */
+        /** The last directory from which a cheat file was loaded for this widget. */
         QString m_lastLoadDir;
 
-        /**
-         * The size for cheat actions.
-         */
+        /** The size for cheat actions. */
         QSize m_actionIconSize;
     };
 }

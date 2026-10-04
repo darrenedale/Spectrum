@@ -1362,6 +1362,11 @@ void MainWindow::connectSignals()
         }
     });
 
+    connect(&m_pokesWidget, &CheatsView::findCheatsRequested, [this]() {
+        m_spectrumThread.pause();
+        // TODO show UI to manage PokeFinder
+    });
+
     connect(&m_pokesWidget, &CheatsView::applyCheatRequested, [this](const PokeDefinition & poke) {
         // TODO check if poke has any user-provided values
         poke.apply(*m_spectrum);
