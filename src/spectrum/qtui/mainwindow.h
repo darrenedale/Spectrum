@@ -10,16 +10,17 @@
 #include <QSpinBox>
 #include <QTimer>
 
-#include "qimagedisplaydevice.h"
-#include "debugger/debugwindow.h"
 #include "aboutwidget.h"
-#include "helpwidget.h"
-#include "spectrumdisplayimagewidget.h"
 #include "cheatsview.h"
+#include "helpwidget.h"
+#include "qimagedisplaydevice.h"
+#include "spectrumdisplayimagewidget.h"
+#include "thread.h"
+#include "debugger/debugwindow.h"
+#include "pokefinder/pokefinderwindow.h"
 #include "../devices/mouseinterface.h"
 #include "../devices/joystickinterface.h"
 #include "../devices/keyboard.h"
-#include "thread.h"
 
 #if defined(WITH_QT_GAMEPAD)
 #include "gamecontrollerhandler.h"
@@ -472,6 +473,7 @@ namespace Spectrum::QtUi
             QSlider m_emulationSpeedSlider;
             QSpinBox m_emulationSpeedSpin;
             Debugger::DebugWindow m_debugWindow;
+            PokeFinder::PokeFinderWindow m_pokeFinderWindow;
             std::unique_ptr<AboutWidget> m_aboutWidget;
             std::unique_ptr<HelpWidget> m_helpWidget;
 

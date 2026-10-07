@@ -11,6 +11,9 @@
  * TODO review the memory access code now that we're using the Memory abstraction rather than a raw array of bytes
  * TODO there is definitely an issue with stack handling, this is what is causing chuckie egg to fail, and is a likely
  *  candidate for any snapshot that fails with a reset back to the ROM
+ * TODO See docs/memptr.md for a bunch of instructions that update memptr. Given memptr is used by some instructions to
+ *  set some flags in the A register, it's conceivable that the lack of this handling of memptr is the root of some game
+ *  fails
  */
 #include <iomanip>
 #include <iostream>
@@ -1218,6 +1221,7 @@ int Z80::Z80::fetchExecuteCycle()
     }
 
     if (m_iff1 && m_interruptRequested) {
+        // TODO does this sometimes undo the interrupt request if the executed instruction resets IFF1?
         if (!m_delayInterruptOneInstruction) {
             // process maskable interrupt
             tStates += handleInterrupt();

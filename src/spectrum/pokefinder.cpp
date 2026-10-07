@@ -19,84 +19,98 @@
 
 #include <ranges>
 
+#include "../util/debug.h"
+
 using namespace Spectrum;
 
-PokeFinder::Addresses PokeFinder::possibleLivesAddresses(const std::optional<Word> newLives) const noexcept
+void PokeFinder::setMemory(Memory * memory) noexcept
+{
+    m_memory = memory;
+    searchForBeforeValue();
+}
+
+const PokeFinder::Addresses & PokeFinder::matchingBeforeAddresses() const noexcept
+{
+    return m_possibleAddresses;
+}
+
+PokeFinder::Addresses PokeFinder::matchingAfterAddresses(const std::optional<Word> newLives) const noexcept
 {
     const Word actualNewLives = newLives.value_or(lives() - 1);
+    Util::debugln("looking for {} in {} matching before addresses", actualNewLives, m_possibleAddresses.size());
 
     // TODO this algorithm is ripe for templating
-    return std::ranges::views::filter(
-        m_possibleLives,
+    const auto possibleAddresses = std::ranges::views::filter(
+        m_possibleAddresses,
         [actualNewLives, this](const Address address) -> bool {
+            if (address < m_memory->addressableSize() - 1) {
+                Util::debugln(
+                    "Checking word {} at {:#06x} == {}",
+                    m_memory->readWord<Word>(address),
+                    address,
+                    actualNewLives
+                );
+            }
+
+            Util::debugln(
+        "Checking byte {} at {:#06x} == {}",
+                static_cast<std::uint16_t>(m_memory->readByte(address)),
+                address,
+                actualNewLives
+            );
+
             return (
                 // if the address permits a 16-bit read, compare the word value
-                address < m_originalBytes.size() - 1
-                && actualNewLives == ::Z80::z80ToHostByteOrder(*reinterpret_cast<const Word *>(m_originalBytes.data() + address))
+                address < m_memory->addressableSize() - 1
+                && actualNewLives == m_memory->readWord<Word>(address)
             )
             // compare the byte value
-            || actualNewLives == m_originalBytes[address];
+            || actualNewLives == m_memory->readByte(address);
         }
     ) | std::ranges::to<Addresses>();
+
+    Util::debugln("found {} addresses that now have the value {}", possibleAddresses.size(), actualNewLives);
+    return possibleAddresses;
 }
 
-PokeFinder::Addresses PokeFinder::possibleScoreAddresses(const Word newScore) const noexcept
+void PokeFinder::searchForBeforeValue() noexcept
 {
-    return std::ranges::views::filter(
-        m_possibleLives,
-        [newScore, this](const Address address) -> bool {
-            return (
-                // if the address permits a 16-bit read, compare the word value
-                address < m_originalBytes.size() - 1
-                && newScore == ::Z80::z80ToHostByteOrder(*reinterpret_cast<const Word *>(m_originalBytes.data() + address))
-            )
-            // compare the byte value
-            || newScore == m_originalBytes[address];
+    m_possibleAddresses.clear();
+
+    if (!hasLives()) {
+        return;
+    }
+
+    Util::debugln("Looking for storage locations for {} lives", lives());
+
+    for (Address address = 0x0000; address < m_memory->addressableSize() - 1; ++address) {
+        if (0xff00 == address) {
+            Util::debugln(
+                "Address {:#06x} word: {}",
+                address,
+                m_memory->readWord<Word>(address)
+            );
+
+            Util::debugln(
+                "Address {:#06x} byte: {}",
+                address,
+                static_cast<std::uint16_t>(m_memory->readByte(address))
+            );
         }
-    ) | std::ranges::to<Addresses>();
-}
 
-void PokeFinder::copyMemory() noexcept
-{
-    m_memory->readBytes(0x0000, m_originalBytes.size(), m_originalBytes.data());
-}
-
-void PokeFinder::searchForLives() noexcept
-{
-    m_possibleLives.clear();
-
-    for (Address address = 0x0000; address < m_originalBytes.size() - 1; address++) {
         if (
             // compare both Word and Byte values
-            lives() == ::Z80::z80ToHostByteOrder(*reinterpret_cast<const Word *>(m_originalBytes.data() + address))
-            || lives() == m_originalBytes[address]
+            lives() == m_memory->readWord<Word>(address)
+            || lives() == static_cast<std::uint16_t>(m_memory->readByte(address))
         ) {
-            m_possibleLives.emplace_back(static_cast<Address>(address));
+            m_possibleAddresses.emplace_back(static_cast<Address>(address));
         }
     }
 
-    // doing this separately keeps the loop simpler and marginally faster
-    if (lives() == *m_originalBytes.cend()) {
-        m_possibleLives.push_back(m_originalBytes.size() - 1);
-    }
-}
-
-void PokeFinder::searchForScore() noexcept
-{
-    m_possibleScore.clear();
-
-    for (Address address = 0x0000; address < m_originalBytes.size() - 1; address++) {
-        if (
-            // compare both Word and Byte values
-            score() == ::Z80::z80ToHostByteOrder(*reinterpret_cast<const Word *>(m_originalBytes.data() + address))
-            || score() == m_originalBytes[address]
-        ) {
-            m_possibleScore.emplace_back(static_cast<Address>(address));
-        }
+    // doing the last byte separately keeps the loop simpler and marginally faster
+    if (lives() == m_memory->readByte(m_memory->addressableSize() - 1)) {
+        m_possibleAddresses.push_back(m_memory->addressableSize() - 1);
     }
 
-    // doing this separately keeps the loop simpler and marginally faster
-    if (score() == *m_originalBytes.cend()) {
-        m_possibleScore.push_back(m_originalBytes.size() - 1);
-    }
+    Util::debugln("Found {} memory locations with values matching lives {}", m_possibleAddresses.size(), lives());
 }

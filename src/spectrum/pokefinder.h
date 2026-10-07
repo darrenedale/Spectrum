@@ -46,12 +46,11 @@ namespace Spectrum
 
             explicit PokeFinder(Memory * memory)
             : m_memory(memory),
-              m_lives(0),
-              m_score(0),
+              m_beforeValue{},
               m_originalBytes{}     // not initialised with any determinate value: copyMemory() will do that immediately
-            {
-                copyMemory();
-            }
+            {}
+
+            void setMemory(Memory *) noexcept;
 
             /**
              * Set the original number of lives that the player has.
@@ -64,36 +63,32 @@ namespace Spectrum
              */
             void setLives(const Word lives) noexcept
             {
-                m_lives = lives;
-                searchForLives();
+                m_beforeValue = lives;
+                searchForBeforeValue();
             }
 
+            /** Whether lives to scan for has been set. */
             [[nodiscard]]
-            Word lives() const noexcept
+            bool hasLives() const noexcept
             {
-                return m_lives;
+                return m_beforeValue.has_value();
             }
 
             /**
-             * Set the original score that the player has.
+             * The original lives.
              *
-             * Memory locations that change from this value to the value provided to possibleScoreAddresses() will be
-             * considered possible locations for the game's score.
-             *
-             * Until you set a score, the PokeFinder won't scan for the score value, so no pokes will be found.
+             * It's a programmer error to call this if no lives have been set. Call hasLives() first if it's possible
+             * the lives have not been set.
              */
-            void setScore(Word score) noexcept
+            [[nodiscard]]
+            Word lives() const noexcept
             {
-                m_score = score;
-                searchForScore();
+                return m_beforeValue.value();
             }
 
-            /** The original score. Only used when searching for a score poke is enabled. */
+            /** The addresses where the before value is located. */
             [[nodiscard]]
-            Word score() const noexcept
-            {
-                return m_score;
-            }
+            const Addresses & matchingBeforeAddresses() const noexcept;
 
             /**
              * The possible addresses where the lives might be located.
@@ -102,28 +97,14 @@ namespace Spectrum
              * original number of lives less one is used.
              */
             [[nodiscard]]
-            Addresses possibleLivesAddresses(std::optional<Word> newLives = {}) const noexcept;
-
-            /**
-             * The possible addresses where the score might be located.
-             *
-             * @param newScore The new score that the player now has.
-             */
-            [[nodiscard]]
-            Addresses possibleScoreAddresses(Word newScore) const noexcept;
+            Addresses matchingAfterAddresses(std::optional<Word> newLives = {}) const noexcept;
 
         private:
-            void copyMemory() noexcept;
-
-            void searchForLives() noexcept;
-
-            void searchForScore() noexcept;
+            void searchForBeforeValue() noexcept;
 
             Memory * m_memory;
-            Word m_lives;
-            Word m_score;
-            Addresses m_possibleLives;
-            Addresses m_possibleScore;;
+            std::optional<Word> m_beforeValue;
+            Addresses m_possibleAddresses;
             std::array<Memory::Byte, 0x10000> m_originalBytes;
     };
 }

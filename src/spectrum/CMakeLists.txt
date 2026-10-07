@@ -146,6 +146,9 @@ add_executable(
         qtui/debugger/watchescontextmenu.cpp
         qtui/debugger/watchesmodel.cpp
         qtui/debugger/watchesview.cpp
+        qtui/pokefinder/pokefindermodel.cpp
+        qtui/pokefinder/pokefindermodel.h
+        qtui/pokefinder/pokefinderwindow.cpp
         qtui/dialogue.cpp
         qtui/help.qrc
         qtui/helpwidget.cpp
