@@ -16,6 +16,9 @@ namespace Spectrum::QtUi::PokeFinder
     : public QStandardItemModel
     {
         public:
+            static constexpr int AddressRole = Qt::UserRole + 1;
+            static constexpr int IsMatchRole = Qt::UserRole + 2;
+
             using Items = std::vector<QStandardItem*>;
 
             void setBeforeAddresses(Spectrum::PokeFinder::Word, const Spectrum::PokeFinder::Addresses &) noexcept;

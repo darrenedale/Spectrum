@@ -4,11 +4,14 @@
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QMenu>
 #include <QPushButton>
+#include <QSortFilterProxyModel>
 #include <QSpinBox>
 #include <QTreeView>
 #include <QToolBar>
 #include <QVBoxLayout>
+#include <QWidgetAction>
 
 #include "pokefinderwindow.h"
 
@@ -16,6 +19,7 @@
 
 #include "pokefindermodel.h"
 #include "../application.h"
+#include "../pokewidget.h"
 #include "../thread.h"
 #include "../../../util/assert.h"
 #include "../../../util/debug.h"
@@ -57,7 +61,11 @@ PokeFinderWindow::PokeFinderWindow(Thread * thread, QWidget * parent )
 
     auto * model = new PokeFinderModel();
     model->setHorizontalHeaderLabels({tr("Address"), tr("Before"), tr("After")});
-    m_addressList->setModel(model);
+    auto * proxyModel = new QSortFilterProxyModel();
+    proxyModel->setSourceModel(model);
+    proxyModel->sort(1, Qt::AscendingOrder);
+    m_addressList->setModel(proxyModel);
+    m_addressList->setContextMenuPolicy(Qt::CustomContextMenu);
 
     createToolbars();
     layoutWidget();
@@ -125,41 +133,68 @@ void PokeFinderWindow::layoutWidget()
     setCentralWidget(centralWidget);
 }
 
+// TODO consider refactoring some of these connections to methods
+// TODO get poke context menu to open over address list widget
 void PokeFinderWindow::connectWidgets()
 {
     connect(&m_pauseResume, &QAction::triggered, this, &PokeFinderWindow::pauseResumeTriggered);
 
     connect(m_before, &QSpinBox::valueChanged, this, [this](const int lives) {
         m_pokeFinder.setLives(static_cast<PokeFinder::Word>(lives));
-        auto * model = dynamic_cast<PokeFinderModel *>(m_addressList->model());
-        sp_assert(model != nullptr, "address list model should be PokeFinderModel, found {}", typeid(m_addressList->model()).name());
+
+        auto * proxyModel = dynamic_cast<QSortFilterProxyModel *>(m_addressList->model());
+        sp_assert(proxyModel != nullptr, "address list model should be QSortFilterProxyModel, found {}", typeid(m_addressList->model()).name());
+
+        auto * model = dynamic_cast<PokeFinderModel *>(proxyModel->sourceModel());
+        sp_assert(model != nullptr, "address list proxy model's source model should be PokeFinderModel, found {}", typeid(proxyModel->sourceModel()).name());
+
         model->setBeforeAddresses(lives, m_pokeFinder.matchingBeforeAddresses());
+        proxyModel->setFilterRegularExpression("");
         m_scanAfter->setEnabled(true);
     });
 
-    connect(m_scanBefore, &QPushButton::clicked, this, [this](const int lives) {
+    connect(m_scanBefore, &QPushButton::clicked, this, [this]() {
+        const auto lives = m_before->value();
         m_pokeFinder.setLives(static_cast<PokeFinder::Word>(lives));
-        auto * model = dynamic_cast<PokeFinderModel *>(m_addressList->model());
-        sp_assert(model != nullptr, "address list model should be PokeFinderModel, found {}", typeid(m_addressList->model()).name());
+
+        auto * proxyModel = dynamic_cast<QSortFilterProxyModel *>(m_addressList->model());
+        sp_assert(proxyModel != nullptr, "address list model should be QSortFilterProxyModel, found {}", typeid(m_addressList->model()).name());
+
+        auto * model = dynamic_cast<PokeFinderModel *>(proxyModel->sourceModel());
+        sp_assert(model != nullptr, "address list proxy model's source model should be PokeFinderModel, found {}", typeid(proxyModel->sourceModel()).name());
+
         model->setBeforeAddresses(lives, m_pokeFinder.matchingBeforeAddresses());
+        proxyModel->setFilterRegularExpression("");
         m_scanAfter->setEnabled(true);
     });
 
     connect(m_after, &QSpinBox::editingFinished, this, [this] {
-        auto * model = dynamic_cast<PokeFinderModel *>(m_addressList->model());
-        sp_assert(model != nullptr, "address list model should be PokeFinderModel, found {}", typeid(m_addressList->model()).name());
+        auto * proxyModel = dynamic_cast<QSortFilterProxyModel *>(m_addressList->model());
+        sp_assert(proxyModel != nullptr, "address list model should be QSortFilterProxyModel, found {}", typeid(m_addressList->model()).name());
+
+        auto * model = dynamic_cast<PokeFinderModel *>(proxyModel->sourceModel());
+        sp_assert(model != nullptr, "address list proxy model's source model should be PokeFinderModel, found {}", typeid(proxyModel->sourceModel()).name());
+
         const auto lives = m_after->value();
         model->setAfterAddresses(lives, m_pokeFinder.matchingAfterAddresses(lives));
         m_scanAfter->setEnabled(true);
-        // TODO sort
+
+        proxyModel->setFilterRegularExpression("\\d+");
+        proxyModel->setFilterKeyColumn(2);
     });
 
     connect(m_scanAfter, &QPushButton::clicked, this, [this]() {
-        auto * model = dynamic_cast<PokeFinderModel *>(m_addressList->model());
-        sp_assert(model != nullptr, "address list model should be PokeFinderModel, found {}", typeid(m_addressList->model()).name());
+        auto * proxyModel = dynamic_cast<QSortFilterProxyModel *>(m_addressList->model());
+        sp_assert(proxyModel != nullptr, "address list model should be QSortFilterProxyModel, found {}", typeid(m_addressList->model()).name());
+
+        auto * model = dynamic_cast<PokeFinderModel *>(proxyModel->sourceModel());
+        sp_assert(model != nullptr, "address list proxy model's source model should be PokeFinderModel, found {}", typeid(proxyModel->sourceModel()).name());
+
         const auto lives = m_after->value();
         model->setAfterAddresses(lives, m_pokeFinder.matchingAfterAddresses(lives));
-        // TODO sort
+
+        proxyModel->setFilterRegularExpression("\\d+");
+        proxyModel->setFilterKeyColumn(2);
     });
 
     connect(m_clear, &QPushButton::clicked, this, [this] {
@@ -167,6 +202,57 @@ void PokeFinderWindow::connectWidgets()
         m_after->clear();
         m_addressList->model()->removeRows(0, m_addressList->model()->rowCount());
         m_scanAfter->setEnabled(false);
+
+        auto * proxyModel = dynamic_cast<QSortFilterProxyModel *>(m_addressList->model());
+        sp_assert(proxyModel != nullptr, "address list model should be QSortFilterProxyModel, found {}", typeid(m_addressList->model()).name());
+
+        proxyModel->setFilterRegularExpression("");
+    });
+
+    connect(m_addressList, &QWidget::customContextMenuRequested, [this](const QPoint & pos) {
+        auto index = m_addressList->indexAt(pos);
+
+        if (!index.isValid()) {
+            return;
+        }
+
+        Util::debug("context menu requested on item R{}C{}", index.row(), index.column());
+        index = index.siblingAtColumn(2);
+
+        if (!m_addressList->model()->data(index, PokeFinderModel::IsMatchRole).toBool()) {
+            Util::debug("item at R{}C{} is not a match", index.row(), index.column());
+            return;
+        }
+
+        bool ok;
+        const auto address = m_addressList->model()->data(index, PokeFinderModel::AddressRole).toUInt(&ok);
+
+        if (!ok) {
+            Util::debug("AddressRole data for address list item at R{}C{} is not a valid address", index.row(), index.column());
+            return;
+        }
+
+        Util::debug("opening context menu for match address {:#06x} at R{}C{}", address, index.row(), index.column());
+        QMenu contextMenu(this);
+        auto * widget = new PokeWidget(address, m_thread->spectrum().memory()->readByte(address), this);
+        auto * widgetAction = new QWidgetAction(this);
+
+        connect(widget, &PokeWidget::pokeClicked, [this, widgetAction](const ::Z80::UnsignedWord pokeAddress, const ::Z80::UnsignedByte value) {
+            m_thread->spectrum().memory()->writeByte(pokeAddress, value);
+
+            Application::showNotification(
+                tr("Poked 0x%1 to address 0x%2.")
+                .arg(value, 2, 16, '0')
+                .arg(pokeAddress, 4, 16, '0')
+            );
+
+            widgetAction->trigger();
+        });
+
+        widgetAction->setDefaultWidget(widget);
+        contextMenu.addSection(tr("Poke"));
+        contextMenu.addAction(widgetAction);
+        contextMenu.exec(mapTo(m_addressList, pos));
     });
 }
 

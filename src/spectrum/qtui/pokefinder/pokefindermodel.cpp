@@ -6,11 +6,6 @@
 
 using namespace Spectrum::QtUi::PokeFinder;
 
-namespace
-{
-    constexpr int AddressRole = Qt::UserRole + 1;
-}
-
 PokeFinderModel::Items PokeFinderModel::findAddressItems(const Spectrum::PokeFinder::Address address) const noexcept
 {
     Items items(rowCount());
@@ -35,6 +30,7 @@ void PokeFinderModel::setBeforeAddresses(const Spectrum::PokeFinder::Word lives,
         setItem(row, 1, new QStandardItem(QString::number(lives)));
         setItem(row, 2, new QStandardItem(""));
         setData(index(row, 2), QVariant(static_cast<qulonglong>(address)), AddressRole);
+        setData(index(row, 2), QVariant(false), IsMatchRole);
         ++row;
     }
 }
@@ -44,19 +40,29 @@ void PokeFinderModel::setAfterAddresses(const Spectrum::PokeFinder::Word lives, 
     const auto livesDisplay = QString::number(lives);
     const auto noMatchDisplay = tr("No match");
 
+    // grab an item if possible so that we only have to set the fonts once
+    const auto * item = this->item(0, 2);
+
+    if (!item) {
+        return;
+    }
+
+    auto matchItemFont = item->font();
+    auto unMatchItemFont = matchItemFont;
+    unMatchItemFont.setItalic(false);
+    unMatchItemFont.setItalic(true);
+
     for (int row = 0; row < rowCount(); ++row) {
         auto * item = this->item(row, 2);
 
         if (std::ranges::contains(addresses, item->data(AddressRole).toUInt())) {
-            auto font = item->font();
-            font.setItalic(false);
-            item->setFont(font);
+            item->setFont(matchItemFont);
             item->setText(livesDisplay);
+            setData(index(row, 2), QVariant(true), IsMatchRole);
         } else {
-            auto font = item->font();
-            font.setItalic(true);
-            item->setFont(font);
+            item->setFont(unMatchItemFont);
             item->setText(noMatchDisplay);
+            setData(index(row, 2), QVariant(false), IsMatchRole);
         }
     }
 }

@@ -83,6 +83,7 @@ void PokeFinder::searchForBeforeValue() noexcept
 
     Util::debugln("Looking for storage locations for {} lives", lives());
 
+    // TODO don't include ROM address space in search
     for (Address address = 0x0000; address < m_memory->addressableSize() - 1; ++address) {
         if (0xff00 == address) {
             Util::debugln(
