@@ -9,7 +9,7 @@
 
 using namespace Spectrum::QtUi;
 
-PokeWidget::PokeWidget(::Z80::UnsignedWord address, Z80::UnsignedByte value, QWidget * parent)
+PokeWidget::PokeWidget(const ::Z80::UnsignedWord address, const Z80::UnsignedByte value, QWidget * parent)
 : QWidget(parent),
   m_address(4),
   m_value(2),

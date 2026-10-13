@@ -44,11 +44,7 @@ namespace Spectrum
             using Byte = ::Z80::UnsignedByte;
             using Word = ::Z80::UnsignedWord;
 
-            explicit PokeFinder(Memory * memory)
-            : m_memory(memory),
-              m_beforeValue{},
-              m_originalBytes{}     // not initialised with any determinate value: copyMemory() will do that immediately
-            {}
+            explicit PokeFinder(Memory * memory);
 
             void setMemory(Memory *) noexcept;
 
@@ -61,7 +57,7 @@ namespace Spectrum
              *
              * Until you set the lives, the PokeFinder won't scan for the lives value, so no pokes will be found.
              */
-            void setLives(const Word lives) noexcept
+            void setBefore(const Word lives) noexcept
             {
                 m_beforeValue = lives;
                 searchForBeforeValue();
@@ -69,7 +65,7 @@ namespace Spectrum
 
             /** Whether lives to scan for has been set. */
             [[nodiscard]]
-            bool hasLives() const noexcept
+            bool hasBefore() const noexcept
             {
                 return m_beforeValue.has_value();
             }
@@ -81,7 +77,7 @@ namespace Spectrum
              * the lives have not been set.
              */
             [[nodiscard]]
-            Word lives() const noexcept
+            Word before() const noexcept
             {
                 return m_beforeValue.value();
             }
@@ -105,7 +101,6 @@ namespace Spectrum
             Memory * m_memory;
             std::optional<Word> m_beforeValue;
             Addresses m_possibleAddresses;
-            std::array<Memory::Byte, 0x10000> m_originalBytes;
     };
 }
 

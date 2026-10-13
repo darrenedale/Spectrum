@@ -1,29 +1,34 @@
 
 #include <print>
+#include <string>
 
+#include <QFileDialog>
 #include <QGroupBox>
 #include <QHBoxLayout>
+#include <QHeaderView>
+#include <QKeyEvent>
 #include <QLabel>
 #include <QMenu>
 #include <QPushButton>
-#include <QSortFilterProxyModel>
 #include <QSpinBox>
 #include <QTreeView>
 #include <QToolBar>
 #include <QVBoxLayout>
 #include <QWidgetAction>
 
-#include "pokefinderwindow.h"
-
-#include <QHeaderView>
-
 #include "pokefindermodel.h"
+#include "pokefindersortfiltermodel.h"
+#include "pokefinderwindow.h"
+#include "pokedetailsdialogue.h"
 #include "../application.h"
 #include "../pokewidget.h"
 #include "../thread.h"
+#include "../../pokedefinition.h"
+#include "../../io/pokfilewriter.h"
 #include "../../../util/assert.h"
 #include "../../../util/debug.h"
 
+using namespace std::string_literals;
 using namespace Spectrum::QtUi::PokeFinder;
 
 PokeFinderWindow::PokeFinderWindow(QWidget * parent )
@@ -34,47 +39,62 @@ PokeFinderWindow::PokeFinderWindow(Thread * thread, QWidget * parent )
 : QMainWindow(parent),
   m_thread(thread),
   m_pauseResume(QIcon::fromTheme(QStringLiteral("media-playback-start"), Application::icon(QStringLiteral("resume"))), tr("Resume")),
+  m_excludeRom(QIcon::fromTheme(QStringLiteral("lock"), Application::icon(QStringLiteral("lock"))), tr("Don't search ROM")),
+  m_hideMismatches(QIcon::fromTheme(QStringLiteral("filter"), Application::icon(QStringLiteral("filter"))),tr("Keep mismatches visible")),
   m_before(new QSpinBox()),
   m_scanBefore(new QPushButton(QIcon::fromTheme(QStringLiteral("view-refresh")), "")),
   m_after(new QSpinBox()),
   m_scanAfter(new QPushButton(QIcon::fromTheme(QStringLiteral("view-refresh")), "")),
   m_addressList(new QTreeView()),
-  m_clear(new QPushButton(QIcon(QStringLiteral("edit-clear-list")), tr("Clear"))),
+  m_clear(new QPushButton(QIcon::fromTheme(QStringLiteral("edit-clear-all"), Application::icon(QStringLiteral("clear"))), tr("Clear"))),
   m_pokeFinder(thread->spectrum().memory())
 {
     setWindowTitle(tr("Spectrum Poke Finder"));
-    
-    m_before->setMinimum(0);
+
+    m_pauseResume.setShortcuts({Qt::Key::Key_Pause, Qt::Key::Key_Escape, tr("Ctrl+P")});
+
+    m_before->setMinimum(-1);
     m_before->setMaximum(0xffff);
     m_before->setToolTip(tr("Search for all addresses in the Spectrum's memory that contain this value."));
+    m_before->setSpecialValueText(tr("None"));
 
     m_scanBefore->setToolTip("Start a new poke search by looking for all addresses in the Spectrum memory that contain this value.");
 
-    m_after->setMinimum(0);
+    m_after->setMinimum(-1);
     m_after->setMaximum(0xffff);
+    m_before->setSpecialValueText(tr("None"));
     m_before->setToolTip(tr("Search for this value in all addresses in the Spectrum's memory that were identified as containing the <i>before</i> value."));
 
     m_scanAfter->setToolTip("Search for addresses that have changed from the <i>before</i> value to this value.");
     m_scanAfter->setEnabled(false);
 
     m_clear->setToolTip(tr("Clear all search results and values and start a new search."));
+    m_clear->setShortcut(tr("Ctrl+C"));
+
+    m_excludeRom.setCheckable(true);
+    m_excludeRom.setChecked(true);
+    m_excludeRom.setToolTip(tr("Exclude addresses in the Spectrum ROM address space (0x0000 - 0x3fff) from the search results."));
+    m_hideMismatches.setCheckable(true);
+    m_hideMismatches.setChecked(true);
+    m_hideMismatches.setToolTip(tr("Filter out addresses that don't match the \"after\" value."));
 
     auto * model = new PokeFinderModel();
     model->setHorizontalHeaderLabels({tr("Address"), tr("Before"), tr("After")});
-    auto * proxyModel = new QSortFilterProxyModel();
+    auto * proxyModel = new PokeFinderSortFilterModel();
     proxyModel->setSourceModel(model);
     proxyModel->sort(1, Qt::AscendingOrder);
+    proxyModel->hideNonMatchingAddresses(true);
+    proxyModel->hideRomAddresses(true);
     m_addressList->setModel(proxyModel);
     m_addressList->setContextMenuPolicy(Qt::CustomContextMenu);
 
     createToolbars();
     layoutWidget();
-
-	connect(m_thread, &Thread::paused, this, &PokeFinderWindow::threadPaused, Qt::UniqueConnection);
-	connect(m_thread, &Thread::resumed, this, &PokeFinderWindow::threadResumed, Qt::UniqueConnection);
-	connect(m_thread, &Thread::spectrumChanged, this, &PokeFinderWindow::threadSpectrumChanged, Qt::UniqueConnection);
-
 	connectWidgets();
+
+    connect(m_thread, &Thread::paused, this, &PokeFinderWindow::threadPaused, Qt::UniqueConnection);
+    connect(m_thread, &Thread::resumed, this, &PokeFinderWindow::threadResumed, Qt::UniqueConnection);
+    connect(m_thread, &Thread::spectrumChanged, this, &PokeFinderWindow::threadSpectrumChanged, Qt::UniqueConnection);
 
 	if (m_thread->isPaused()) {
 	    threadPaused();
@@ -90,20 +110,27 @@ void PokeFinderWindow::createToolbars()
     auto * toolBar = addToolBar(tr("Poke Finder"));
     toolBar->setObjectName(QStringLiteral("pokeFinder-toolBar"));
     toolBar->addAction(&m_pauseResume);
+    toolBar->addSeparator();
+    toolBar->addAction(&m_excludeRom);
+    toolBar->addAction(&m_hideMismatches);
 }
 
 void PokeFinderWindow::layoutWidget()
 {
-	// lives
-	auto * lives = new QGroupBox(tr("Lives"));
+	auto * values = new QGroupBox(tr("Search values"));
 	auto * layout = new QHBoxLayout();
+    values->setToolTip(tr("Enter the values you want to search for while the Spectrum program is running."));
 
     auto * before = new QVBoxLayout();
-    before->addWidget(new QLabel(tr("Before")));
+    auto * label = new QLabel(tr("Before"));
+    before->addWidget(label);
+    label->setBuddy(m_before);
     auto * inputLayout = new QHBoxLayout();
     inputLayout->addWidget(m_before, 1);
     inputLayout->addWidget(m_scanBefore, 0);
     before->addLayout(inputLayout);
+    m_before->setToolTip(tr("The value to search for before the state change in the Spectrum program.\n\nTypically this will be the number of lives before you lose one.\n\nCtrl+1."));
+    label->setToolTip(m_before->toolTip());
 
     auto * after = new QVBoxLayout();
     after->addWidget(new QLabel(tr("After")));
@@ -111,20 +138,19 @@ void PokeFinderWindow::layoutWidget()
     inputLayout->addWidget(m_after, 1);
     inputLayout->addWidget(m_scanAfter, 0);
     after->addLayout(inputLayout);
+    m_after->setToolTip(tr("The value to search for after the state change in the Spectrum program.\n\nTypically this will be the number of lives after you lose one.\n\nCtrl+2"));
+    label->setToolTip(m_after->toolTip());
 
     layout->addLayout(before);
     layout->addLayout(after);
-    lives->setLayout(layout);
+    values->setLayout(layout);
 
     auto * controlBox = new QHBoxLayout();
     controlBox->addStretch(10);
     controlBox->addWidget(m_clear, 1);
 
 	auto * mainLayout = new QVBoxLayout();
-    auto * guidance = new QLabel(tr("Run the game, then pause it when you can see the number of lives. Enter the lives in the <i>before</i> widget, then lose a life. Enter the new lives in the <i>after</i> widget and the poke finder will try to find the memory addresses where it's stored."));
-    guidance->setWordWrap(true);
-    mainLayout->addWidget(guidance, 0);
-	mainLayout->addWidget(lives, 0);
+	mainLayout->addWidget(values, 0);
     mainLayout->addWidget(m_addressList, 1);
 	mainLayout->addLayout(controlBox, 0);
 
@@ -133,142 +159,89 @@ void PokeFinderWindow::layoutWidget()
     setCentralWidget(centralWidget);
 }
 
-// TODO consider refactoring some of these connections to methods
-// TODO get poke context menu to open over address list widget
 void PokeFinderWindow::connectWidgets()
 {
     connect(&m_pauseResume, &QAction::triggered, this, &PokeFinderWindow::pauseResumeTriggered);
 
-    connect(m_before, &QSpinBox::valueChanged, this, [this](const int lives) {
-        m_pokeFinder.setLives(static_cast<PokeFinder::Word>(lives));
+    // Re-scan the Spectrum memory for the "before" value when it changes
+    connect(m_before, &QSpinBox::valueChanged, this, &PokeFinderWindow::rescanBeforeValue);
 
-        auto * proxyModel = dynamic_cast<QSortFilterProxyModel *>(m_addressList->model());
-        sp_assert(proxyModel != nullptr, "address list model should be QSortFilterProxyModel, found {}", typeid(m_addressList->model()).name());
+    // Re-scan the matching "before" addresses the "after" value when it changes
+    connect(m_after, &QSpinBox::valueChanged, this, &PokeFinderWindow::rescanAfterValue);
 
-        auto * model = dynamic_cast<PokeFinderModel *>(proxyModel->sourceModel());
-        sp_assert(model != nullptr, "address list proxy model's source model should be PokeFinderModel, found {}", typeid(proxyModel->sourceModel()).name());
+    connect(m_before, &QSpinBox::textChanged, this, [this](const QString & valueText) {
+        if (valueText.isEmpty()) {
+            m_before->setValue(-1);
+        }
+    });
 
-        model->setBeforeAddresses(lives, m_pokeFinder.matchingBeforeAddresses());
-        proxyModel->setFilterRegularExpression("");
+    connect(m_after, &QSpinBox::textChanged, this, [this](const QString & valueText) {
+        if (valueText.isEmpty()) {
+            m_after->setValue(-1);
+        }
+    });
+
+    connect(m_scanBefore, &QAbstractButton::clicked, this, [this]() {
+        const auto beforeValue = m_before->value();
+        m_pokeFinder.setBefore(static_cast<PokeFinder::Word>(beforeValue));
+
+        addressListModel()->setBeforeAddresses(beforeValue, m_pokeFinder.matchingBeforeAddresses());
+        addressListProxyModel()->setFilterRegularExpression("");
+
         m_scanAfter->setEnabled(true);
     });
 
-    connect(m_scanBefore, &QPushButton::clicked, this, [this]() {
-        const auto lives = m_before->value();
-        m_pokeFinder.setLives(static_cast<PokeFinder::Word>(lives));
+    connect(m_scanAfter, &QAbstractButton::clicked, this, [this]() {
+        const auto afterValue = m_after->value();
+        addressListModel()->setAfterAddresses(afterValue, m_pokeFinder.matchingAfterAddresses(afterValue));
 
-        auto * proxyModel = dynamic_cast<QSortFilterProxyModel *>(m_addressList->model());
-        sp_assert(proxyModel != nullptr, "address list model should be QSortFilterProxyModel, found {}", typeid(m_addressList->model()).name());
-
-        auto * model = dynamic_cast<PokeFinderModel *>(proxyModel->sourceModel());
-        sp_assert(model != nullptr, "address list proxy model's source model should be PokeFinderModel, found {}", typeid(proxyModel->sourceModel()).name());
-
-        model->setBeforeAddresses(lives, m_pokeFinder.matchingBeforeAddresses());
-        proxyModel->setFilterRegularExpression("");
-        m_scanAfter->setEnabled(true);
-    });
-
-    connect(m_after, &QSpinBox::editingFinished, this, [this] {
-        auto * proxyModel = dynamic_cast<QSortFilterProxyModel *>(m_addressList->model());
-        sp_assert(proxyModel != nullptr, "address list model should be QSortFilterProxyModel, found {}", typeid(m_addressList->model()).name());
-
-        auto * model = dynamic_cast<PokeFinderModel *>(proxyModel->sourceModel());
-        sp_assert(model != nullptr, "address list proxy model's source model should be PokeFinderModel, found {}", typeid(proxyModel->sourceModel()).name());
-
-        const auto lives = m_after->value();
-        model->setAfterAddresses(lives, m_pokeFinder.matchingAfterAddresses(lives));
-        m_scanAfter->setEnabled(true);
-
+        auto * proxyModel = addressListProxyModel();
         proxyModel->setFilterRegularExpression("\\d+");
         proxyModel->setFilterKeyColumn(2);
     });
 
-    connect(m_scanAfter, &QPushButton::clicked, this, [this]() {
-        auto * proxyModel = dynamic_cast<QSortFilterProxyModel *>(m_addressList->model());
-        sp_assert(proxyModel != nullptr, "address list model should be QSortFilterProxyModel, found {}", typeid(m_addressList->model()).name());
+    connect(m_clear, &QAbstractButton::clicked, this, [this] {
+        m_before->setValue(-1);
+        m_after->setValue(-1);
 
-        auto * model = dynamic_cast<PokeFinderModel *>(proxyModel->sourceModel());
-        sp_assert(model != nullptr, "address list proxy model's source model should be PokeFinderModel, found {}", typeid(proxyModel->sourceModel()).name());
-
-        const auto lives = m_after->value();
-        model->setAfterAddresses(lives, m_pokeFinder.matchingAfterAddresses(lives));
-
-        proxyModel->setFilterRegularExpression("\\d+");
-        proxyModel->setFilterKeyColumn(2);
-    });
-
-    connect(m_clear, &QPushButton::clicked, this, [this] {
-        m_before->clear();
-        m_after->clear();
-        m_addressList->model()->removeRows(0, m_addressList->model()->rowCount());
+        auto * model = addressListModel();
+        model->removeRows(0, model->rowCount());
+        addressListProxyModel()->setFilterRegularExpression("");
         m_scanAfter->setEnabled(false);
-
-        auto * proxyModel = dynamic_cast<QSortFilterProxyModel *>(m_addressList->model());
-        sp_assert(proxyModel != nullptr, "address list model should be QSortFilterProxyModel, found {}", typeid(m_addressList->model()).name());
-
-        proxyModel->setFilterRegularExpression("");
     });
 
-    connect(m_addressList, &QWidget::customContextMenuRequested, [this](const QPoint & pos) {
-        auto index = m_addressList->indexAt(pos);
-
-        if (!index.isValid()) {
-            return;
-        }
-
-        Util::debug("context menu requested on item R{}C{}", index.row(), index.column());
-        index = index.siblingAtColumn(2);
-
-        if (!m_addressList->model()->data(index, PokeFinderModel::IsMatchRole).toBool()) {
-            Util::debug("item at R{}C{} is not a match", index.row(), index.column());
-            return;
-        }
-
-        bool ok;
-        const auto address = m_addressList->model()->data(index, PokeFinderModel::AddressRole).toUInt(&ok);
-
-        if (!ok) {
-            Util::debug("AddressRole data for address list item at R{}C{} is not a valid address", index.row(), index.column());
-            return;
-        }
-
-        Util::debug("opening context menu for match address {:#06x} at R{}C{}", address, index.row(), index.column());
-        QMenu contextMenu(this);
-        auto * widget = new PokeWidget(address, m_thread->spectrum().memory()->readByte(address), this);
-        auto * widgetAction = new QWidgetAction(this);
-
-        connect(widget, &PokeWidget::pokeClicked, [this, widgetAction](const ::Z80::UnsignedWord pokeAddress, const ::Z80::UnsignedByte value) {
-            m_thread->spectrum().memory()->writeByte(pokeAddress, value);
-
-            Application::showNotification(
-                tr("Poked 0x%1 to address 0x%2.")
-                .arg(value, 2, 16, '0')
-                .arg(pokeAddress, 4, 16, '0')
-            );
-
-            widgetAction->trigger();
-        });
-
-        widgetAction->setDefaultWidget(widget);
-        contextMenu.addSection(tr("Poke"));
-        contextMenu.addAction(widgetAction);
-        contextMenu.exec(mapTo(m_addressList, pos));
-    });
+    connect(m_addressList, &QWidget::customContextMenuRequested, this, &PokeFinderWindow::showAddressListContextMenu);
+    connect(&m_hideMismatches, &QAction::triggered, addressListProxyModel(), &PokeFinderSortFilterModel::hideNonMatchingAddresses);
+    connect(&m_excludeRom, &QAction::triggered, addressListProxyModel(), &PokeFinderSortFilterModel::hideRomAddresses);
 }
 
-void PokeFinderWindow::closeEvent(QCloseEvent * ev)
+void PokeFinderWindow::closeEvent(QCloseEvent * ev) noexcept
 {
     // TODO settings
 
     QMainWindow::closeEvent(ev);
 }
 
-void PokeFinderWindow::showEvent(QShowEvent * event)
+void PokeFinderWindow::showEvent(QShowEvent * event) noexcept
 {
     // TODO settings
 
     setGeometry({geometry().x(), geometry().y(), 500, 400});
+    m_before->clear();
+    m_after->clear();
+    m_before->setFocus();
     QMainWindow::showEvent(event);
+}
+
+void PokeFinderWindow::keyReleaseEvent(QKeyEvent * event) noexcept
+{
+    if (event->key() == Qt::Key_1 && event->modifiers() | Qt::ControlModifier) {
+        m_before->setFocus();
+        m_before->selectAll();
+    } else if (event->key() == Qt::Key_2 && event->modifiers() | Qt::ControlModifier) {
+        m_after->setFocus();
+        m_after->selectAll();
+    }
 }
 
 void PokeFinderWindow::pauseResumeTriggered()
@@ -300,4 +273,173 @@ void PokeFinderWindow::threadSpectrumChanged()
 {
     const auto & spectrum = m_thread->spectrum();
     m_pokeFinder.setMemory(spectrum.memory());
+}
+
+PokeFinderSortFilterModel * PokeFinderWindow::addressListProxyModel() const noexcept
+{
+    auto * model =  dynamic_cast<PokeFinderSortFilterModel *>(m_addressList->model());
+    sp_assert(nullptr != model, "address list model should be PokeFinderSortFilterModel, found {}", typeid(m_addressList->model()).name());
+    return model;
+}
+
+PokeFinderModel * PokeFinderWindow::addressListModel() const noexcept
+{
+    auto * model = dynamic_cast<PokeFinderModel *>(addressListProxyModel()->sourceModel());
+    sp_assert(nullptr != model, "address list proxy model's source model should be PokeFinderModel, found {}", typeid(m_addressList->model()).name());
+    return model;
+}
+
+void PokeFinderWindow::rescanBeforeValue(const int value) noexcept
+{
+    Util::debug("before widget value changed");
+
+    auto * model = addressListModel();
+
+    if (-1 == value) {
+        model->removeRows(0, model->rowCount());
+        return;
+    }
+
+    const int lives = m_before->value();
+    m_pokeFinder.setBefore(static_cast<PokeFinder::Word>(lives));
+
+    model->setBeforeAddresses(lives, m_pokeFinder.matchingBeforeAddresses());
+    addressListProxyModel()->setFilterRegularExpression("");
+    m_scanAfter->setEnabled(true);
+}
+
+void PokeFinderWindow::rescanAfterValue(const int value) noexcept
+{
+    Util::debug("after widget value edited");
+
+    auto * proxyModel = addressListProxyModel();
+    auto * model = addressListModel();
+
+    if (-1 == value) {
+        model->setBeforeAddresses(m_before->value(), m_pokeFinder.matchingBeforeAddresses());
+        return;
+    }
+
+    const auto after = m_after->value();
+    model->setAfterAddresses(after, m_pokeFinder.matchingAfterAddresses(after));
+    m_scanAfter->setEnabled(true);
+
+    proxyModel->setFilterRegularExpression("\\d+");
+    proxyModel->setFilterKeyColumn(2);
+}
+
+void PokeFinderWindow::showAddressListContextMenu(const QPoint & pos) noexcept
+{
+    auto index = m_addressList->indexAt(pos);
+
+    if (!index.isValid()) {
+        return;
+    }
+
+    index = index.siblingAtColumn(2);
+
+    if (!m_addressList->model()->data(index, PokeFinderModel::IsMatchRole).toBool()) {
+        Util::debug("item at R{}C{} is not a match", index.row(), index.column());
+        return;
+    }
+
+    bool ok;
+    const auto address = m_addressList->model()->data(index, PokeFinderModel::AddressRole).toUInt(&ok);
+
+    if (!ok) {
+        Util::debug("AddressRole data for address list item at R{}C{} is not a valid address", index.row(), index.column());
+        return;
+    }
+
+    const auto value = m_addressList->model()->data(index, PokeFinderModel::ValueRole).toUInt(&ok);
+
+    if (!ok) {
+        Util::debugln("ValueRole data for address list item at R{}C{} is not a valid value", index.row(), index.column());
+        return;
+    }
+
+    Util::debugln("opening context menu for match address {:#06x} at R{}C{}", address, index.row(), index.column());
+
+    // build the context menu
+    QMenu contextMenu(m_addressList);
+    contextMenu.addSection(tr("Poke"));
+
+    auto * pokeWidget = new PokeWidget(address, m_thread->spectrum().memory()->readByte(address), this);
+    auto * widgetAction = new QWidgetAction(this);
+    pokeWidget->focusValue();
+    widgetAction->setDefaultWidget(pokeWidget);
+    contextMenu.addAction(widgetAction);
+
+    auto * pokeFileAction = new QAction(tr("Create .pok file"));
+    contextMenu.addAction(pokeFileAction);
+
+    connect(pokeWidget, &PokeWidget::pokeClicked, [this](const ::Z80::UnsignedWord pokeAddress, const ::Z80::UnsignedByte value) {
+        m_thread->spectrum().memory()->writeByte(pokeAddress, value);
+
+        Application::showNotification(
+            tr("Poked 0x%1 to address 0x%2.")
+            .arg(value, 2, 16, '0')
+            .arg(pokeAddress, 4, 16, '0')
+        );
+    });
+
+    connect(pokeFileAction, &QAction::triggered, [this, address, value]() {
+        Util::debugln("create .pok file triggered");
+        showCreatePokeFileDialogue(address, value);
+    });
+
+    contextMenu.exec(QCursor::pos());
+}
+
+void PokeFinderWindow::showCreatePokeFileDialogue(const ::Z80::UnsignedWord address, const ::Z80::UnsignedByte value) noexcept
+{
+    auto pokeDialogue = PokeDetailsDialogue(this);
+    pokeDialogue.setAddress(address);
+    pokeDialogue.setValue(value);
+
+    if (QDialog::Accepted != pokeDialogue.exec()) {
+        return;
+    }
+
+    const auto filename = pokeDialogue.filename().toStdString();
+
+    if (filename.empty()) {
+        return;
+    }
+
+    auto pokeName = pokeDialogue.name().toStdString();
+    const auto pokeValue = pokeDialogue.value();
+
+    if (pokeName.empty()) {
+        const auto start = filename.find_last_of('/');
+        auto end = filename.find_last_of('.');
+
+        if (std::string::npos == start) {
+            end = 0;
+        }
+
+        if (std::string::npos == end) {
+            end = filename.length();
+        }
+
+        pokeName = filename.substr(start + 1, end - start - 1);
+
+        if (pokeName.empty()) {
+            pokeName = "Rainbow-generated poke"s;
+        }
+    }
+
+    PokeDefinition pokeDefinition;
+    pokeDefinition.setName(pokeName);
+
+    pokeDefinition.addPoke(PokeDefinition::Poke{
+        .address = static_cast<::Z80::UnsignedWord>(address),
+        .bytes = {pokeValue},
+    });
+
+    auto writer = Io::PokFileWriter(filename);
+    writer.addPoke(pokeDefinition);
+    writer.close();
+
+    Application::showNotification(tr("Created .pok file \"%1\".").arg(filename));
 }

@@ -97,6 +97,7 @@ add_executable(
         devices/pagingdeviceplus2a.cpp
 
         io/pokfilereader.cpp
+        io/pokfilewriter.cpp
         io/snapshotformatguesser.h
         io/snapshotformatmatcher.h
         io/snapshotreader.cpp
@@ -147,8 +148,9 @@ add_executable(
         qtui/debugger/watchesmodel.cpp
         qtui/debugger/watchesview.cpp
         qtui/pokefinder/pokefindermodel.cpp
-        qtui/pokefinder/pokefindermodel.h
+        qtui/pokefinder/pokefindersortfiltermodel.cpp
         qtui/pokefinder/pokefinderwindow.cpp
+        qtui/pokefinder/pokedetailsdialogue.cpp
         qtui/dialogue.cpp
         qtui/help.qrc
         qtui/helpwidget.cpp
@@ -189,6 +191,8 @@ add_executable(
 
         ${SPECTRUM_QT_GAMEPAD_SOURCES}
         ${EXECUTION_HISTORY_SOURCES}
+        qtui/filenamewidget.cpp
+        qtui/filenamewidget.h
 )
 
 target_link_libraries(spectrum ${SPECTRUM_QT_LIBS})

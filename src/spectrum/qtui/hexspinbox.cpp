@@ -12,7 +12,7 @@
 #include "hexspinbox.h"
 #include "../../util/assert.h"
 
-using namespace Spectrum;
+using namespace Spectrum::QtUi;
 
 namespace
 {

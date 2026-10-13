@@ -430,9 +430,7 @@ namespace Spectrum::QtUi
             QAction m_load;
             QAction m_save;
 
-            /**
-             * The submenu in the File menu containing the list of recently-loaded snapshots.
-             */
+            /** The submenu in the File menu containing the list of recently-loaded snapshots. */
             QMenu m_recentSnapshots;
 
             QAction m_pauseResume;

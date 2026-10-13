@@ -6,6 +6,7 @@
 #define SPECTRUM_QTUI_POKEWIDGET_H
 
 #include <QToolButton>
+
 #include "hexspinbox.h"
 #include "../../z80/types.h"
 
@@ -22,134 +23,125 @@ namespace Spectrum::QtUi
     {
         Q_OBJECT
 
-    public:
-        /**
-         * Initialise a new PokeWidget with a target address.
-         *
-         * @param address The address to poke into.
-         */
-        PokeWidget(::Z80::UnsignedWord address, QWidget *);
+        public:
+            /**
+             * Initialise a new PokeWidget with a target address.
+             *
+             * @param address The address to poke into.
+             */
+            PokeWidget(::Z80::UnsignedWord address, QWidget *);
 
-        /**
-         * Initialise a new PokeWidget with a value to poke.
-         *
-         * @param value The value to poke.
-         */
-        explicit PokeWidget(::Z80::UnsignedByte value, QWidget * = nullptr);
+            /**
+             * Initialise a new PokeWidget with a value to poke.
+             *
+             * @param value The value to poke.
+             */
+            explicit PokeWidget(::Z80::UnsignedByte value, QWidget * = nullptr);
 
-        /**
-         * (Default) initialise a new PokeWidget with an optional address and value to poke.
-         *
-         * @param address The address to poke into. Defaults to 0x0000.
-         * @param value The value to poke. Defaults to 0x00.
-         */
-        explicit PokeWidget(::Z80::UnsignedWord address = 0x0000, ::Z80::UnsignedByte value = 0x00, QWidget * = nullptr);
+            /**
+             * (Default) initialise a new PokeWidget with an optional address and value to poke.
+             *
+             * @param address The address to poke into. Defaults to 0x0000.
+             * @param value The value to poke. Defaults to 0x00.
+             */
+            explicit PokeWidget(::Z80::UnsignedWord address = 0x0000, ::Z80::UnsignedByte value = 0x00, QWidget * = nullptr);
 
-        /**
-         * Poke widgets cannot be copy constructed.
-         */
-        PokeWidget(const PokeWidget &) = delete;
+            /** Poke widgets cannot be copy constructed. */
+            PokeWidget(const PokeWidget &) = delete;
 
-        /**
-         * Poke widgets cannot be move constructed.
-         */
-        PokeWidget(PokeWidget &&) = delete;
+            /** Poke widgets cannot be move constructed. */
+            PokeWidget(PokeWidget &&) = delete;
 
-        /**
-         * Poke widgets cannot be copy assigned.
-         */
-        void operator=(const PokeWidget &) = delete;
+            /** Poke widgets cannot be copy assigned. */
+            void operator=(const PokeWidget &) = delete;
 
-        /**
-         * Poke widgets cannot be move assigned.
-         */
-        void operator=(PokeWidget &&) = delete;
+            /** Poke widgets cannot be move assigned. */
+            void operator=(PokeWidget &&) = delete;
 
-        /**
-         * Destructor.
-         */
-        ~PokeWidget() override;
+            ~PokeWidget() override;
 
-        /**
-         * The address to poke into.
-         *
-         * @return The address.
-         */
-        [[nodiscard]] ::Z80::UnsignedWord address() const
-        {
-            return m_address.value();
-        }
+            /**
+             * The address to poke into.
+             *
+             * @return The address.
+             */
+            [[nodiscard]] ::Z80::UnsignedWord address() const
+            {
+                return m_address.value();
+            }
 
-        /**
-         * The value to poke.
-         *
-         * @return The value.
-         */
-        [[nodiscard]] ::Z80::UnsignedByte value() const
-        {
-            return m_value.value();
-        }
+            /**
+             * The value to poke.
+             *
+             * @return The value.
+             */
+            [[nodiscard]] ::Z80::UnsignedByte value() const
+            {
+                return m_value.value();
+            }
 
-        /**
-         * Set the address to poke into.
-         *
-         * @param address The address.
-         */
-        void setAddress(::Z80::UnsignedWord address)
-        {
-            m_address.setValue(address);
-        }
+            /**
+             * Set the address to poke into.
+             *
+             * @param address The address.
+             */
+            void setAddress(const ::Z80::UnsignedWord address)
+            {
+                m_address.setValue(address);
+            }
 
-        /**
-         * Set the value to poke.
-         *
-         * @param value The value.
-         */
-        void setValue(::Z80::UnsignedByte value)
-        {
-            m_value.setValue(value);
-        }
+            /**
+             * Set the value to poke.
+             *
+             * @param value The value.
+             */
+            void setValue(const ::Z80::UnsignedByte value)
+            {
+                m_value.setValue(value);
+            }
 
-        /**
-         * Place the focus on the address widget.
-         */
-        void focusAddress()
-        {
-            m_address.setFocus();
-        }
+            /** Place the focus on the address widget. */
+            void focusAddress()
+            {
+                m_address.setFocus();
+            }
 
-        /**
-         * Place the focus on the value widget.
-         */
-        void focusValue()
-        {
-            m_value.setFocus();
-        }
+            /** Place the focus on the value widget. */
+            void focusValue()
+            {
+                m_value.setFocus();
+            }
 
-    Q_SIGNALS:
-        /**
-         * Emitted when the button to actually action the poke is clicked.
-         *
-         * @param address The address to poke into.
-         * @param value The value to poke.
-         */
-        void pokeClicked(::Z80::UnsignedWord address, ::Z80::UnsignedByte value);
+            /** Select the whole value in the address widget. */
+            void selectAddress()
+            {
+                m_address.selectAll();
+            }
 
-    private:
-        /**
-         * The address widget.
-         */
-        HexSpinBox m_address;
+            /** Select the whole value in the value widget. */
+            void selectValue()
+            {
+                m_value.selectAll();
+            }
 
-        /**
-         * The value widget.
-         */
-        HexSpinBox m_value;
+        Q_SIGNALS:
+            /**
+             * Emitted when the button to actually action the poke is clicked.
+             *
+             * @param address The address to poke into.
+             * @param value The value to poke.
+             */
+            void pokeClicked(::Z80::UnsignedWord address, ::Z80::UnsignedByte value);
 
-        /**
-         * The "do the poke" button.
-         */
-        QToolButton m_poke;
+        private:
+            /** The address widget. */
+            HexSpinBox m_address;
+
+            /** The value widget. */
+            HexSpinBox m_value;
+
+            /** The "do the poke" button. */
+            QToolButton m_poke;
     };
 }
 

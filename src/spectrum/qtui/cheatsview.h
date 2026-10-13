@@ -121,6 +121,16 @@ namespace Spectrum::QtUi
          *
          * @return The action.
          */
+        QAction * findCheatsAction()
+        {
+            return &m_findCheats;
+        }
+
+        /**
+         * Fetch the action to load cheats.
+         *
+         * @return The action.
+         */
         QAction * loadCheatsAction()
         {
             return &m_loadCheats;

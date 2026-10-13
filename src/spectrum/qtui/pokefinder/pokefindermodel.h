@@ -5,6 +5,7 @@
 #ifndef SPECTRUM_QTUI_POKEFINDERMODEL_H
 #define SPECTRUM_QTUI_POKEFINDERMODEL_H
 
+#include <QSortFilterProxyModel>
 #include <QStandardItemModel>
 
 #include "../../pokefinder.h"
@@ -15,18 +16,15 @@ namespace Spectrum::QtUi::PokeFinder
     class PokeFinderModel
     : public QStandardItemModel
     {
+        Q_OBJECT
+
         public:
             static constexpr int AddressRole = Qt::UserRole + 1;
-            static constexpr int IsMatchRole = Qt::UserRole + 2;
-
-            using Items = std::vector<QStandardItem*>;
+            static constexpr int ValueRole = Qt::UserRole + 2;
+            static constexpr int IsMatchRole = Qt::UserRole + 3;
 
             void setBeforeAddresses(Spectrum::PokeFinder::Word, const Spectrum::PokeFinder::Addresses &) noexcept;
             void setAfterAddresses(Spectrum::PokeFinder::Word, const Spectrum::PokeFinder::Addresses &) noexcept;
-
-        private:
-            [[nodiscard]]
-            Items findAddressItems(Spectrum::PokeFinder::Address address) const noexcept;
     };
 } // QtUi::Spectrum
 

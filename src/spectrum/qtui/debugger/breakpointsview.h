@@ -38,7 +38,7 @@ namespace Spectrum::QtUi::Debugger
         /**
          * Set the model that provides data for the view.
          */
-        void setModel(BreakpointsModel * model);
+        void setModel(BreakpointsModel * newModel);
 
     private:
         /**

@@ -23,6 +23,12 @@
 
 using namespace Spectrum;
 
+PokeFinder::PokeFinder(Memory* memory)
+: m_memory(memory)
+{
+    m_possibleAddresses.reserve(2048);
+}
+
 void PokeFinder::setMemory(Memory * memory) noexcept
 {
     m_memory = memory;
@@ -36,29 +42,12 @@ const PokeFinder::Addresses & PokeFinder::matchingBeforeAddresses() const noexce
 
 PokeFinder::Addresses PokeFinder::matchingAfterAddresses(const std::optional<Word> newLives) const noexcept
 {
-    const Word actualNewLives = newLives.value_or(lives() - 1);
+    const Word actualNewLives = newLives.value_or(before() - 1);
     Util::debugln("looking for {} in {} matching before addresses", actualNewLives, m_possibleAddresses.size());
 
-    // TODO this algorithm is ripe for templating
     const auto possibleAddresses = std::ranges::views::filter(
         m_possibleAddresses,
         [actualNewLives, this](const Address address) -> bool {
-            if (address < m_memory->addressableSize() - 1) {
-                Util::debugln(
-                    "Checking word {} at {:#06x} == {}",
-                    m_memory->readWord<Word>(address),
-                    address,
-                    actualNewLives
-                );
-            }
-
-            Util::debugln(
-        "Checking byte {} at {:#06x} == {}",
-                static_cast<std::uint16_t>(m_memory->readByte(address)),
-                address,
-                actualNewLives
-            );
-
             return (
                 // if the address permits a 16-bit read, compare the word value
                 address < m_memory->addressableSize() - 1
@@ -77,41 +66,27 @@ void PokeFinder::searchForBeforeValue() noexcept
 {
     m_possibleAddresses.clear();
 
-    if (!hasLives()) {
+    if (!hasBefore()) {
         return;
     }
 
-    Util::debugln("Looking for storage locations for {} lives", lives());
+    Util::debugln("looking for addresses containing {}", before());
+    const auto value = before();
 
-    // TODO don't include ROM address space in search
     for (Address address = 0x0000; address < m_memory->addressableSize() - 1; ++address) {
-        if (0xff00 == address) {
-            Util::debugln(
-                "Address {:#06x} word: {}",
-                address,
-                m_memory->readWord<Word>(address)
-            );
-
-            Util::debugln(
-                "Address {:#06x} byte: {}",
-                address,
-                static_cast<std::uint16_t>(m_memory->readByte(address))
-            );
-        }
-
         if (
             // compare both Word and Byte values
-            lives() == m_memory->readWord<Word>(address)
-            || lives() == static_cast<std::uint16_t>(m_memory->readByte(address))
+            value == m_memory->readWord<Word>(address)
+            || value == static_cast<std::uint16_t>(m_memory->readByte(address))
         ) {
             m_possibleAddresses.emplace_back(static_cast<Address>(address));
         }
     }
 
     // doing the last byte separately keeps the loop simpler and marginally faster
-    if (lives() == m_memory->readByte(m_memory->addressableSize() - 1)) {
+    if (value == m_memory->readByte(m_memory->addressableSize() - 1)) {
         m_possibleAddresses.push_back(m_memory->addressableSize() - 1);
     }
 
-    Util::debugln("Found {} memory locations with values matching lives {}", m_possibleAddresses.size(), lives());
+    Util::debugln("Found {} addresses with value {}", m_possibleAddresses.size(), value);
 }

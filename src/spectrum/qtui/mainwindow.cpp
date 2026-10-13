@@ -1107,6 +1107,7 @@ void MainWindow::createSpectrumMenu()
 
     menu->addAction(&m_kempstonMouse);
     menu->addSeparator();
+    menu->addAction(m_pokesWidget.findCheatsAction());
     menu->addAction(m_pokesWidget.loadCheatsAction());
     menu->addAction(m_pokesWidget.clearCheatsAction());
 }

@@ -20,9 +20,10 @@ namespace Spectrum::QtUi::PokeFinder
 {
     using Spectrum::PokeFinder;
 
-    /**
-     * A poke finder window for a running Spectrum.
-     */
+    class PokeFinderSortFilterModel;
+    class PokeFinderModel;
+
+    /** A poke finder window for a running Spectrum. */
 	class PokeFinderWindow
 	: public QMainWindow
 	{
@@ -48,17 +49,22 @@ namespace Spectrum::QtUi::PokeFinder
             ~PokeFinderWindow() override;
 
 	    protected:
-	        /**
-	         * Handle the show event on the poke finder window.
-	         */
-	        void showEvent(QShowEvent *) override;
+	        /** Handle the show event on the poke finder window. */
+	        void showEvent(QShowEvent *) noexcept override;
 
-            /**
-             * Handle the close event on the poke finder window.
-             */
-	        void closeEvent(QCloseEvent *) override;
+            /** Handle the close event on the poke finder window. */
+	        void closeEvent(QCloseEvent *) noexcept override;
+
+            /** Handle the close event on the poke finder window. */
+	        void keyReleaseEvent(QKeyEvent *) noexcept override;
 
         private:
+
+	        void rescanBeforeValue(int) noexcept;
+	        void rescanAfterValue(int) noexcept;
+
+	        void showAddressListContextMenu(const QPoint &) noexcept;
+	        void showCreatePokeFileDialogue(::Z80::UnsignedWord address, ::Z80::UnsignedByte) noexcept;
 
 	        /**
 	         * Helper to create the toolbars for the window.
@@ -114,11 +120,19 @@ namespace Spectrum::QtUi::PokeFinder
              */
             void threadSpectrumChanged();
 
-            /** The thread managing the Spectrum being monitored. */
+	        [[nodiscard]]
+            PokeFinderModel * addressListModel() const noexcept;
+
+	        [[nodiscard]]
+            PokeFinderSortFilterModel * addressListProxyModel() const noexcept;
+
+	        /** The thread managing the Spectrum being monitored. */
             Thread * m_thread;
 
 	        /** Action enabling the user to pause/resume the Spectrum. */
             QAction m_pauseResume;
+	        QAction m_excludeRom;
+	        QAction m_hideMismatches;;
 
 	        QSpinBox * m_before;
 	        QPushButton * m_scanBefore;

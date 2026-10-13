@@ -57,6 +57,8 @@ CheatsView::CheatsView(QWidget * parent)
     m_layout.addStretch(10);
     m_layout.setSpacing(0);
 
+    m_findCheats.setShortcut(tr("Ctrl+F"));
+
     setLayout(&m_layout);
     connect(&m_findCheats, &QAction::triggered, this, &CheatsView::findCheatsRequested);
     connect(&m_loadCheats, &QAction::triggered, this, &CheatsView::loadCheatsTriggered);
