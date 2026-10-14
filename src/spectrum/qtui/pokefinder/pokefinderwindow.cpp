@@ -19,6 +19,9 @@
 #include "pokefindermodel.h"
 #include "pokefindersortfiltermodel.h"
 #include "pokefinderwindow.h"
+
+#include <QSettings>
+
 #include "pokedetailsdialogue.h"
 #include "../application.h"
 #include "../pokewidget.h"
@@ -217,16 +220,13 @@ void PokeFinderWindow::connectWidgets()
 
 void PokeFinderWindow::closeEvent(QCloseEvent * ev) noexcept
 {
-    // TODO settings
-
+    saveSettings();
     QMainWindow::closeEvent(ev);
 }
 
 void PokeFinderWindow::showEvent(QShowEvent * event) noexcept
 {
-    // TODO settings
-
-    setGeometry({geometry().x(), geometry().y(), 500, 400});
+    loadSettings();
     m_before->clear();
     m_after->clear();
     m_before->setFocus();
@@ -253,6 +253,63 @@ void PokeFinderWindow::pauseResumeTriggered()
     } else {
         m_thread->pause();
     }
+}
+
+void PokeFinderWindow::loadSettings() noexcept
+{
+    QSettings settings;
+
+    // We prefix the group name rather than nesting groups because we save as .ini files, and .ini files don't support group
+    // nesting, so Qt prefixes each setting with the full sub-group path using \ as a separator. It doesn't matter much here
+    // because only Qt will read these main window settings, but with core emulator settings and potential other UIs we want
+    // the config file to be parseable without having to handle the Qt-isms
+#if defined(USE_QT_5)
+    settings.beginGroup(QStringLiteral("qt5-pokefinderwindow"));
+#else
+    settings.beginGroup(QStringLiteral("qt6-pokefinderwindow"));
+#endif
+
+    Util::debug("PokeFinderWindow::loadSettings()");
+    if (settings.contains(QStringLiteral("geometry"))) {
+        if (const auto rect = settings.value(QStringLiteral("geometry")).toRect(); rect.isValid()) {
+            setGeometry(rect);
+        }
+    }
+
+    if (settings.contains(QStringLiteral("exclude-rom"))) {
+        if (const auto setting = settings.value(QStringLiteral("exclude-rom")); setting.canConvert<bool>()) {
+            m_excludeRom.setChecked(setting.toBool());
+        }
+    }
+
+    if (settings.contains(QStringLiteral("hide-mismatches"))) {
+        if (const auto setting = settings.value(QStringLiteral("hide-mismatches")); setting.canConvert<bool>()) {
+            m_hideMismatches.setChecked(setting.toBool());
+        }
+    }
+
+    settings.endGroup();
+}
+
+void PokeFinderWindow::saveSettings() const noexcept
+{
+    QSettings settings;
+
+    // We prefix the group name rather than nesting groups because we save as .ini files, and .ini files don't support group
+    // nesting, so Qt prefixes each setting with the full sub-group path using \ as a separator. It doesn't matter much here
+    // because only Qt will read these main window settings, but with core emulator settings and potential other UIs we want
+    // the config file to be parseable without having to handle the Qt-isms
+#if defined(USE_QT_5)
+    settings.beginGroup(QStringLiteral("qt5-pokefinderwindow"));
+#else
+    settings.beginGroup(QStringLiteral("qt6-pokefinderwindow"));
+#endif
+
+    Util::debug("PokeFinderWindow::loadSettings()");
+    settings.setValue(QStringLiteral("geometry"), geometry());
+    settings.setValue(QStringLiteral("exclude-rom"), m_excludeRom.isChecked());
+    settings.setValue(QStringLiteral("hide-mismatches"), m_hideMismatches.isChecked());
+    settings.endGroup();
 }
 
 void PokeFinderWindow::threadPaused()

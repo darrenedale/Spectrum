@@ -58,6 +58,12 @@ namespace Spectrum::QtUi::PokeFinder
             /** Handle the close event on the poke finder window. */
 	        void keyReleaseEvent(QKeyEvent *) noexcept override;
 
+	        /** Load the settings for the window from the application settings file. */
+	        void loadSettings() noexcept;
+
+	        /** Save the settings for the window to the application settings file. */
+	        void saveSettings() const noexcept;
+
         private:
 
 	        void rescanBeforeValue(int) noexcept;
