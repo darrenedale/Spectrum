@@ -68,7 +68,8 @@ Z80Interpreter::Z80Interpreter(std::unique_ptr<Z80::Z80> cpu)
 : m_cpu(std::move(cpu)),
   m_showOpcodes(false),
   m_showInstructionCost(false),
-  m_autoShowFlags(false)
+  m_autoShowFlags(false),
+  m_autoShowRegisters(false)
 {
 }
 
@@ -163,7 +164,7 @@ Z80Interpreter::Tokens Z80Interpreter::tokenise(const std::string & input) noexc
 
 bool Z80Interpreter::handleInput(const std::string & input) noexcept
 {
-    Tokens tokens = tokenise(input);
+    const Tokens tokens = tokenise(input);
 
     if (tokens.empty()) {
         return true;
@@ -183,7 +184,7 @@ bool Z80Interpreter::handleInput(const std::string & input) noexcept
     return true;
 }
 
-void Z80Interpreter::runOpcode(const Opcode & opcode) noexcept
+void Z80Interpreter::runOpcode(const Opcode & opcode) const noexcept
 {
     if (!hasCpu()) {
         std::cout << "no cpu available to execute instruction\n";
@@ -199,22 +200,26 @@ void Z80Interpreter::runOpcode(const Opcode & opcode) noexcept
         std::cout << "opcode:";
         std::cout << std::hex << std::setw(2) << std::setfill('0');
 
-        for(UnsignedByte byte : opcode) {
+        for(const UnsignedByte byte : opcode) {
             std::cout << " 0x" << static_cast<std::uint16_t>(byte);
         }
 
         std::cout << "\n";
     }
 
-    auto cost = m_cpu->execute(opcode.data(), false);
+    auto [tStates, size] = m_cpu->execute(opcode.data(), false);
 
     if (m_showInstructionCost) {
-        std::cout << "instruction consumed " << cost.tStates << " CPU cycles and would occupy " << cost.size
+        std::cout << "instruction consumed " << tStates << " CPU cycles and would occupy " << size
                   << " byte(s) of RAM.\n";
     }
 
     if (m_autoShowFlags) {
         dotDumpFlags();
+    }
+
+    if (m_autoShowRegisters) {
+        dotDumpRegisters();
     }
 }
 
@@ -248,6 +253,8 @@ void Z80Interpreter::handleDotCommand(const Tokens & tokens) noexcept
         dotDumpFlags();
     } else if (tokens.front() == ".autoflags" || tokens.front() == ".autoshowflags") {
         dotAutoShowFlags(tokens);
+    } else if (tokens.front() == ".clearflags") {
+        dotClearFlags();
     } else {
         std::cout << "Unrecognised command \"" << tokens.front() << "\": try \".help\".\n";
     }
@@ -354,19 +361,36 @@ void Z80Interpreter::dotAutoShowFlags(const Tokens & tokens) noexcept
     }
 }
 
+void Z80Interpreter::dotAutoShowRegisters(const Tokens & tokens) noexcept
+{
+    if (1 == tokens.size() || std::ranges::any_of(AffirmativeResponses, [token = std::move(upper_cased(tokens[1]))] (const auto & affirmativeResponse) -> bool {
+        return token == affirmativeResponse;
+    })) {
+        m_autoShowRegisters = true;
+        std::cout << "automatically showing registers from now on.\n";
+    } else if (std::ranges::any_of(NegativeResponses, [token = std::move(upper_cased(tokens[1]))] (const auto & negativeResponse) -> bool {
+        return token == negativeResponse;
+    })) {
+        m_autoShowRegisters = false;
+        std::cout << "no longer automatically showing registers.\n";
+    } else {
+        std::cout << "unrecognised parameter \"" << tokens[1] << "\"\n";
+    }
+}
+
 void Z80Interpreter::dotDumpFlags() const noexcept
 {
     const UnsignedByte f = m_cpu->fRegisterValue();
 
     std::cout << " S Z H 5 P 3 N C\n";
-    std::cout << " " << (f & 0x80 ? '1' : '0');
-    std::cout << " " << (f & 0x40 ? '1' : '0');
-    std::cout << " " << (f & 0x20 ? '1' : '0');
-    std::cout << " " << (f & 0x10 ? '1' : '0');
-    std::cout << " " << (f & 0x04 ? '1' : '0');
-    std::cout << " " << (f & 0x02 ? '1' : '0');
-    std::cout << " " << (f & 0x02 ? '1' : '0');
-    std::cout << " " << (f & 0x01 ? '1' : '0');
+    std::cout << " " << (f & Z80::Z80FlagSMask ? '1' : '0');
+    std::cout << " " << (f & Z80::Z80FlagZMask ? '1' : '0');
+    std::cout << " " << (f & Z80::Z80FlagHMask ? '1' : '0');
+    std::cout << " " << (f & Z80::Z80FlagF5Mask ? '1' : '0');
+    std::cout << " " << (f & Z80::Z80FlagPMask ? '1' : '0');
+    std::cout << " " << (f & Z80::Z80FlagF3Mask ? '1' : '0');
+    std::cout << " " << (f & Z80::Z80FlagNMask ? '1' : '0');
+    std::cout << " " << (f & Z80::Z80FlagZMask ? '1' : '0');
     std::cout << "\n";
 }
 
@@ -744,8 +768,13 @@ void Z80Interpreter::dotRegisterValue(const Register16 reg, const NumberFormats 
         UnsignedWord mask = 0x8000;
         std::cout << " ";
 
-        for (int i = 0; i < 16; ++i) {
+        for (int idx = 0; idx < 16; ++idx) {
             std::cout << (v & mask ? '1' : '0');
+
+            if (7 == idx) {
+                std::cout << "'";
+            }
+
             mask <<= 1;
         }
 
@@ -755,7 +784,13 @@ void Z80Interpreter::dotRegisterValue(const Register16 reg, const NumberFormats 
     std::cout << '\n' << std::dec << std::setw(0) << std::setfill(' ');
 }
 
-// Z80 instruction methods
+void Z80Interpreter::dotClearFlags() const noexcept
+{
+    sp_assert(m_cpu, "found null cpu in Z80Interpreter::dotRegisterValue()");
+    m_cpu->registers().f = 0x00;
+    dotDumpFlags();
+}
+
 Z80Interpreter::Opcode Z80Interpreter::assembleInstruction(const Tokens & tokens) noexcept
 {
     if (tokens.empty()) {
@@ -903,6 +938,7 @@ Z80Interpreter::Opcode Z80Interpreter::assembleInstruction(const Tokens & tokens
     return InvalidInstruction;
 }
 
+// Z80 instruction methods
 Z80Interpreter::Opcode Z80Interpreter::assembleADC(const Tokens & tokens) noexcept
 {
     Opcode ret;
