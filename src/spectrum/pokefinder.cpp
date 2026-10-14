@@ -40,25 +40,25 @@ const PokeFinder::Addresses & PokeFinder::matchingBeforeAddresses() const noexce
     return m_possibleAddresses;
 }
 
-PokeFinder::Addresses PokeFinder::matchingAfterAddresses(const std::optional<Word> newLives) const noexcept
+PokeFinder::Addresses PokeFinder::matchingAfterAddresses(const std::optional<Word> newValue) const noexcept
 {
-    const Word actualNewLives = newLives.value_or(before() - 1);
-    Util::debugln("looking for {} in {} matching before addresses", actualNewLives, m_possibleAddresses.size());
+    const Word actualNewValue = newValue.value_or(before() - 1);
+    Util::debugln("looking for {} in {} matching before addresses", actualNewValue, m_possibleAddresses.size());
 
     const auto possibleAddresses = std::ranges::views::filter(
         m_possibleAddresses,
-        [actualNewLives, this](const Address address) -> bool {
+        [actualNewValue, this](const Address address) -> bool {
             return (
                 // if the address permits a 16-bit read, compare the word value
                 address < m_memory->addressableSize() - 1
-                && actualNewLives == m_memory->readWord<Word>(address)
+                && actualNewValue == m_memory->readWord<Word>(address)
             )
             // compare the byte value
-            || actualNewLives == m_memory->readByte(address);
+            || actualNewValue == m_memory->readByte(address);
         }
     ) | std::ranges::to<Addresses>();
 
-    Util::debugln("found {} addresses that now have the value {}", possibleAddresses.size(), actualNewLives);
+    Util::debugln("found {} addresses that now have the value {}", possibleAddresses.size(), actualNewValue);
     return possibleAddresses;
 }
 

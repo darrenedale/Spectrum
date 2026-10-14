@@ -89,11 +89,11 @@ namespace Spectrum
             /**
              * The possible addresses where the lives might be located.
              *
-             * @param newLives The optional number lives that the player now has. If omitted or an empty optional, the
+             * @param newValue The optional number lives that the player now has. If omitted or an empty optional, the
              * original number of lives less one is used.
              */
             [[nodiscard]]
-            Addresses matchingAfterAddresses(std::optional<Word> newLives = {}) const noexcept;
+            Addresses matchingAfterAddresses(std::optional<Word> newValue = {}) const noexcept;
 
         private:
             void searchForBeforeValue() noexcept;
