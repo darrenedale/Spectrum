@@ -7,7 +7,7 @@
 
 #include <QSpinBox>
 
-namespace Spectrum
+namespace Spectrum::QtUi
 {
     class HexSpinBox
             : public QSpinBox

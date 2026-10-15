@@ -1233,6 +1233,7 @@ int Z80::Z80::fetchExecuteCycle()
     }
 
     if (m_iff1 && m_interruptRequested) {
+        // TODO does this sometimes undo the interrupt request if the executed instruction resets IFF1?
         if (!m_delayInterruptOneInstruction) {
             // process maskable interrupt
             tStates += handleInterrupt();

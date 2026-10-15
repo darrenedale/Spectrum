@@ -61,6 +61,7 @@ add_executable(
         basespectrum.cpp
         main.cpp
         pokedefinition.cpp
+        pokefinder.cpp
         snapshot.cpp
         spectrum128k.cpp
         spectrum16k.cpp
@@ -96,6 +97,7 @@ add_executable(
         devices/pagingdeviceplus2a.cpp
 
         io/pokfilereader.cpp
+        io/pokfilewriter.cpp
         io/snapshotformatguesser.h
         io/snapshotformatmatcher.h
         io/snapshotreader.cpp
@@ -145,6 +147,10 @@ add_executable(
         qtui/debugger/watchescontextmenu.cpp
         qtui/debugger/watchesmodel.cpp
         qtui/debugger/watchesview.cpp
+        qtui/pokefinder/pokefindermodel.cpp
+        qtui/pokefinder/pokefindersortfiltermodel.cpp
+        qtui/pokefinder/pokefinderwindow.cpp
+        qtui/pokefinder/pokedetailsdialogue.cpp
         qtui/dialogue.cpp
         qtui/help.qrc
         qtui/helpwidget.cpp
@@ -169,6 +175,7 @@ add_executable(
         ../cpu.cpp
         ../memory.h
         ../simplememory.h
+        ../util/assert.h
         ../util/crc32.h
         ../util/debug.h
         ../util/endian.h
@@ -184,7 +191,8 @@ add_executable(
 
         ${SPECTRUM_QT_GAMEPAD_SOURCES}
         ${EXECUTION_HISTORY_SOURCES}
-        ../util/assert.h
+        qtui/filenamewidget.cpp
+        qtui/filenamewidget.h
 )
 
 target_link_libraries(spectrum ${SPECTRUM_QT_LIBS})

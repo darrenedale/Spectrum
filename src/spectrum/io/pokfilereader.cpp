@@ -31,15 +31,14 @@ namespace
 }
 
 PokFileReader::PokFileReader(const std::string & fileName)
-: m_in(new std::ifstream(fileName)),
-  m_borrowedStream(false)
+: m_borrowedStream(false),
+  m_in(new std::ifstream(fileName))
 {}
 
 PokFileReader::PokFileReader(std::istream & inFile)
-: m_in(&inFile),
-  m_borrowedStream(true)
-{
-}
+: m_borrowedStream(true),
+  m_in(&inFile)
+{}
 
 PokFileReader::~PokFileReader()
 {
@@ -63,7 +62,7 @@ std::optional<Spectrum::PokeDefinition> PokFileReader::nextPoke()
     }
 
     if (LineType::Name != nextLineType()) {
-        Util::debug("Unexpected line type: found '{}' expecting 'N'", static_cast<char>((*m_in).peek()));
+        Util::debugln("Unexpected line type: found '{}' expecting 'N'", static_cast<char>(m_in->peek()));
         return {};
     }
 
@@ -112,7 +111,7 @@ std::optional<Poke> PokFileReader::parsePokeLine(const std::string & line)
     in >> value;
 
     if (in.fail()) {
-        Util::debugln("failed reading poke address");
+        Util::debugln("failed reading poke bank");
         return {};
     }
 

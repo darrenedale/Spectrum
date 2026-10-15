@@ -57,11 +57,18 @@ BreakpointsView::BreakpointsView(QWidget * parent)
     });
 }
 
-void BreakpointsView::setModel(BreakpointsModel * model)
+#include "../../../util/debug.h"
+
+void BreakpointsView::setModel(BreakpointsModel * newModel)
 {
-    disconnect(this->model(), &QAbstractItemModel::dataChanged, this, &BreakpointsView::onModelDataChanged);
-    QTreeView::setModel(model);
-    connect(model, &QAbstractItemModel::dataChanged, this, &BreakpointsView::onModelDataChanged);
+    sp_assert(nullptr != newModel, "null BreakpointsModel provided to BreakPointsView::setModel()");
+
+    if (nullptr != model()) {
+        disconnect(model(), &QAbstractItemModel::dataChanged, this, &BreakpointsView::onModelDataChanged);
+    }
+
+    QTreeView::setModel(newModel);
+    connect(newModel, &QAbstractItemModel::dataChanged, this, &BreakpointsView::onModelDataChanged);
 }
 
 void BreakpointsView::onItemEntered(const QModelIndex & index)

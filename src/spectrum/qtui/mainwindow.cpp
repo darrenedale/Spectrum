@@ -452,6 +452,7 @@ MainWindow::MainWindow(QWidget * parent)
       m_emulationSpeedSlider(Qt::Horizontal),
       m_emulationSpeedSpin(nullptr),
       m_debugWindow(&m_spectrumThread, this),
+      m_pokeFinderWindow(&m_spectrumThread, this),
       m_aboutWidget(nullptr),
       m_helpWidget(nullptr),
       m_displayRefreshTimer(nullptr),
@@ -1106,6 +1107,7 @@ void MainWindow::createSpectrumMenu()
 
     menu->addAction(&m_kempstonMouse);
     menu->addSeparator();
+    menu->addAction(m_pokesWidget.findCheatsAction());
     menu->addAction(m_pokesWidget.loadCheatsAction());
     menu->addAction(m_pokesWidget.clearCheatsAction());
 }
@@ -1360,6 +1362,13 @@ void MainWindow::connectSignals()
         if (bw) {
             m_display.setBlackAndWhite();
         }
+    });
+
+    connect(&m_pokesWidget, &CheatsView::findCheatsRequested, [this]() {
+        m_spectrumThread.pause();
+        m_pokeFinderWindow.show();
+        m_pokeFinderWindow.raise();
+        m_pokeFinderWindow.activateWindow();
     });
 
     connect(&m_pokesWidget, &CheatsView::applyCheatRequested, [this](const PokeDefinition & poke) {
@@ -1987,7 +1996,7 @@ void MainWindow::saveSnapshotTriggered()
         filters << tr("ZX Snapshots (*.zx)");
     }
 
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save snapshot"), m_lastSnapshotLoadDir, filters.join(";;"), &lastFilter);
+    const QString fileName = QFileDialog::getSaveFileName(this, tr("Save snapshot"), m_lastSnapshotLoadDir, filters.join(";;"), &lastFilter);
 
     if(fileName.isEmpty()) {
         return;
@@ -1997,7 +2006,7 @@ void MainWindow::saveSnapshotTriggered()
     auto format = lastFilter;
 
     if (!format.isEmpty()) {
-        if (auto matches = SnapshotFilterExtensionRegularExpression.match(format); matches.hasMatch()) {
+        if (const auto matches = SnapshotFilterExtensionRegularExpression.match(format); matches.hasMatch()) {
             format = matches.captured(1).toLower();
         } else {
             format.clear();

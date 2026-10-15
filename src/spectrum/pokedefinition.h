@@ -24,22 +24,26 @@ namespace Spectrum
 
         using Pokes = std::vector<Poke>;
 
-        [[nodiscard]] const std::string & name() const
+        [[nodiscard]]
+        const std::string & name() const
         {
             return m_name;
         }
 
-        [[nodiscard]] const std::string & description() const
+        [[nodiscard]]
+        const std::string & description() const
         {
             return m_description;
         }
 
-        [[nodiscard]] const std::string & technicalDetails() const
+        [[nodiscard]]
+        const std::string & technicalDetails() const
         {
             return m_techDetails;
         }
 
-        [[nodiscard]] const Pokes & pokes() const
+        [[nodiscard]]
+        const Pokes & pokes() const
         {
             return m_pokes;
         }
@@ -51,7 +55,8 @@ namespace Spectrum
          *
          * @return
          */
-        [[nodiscard]] const Pokes & undoPokes() const
+        [[nodiscard]]
+        const Pokes & undoPokes() const
         {
             return m_undo;
         }

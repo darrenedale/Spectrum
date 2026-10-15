@@ -14,7 +14,7 @@ Sean Young in the _Undocumented Z80 Documented_ refers to the phenomenon
 ([http://www.myquest.nl/z80undocumented/](http://www.myquest.nl/z80undocumented/)) and a bit more info can be found in
 the Z80 description of another "nocash" project
 ([http://www.work.de/nocash/zxdocs.htm](http://www.work.de/nocash/zxdocs.htm)) where this register pair is known as
-`MEMPTR`. Unfortunately until now attempts to crack the algorithm ofr setting the value of `MEMPTR` by different
+`MEMPTR`. Unfortunately until now attempts to crack the algorithm for setting the value of `MEMPTR` by different
 processor instructions on basis of knowing only two bits of those 16-bit register were not successful.
 
 But miraculously as a result of many experiments (based on the hypothesis that index addressing instructions always
