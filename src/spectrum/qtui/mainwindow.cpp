@@ -367,7 +367,7 @@ DISABLE_WARNING_POP
      *
      * @return The joystick action represented by the key.
      */
-    JoystickMapping mapToSpectrumJoystick(Qt::Key key)
+    JoystickMapping mapToSpectrumJoystick(const Qt::Key key)
     {
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_SWITCH     // we're only interested in keys that map to the virtual joystick
@@ -412,53 +412,53 @@ DISABLE_WARNING_POP
 }
 
 MainWindow::MainWindow(QWidget * parent)
-:   QMainWindow(parent),
-      m_spectrum(std::make_unique<Spectrum128k>(
-              Application::romFilePath(Default128kRom0).toStdString(), Application::romFilePath(Default128kRom1).toStdString())
-      ),
-      m_spectrumThread(*m_spectrum),
-      m_load(QIcon::fromTheme(QStringLiteral("document-open"), Application::icon(QStringLiteral("open"))), tr("Load snapshot")),
-      m_save(QIcon::fromTheme(QStringLiteral("document-save"), Application::icon(QStringLiteral("save"))), tr("Save snapshot")),
-      m_recentSnapshots(tr("Recent snapshots")),
-      m_pauseResume(QIcon::fromTheme(QStringLiteral("media-playback-start"), Application::icon(QStringLiteral("resume"))), tr("Start/Pause")),
-      m_model16(tr("Spectrum 16k")),
-      m_model48(tr("Spectrum 48k")),
-      m_model128(tr("Spectrum 128k")),
-      m_modelPlus2(tr("Spectrum +2")),
-      m_modelPlus2a(tr("Spectrum +2a")),
-      m_modelPlus3(tr("Spectrum +3")),
-      m_saveScreenshot(QIcon::fromTheme(QStringLiteral("image"), Application::icon(QStringLiteral("screenshot"))), tr("Screenshot")),
-      m_displayScaleGroup(nullptr),
-      m_frameSkipGroup(nullptr),
-      m_colourDisplay(tr("Colour")),
-      m_monochromeDisplay(tr("Monochrome")),
-      m_bwDisplay(tr("Black and White")),
-      m_joystick(std::make_unique<Devices::KempstonJoystick>()),
-      m_joystickNone(tr("None")),
-      m_joystickKempston(tr("Kempston")),
-      m_joystickInterface2(tr("ZX Interface Two")),
-      m_joystickCursor(tr("Cursor")),
-      m_joystickFuller(tr("Fuller")),
+: QMainWindow(parent),
+  m_spectrum(std::make_unique<Spectrum128k>(
+          Application::romFilePath(Default128kRom0).toStdString(), Application::romFilePath(Default128kRom1).toStdString())
+  ),
+  m_spectrumThread(*m_spectrum),
+  m_load(QIcon::fromTheme(QStringLiteral("document-open"), Application::icon(QStringLiteral("open"))), tr("Load snapshot")),
+  m_save(QIcon::fromTheme(QStringLiteral("document-save"), Application::icon(QStringLiteral("save"))), tr("Save snapshot")),
+  m_recentSnapshots(tr("Recent snapshots")),
+  m_pauseResume(QIcon::fromTheme(QStringLiteral("media-playback-start"), Application::icon(QStringLiteral("resume"))), tr("Start/Pause")),
+  m_model16(tr("Spectrum 16k")),
+  m_model48(tr("Spectrum 48k")),
+  m_model128(tr("Spectrum 128k")),
+  m_modelPlus2(tr("Spectrum +2")),
+  m_modelPlus2a(tr("Spectrum +2a")),
+  m_modelPlus3(tr("Spectrum +3")),
+  m_saveScreenshot(QIcon::fromTheme(QStringLiteral("image"), Application::icon(QStringLiteral("screenshot"))), tr("Screenshot")),
+  m_displayScaleGroup(nullptr),
+  m_frameSkipGroup(nullptr),
+  m_colourDisplay(tr("Colour")),
+  m_monochromeDisplay(tr("Monochrome")),
+  m_bwDisplay(tr("Black and White")),
+  m_joystick(std::make_unique<Devices::KempstonJoystick>()),
+  m_joystickNone(tr("None")),
+  m_joystickKempston(tr("Kempston")),
+  m_joystickInterface2(tr("ZX Interface Two")),
+  m_joystickCursor(tr("Cursor")),
+  m_joystickFuller(tr("Fuller")),
 #if defined(WITH_QT_GAMEPAD)
-      m_gameControllerHandler(m_joystick.get()),
-      m_gameControllersMenu(tr("Game Controller")),
-      m_gameControllersGroup(nullptr),
+  m_gameControllerHandler(m_joystick.get()),
+  m_gameControllersMenu(tr("Game Controller")),
+  m_gameControllersGroup(nullptr),
 #endif
-      m_kempstonMouse(tr("Kempston mouse")),
-      m_reset(QIcon::fromTheme(QStringLiteral("start-over"), Application::icon(QStringLiteral("reset"))), tr("Reset")),
-      m_debug(tr("Debug")),
-      m_debugStep(QIcon::fromTheme(QStringLiteral("debug-step-instruction"), Application::icon(QStringLiteral("step"))), tr("Step")),
-      m_refreshScreen(QIcon::fromTheme(QStringLiteral("view-refresh"), Application::icon(QStringLiteral("refresh"))), tr("Refresh screen")),
-      m_emulationSpeedSlider(Qt::Horizontal),
-      m_emulationSpeedSpin(nullptr),
-      m_debugWindow(&m_spectrumThread, this),
-      m_pokeFinderWindow(&m_spectrumThread, this),
-      m_aboutWidget(nullptr),
-      m_helpWidget(nullptr),
-      m_displayRefreshTimer(nullptr),
+  m_kempstonMouse(tr("Kempston mouse")),
+  m_reset(QIcon::fromTheme(QStringLiteral("start-over"), Application::icon(QStringLiteral("reset"))), tr("Reset")),
+  m_debug(tr("Debug")),
+  m_debugStep(QIcon::fromTheme(QStringLiteral("debug-step-instruction"), Application::icon(QStringLiteral("step"))), tr("Step")),
+  m_refreshScreen(QIcon::fromTheme(QStringLiteral("view-refresh"), Application::icon(QStringLiteral("refresh"))), tr("Refresh screen")),
+  m_emulationSpeedSlider(Qt::Horizontal),
+  m_emulationSpeedSpin(nullptr),
+  m_debugWindow(&m_spectrumThread, this),
+  m_pokeFinderWindow(&m_spectrumThread, this),
+  m_aboutWidget(nullptr),
+  m_helpWidget(nullptr),
+  m_displayRefreshTimer(nullptr),
 #if (defined(WITH_QT_GAMEPAD))
 #endif
-      m_mouse(nullptr)
+  m_mouse(nullptr)
 {
     setWindowTitle(QStringLiteral("Spectrum"));
     setMouseTracking(true);
@@ -473,10 +473,10 @@ MainWindow::MainWindow(QWidget * parent)
     // the pokes widget is going in a dock as it's intended to be supplementary functionality so scale its content down
     // in size so that it's not intrusive
     auto font = m_pokesWidget.font();
-    font.setPointSizeF(font.pointSizeF() * 0.75);
+    font.setPointSizeF(font.pointSizeF() * 0.90);
     m_pokesWidget.setFont(font);
     auto iconSize = m_pokesWidget.actionIconSize();
-    iconSize *= 0.66;
+    iconSize *= 0.9;
     m_pokesWidget.setActionIconSize(iconSize);
 
     m_debugWindow.installEventFilter(this);
@@ -702,6 +702,7 @@ void MainWindow::setModel(Spectrum::Model model)
 
     refreshSpectrumDisplay();
     setWindowTitle(QString::fromStdString(to_string(m_spectrum->model())));
+    m_pokesWidget.resetCheatStates();
 }
 
 Spectrum::Model MainWindow::model() const
@@ -1004,7 +1005,6 @@ void MainWindow::stopThread()
 
 void MainWindow::createMenuBar()
 {
-    // auto * tempMenuBar = menuBar();
     createFileMenu();
     createSpectrumMenu();
     createDisplayMenu();
@@ -1326,7 +1326,11 @@ void MainWindow::connectSignals()
     connect(spectrumApp, &Application::recentSnapshotsChanged, this, &MainWindow::refreshRecentSnapshots);
 
     connect(&m_pauseResume, &QAction::triggered, this, &MainWindow::pauseResumeTriggered);
-    connect(&m_reset, &QAction::triggered, &m_spectrumThread, &Thread::reset);
+
+    connect(&m_reset, &QAction::triggered, [this]() {
+        m_spectrumThread.reset();
+        m_pokesWidget.resetCheatStates();
+    });
 
     connect(&m_model16, &QAction::triggered, this, &MainWindow::model16Triggered);
     connect(&m_model48, &QAction::triggered, this, &MainWindow::model48Triggered);
@@ -1508,12 +1512,17 @@ DISABLE_WARNING_SWITCH
             break;
 
             case QEvent::Type::KeyRelease: {
-                if (const auto qtKey = static_cast<Qt::Key>(dynamic_cast<QKeyEvent *>(event)->key()); Qt::Key::Key_Tab == qtKey) {
+                if (
+                    const auto qtKey = static_cast<Qt::Key>(dynamic_cast<QKeyEvent *>(event)->key());
+                    Qt::Key::Key_Tab == qtKey
+                ) {
                     m_spectrum->setExecutionSpeedConstrained(0 < m_emulationSpeedSlider.value());
                     updateStatusBarSpeedWidget();
                     return true;
-                } else if (auto joystickMapping = mapToSpectrumJoystick(qtKey); m_joystick && JoystickMapping::None !=
-                                                                                joystickMapping) {
+                } else if (
+                    const auto joystickMapping = mapToSpectrumJoystick(qtKey);
+                    m_joystick && JoystickMapping::None != joystickMapping
+                ) {
                     switch (joystickMapping) {
                         case JoystickMapping::Up:
                             m_joystick->setJoystick1Up(false);
@@ -1979,6 +1988,7 @@ void MainWindow::loadSnapshotTriggered()
     }
 
     if (loadSnapshot(fileName, format)) {
+        m_pokesWidget.resetCheatStates();
         spectrumApp->addRecentSnapshot(fileName);
     }
 }
@@ -2127,7 +2137,7 @@ void MainWindow::noJoystickTriggered()
     m_joystick.reset();
 }
 
-void MainWindow::kempstonMouseToggled(bool on)
+void MainWindow::kempstonMouseToggled(const bool on)
 {
     m_spectrum->setMouseInterface(nullptr);
 
