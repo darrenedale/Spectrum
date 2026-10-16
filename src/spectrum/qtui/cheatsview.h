@@ -21,243 +21,199 @@ namespace Spectrum
 
 namespace Spectrum::QtUi
 {
-    /**
-     * A widget to display, apply, undo and remove cheats that can be applied to the running emulator.
-     */
+    /** A widget to display, apply, undo and remove cheats that can be applied to the running emulator. */
     class CheatsView
     : public QWidget
     {
-    Q_OBJECT
+        Q_OBJECT
 
-    public:
-        /**
-         * Default initialise a new cheats view.
-         */
-        explicit CheatsView(QWidget * = nullptr);
+        public:
+            /** Default initialise a new cheats view. */
+            explicit CheatsView(QWidget * = nullptr);
 
-        /**
-         * CheatsView widgets cannot be copy-constructed.
-         */
-        CheatsView(const CheatsView &) = delete;
+            /** CheatsView widgets cannot be copy-constructed. */
+            CheatsView(const CheatsView &) = delete;
 
-        /**
-         * CheatsView widgets cannot be move-constructed.
-         */
-        CheatsView(CheatsView &&) = delete;
+            /** CheatsView widgets cannot be move-constructed. */
+            CheatsView(CheatsView &&) = delete;
 
-        /**
-         * CheatsView widgets cannot be copy assigned.
-         */
-        void operator=(const CheatsView &) = delete;
+            /** CheatsView widgets cannot be copy assigned. */
+            void operator=(const CheatsView &) = delete;
 
-        /**
-         * CheatsView widgets cannot be move assigned.
-         */
-        void operator=(CheatsView &&) = delete;
+            /** CheatsView widgets cannot be move assigned. */
+            void operator=(CheatsView &&) = delete;
 
-        /**
-         * Destructor.
-         */
-        ~CheatsView() override;
+            ~CheatsView() override;
 
-        /**
-         * Set the size of the action icons.
-         */
-        void setActionIconSize(const QSize &);
+            /** Set the size of the action icons. */
+            void setActionIconSize(const QSize &);
 
-        /**
-         * Fetch the size of the action icons.
-         *
-         * @return The size.
-         */
-        [[nodiscard]] const QSize & actionIconSize() const
-        {
-            return m_actionIconSize;
-        }
+            /** Fetch the size of the action icons. */
+            [[nodiscard]]
+            const QSize & actionIconSize() const
+            {
+                return m_actionIconSize;
+            }
 
-        /**
-         * Load a set of cheats from a given file.
-         *
-         * @param fileName The file to load.
-         */
-        void loadCheats(const QString & fileName);
+            /** Load a set of cheats from a given file. */
+            void loadCheats(const QString & fileName);
 
-        /**
-         * Add a copy of a cheat to the view.
-         */
-        void addCheat(const PokeDefinition &);
+            /** Add a copy of a cheat to the view. */
+            void addCheat(const PokeDefinition &);
 
-        /**
-         * Move a cheat to the view.
-         */
-        void addCheat(PokeDefinition &&);
+            /** Move a cheat to the view. */
+            void addCheat(PokeDefinition &&);
 
-        /**
-         * Clear all the cheats from the view.
-         */
-        void clearCheats();
+            /** Set all cheats to "inactive" without executing the deactivation. */
+            void resetCheatStates() noexcept;
 
-        /**
-         * Fetch the number of cheats in the view.
-         *
-         * @return The number of cheats.
-         */
-        [[nodiscard]] int cheatCount() const
-        {
-            return static_cast<int>(m_cheats.size());
-        }
+            /** Clear all the cheats from the view. */
+            void clearCheats();
 
-        /**
-         * Remove a cheat from the view.
-         *
-         * The provided index must be valid. Check against cheatCount() if you are unsure.
-         *
-         * @param idx The index of the cheat.
-         */
-        void removeCheat(int);
+            /** Fetch the number of cheats in the view. */
+            [[nodiscard]]
+            int cheatCount() const
+            {
+                return static_cast<int>(m_cheats.size());
+            }
 
-        /**
-         * Fetch the action to load cheats.
-         *
-         * @return The action.
-         */
-        QAction * findCheatsAction()
-        {
-            return &m_findCheats;
-        }
+            /**
+             * Remove a cheat from the view.
+             *
+             * The provided index must be valid. Check against cheatCount() if you are unsure.
+             */
+            void removeCheat(int);
 
-        /**
-         * Fetch the action to load cheats.
-         *
-         * @return The action.
-         */
-        QAction * loadCheatsAction()
-        {
-            return &m_loadCheats;
-        }
+            /** Fetch the action to load cheats. */
+            QAction * findCheatsAction()
+            {
+                return &m_findCheats;
+            }
 
-        /**
-         * Fetch the action to clear all the cheats.
-         *
-         * @return The action.
-         */
-        QAction * clearCheatsAction()
-        {
-            return &m_clearCheats;
-        }
+            /** Fetch the action to load cheats. */
+            QAction * loadCheatsAction()
+            {
+                return &m_loadCheats;
+            }
 
-    Q_SIGNALS:
-        /** Emitted when the find cheats action is triggered. */
-        void findCheatsRequested();
+            /** Fetch the action to clear all the cheats. */
+            QAction * clearCheatsAction()
+            {
+                return &m_clearCheats;
+            }
 
-        /** Emitted when the apply action for a given cheat is triggered. */
-        void applyCheatRequested(const Spectrum::PokeDefinition &);
+        Q_SIGNALS:
+            /** Emitted when the find cheats action is triggered. */
+            void findCheatsRequested();
 
-        /** Emitted when the undo action for a given cheat is triggered. */
-        void undoCheatRequested(const Spectrum::PokeDefinition &);
+            /** Emitted when the apply action for a given cheat is triggered. */
+            void applyCheatRequested(const Spectrum::PokeDefinition &);
 
-    protected:
-        /**
-         * Load the settings for the widget from the application settings file.
-         *
-         * Currently only the last used cheat load directory is stored for this widget.
-         */
-        void loadSettings();
+            /** Emitted when the undo action for a given cheat is triggered. */
+            void undoCheatRequested(const Spectrum::PokeDefinition &);
 
-        /**
-         * Save the settings for the widget to the application settings file.
-         *
-         * Currently only the last used cheat load directory is stored for this widget.
-         */
-        void saveSettings();
+        protected:
+            /**
+             * Load the settings for the widget from the application settings file.
+             *
+             * Currently only the last used cheat load directory is stored for this widget.
+             */
+            void loadSettings();
 
-        /**
-         * Helper to find the widget for a given cheat.
-         *
-         * @param uuid The UUID of the cheat whose widget is sought.
-         *
-         * @return The widget, or nullptr if a widget for the identified cheat cannot be found.
-         */
-        QWidget * findCheatWidget(const QString & uuid) const;
+            /**
+             * Save the settings for the widget to the application settings file.
+             *
+             * Currently only the last used cheat load directory is stored for this widget.
+             */
+            void saveSettings();
 
-        /**
-         * Helper to remove a cheat from the view.
-         *
-         * Provide nullptr for widget unless you are certain you already have the correct widget. Providing nullptr will
-         * cause the function to locate the widget based on the UUID. The widget parameter is really a mechanism to
-         * avoid a second lookup when the widget it already known.
-         *
-         * @param uuid The UUID of the cheat to remove.
-         * @param widget The widget pointer for the cheat, if known before the call.
-         */
-        void removeCheat(const QString & uuid, QWidget * widget = nullptr);
+            /**
+             * Helper to find the widget for a given cheat.
+             *
+             * @param uuid The UUID of the cheat whose widget is sought.
+             *
+             * @return The widget, or nullptr if a widget for the identified cheat cannot be found.
+             */
+            QWidget * findCheatWidget(const QString & uuid) const;
 
-        /**
-         * Handler for when the apply action is triggered for a cheat.
-         *
-         * @param uuid The internal unique ID for the cheat to apply.
-         */
-        virtual void applyCheatTriggered(const QString & uuid);
+            /**
+             * Helper to remove a cheat from the view.
+             *
+             * Provide nullptr for widget unless you are certain you already have the correct widget. Providing nullptr will
+             * cause the function to locate the widget based on the UUID. The widget parameter is really a mechanism to
+             * avoid a second lookup when the widget it already known.
+             *
+             * @param uuid The UUID of the cheat to remove.
+             * @param widget The widget pointer for the cheat, if known before the call.
+             */
+            void removeCheat(const QString & uuid, QWidget * widget = nullptr);
 
-        /**
-         * Handler for when the undo action is triggered for a cheat.
-         *
-         * @param uuid The internal unique ID for the cheat to undo.
-         */
-        virtual void undoCheatTriggered(const QString & uuid);
+            /**
+             * Handler for when the apply action is triggered for a cheat.
+             *
+             * @param uuid The internal unique ID for the cheat to apply.
+             */
+            virtual void applyCheatTriggered(const QString & uuid);
 
-        /**
-         * Handler for when the remove action is triggered for a cheat.
-         *
-         * @param uuid The internal unique ID for the cheat to remove.
-         */
-        virtual void removeCheatTriggered(const QString & uuid);
+            /**
+             * Handler for when the undo action is triggered for a cheat.
+             *
+             * @param uuid The internal unique ID for the cheat to undo.
+             */
+            virtual void undoCheatTriggered(const QString & uuid);
 
-    private:
-        /**
-         * Storage type for the loaded cheats.
-         *
-         * Maps UUIDs to the definitions.
-         */
-        using Cheats = std::unordered_map<std::string, PokeDefinition>;
+            /**
+             * Handler for when the remove action is triggered for a cheat.
+             *
+             * @param uuid The internal unique ID for the cheat to remove.
+             */
+            virtual void removeCheatTriggered(const QString & uuid);
 
-        /** Handler for when the load cheats action is triggered. */
-        void loadCheatsTriggered();
+        private:
+            /**
+             * Storage type for the loaded cheats.
+             *
+             * Maps UUIDs to the definitions.
+             */
+            using Cheats = std::unordered_map<std::string, PokeDefinition>;
 
-        /** Handler for when the clear cheats action is triggered. */
-        void clearCheatsTriggered();
+            /** Handler for when the load cheats action is triggered. */
+            void loadCheatsTriggered();
 
-        /**
-         * Helper to add a cheat widget to the list of cheats.
-         *
-         * @param name The display name of the cheat.
-         * @param uuid The internal unique identifier for the cheat.
-         */
-        void addCheatWidget(const QString & name, const QString & uuid);
+            /** Handler for when the clear cheats action is triggered. */
+            void clearCheatsTriggered();
 
-        /** The loaded cheats. */
-        Cheats m_cheats;
+            /**
+             * Helper to add a cheat widget to the list of cheats.
+             *
+             * @param name The display name of the cheat.
+             * @param uuid The internal unique identifier for the cheat.
+             */
+            void addCheatWidget(const QString & name, const QString & uuid);
 
-        /** The main layout for the cheats. */
-        QVBoxLayout m_layout;
+            /** The loaded cheats. */
+            Cheats m_cheats;
 
-        /** Action to load cheats. */
-        QAction m_loadCheats;
+            /** The main layout for the cheats. */
+            QVBoxLayout m_layout;
 
-        /** Action to clear all loaded cheats. */
-        QAction m_clearCheats;
+            /** Action to load cheats. */
+            QAction m_loadCheats;
 
-        /** Action to find cheats by scanning the Spectrum's memory. */
-        QAction m_findCheats;
+            /** Action to clear all loaded cheats. */
+            QAction m_clearCheats;
 
-        /** The toolbar for the load/clear, etc. actions. */
-        ActionBar m_toolBar;
+            /** Action to find cheats by scanning the Spectrum's memory. */
+            QAction m_findCheats;
 
-        /** The last directory from which a cheat file was loaded for this widget. */
-        QString m_lastLoadDir;
+            /** The toolbar for the load/clear, etc. actions. */
+            ActionBar m_toolBar;
 
-        /** The size for cheat actions. */
-        QSize m_actionIconSize;
+            /** The last directory from which a cheat file was loaded for this widget. */
+            QString m_lastLoadDir;
+
+            /** The size for cheat actions. */
+            QSize m_actionIconSize;
     };
 }
 
