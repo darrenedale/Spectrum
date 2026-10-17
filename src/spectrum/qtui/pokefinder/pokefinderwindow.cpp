@@ -45,7 +45,14 @@ namespace
         writer.addPoke(poke);
         writer.close();
 
-        Spectrum::QtUi::Application::showNotification(QObject::tr("Created .pok file \"%1\".").arg(filename));
+        Application::showNotification(
+            tr("Created .pok file \"%1\".")
+#if QT_VERSION > QT_VERSION_CHECK(6, 9, 0)
+            .arg(filename)
+#else
+            .arg(filename.data())
+#endif
+        );
     }
 
     void addToPokFile(const Spectrum::PokeDefinition & poke, const std::string & filename) noexcept
@@ -68,7 +75,15 @@ namespace
         }
 
         writer.close();
-        Spectrum::QtUi::Application::showNotification(QObject::tr("Added poke to .pok file \"%1\".").arg(filename));
+
+        Application::showNotification(
+            tr("Added poke to .pok file \"%1\".")
+    #if QT_VERSION > QT_VERSION_CHECK(6, 9, 0)
+            .arg(filename)
+    #else
+            .arg(filename.data())
+    #endif
+        );
     }
 }
 
