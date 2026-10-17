@@ -84,7 +84,7 @@ jobs:
     strategy:
       matrix:
         build-type: [Debug, Release]
-        qt-version: [Qt5, Qt6]
+        qt-version: [Qt6]
 
     steps:
       - name: Checkout source
