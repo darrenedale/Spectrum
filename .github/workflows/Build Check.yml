@@ -13,6 +13,7 @@ jobs:
     strategy:
       matrix:
         build-type: [Release, Debug]
+#        qt-version: [Qt5, Qt6]
 
     steps:
       - name: Checkout source
@@ -20,7 +21,7 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          sudo apt install libreadline-dev
+          sudo apt-get install libreadline-dev qt5-qmake qtbase5-dev-tools
 
       - name: ${{ matrix.build-type }} Build
         run: |
