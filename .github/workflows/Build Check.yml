@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         build-type: [Release, Debug]
-#        qt-version: [Qt5, Qt6]
+        # interpreter doesn't use Qt
 
     steps:
       - name: Checkout source
@@ -21,14 +21,14 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          sudo apt-get install libreadline-dev qt5-qmake qtbase5-dev-tools
+          sudo apt-get install libreadline-dev qt6-base-dev
 
       - name: ${{ matrix.build-type }} Build
         run: |
-          cmake -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
-            -DCMAKE_MAKE_PROGRAM=$(which ninja)             \
-            -DUSE_QT5=1                                     \
-            -G Ninja                                        \
-            -S "$GITHUB_WORKSPACE"                          \
+          cmake -DCMAKE_BUILD_TYPE=${{ matrix.build-type }}                   \
+            -DCMAKE_MAKE_PROGRAM=$(which ninja)                               \
+            -G Ninja                                                          \
+            -S "$GITHUB_WORKSPACE"                                            \
             -B "$GITHUB_WORKSPACE"/build/interpreter/${{ matrix.build-type }}
+
           cmake --build "$GITHUB_WORKSPACE"/build/interpreter/${{ matrix.build-type }} --target z80interpreter -j$(nproc)
