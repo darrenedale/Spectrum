@@ -123,4 +123,4 @@ jobs:
 
           cmake --build "$GITHUB_WORKSPACE"/build/emulator/${{ matrix.build-type }} --target spectrum -j$(nproc)
           BUILD_DURATION=$(( $(date +%s%3N) - $BUILD_START_TIMESTAMP ))
-          echo "Emulator build took {$BUILD_DURATION}ms." > "$GITHUB_STEP_SUMMARY"
+          echo "Emulator build took ${BUILD_DURATION}ms." > "$GITHUB_STEP_SUMMARY"
