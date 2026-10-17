@@ -89,7 +89,7 @@
         (((result) & 0b00001000) >> 1)                                                                   \
         | (((delta) & 0b00001000) >> 2)                                                                  \
         | (((orig) & 0b00001000) >> 3)                                                                   \
-    );                                                                                            \
+    );                                                                                                   \
                                                                                                          \
     Z80_FLAG_H_UPDATE(tmpHalfCarry == 1 || tmpHalfCarry == 2 || tmpHalfCarry == 3 || tmpHalfCarry == 7); \
 }
@@ -101,21 +101,21 @@
         (((result) & 0b00001000) >> 1)                                                                   \
         | (((delta) & 0b00001000) >> 2)                                                                  \
         | (((orig) & 0b00001000) >> 3)                                                                   \
-    );                                                                                            \
+    );                                                                                                   \
                                                                                                          \
     Z80_FLAG_H_UPDATE(tmpHalfCarry == 2 || tmpHalfCarry == 4 || tmpHalfCarry == 6 || tmpHalfCarry == 7); \
 }
 
 // update H flag for carry into bit-12 during addition
-#define Z80_FLAG_H_UPDATE_16_ADD(orig,delta,result) \
-{                                                   \
-    UnsignedByte tmpHalfCarry = (                   \
-        (((result) & 0x0800) >> 9)                  \
-        | (((delta) & 0x0800) >> 10)                \
-        | (((orig) & 0x0800) >> 11)                 \
-    );                                              \
-                                                    \
-    Z80_FLAG_H_UPDATE(tmpHalfCarry == 1 || tmpHalfCarry == 2 || tmpHalfCarry == 3 || tmpHalfCarry == 7);\
+#define Z80_FLAG_H_UPDATE_16_ADD(orig,delta,result)                                                      \
+{                                                                                                        \
+    UnsignedByte tmpHalfCarry = (                                                                        \
+        (((result) & 0x0800) >> 9)                                                                       \
+        | (((delta) & 0x0800) >> 10)                                                                     \
+        | (((orig) & 0x0800) >> 11)                                                                      \
+    );                                                                                                   \
+                                                                                                         \
+    Z80_FLAG_H_UPDATE(tmpHalfCarry == 1 || tmpHalfCarry == 2 || tmpHalfCarry == 3 || tmpHalfCarry == 7); \
 }
 
 // NOTE there are no 16-bit subtraction instructions so no macro for managing the H flag in this scenario
@@ -565,8 +565,8 @@ Z80_FLAG_Z_UPDATE(0 == m_registers.a);
 #define Z80_SET_N_Reg8(n,reg) (reg) |= (1 << (n))
 #define Z80_SET_N_IndirectReg16(n,reg) pokeUnsigned((reg), peekUnsigned((reg)) | (1 << (n)))
 
-#define Z80_SET_N_IndirectReg16D(n,reg,d)   \
-Z80_SET_N_IndirectReg16(n,(reg) + (d));     \
+#define Z80_SET_N_IndirectReg16D(n,reg,d) \
+Z80_SET_N_IndirectReg16(n,(reg) + (d));   \
 m_registers.memptr = ((reg) + (d));
 
 #define Z80_SET_N_IndirectReg16D_Reg8(n,reg16,d,reg8) \
