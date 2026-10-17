@@ -498,5 +498,12 @@ void PokeFinderWindow::showCreatePokeFileDialogue(const ::Z80::UnsignedWord addr
     writer.addPoke(pokeDefinition);
     writer.close();
 
-    Application::showNotification(tr("Created .pok file \"%1\".").arg(filename));
+    Application::showNotification(
+        tr("Created .pok file \"%1\".")
+#if QT_VERSION > QT_VERSION_CHECK(6, 9, 0)
+        .arg(filename)
+#else
+        .arg(filename.data())
+#endif
+    );
 }
