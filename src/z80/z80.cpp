@@ -1726,8 +1726,8 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 		    {
 		        const auto addr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
 		        Z80_LD_IndirectNn_Reg8(addr, m_registers.a);
-		        // m_registers.memptrL = (addr + 1) & 0xff;
-		        // m_registers.memptrH = (addr + 1) & m_registers.a;
+		        m_registers.memptrL = (addr + 1) & 0xff;
+		        m_registers.memptrH = (addr + 1) & m_registers.a;
 		    }
 			break;
 
@@ -6204,13 +6204,8 @@ Z80::InstructionCost Z80::Z80::executeDdcbOrFdcbInstruction(UnsignedWord & reg, 
 	    case Opcodes::Z80_DdOrFd_Cb_Set_7_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0xff */
             Z80_SET_N_IndirectReg16D_Reg8(7, reg, d, m_registers.a);
             break;
-	    //
-	    // default:
-	    // {
-	    //     UnsignedByte prefix = (&reg == &m_registers.ix ? 0xdd : 0xfd);
-	    //     Util::debugln("unexpected opcode: {:#04x} 0xcb {:#04x}", prefix, *instruction);
-	    //     throw InvalidOpcode({prefix, 0xcb, *instruction}, m_registers.pc);
-	    // }
+
+	    // no default, all possible cases are handled
 	}
 
 	return {
