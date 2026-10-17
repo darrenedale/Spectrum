@@ -1396,10 +1396,10 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
             Z80_LD_Reg16_NN(m_registers.bc, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
 			break;
 
-		case Opcodes::Z80_Plain_Ld_IndirectBc_A:		// 0x02
+		case Opcodes::Z80_Plain_Ld_IndirectBc_A:		    // 0x02
 			Z80_LD_IndirectReg16_Reg8(m_registers.bc, m_registers.a);
-	        // m_registers.memptrL = (m_registers.bc + 1) & 0xff;
-	        // m_registers.memptrH = m_registers.a;
+	        m_registers.memptrL = (m_registers.bc + 1) & 0xff;
+	        m_registers.memptrH = m_registers.a;
 			break;
 
 		case Opcodes::Z80_Plain_Inc_Bc:						// 0x03
@@ -1505,7 +1505,9 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
 		case Opcodes::Z80_Plain_Ld_IndirectDe_A:		// 0x12
 			Z80_LD_IndirectReg16_Reg8(m_registers.de, m_registers.a);
-			break;
+	        m_registers.memptrL = (m_registers.bc + 1) & 0xff;
+	        m_registers.memptrH = m_registers.a;
+	        break;
 
 		case Opcodes::Z80_Plain_Inc_De:					// 0x13
 			Z80_INC_Reg16(m_registers.de);
