@@ -930,7 +930,9 @@ void MainWindow::refreshSpectrumDisplay()
         painter.drawText(2, y += 10, QStringLiteral("AF: $%1").arg(registers.af, 4, 16, fill));
         painter.drawText(2, y += 10, QStringLiteral("BC: $%1").arg(registers.bc, 4, 16, fill));
         painter.drawText(2, y += 10, QStringLiteral("DE: $%1").arg(registers.de, 4, 16, fill));
-        painter.drawText(2, y + 10, QStringLiteral("HL: $%1").arg(registers.hl, 4, 16, fill));
+        painter.drawText(2, y += 10, QStringLiteral("HL: $%1").arg(registers.hl, 4, 16, fill));
+        painter.drawText(2, y += 20, QStringLiteral("I: $%1").arg(registers.i, 2, 16, fill));
+        painter.drawText(2, y + 10, QStringLiteral("R: $%1").arg(registers.r, 2, 16, fill));
         painter.end();
     }
 
