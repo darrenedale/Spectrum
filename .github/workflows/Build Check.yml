@@ -73,7 +73,7 @@ jobs:
               -S "$GITHUB_WORKSPACE"                                            \
               -B "$GITHUB_WORKSPACE"/build/disassembler/${{ matrix.build-type }}
 
-          cmake --build "$GITHUB_WORKSPACE"/build/disassembler/${{ matrix.build-type }} --target z80disassembler -j$(nproc)
+          cmake --build "$GITHUB_WORKSPACE"/build/disassembler/${{ matrix.build-type }} --target z80-disassembler -j$(nproc)
           BUILD_DURATION=$(( $(date +%s%3N) - $BUILD_START_TIMESTAMP ))
           echo "Disassembler build took {$BUILD_DURATION}ms." > "$GITHUB_STEP_SUMMARY"
 
