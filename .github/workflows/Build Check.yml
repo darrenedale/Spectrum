@@ -21,7 +21,9 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          sudo apt-get install libreadline-dev qt6-base-dev
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+          sudo apt update
+          sudo apt-get install libreadline-dev qt6-base-dev gcc-16 g++-16
 
       - name: ${{ matrix.build-type }} Build
         run: |
