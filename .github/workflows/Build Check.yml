@@ -1,0 +1,33 @@
+name: Build Check.yml
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build-interpreter:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        build-type: [Release, Debug]
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v7
+
+      - name: Install build dependencies
+        run: |
+          apt install libreadline-dev
+
+      - name: ${{ matrix.build-type }} Build
+        run: |
+          cmake -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
+            -DCMAKE_MAKE_PROGRAM=$(which ninja)             \
+            -G Ninja                                        \
+            -S "$GITHUB_WORKSPACE"                          \
+            -B "$GITHUB_WORKSPACE"/build/interpreter/${{ matrix.build-type }}
+          cmake --build "$GITHUB_WORKSPACE"/build/interpreter/${{ matrix.build-type }} --target z80interpreter -j$(nproc)
+          
