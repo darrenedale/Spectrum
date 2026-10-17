@@ -11,6 +11,8 @@
  * TODO review the memory access code now that we're using the Memory abstraction rather than a raw array of bytes
  * TODO there is definitely an issue with stack handling, this is what is causing chuckie egg to fail, and is a likely
  *  candidate for any snapshot that fails with a reset back to the ROM
+ *
+ * TODO does ADD/ADC/SBC rp1,rp2 apply to IX and IY?
  */
 
 #include <iomanip>
@@ -81,39 +83,39 @@
 #define Z80_TSTATES_NOJUMP(tStates) ((tStates) & 0x0000ffff)
 
 // update H flag for carry into bit 4 during addition
-#define Z80_FLAG_H_UPDATE_ADD(orig,delta,result) \
-{                                                \
-    UnsignedByte tmpHalfCarry = (                \
-        (((result) & 0b00001000) >> 1)           \
-        | (((delta) & 0b00001000) >> 2)          \
-        | (((orig) & 0b00001000) >> 3)           \
-    );                                           \
-                                                 \
-    Z80_FLAG_H_UPDATE(tmpHalfCarry == 1 || tmpHalfCarry == 2 || tmpHalfCarry == 3 || tmpHalfCarry == 7);\
+#define Z80_FLAG_H_UPDATE_ADD(orig,delta,result)                                                         \
+{                                                                                                        \
+    UnsignedByte tmpHalfCarry = (                                                                        \
+        (((result) & 0b00001000) >> 1)                                                                   \
+        | (((delta) & 0b00001000) >> 2)                                                                  \
+        | (((orig) & 0b00001000) >> 3)                                                                   \
+    );                                                                                                   \
+                                                                                                         \
+    Z80_FLAG_H_UPDATE(tmpHalfCarry == 1 || tmpHalfCarry == 2 || tmpHalfCarry == 3 || tmpHalfCarry == 7); \
 }
 
 // update H flag for carry into bit 4 during subtraction
-#define Z80_FLAG_H_UPDATE_SUB(orig,delta,result) \
-{                                                \
-    UnsignedByte tmpHalfCarry = (                \
-        (((result) & 0b00001000) >> 1)           \
-        | (((delta) & 0b00001000) >> 2)          \
-        | (((orig) & 0b00001000) >> 3)           \
-    );                                           \
-                                                 \
-    Z80_FLAG_H_UPDATE(tmpHalfCarry == 2 || tmpHalfCarry == 4 || tmpHalfCarry == 6 || tmpHalfCarry == 7);\
+#define Z80_FLAG_H_UPDATE_SUB(orig,delta,result)                                                         \
+{                                                                                                        \
+    UnsignedByte tmpHalfCarry = (                                                                        \
+        (((result) & 0b00001000) >> 1)                                                                   \
+        | (((delta) & 0b00001000) >> 2)                                                                  \
+        | (((orig) & 0b00001000) >> 3)                                                                   \
+    );                                                                                                   \
+                                                                                                         \
+    Z80_FLAG_H_UPDATE(tmpHalfCarry == 2 || tmpHalfCarry == 4 || tmpHalfCarry == 6 || tmpHalfCarry == 7); \
 }
 
 // update H flag for carry into bit-12 during addition
-#define Z80_FLAG_H_UPDATE_16_ADD(orig,delta,result) \
-{                                                   \
-    UnsignedByte tmpHalfCarry = (                   \
-        (((result) & 0x0800) >> 9)                  \
-        | (((delta) & 0x0800) >> 10)                \
-        | (((orig) & 0x0800) >> 11)                 \
-    );                                              \
-                                                    \
-    Z80_FLAG_H_UPDATE(tmpHalfCarry == 1 || tmpHalfCarry == 2 || tmpHalfCarry == 3 || tmpHalfCarry == 7);\
+#define Z80_FLAG_H_UPDATE_16_ADD(orig,delta,result)                                                      \
+{                                                                                                        \
+    UnsignedByte tmpHalfCarry = (                                                                        \
+        (((result) & 0x0800) >> 9)                                                                       \
+        | (((delta) & 0x0800) >> 10)                                                                     \
+        | (((orig) & 0x0800) >> 11)                                                                      \
+    );                                                                                                   \
+                                                                                                         \
+    Z80_FLAG_H_UPDATE(tmpHalfCarry == 1 || tmpHalfCarry == 2 || tmpHalfCarry == 3 || tmpHalfCarry == 7); \
 }
 
 // NOTE there are no 16-bit subtraction instructions so no macro for managing the H flag in this scenario
@@ -202,9 +204,24 @@
 
 // nn (the memory address to load) MUST be in HOST byte order
 #define Z80_LD_IndirectNn_Reg8(nn, src) (pokeUnsigned(nn, (src)))
-#define Z80_LD_IndirectReg16D_N(reg, d, n) Z80_LD_IndirectReg16_N(((reg) + (d)), (n));
-#define Z80_LD_IndirectReg16D_Reg8(reg, d, src) Z80_LD_IndirectNn_Reg8((reg) + (d), (src));
-#define Z80_LD_Reg8_IndirectReg16D(dest, reg, d) Z80_LD_Reg8_IndirectNn((dest), (reg) + (d));
+
+#define Z80_LD_IndirectReg16D_N(reg, d, n)      \
+{                                               \
+    Z80_LD_IndirectReg16_N(((reg) + (d)), (n)); \
+    m_registers.memptr = ((reg) + (d));         \
+}
+
+#define Z80_LD_IndirectReg16D_Reg8(reg, d, src) \
+{                                               \
+    Z80_LD_IndirectNn_Reg8((reg) + (d), (src)); \
+    m_registers.memptr = ((reg) + (d));         \
+}
+
+#define Z80_LD_Reg8_IndirectReg16D(dest, reg, d) \
+{                                                \
+    Z80_LD_Reg8_IndirectNn((dest), (reg) + (d)); \
+    m_registers.memptr = ((reg) + (d));          \
+}
 
 // reset instructions
 //
@@ -280,12 +297,17 @@ pokeHostWord(m_registers.sp, (reg));
     Z80_FLAG_F3_UPDATE((dest) & (Z80FlagF3Mask << 8));          \
 }
 
-#define Z80_ADD_Reg8_IndirectReg16D(dest, reg, d) Z80_ADD_Reg8_N((dest),(*(memory()->pointerTo((reg) + (d)))))
+#define Z80_ADD_Reg8_IndirectReg16D(dest, reg, d)                 \
+{                                                                 \
+    Z80_ADD_Reg8_N((dest),(*(memory()->pointerTo((reg) + (d))))); \
+    m_registers.memptr = ((reg) + (d));                           \
+}
 
 //
 // addition with carry instructions
 // dest = dest + src + carry
 //
+// TODO fuse seems to reset the Z flag in all circumstances
 #define Z80_ADC_Reg8_N(dest,n)                                               \
 {                                                                            \
     UnsignedByte tmpOldValue = (dest);                                       \
@@ -323,7 +345,11 @@ pokeHostWord(m_registers.sp, (reg));
     );                                                                                                          \
 }
 
-#define Z80_ADC_Reg8_IndirectReg16D(dest, reg, d) Z80_ADC_Reg8_N((dest), peekUnsigned((reg) + (d)))
+#define Z80_ADC_Reg8_IndirectReg16D(dest, reg, d)      \
+{                                                      \
+    Z80_ADC_Reg8_N((dest), peekUnsigned((reg) + (d))); \
+    m_registers.memptr = ((reg) + (d));                \
+}
 
 //
 // subtraction instructions
@@ -344,7 +370,12 @@ pokeHostWord(m_registers.sp, (reg));
 
 #define Z80_SUB_Reg8(reg) Z80_SUB_N(reg)
 #define Z80_SUB_IndirectReg16(reg) { UnsignedByte v = peekUnsigned(reg); Z80_SUB_N(v) }
-#define Z80_SUB_IndirectReg16D(reg,d) Z80_SUB_N(peekUnsigned((reg) + (d)))
+
+#define Z80_SUB_IndirectReg16D(reg,d)     \
+{                                         \
+    Z80_SUB_N(peekUnsigned((reg) + (d))); \
+    m_registers.memptr = ((reg) + (d));   \
+}
 
 //
 // subtraction with carry instructions
@@ -387,7 +418,11 @@ pokeHostWord(m_registers.sp, (reg));
     );                                                                                                          \
 }
 
-#define Z80_SBC_Reg8_IndirectReg16D(dest,reg,d) Z80_SBC_Reg8_N((dest), peekUnsigned((reg) + (d)))
+#define Z80_SBC_Reg8_IndirectReg16D(dest,reg,d)        \
+{                                                      \
+    Z80_SBC_Reg8_N((dest), peekUnsigned((reg) + (d))); \
+    m_registers.memptr = ((reg) + (d));                \
+}
 
 //
 // increment instructions
@@ -405,7 +440,12 @@ Z80_FLAG_F5_UPDATE((reg) & Z80FlagF5Mask);
 #define Z80_INC_IndirectReg16(reg) Z80_INC_Reg8(*(memory()->pointerTo(reg)))
 #define Z80_INC_Reg16(reg) (reg)++;
 // TODO memptr
-#define Z80_INC_IndirectReg16D(reg, d) Z80_INC_Reg8(*(memory()->pointerTo((reg) + (d))))
+
+#define Z80_INC_IndirectReg16D(reg, d)                 \
+{                                                      \
+    Z80_INC_Reg8(*(memory()->pointerTo((reg) + (d)))); \
+    m_registers.memptr = ((reg) + (d));                \
+}
 
 //
 // decrement instructions
@@ -422,8 +462,12 @@ Z80_FLAG_F5_UPDATE((reg) & Z80FlagF5Mask);
 
 #define Z80_DEC_IndirectReg16(reg) Z80_DEC_Reg8(*(memory()->pointerTo(reg)))
 #define Z80_DEC_Reg16(reg) (reg)--;
-// TODO memptr
-#define Z80_DEC_IndirectReg16D(reg, d) Z80_DEC_Reg8(*(memory()->pointerTo((reg) + (d))));
+
+#define Z80_DEC_IndirectReg16D(reg, d)                 \
+{                                                      \
+    Z80_DEC_Reg8(*(memory()->pointerTo((reg) + (d)))); \
+    m_registers.memptr = ((reg) + (d));                \
+}
 
 //
 // negation instruction
@@ -465,7 +509,12 @@ Z80_FLAG_F5_UPDATE((reg) & Z80FlagF5Mask);
 
 #define Z80_CP_Reg8(reg) Z80_CP_N(reg)
 #define Z80_CP_IndirectReg16(reg) Z80_CP_N(peekUnsigned((reg)))
-#define Z80_CP_IndirectReg16D(reg,d) Z80_CP_N(peekUnsigned((reg) + (d)))
+
+#define Z80_CP_IndirectReg16D(reg,d)     \
+{                                        \
+    Z80_CP_N(peekUnsigned((reg) + (d))); \
+    m_registers.memptr = ((reg) + (d));  \
+}
 
 //
 // bitwise operations
@@ -482,17 +531,32 @@ Z80_FLAG_Z_UPDATE(0 == m_registers.a);
 #define Z80_AND_N(n) m_registers.a &= (n); Z80_BITWISE_FLAGS; Z80_FLAG_H_SET;
 #define Z80_AND_Reg8(reg) Z80_AND_N((reg))
 #define Z80_AND_IndirectReg16(reg) Z80_AND_N(peekUnsigned(reg))
-#define Z80_AND_IndirectReg16D(reg,d) Z80_AND_N(peekUnsigned((reg) + (d)))
+
+#define Z80_AND_IndirectReg16D(reg,d)     \
+{                                         \
+    Z80_AND_N(peekUnsigned((reg) + (d))); \
+    m_registers.memptr = ((reg) + (d));   \
+}
 
 #define Z80_OR_N(n) m_registers.a |= (n); Z80_BITWISE_FLAGS; Z80_FLAG_H_CLEAR;
 #define Z80_OR_Reg8(reg) Z80_OR_N((reg))
 #define Z80_OR_IndirectReg16(reg) Z80_OR_N(peekUnsigned(reg))
-#define Z80_OR_IndirectReg16D(reg,d) Z80_OR_N(peekUnsigned((reg) + (d)))
+
+#define Z80_OR_IndirectReg16D(reg,d)     \
+{                                        \
+    Z80_OR_N(peekUnsigned((reg) + (d))); \
+    m_registers.memptr = ((reg) + (d));  \
+}
 
 #define Z80_XOR_N(n) m_registers.a ^= (n); Z80_BITWISE_FLAGS; Z80_FLAG_H_CLEAR;
 #define Z80_XOR_Reg8(reg) Z80_XOR_N((reg))
 #define Z80_XOR_IndirectReg16(reg) Z80_XOR_N((peekUnsigned(reg)))
-#define Z80_XOR_IndirectReg16D(reg,d) Z80_XOR_N(peekUnsigned((reg) + (d)))
+
+#define Z80_XOR_IndirectReg16D(reg,d)     \
+{                                         \
+    Z80_XOR_N(peekUnsigned((reg) + (d))); \
+    m_registers.memptr = ((reg) + (d));   \
+}
 
 //
 // bit set instructions
@@ -500,22 +564,30 @@ Z80_FLAG_Z_UPDATE(0 == m_registers.a);
 /* FLAGS: all preserved */
 #define Z80_SET_N_Reg8(n,reg) (reg) |= (1 << (n))
 #define Z80_SET_N_IndirectReg16(n,reg) pokeUnsigned((reg), peekUnsigned((reg)) | (1 << (n)))
-#define Z80_SET_N_IndirectReg16D(n,reg,d) Z80_SET_N_IndirectReg16(n,(reg) + (d))
+
+#define Z80_SET_N_IndirectReg16D(n,reg,d) \
+Z80_SET_N_IndirectReg16(n,(reg) + (d));   \
+m_registers.memptr = ((reg) + (d));
 
 #define Z80_SET_N_IndirectReg16D_Reg8(n,reg16,d,reg8) \
 Z80_SET_N_IndirectReg16D(n, (reg16), (d));            \
-(reg8) = peekUnsigned((reg16) + (d));
+(reg8) = peekUnsigned((reg16) + (d));                 \
+m_registers.memptr = ((reg16) + (d));
 
 //
 // bit reset instructions
 //
 #define Z80_RES_N_Reg8(n,reg) (reg) &= ~(1 << (n))
 #define Z80_RES_N_IndirectReg16(n,reg) pokeUnsigned((reg), peekUnsigned((reg)) & ~(1 << (n)))
-#define Z80_RES_N_IndirectReg16D(n,reg,d) Z80_RES_N_IndirectReg16(n,(reg) + (d))
+
+#define Z80_RES_N_IndirectReg16D(n,reg,d) \
+Z80_RES_N_IndirectReg16(n,(reg) + (d));   \
+m_registers.memptr = ((reg) + (d));
 
 #define Z80_RES_N_IndirectReg16D_Reg8(n,reg16,d,reg8) \
 Z80_RES_N_IndirectReg16D(n,(reg16),(d));              \
-(reg8) = peekUnsigned((reg16) + (d))
+(reg8) = peekUnsigned((reg16) + (d));                 \
+m_registers.memptr = ((reg16) + (d));
 
 //
 // bit shift and rotation instructions
@@ -548,8 +620,14 @@ Z80_RES_N_IndirectReg16D(n,(reg16),(d));              \
     Z80_RLC_Reg8(*tmpValue);                            \
 }
 
-#define Z80_RLC_IndirectReg16D(reg,d) Z80_RLC_IndirectReg16((reg) + (d))
-#define Z80_RLC_IndirectReg16D_Reg8(reg16,d,reg8) Z80_RLC_IndirectReg16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
+#define Z80_RLC_IndirectReg16D(reg,d) \
+Z80_RLC_IndirectReg16((reg) + (d))    \
+m_registers.memptr = ((reg) + (d));
+
+#define Z80_RLC_IndirectReg16D_Reg8(reg16,d,reg8) \
+Z80_RLC_IndirectReg16((reg16) + (d));             \
+(reg8) = peekUnsigned((reg16) + (d));             \
+m_registers.memptr = ((reg16) + (d));
 
 //
 // rotate right with carry instructions
@@ -579,8 +657,14 @@ Z80_RES_N_IndirectReg16D(n,(reg16),(d));              \
     Z80_RRC_Reg8(*tmpValue);                            \
 }
 
-#define Z80_RRC_IndirectReg16D(reg,d) Z80_RRC_IndirectReg16((reg) + (d))
-#define Z80_RRC_IndirectReg16D_Reg8(reg16,d,reg8) Z80_RRC_IndirectReg16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
+#define Z80_RRC_IndirectReg16D(reg,d) \
+Z80_RRC_IndirectReg16((reg) + (d))    \
+m_registers.memptr = ((reg) + (d));
+
+#define Z80_RRC_IndirectReg16D_Reg8(reg16,d,reg8) \
+Z80_RRC_IndirectReg16((reg16) + (d));             \
+(reg8) = peekUnsigned((reg16) + (d));             \
+m_registers.memptr = ((reg16) + (d));
 
 //
 // rotate left instructions
@@ -615,8 +699,14 @@ Z80_RES_N_IndirectReg16D(n,(reg16),(d));              \
     Z80_RL_Reg8(*tmpValue);                             \
 }
 
-#define Z80_RL_IndirectReg16D(reg,d) Z80_RL_IndirectReg16((reg) + (d))
-#define Z80_RL_IndirectReg16D_Reg8(reg16,d,reg8) Z80_RL_IndirectReg16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
+#define Z80_RL_IndirectReg16D(reg,d) \
+Z80_RL_IndirectReg16((reg) + (d));   \
+m_registers.memptr = ((reg) + (d));
+
+#define Z80_RL_IndirectReg16D_Reg8(reg16,d,reg8) \
+Z80_RL_IndirectReg16((reg16) + (d));             \
+(reg8) = peekUnsigned((reg16) + (d));            \
+m_registers.memptr = ((reg16) + (d));
 
 //
 // rotate right instructions
@@ -648,8 +738,14 @@ Z80_RES_N_IndirectReg16D(n,(reg16),(d));              \
     UnsignedByte * tmpValue = memory()->pointerTo(reg); \
     Z80_RR_Reg8(*tmpValue);                             \
 }
-#define Z80_RR_IndirectReg16D(reg,d) Z80_RR_IndirectReg16((reg) + (d))
-#define Z80_RR_IndirectReg16D_Reg8(reg16,d,reg8) Z80_RR_IndirectReg16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
+#define Z80_RR_IndirectReg16D(reg,d) \
+Z80_RR_IndirectReg16((reg) + (d));   \
+m_registers.memptr = ((reg) + (d));
+
+#define Z80_RR_IndirectReg16D_Reg8(reg16,d,reg8) \
+Z80_RR_IndirectReg16((reg16) + (d));             \
+(reg8) = peekUnsigned((reg16) + (d));            \
+m_registers.memptr = ((reg16) + (d));
 
 //
 // arithmetic left shift instructions
@@ -669,8 +765,14 @@ Z80_RES_N_IndirectReg16D(n,(reg16),(d));              \
     Z80_SLA_Reg8(*tmpValue);                            \
 }
 
-#define Z80_SLA_IndirectReg16D(reg,d) Z80_SLA_IndirectReg16((reg) + (d))
-#define Z80_SLA_IndirectReg16D_Reg8(reg16,d,reg8) Z80_SLA_IndirectReg16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
+#define Z80_SLA_IndirectReg16D(reg,d) \
+Z80_SLA_IndirectReg16((reg) + (d));   \
+m_registers.memptr = ((reg) + (d));
+
+#define Z80_SLA_IndirectReg16D_Reg8(reg16,d,reg8) \
+Z80_SLA_IndirectReg16((reg16) + (d));             \
+(reg8) = peekUnsigned((reg16) + (d));             \
+m_registers.memptr = ((reg16) + (d));
 
 //
 // arithmetic right shift instructions
@@ -692,8 +794,14 @@ Z80_RES_N_IndirectReg16D(n,(reg16),(d));              \
     Z80_SRA_Reg8(*tmpValue);                            \
 }
 
-#define Z80_SRA_IndirectReg16D(reg,d) Z80_SRA_IndirectReg16((reg) + (d))
-#define Z80_SRA_IndirectReg16D_Reg8(reg16,d,reg8) Z80_SRA_IndirectReg16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
+#define Z80_SRA_IndirectReg16D(reg,d) \
+Z80_SRA_IndirectReg16((reg) + (d));   \
+m_registers.memptr = ((reg) + (d));
+
+#define Z80_SRA_IndirectReg16D_Reg8(reg16,d,reg8) \
+Z80_SRA_IndirectReg16((reg16) + (d));             \
+(reg8) = peekUnsigned((reg16) + (d));             \
+m_registers.memptr = ((reg16) + (d));
 
 //
 // logical left shift instruction
@@ -715,8 +823,14 @@ Z80_RES_N_IndirectReg16D(n,(reg16),(d));              \
     Z80_SLL_Reg8(*tmpValue);                            \
 }
 
-#define Z80_SLL_IndirectReg16D(reg,d) Z80_SLL_IndirectReg16((reg) + (d))
-#define Z80_SLL_IndirectReg16D_Reg8(reg16,d,reg8) Z80_SLL_IndirectReg16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
+#define Z80_SLL_IndirectReg16D(reg,d) \
+Z80_SLL_IndirectReg16((reg) + (d));   \
+m_registers.memptr = ((reg) + (d));
+
+#define Z80_SLL_IndirectReg16D_Reg8(reg16,d,reg8) \
+Z80_SLL_IndirectReg16((reg16) + (d));             \
+(reg8) = peekUnsigned((reg16) + (d));             \
+m_registers.memptr = ((reg16) + (d));
 
 //
 // logical right shift instructions
@@ -738,8 +852,14 @@ Z80_RES_N_IndirectReg16D(n,(reg16),(d));              \
     Z80_SRL_Reg8(*tmpValue);                            \
 }
 
-#define Z80_SRL_IndirectReg16D(reg,d) Z80_SRL_IndirectReg16((reg) + (d))
-#define Z80_SRL_IndirectReg16D_Reg8(reg16,d,reg8) Z80_SRL_IndirectReg16((reg16) + (d)); (reg8) = peekUnsigned((reg16) + (d));
+#define Z80_SRL_IndirectReg16D(reg,d) \
+Z80_SRL_IndirectReg16((reg) + (d));   \
+m_registers.memptr = ((reg) + (d));
+
+#define Z80_SRL_IndirectReg16D_Reg8(reg16,d,reg8) \
+Z80_SRL_IndirectReg16((reg16) + (d));             \
+(reg8) = peekUnsigned((reg16) + (d));             \
+m_registers.memptr = ((reg16) + (d));
 
 //
 // bit testing instructions
@@ -768,9 +888,10 @@ Z80_BIT_N_IndirectReg16(n,m_registers.memptr);
 // there is only one nmi return instruction, but it has several opcodes (most of
 // which are unofficial), so a macro is provided for a common implementation.
 //
-#define Z80_RETN               \
-Z80_POP_Reg16(m_registers.pc); \
-m_iff1 = m_iff2;
+#define Z80_RETN                     \
+Z80_POP_Reg16(m_registers.pc);       \
+m_iff1 = m_iff2;                     \
+// m_registers.memptr = m_registers.pc;
 
 //
 // interrupt handler return instruction
@@ -778,9 +899,10 @@ m_iff1 = m_iff2;
 // there is only one interrupt return instruction, but it has several opcodes
 // (most of which are unofficial), so a macro is provided for a common implementation.
 //
-#define Z80_RETI               \
-Z80_POP_Reg16(m_registers.pc); \
-m_iff1 = m_iff2;               \
+#define Z80_RETI                     \
+Z80_POP_Reg16(m_registers.pc);       \
+m_iff1 = m_iff2;                     \
+m_registers.memptr = m_registers.pc; \
 /* TODO signal IO device that interrupt has finished */
 
 //
@@ -836,9 +958,9 @@ m_iff1 = m_iff2;               \
 }
 
 #define Z80_IN_Reg8_IndirectReg16(dest,port) {                         \
-/*    UnsignedWord tmpPort = ((port) & 0xff) | (m_registers.b << 8);*/ \
+    UnsignedWord tmpPort = ((port) & 0xff) | (m_registers.b << 8);     \
     Z80_READ_IO_DEVICES((dest), (port));                               \
-/*    m_registers.memptr = tmpPort + 1; */                             \
+    m_registers.memptr = tmpPort + 1;                                  \
     Z80_FLAG_H_CLEAR;                                                  \
     Z80_FLAG_N_CLEAR;                                                  \
     Z80_FLAG_Z_UPDATE(0 == (dest));                                    \
@@ -849,6 +971,7 @@ m_iff1 = m_iff2;               \
 #define Z80_IN_Reg8_Indirect_N(dest,port) {                        \
     UnsignedWord tmpPort = ((port) & 0xff) | (m_registers.a << 8); \
     Z80_READ_IO_DEVICES((dest), tmpPort);                          \
+    m_registers.memptr = tmpPort + 1;                              \
 }
 
 using UnsignedByte = ::Z80::UnsignedByte;
@@ -1063,7 +1186,7 @@ Z80::InstructionCost Z80::Z80::execute(const UnsignedByte * instruction, bool do
 //        Util::debug << "\n  SP after : 0x" << std::setw(4) << historyEntry.registersAfter.sp << '\n';
 //
 //        if (0xfffe < historyEntry.registersAfter.sp) {
-//            Util::debug("  Stack is now empty");
+//            Util::debugln("  Stack is now empty");
 //        } else {
 //            Util::debug << "\n  Top of stack: 0x" << std::setw(4) << peekUnsignedHostWord(historyEntry.registersAfter.sp);
 //            Util::debug << "   [0x" << std::setw(2) << static_cast<std::uint16_t>(peekUnsigned(historyEntry.registersAfter.sp));
@@ -1088,7 +1211,8 @@ void Z80::Z80::handleNmi()
     }
 
     Z80_PUSH_Reg16(m_registers.pc);
-    m_registers.pc = 0x0066;
+    m_registers.pc = NmiRoutineAddress;
+    m_registers.memptr = NmiRoutineAddress;
     ++m_registers.r;
 
     // Z80 NMI timings
@@ -1111,13 +1235,13 @@ int Z80::Z80::handleInterrupt()
         ++m_registers.pc;
     }
 
-    // Z80__PUSH__REG16(m_registers.pc);
+    // Z80_Push_Reg16(m_registers.pc);
 
     // TODO when we support IRequest, reset if needed
 
     switch (m_interruptMode) {
         case InterruptMode::IM0:
-            // Util::debug("IM0 is not currently handled correctly");;
+            // Util::debugln("IM0 is not currently handled correctly");
             // TODO if the instruction is a call or RST, push PC onto stack
             // if (false/* is_call_or_rst */) {
                 Z80_PUSH_Reg16(m_registers.pc);
@@ -1128,7 +1252,6 @@ int Z80::Z80::handleInterrupt()
             //				execute(reinterpret_cast<UnsignedByte *>(&m_interruptData), false);
             // clear the instruction cache - actually just turns it into a NOP
 
-            // TODO this is only suitable for Spectrums, which only use RST $0038
             switch (m_interruptData) {
                 case InterruptRst00:
                     m_registers.pc = 0x0000;
@@ -1168,12 +1291,15 @@ int Z80::Z80::handleInterrupt()
                     break;
             }
 
+            m_registers.memptr = m_registers.pc;
             m_interruptData = 0x00;
             return 13;
 
+        // TODO check whether this is IM1 for all Z80s, or just those in a Spectrum
         case InterruptMode::IM1:
             Z80_PUSH_Reg16(m_registers.pc);
-            m_registers.pc = 0x0038;
+            m_registers.pc = InterruptIm1RoutineAddress;
+            m_registers.memptr = InterruptIm1RoutineAddress;
             return 13;
 
         case InterruptMode::IM2:
@@ -1186,6 +1312,7 @@ int Z80::Z80::handleInterrupt()
             // 0x0438 (because Z80 words are little-endian) and the PC will jump to 0x0438 for the interrupt service
             // routine
             m_registers.pc = peekUnsignedHostWord(static_cast<UnsignedWord>(m_registers.i) << 8 | (m_interruptData & 0xfe));
+            m_registers.memptr = m_registers.pc;
             return 19;
     }
 
@@ -1257,7 +1384,8 @@ int Z80::Z80::fetchExecuteCycle()
 
 Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * instruction, bool * doPc)
 {
-	bool useJumpCycleCost = false;
+    sp_assert(nullptr != doPc, "Z80::executePlainInstruction() called with null doPc pointer");
+    bool useJumpCycleCost = false;
 
 	switch(*instruction) {
 		case Opcodes::Z80_Plain_Nop:							// 0x00
@@ -1268,8 +1396,10 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
             Z80_LD_Reg16_NN(m_registers.bc, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
 			break;
 
-		case Opcodes::Z80_Plain_Ld_IndirectBc_A:		// 0x02
+		case Opcodes::Z80_Plain_Ld_IndirectBc_A:		    // 0x02
 			Z80_LD_IndirectReg16_Reg8(m_registers.bc, m_registers.a);
+	        m_registers.memptrL = (m_registers.bc + 1) & 0xff;
+	        m_registers.memptrH = m_registers.a;
 			break;
 
 		case Opcodes::Z80_Plain_Inc_Bc:						// 0x03
@@ -1314,11 +1444,13 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_Add_Hl_Bc:				// 0x09
+	        m_registers.memptr = m_registers.hl + 1;
 			Z80_ADD_Reg16_Reg16(m_registers.hl, m_registers.bc);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_A_IndirectBc:		// 0x0a
 			Z80_LD_Reg8_IndirectReg16(m_registers.a, m_registers.bc);
+		    m_registers.memptr = m_registers.bc + 1;
 			break;
 
 		case Opcodes::Z80_Plain_Dec_Bc:						// 0x0b
@@ -1373,7 +1505,9 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
 		case Opcodes::Z80_Plain_Ld_IndirectDe_A:		// 0x12
 			Z80_LD_IndirectReg16_Reg8(m_registers.de, m_registers.a);
-			break;
+	        m_registers.memptrL = (m_registers.bc + 1) & 0xff;
+	        m_registers.memptrH = m_registers.a;
+	        break;
 
 		case Opcodes::Z80_Plain_Inc_De:					// 0x13
 			Z80_INC_Reg16(m_registers.de);
@@ -1409,15 +1543,18 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
 		case Opcodes::Z80_Plain_Jr_d:						// 0x18
 			m_registers.pc += static_cast<SignedByte>(*(instruction + 1));
+	        m_registers.memptr = m_registers.pc;
 			Z80_USE_JUMP_CYCLE_COST;
 			break;
 
 		case Opcodes::Z80_Plain_Add_Hl_De:				// 0x19
+	        m_registers.memptr = m_registers.hl + 1;
 			Z80_ADD_Reg16_Reg16(m_registers.hl, m_registers.de);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_A_IndirectDe:		// 0x1a
 			Z80_LD_Reg8_IndirectReg16(m_registers.a, m_registers.de);
+	        m_registers.memptr = m_registers.de + 1;
 			break;
 
 		case Opcodes::Z80_Plain_Dec_De:					// 0x1b
@@ -1456,6 +1593,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			if (!Z80_FLAG_Z_ISSET) {
 				m_registers.pc += static_cast<SignedByte>(*(instruction + 1));
 				Z80_USE_JUMP_CYCLE_COST;
+			    m_registers.memptr = m_registers.pc;
 			}
 			break;
 
@@ -1527,16 +1665,22 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			if (Z80_FLAG_Z_ISSET) {
 				m_registers.pc += static_cast<SignedByte>(*(instruction + 1));
 				Z80_USE_JUMP_CYCLE_COST;
+	            m_registers.memptr = m_registers.pc;
 			}
 			break;
 
 		case Opcodes::Z80_Plain_Add_Hl_Hl:				// 0x29
+	        m_registers.memptr = m_registers.hl + 1;
 			Z80_ADD_Reg16_Reg16(m_registers.hl, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_Hl_IndirectNn:	// 0x2a
-		    // NOTE the interface of the Z80 class expects addresses in host byte order
-			Z80_LD_Reg16_IndirectNn(m_registers.hl, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
+		    {
+		        // NOTE the interface of the Z80 class expects addresses in host byte order
+		        const auto addr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
+		        Z80_LD_Reg16_IndirectNn(m_registers.hl, addr);
+		        m_registers.memptr = addr + 1;
+		    }
 			break;
 
 		case Opcodes::Z80_Plain_Dec_Hl:					// 0x2b
@@ -1570,6 +1714,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			if (!Z80_FLAG_C_ISSET) {
 				m_registers.pc += static_cast<SignedByte>(*(instruction + 1));
 				Z80_USE_JUMP_CYCLE_COST;
+	            m_registers.memptr = m_registers.pc;
 			}
 			break;
 
@@ -1578,7 +1723,12 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_Ld_IndirectNn_A:		// 0x32
-			Z80_LD_IndirectNn_Reg8(z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)), m_registers.a);
+		    {
+		        const auto addr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
+		        Z80_LD_IndirectNn_Reg8(addr, m_registers.a);
+		        m_registers.memptrL = (addr + 1) & 0xff;
+		        m_registers.memptrH = (addr + 1) & m_registers.a;
+		    }
 			break;
 
 		case Opcodes::Z80_Plain_Inc_Sp:					// 0x33
@@ -1609,15 +1759,21 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			if (Z80_FLAG_C_ISSET) {
 				m_registers.pc += static_cast<SignedByte>(*(instruction + 1));
 				Z80_USE_JUMP_CYCLE_COST;
+	            m_registers.memptr = m_registers.pc;
 			}
 			break;
 
 		case Opcodes::Z80_Plain_Add_Hl_Sp:				// 0x39
+	        m_registers.memptr = m_registers.hl + 1;
 			Z80_ADD_Reg16_Reg16(m_registers.hl, m_registers.sp);
 			break;
 
 		case Opcodes::Z80_Plain_Ld_A_IndirectNn:		// 0x3a
-			Z80_LD_Reg8_IndirectNn(m_registers.a, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
+		    {
+		        const auto addr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
+		        Z80_LD_Reg8_IndirectNn(m_registers.a, addr);
+		        m_registers.memptr = addr + 1;
+		    }
 			break;
 
 		case Opcodes::Z80_Plain_Dec_Sp:					// 0x3b
@@ -2162,6 +2318,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 				Z80_POP_Reg16(m_registers.pc);
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
+	            m_registers.memptr = m_registers.pc;
 			}
 			break;
 
@@ -2220,6 +2377,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 				Z80_POP_Reg16(m_registers.pc);
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
+	            m_registers.memptr = m_registers.pc;
 			}
 			break;
 
@@ -2275,6 +2433,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 				Z80_POP_Reg16(m_registers.pc);
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
+	            m_registers.memptr = m_registers.pc;
 			}
 			break;
 
@@ -2293,7 +2452,6 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
 		case Opcodes::Z80_Plain_Out_IndirectN_A:		// 0xd3
             Z80_OUT_Indirect_N_Reg8(*(instruction + 1), m_registers.a);
-            m_registers.memptr = m_registers.bc + 1;
 			break;
 
 		case Opcodes::Z80_Plain_Call_Nc_Nn:				// 0xd4
@@ -2325,6 +2483,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 				Z80_POP_Reg16(m_registers.pc);
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
+	            m_registers.memptr = m_registers.pc;
 			}
 			break;
 
@@ -2359,7 +2518,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_Prefix_Dd:				// 0xdd
-            Util::debugln("executePlainInstruction() called with opcode 0xdd. such an opcode should be handled by executeDdInstruction()");
+            sp_assert(false, "executePlainInstruction() called with opcode 0xdd - such an opcode should be handled by executeDdInstruction()");
 			break;
 
 		case Opcodes::Z80_Plain_Sbc_A_N:					// 0xde
@@ -2377,6 +2536,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 				Z80_POP_Reg16(m_registers.pc);
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
+	            m_registers.memptr = m_registers.pc;
 			}
 			break;
 
@@ -2396,6 +2556,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
 		case Opcodes::Z80_Plain_Ex_IndirectSp_Hl:	// 0xe3
 			Z80_EX_IndirectReg16_Reg16(m_registers.sp, m_registers.hl);
+	        m_registers.memptr = m_registers.hl;
 			break;
 
 		case Opcodes::Z80_Plain_Call_Po_Nn:				// 0xe4
@@ -2429,6 +2590,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 				Z80_POP_Reg16(m_registers.pc);
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
+	            m_registers.memptr = m_registers.pc;
 			}
 			break;
 
@@ -2467,7 +2629,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 
 		case Opcodes::Z80_Plain_Prefix_Ed:				// 0xed
 			/* should never happen */
-            Util::debugln("executePlainInstruction() called with opcode 0xed. such an opcode should be handled by executeEdInstruction()");
+            sp_assert(false, "executePlainInstruction() called with opcode 0xed - such an opcode should be handled by executeEdInstruction()");
 			break;
 
 		case Opcodes::Z80_Plain_Xor_N:						// 0xee
@@ -2486,6 +2648,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 				Z80_POP_Reg16(m_registers.pc);
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
+	            m_registers.memptr = m_registers.pc;
 			}
 			break;
 
@@ -2539,6 +2702,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 				Z80_POP_Reg16(m_registers.pc);
 				Z80_USE_JUMP_CYCLE_COST;
 				Z80_DONT_UPDATE_PC;
+	            m_registers.memptr = m_registers.pc;
 			}
 			break;
 
@@ -2576,7 +2740,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		case Opcodes::Z80_Plain_Prefix_Fd:				// 0xfd
-            Util::debugln("executePlainInstruction() called with opcode 0xfd. such an opcode should be handled by executeFdInstruction()");
+            sp_assert(false, "executePlainInstruction() called with opcode 0xfd - such an opcode should be handled by executeFdInstruction()");
 			break;
 
 		case Opcodes::Z80_Plain_Cp_N:						// 0xfe
@@ -2589,7 +2753,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 			break;
 
 		default:
-            Util::debugln("unexpected opcode: {:#02x}", *instruction);
+            Util::debugln("unexpected opcode: {:#04x}", *instruction);
             throw InvalidOpcode({*instruction}, m_registers.pc);
 	}
 
@@ -2602,7 +2766,7 @@ Z80::InstructionCost Z80::Z80::executePlainInstruction(const UnsignedByte * inst
 // no 0xcb instructions directly modify the PC so we don't need to receive the bool * doPc parameter to indicate this
 Z80::InstructionCost Z80::Z80::executeCbInstruction(const UnsignedByte * instruction)
 {
-	switch(*instruction) {
+    switch(*instruction) {
 		case Opcodes::Z80_Cb_Rlc_B:		// 0xcb 0x00
 			Z80_RLC_Reg8(m_registers.b);
 			break;
@@ -3631,7 +3795,7 @@ Z80::InstructionCost Z80::Z80::executeCbInstruction(const UnsignedByte * instruc
 			break;
 
 		default:
-            Util::debugln("unexpected opcode: 0xcb {:#02x}", *instruction);
+            Util::debugln("unexpected opcode: 0xcb {:#04x}", *instruction);
             throw InvalidOpcode({0xcb, *instruction}, m_registers.pc);
 	}
 
@@ -3643,6 +3807,7 @@ Z80::InstructionCost Z80::Z80::executeCbInstruction(const UnsignedByte * instruc
 
 Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruction, bool * doPc)
 {
+    sp_assert(nullptr != doPc, "Z80::executeEdInstruction() called with null doPc pointer");
 	bool useJumpCycleCost = false;
 
 	switch (*instruction) {
@@ -3721,11 +3886,16 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Opcodes::Z80_Ed_Sbc_Hl_Bc:					// 0xed 0x42
+	        m_registers.memptr = m_registers.hl + 1;
             Z80_SBC_Reg16_Reg16(m_registers.hl, m_registers.bc);
 			break;
 
 		case Opcodes::Z80_Ed_Ld_IndirectNn_Bc:		// 0xed 0x43
-			Z80_LD_IndirectNn_Reg16(z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)), m_registers.bc);
+		    {
+    		    const auto addr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
+		        Z80_LD_IndirectNn_Reg16(addr, m_registers.bc);
+		        m_registers.memptr = addr + 1;
+		    }
 			break;
 
 		case Opcodes::Z80_Ed_Neg:							// 0xed 0x44
@@ -3754,11 +3924,16 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Opcodes::Z80_Ed_Adc_Hl_Bc:       // 0xed 0x4a
+	        m_registers.memptr = m_registers.hl + 1;
 			Z80_ADC_Reg16_Reg16(m_registers.hl, m_registers.bc);
 			break;
 
 		case Opcodes::Z80_Ed_Ld_Bc_IndirectNn:       // 0xed 0x4b
-			Z80_LD_Reg16_IndirectNn(m_registers.bc, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
+		    {
+		        const auto addr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
+		        Z80_LD_Reg16_IndirectNn(m_registers.bc, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
+		        m_registers.memptr = addr + 1;
+		    }
 			break;
 
 		case Opcodes::Z80_Ed_Neg_0xEd_0x4c:		// 0xed 0x4c
@@ -3789,11 +3964,16 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Opcodes::Z80_Ed_Sbc_Hl_De:					// 0xed 0x52
+	        m_registers.memptr = m_registers.hl + 1;
 			Z80_SBC_Reg16_Reg16(m_registers.hl, m_registers.de);
 			break;
 
 		case Opcodes::Z80_Ed_Ld_IndirectNn_De:	// 0xed 0x53
-			Z80_LD_IndirectNn_Reg16(z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)), m_registers.de);
+		    {
+		        const auto addr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
+		        Z80_LD_IndirectNn_Reg16(addr, m_registers.de);
+		        m_registers.memptr = addr + 1;
+		    }
 			break;
 
 		case Opcodes::Z80_Ed_Neg_0xEd_0x54:		// 0xed 0x54
@@ -3827,11 +4007,16 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Opcodes::Z80_Ed_Adc_Hl_De:					// 0xed 0x5a
+	        m_registers.memptr = m_registers.hl + 1;
 			Z80_ADC_Reg16_Reg16(m_registers.hl, m_registers.de);
 			break;
 
 		case Opcodes::Z80_Ed_Ld_De_IndirectNn:
-			Z80_LD_Reg16_IndirectNn(m_registers.de, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
+		    {
+		        const auto addr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
+		        Z80_LD_Reg16_IndirectNn(m_registers.de, addr);
+		        m_registers.memptr = addr + 1;
+		    }
 			break;
 
 		case Opcodes::Z80_Ed_Neg_0xEd_0x5c:		// 0xed 0x5c
@@ -3861,16 +4046,21 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
             Z80_IN_Reg8_IndirectReg8(m_registers.h, m_registers.c);
 			break;
 
-		case Opcodes::Z80_Ed_Out_IndirectC_H:
+		case Opcodes::Z80_Ed_Out_IndirectC_H:   // 0xed 0x61
             Z80_OUT_IndirectReg8_Reg8(m_registers.c, m_registers.h);
 			break;
 
 		case Opcodes::Z80_Ed_Sbc_Hl_Hl:			// 0xed 0x62
+	        m_registers.memptr = m_registers.hl + 1;
 			Z80_SBC_Reg16_Reg16(m_registers.hl, m_registers.hl);
 			break;
 
 		case Opcodes::Z80_Ed_Ld_IndirectNn_Hl:
-			Z80_LD_IndirectNn_Reg16(z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)), m_registers.hl);
+		    {
+		        const auto addr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
+		        Z80_LD_IndirectNn_Reg16(addr, m_registers.hl);
+		        m_registers.memptr = addr + 1;
+		    }
 			break;
 
 		case Opcodes::Z80_Ed_Neg_0xEd_0x64:	// 0xed 0x64
@@ -3911,11 +4101,12 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 				/* should this be set according to A or both A and (HL) ? */
 				Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a));
 				Z80_FLAG_Z_UPDATE(0 == m_registers.a);
-				Z80_FLAG_S_UPDATE(0x80 & m_registers.a);;
+				Z80_FLAG_S_UPDATE(0x80 & m_registers.a);
+		        m_registers.memptr = m_registers.hl + 1;
 			}
 			break;
 
-		case Opcodes::Z80_Ed_In_L_IndirectC:
+		case Opcodes::Z80_Ed_In_L_IndirectC:                        // 0x68
             Z80_IN_Reg8_IndirectReg8(m_registers.l, m_registers.c);
 			break;
 
@@ -3924,6 +4115,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Opcodes::Z80_Ed_Adc_Hl_Hl:
+	        m_registers.memptr = m_registers.hl + 1;
 			Z80_ADC_Reg16_Reg16(m_registers.hl, m_registers.hl);
 			break;
 
@@ -3971,6 +4163,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 				Z80_FLAG_P_UPDATE(isEvenParity(m_registers.a));
 				Z80_FLAG_Z_UPDATE(0 == m_registers.a);
 				Z80_FLAGS_S53_UPDATE(m_registers.a);
+		        m_registers.memptr = m_registers.hl + 1;
 			}
 			break;
 
@@ -3987,11 +4180,16 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Opcodes::Z80_Ed_Sbc_Hl_Sp:
+	        m_registers.memptr = m_registers.hl + 1;
 			Z80_SBC_Reg16_Reg16(m_registers.hl, m_registers.sp);
 			break;
 
 		case Opcodes::Z80_Ed_Ld_IndirectNn_Sp:
-			Z80_LD_IndirectNn_Reg16(z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)), m_registers.sp);
+		    {
+		        const auto addr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
+		        Z80_LD_IndirectNn_Reg16(addr, m_registers.sp);
+		        m_registers.memptr = addr + 1;
+		    }
 			break;
 
 		case Opcodes::Z80_Ed_Neg_0xEd_0x74:	/* oxed 0x74 */
@@ -4021,11 +4219,16 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		case Opcodes::Z80_Ed_Adc_Hl_Sp:   	        // 0xed 0x7a
+	        m_registers.memptr = m_registers.hl + 1;
 			Z80_ADC_Reg16_Reg16(m_registers.hl, m_registers.sp);
 			break;
 
 		case Opcodes::Z80_Ed_Ld_Sp_IndirectNn:   	// 0xed 0x7b
-			Z80_LD_Reg16_IndirectNn(m_registers.sp, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
+		    {
+		        const auto addr = z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1));
+		        Z80_LD_Reg16_IndirectNn(m_registers.sp, z80ToHostByteOrder(*reinterpret_cast<const UnsignedWord *>(instruction + 1)));
+		        m_registers.memptr = addr + 1;
+		    }
 			break;
 
 		case Opcodes::Z80_Ed_Neg_0xEd_0x7c:	    	// 0xed 0x7c
@@ -4082,9 +4285,9 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 		    {
 		        auto tmpByte = peekUnsigned(m_registers.hl);
                 pokeUnsigned(m_registers.de, tmpByte);
-                m_registers.de++;
-                m_registers.hl++;
-                m_registers.bc--;
+                ++m_registers.de;
+                ++m_registers.hl;
+                --m_registers.bc;
                 Z80_FLAG_H_CLEAR;
                 Z80_FLAG_N_CLEAR;
                 Z80_FLAG_P_UPDATE(0 != m_registers.bc);
@@ -4098,8 +4301,9 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 				bool flagC = Z80_FLAG_C_ISSET;
 				Z80_CP_IndirectReg16(m_registers.hl);
 
-				m_registers.hl++;
-				m_registers.bc--;
+				++m_registers.hl;
+				--m_registers.bc;
+		        ++m_registers.memptr;
 
 				Z80_FLAG_C_UPDATE(flagC);
 				Z80_FLAG_P_UPDATE(0 != m_registers.bc);
@@ -4114,6 +4318,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
                 Z80_READ_IO_DEVICES(result, m_registers.bc);
                 pokeUnsigned(m_registers.hl, result);
                 UnsignedByte carryCheck = result + m_registers.c + 1;
+		        m_registers.memptr = m_registers.bc + 1;
                 --m_registers.b;
                 ++m_registers.hl;
 
@@ -4132,6 +4337,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
                 Z80_WRITE_IO_DEVICES(value, m_registers.bc);
                 --m_registers.b;
                 ++m_registers.hl;
+		        m_registers.memptr = m_registers.bc + 1;
                 UnsignedByte carryCheck = value + m_registers.l;
 
                 Z80_FLAG_H_UPDATE(carryCheck < value);
@@ -4169,8 +4375,9 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			{
                 auto sub = peekUnsigned(m_registers.hl);
                 auto result = m_registers.a - sub;
-				m_registers.hl--;
-				m_registers.bc--;
+				--m_registers.hl;
+				--m_registers.bc;
+		        --m_registers.memptr;
 
                 Z80_FLAG_N_SET;
 				Z80_FLAG_P_UPDATE(0 != m_registers.bc);
@@ -4193,6 +4400,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
                 Z80_READ_IO_DEVICES(result, m_registers.bc);
                 pokeUnsigned(m_registers.hl, result);
                 UnsignedByte carryCheck = result + m_registers.c - 1;
+		        m_registers.memptr = m_registers.bc - 1;
                 --m_registers.b;
                 --m_registers.hl;
 
@@ -4211,6 +4419,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
                 Z80_WRITE_IO_DEVICES(value, m_registers.bc);
                 --m_registers.b;
                 --m_registers.hl;
+		        m_registers.memptr = m_registers.bc - 1;
                 UnsignedByte carryCheck = value + m_registers.l;
 
                 Z80_FLAG_H_UPDATE(carryCheck < value);
@@ -4236,16 +4445,22 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
                 pokeUnsigned(m_registers.de, value);
                 value += m_registers.a;
                 --m_registers.bc;
-                ++m_registers.de;
-                ++m_registers.hl;
 
                 if (m_registers.bc) {
                     // repeat this instruction
-                    m_registers.pc -= 2;
+                    Z80_DONT_UPDATE_PC
+                    m_registers.memptr = m_registers.pc + 1;
                     Z80_USE_JUMP_CYCLE_COST;
                 }
 
-                Z80_FLAG_H_CLEAR;
+		        ++m_registers.de;
+		        ++m_registers.hl;
+
+		        // TODO fuse doesn't appear to do these, it does
+		        //      ( F & ( FLAG_C | FLAG_Z | FLAG_S ) ) | ( BC ? FLAG_V : 0 ) |
+		        //      ( value & FLAG_3 ) | ( (value & 0x02) ? FLAG_5 : 0 )
+		        //  before the BC branch
+		        Z80_FLAG_H_CLEAR;
                 Z80_FLAG_N_CLEAR;
                 Z80_FLAG_P_UPDATE(0 != m_registers.bc);
                 Z80_FLAG_F5_UPDATE(value & (Z80FlagF5Mask >> 4));
@@ -4261,10 +4476,13 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
                 --m_registers.bc;
                 ++m_registers.hl;
 
-                if (0 != result && m_registers.bc) {
+		        if (0 != result && m_registers.bc) {
                     // repeat this instruction
-                    m_registers.pc -= 2;
+		            Z80_DONT_UPDATE_PC
+		            m_registers.memptr = m_registers.pc + 1;
                     Z80_USE_JUMP_CYCLE_COST;
+                } else {
+                    ++m_registers.memptr;
                 }
 
                 Z80_FLAG_S_UPDATE(result & 0x80);
@@ -4282,13 +4500,15 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
                 UnsignedByte result;
                 Z80_READ_IO_DEVICES(result, m_registers.bc);
                 pokeUnsigned(m_registers.hl, result);
-                UnsignedByte carryCheck = result + m_registers.c + 1;
+                const UnsignedByte carryCheck = result + m_registers.c + 1;
+		        const UnsignedWord memptr = m_registers.bc + 1;
                 --m_registers.b;
                 ++m_registers.hl;
 
                 if (0 != m_registers.b) {
+                    m_registers.memptr = memptr;
                     // repeat this instruction
-                    m_registers.pc -= 2;
+                    Z80_DONT_UPDATE_PC
                     Z80_USE_JUMP_CYCLE_COST;
                 }
 
@@ -4310,8 +4530,9 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
                 UnsignedByte carryCheck = value + m_registers.l;
 
                 if (0 != m_registers.b) {
+                    m_registers.memptr = m_registers.bc + 1;
                     // repeat this instruction
-                    m_registers.pc -= 2;
+                    Z80_DONT_UPDATE_PC
                     Z80_USE_JUMP_CYCLE_COST;
                 }
 
@@ -4338,16 +4559,21 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
                 pokeUnsigned(m_registers.de, value);
                 value += m_registers.a;
                 --m_registers.bc;
-                --m_registers.de;
-                --m_registers.hl;
 
                 if (m_registers.bc) {
                     // repeat this instruction
-                    m_registers.pc -= 2;
+                    Z80_DONT_UPDATE_PC
+                    m_registers.memptr = m_registers.pc + 1;
                     Z80_USE_JUMP_CYCLE_COST;
                 }
 
-                Z80_FLAG_H_CLEAR;
+		        // TODO fuse doesn't seem to do this, it does
+    		    //      F = ( F & ( FLAG_C | FLAG_Z | FLAG_S ) ) | ( BC ? FLAG_V : 0 ) |
+	    	    //      ( bytetemp & FLAG_3 ) | ( (bytetemp & 0x02) ? FLAG_5 : 0 );
+		        //  before the bc branch
+		        --m_registers.de;
+		        --m_registers.hl;
+		        Z80_FLAG_H_CLEAR;
                 Z80_FLAG_N_CLEAR;
                 Z80_FLAG_P_UPDATE(0 != m_registers.bc);
                 Z80_FLAG_F5_UPDATE(value & (Z80FlagF5Mask >> 4));
@@ -4365,8 +4591,11 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 
                 if (0 != result && m_registers.bc) {
                     // repeat this instruction
-                    m_registers.pc -= 2;
+                    Z80_DONT_UPDATE_PC
+                    m_registers.memptr = m_registers.pc + 1;
                     Z80_USE_JUMP_CYCLE_COST;
+                } else {
+                    --m_registers.memptr;
                 }
 
                 Z80_FLAG_S_UPDATE(result & 0x80);
@@ -4384,13 +4613,15 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
             UnsignedByte result;
             Z80_READ_IO_DEVICES(result, m_registers.bc);
             pokeUnsigned(m_registers.hl, result);
-            UnsignedByte carryCheck = result + m_registers.c - 1;
+            const UnsignedByte carryCheck = result + m_registers.c - 1;
+		    const UnsignedWord memptr = m_registers.bc - 1;
             --m_registers.b;
             --m_registers.hl;
 
             if (0 != m_registers.b) {
+                m_registers.memptr = memptr;
                 // repeat this instruction
-                m_registers.pc -= 2;
+                Z80_DONT_UPDATE_PC
                 Z80_USE_JUMP_CYCLE_COST;
             }
 
@@ -4412,8 +4643,9 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
             UnsignedByte carryCheck = value + m_registers.l;
 
             if (0 != m_registers.b) {
+                m_registers.memptr = m_registers.bc - 1;
                 // repeat this instruction
-                m_registers.pc -= 2;
+                Z80_DONT_UPDATE_PC
                 Z80_USE_JUMP_CYCLE_COST;
             }
 
@@ -4497,7 +4729,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 			break;
 
 		default:
-            Util::debugln("unexpected opcode: 0xed {:#02x}", *instruction);
+            Util::debugln("unexpected opcode: 0xed {:#04x}", *instruction);
             throw InvalidOpcode({0xed, *instruction}, m_registers.pc);
 	}
 
@@ -4509,6 +4741,7 @@ Z80::InstructionCost Z80::Z80::executeEdInstruction(const UnsignedByte * instruc
 
 Z80::InstructionCost Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, const UnsignedByte * instruction, bool * doPc)
 {
+    sp_assert(nullptr != doPc, "Z80::executeDfOrFdInstruction() called with null doPc pointer");
 	bool useJumpCycleCost = false;
 
 	// work out which high and low reg pointers to use
@@ -4859,6 +5092,7 @@ Z80::InstructionCost Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, cons
 		case Opcodes::Z80_DdOrFd_Jp_IxOrIy: /*  0xe9 */
 		    // NOTE unlike the plain E9 that uses (HL) this IS NOT INDIRECT and is just JP IX or JP IY
 			m_registers.pc = reg;
+	        // NOTE no memptr update for reg16
 			Z80_DONT_UPDATE_PC;
 			break;
 
@@ -5081,14 +5315,14 @@ Z80::InstructionCost Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, cons
 #if (!defined(NDEBUG))
             // this is like a NOP - the second 0xdd or 0xfd supersedes the first and consumes 1 byte and 4 t-states. The
             // PC is subsequently incremented and the second 0xdd or 0xfd becomes the first byte of the next instruction
-            Util::debugln("Encountered redundant double-extended {:#02x}", static_cast<std::uint16_t>(*instruction));
+            Util::debugln("Encountered redundant double-extended {:#04x}", *instruction);
 #endif
             return {4, 1};
 
 	    default:
             {
                 UnsignedByte prefix = (&reg == &m_registers.ix ? 0xdd : 0xfd);
-                Util::debugln("unexpected opcode: {:#02x} {:#02x}", prefix, *instruction);
+                Util::debugln("unexpected opcode: {:#04x} {:#04x}", prefix, *instruction);
                 throw InvalidOpcode({prefix, *instruction}, m_registers.pc);
             }
     }
@@ -5099,11 +5333,13 @@ Z80::InstructionCost Z80::Z80::executeDdOrFdInstruction(UnsignedWord & reg, cons
 	};
 }
 
+// no 0xdd 0xcb or 0xfd 0xcb instructions directly modify the PC so we don't need to receive the bool * doPc parameter
+// to indicate this
 Z80::InstructionCost Z80::Z80::executeDdcbOrFdcbInstruction(UnsignedWord & reg, const UnsignedByte * instruction)
 {
-	// NOTE these opcodes are of the form 0xdd 0xcb DD II or 0xfd 0xcb DD II where II is the 8-bit opcode and DD is the
+    // NOTE these opcodes are of the form 0xdd 0xcb DD II or 0xfd 0xcb DD II where II is the 8-bit opcode and DD is the
 	// 8-bit 2s-complement offset to use with IX or IY
-	auto d = static_cast<SignedByte>(*(instruction));
+	auto d = static_cast<SignedByte>(*instruction);
 	auto opcodeByte = *(instruction + 1);
 
 	switch(opcodeByte) {
@@ -5968,6 +6204,8 @@ Z80::InstructionCost Z80::Z80::executeDdcbOrFdcbInstruction(UnsignedWord & reg, 
 	    case Opcodes::Z80_DdOrFd_Cb_Set_7_IndirectIxdOrIyd_A:		/* 0xdd/0xfd 0xcb 0xff */
             Z80_SET_N_IndirectReg16D_Reg8(7, reg, d, m_registers.a);
             break;
+
+	    // no default, all possible cases are handled
 	}
 
 	return {

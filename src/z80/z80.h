@@ -21,22 +21,22 @@
 namespace Z80
 {
     constexpr std::uint8_t Z80FlagCBit = 0;
-    constexpr std::uint8_t Z80FlagZBit = 6;
-    constexpr std::uint8_t Z80FlagPBit = 2;
-    constexpr std::uint8_t Z80FlagSBit = 7;
     constexpr std::uint8_t Z80FlagNBit = 1;
-    constexpr std::uint8_t Z80FlagHBit = 4;
+    constexpr std::uint8_t Z80FlagPBit = 2;
     constexpr std::uint8_t Z80FlagF3Bit = 3;
+    constexpr std::uint8_t Z80FlagHBit = 4;
     constexpr std::uint8_t Z80FlagF5Bit = 5;
-    
+    constexpr std::uint8_t Z80FlagZBit = 6;
+    constexpr std::uint8_t Z80FlagSBit = 7;
+
     constexpr std::uint8_t Z80FlagCMask = 0x01 << Z80FlagCBit;
-    constexpr std::uint8_t Z80FlagZMask = 0x01 << Z80FlagZBit;
-    constexpr std::uint8_t Z80FlagPMask = 0x01 << Z80FlagPBit;
-    constexpr std::uint8_t Z80FlagSMask = 0x01 << Z80FlagSBit;
     constexpr std::uint8_t Z80FlagNMask = 0x01 << Z80FlagNBit;
-    constexpr std::uint8_t Z80FlagHMask = 0x01 << Z80FlagHBit;
+    constexpr std::uint8_t Z80FlagPMask = 0x01 << Z80FlagPBit;
     constexpr std::uint8_t Z80FlagF3Mask = 0x01 << Z80FlagF3Bit;
+    constexpr std::uint8_t Z80FlagHMask = 0x01 << Z80FlagHBit;
     constexpr std::uint8_t Z80FlagF5Mask = 0x01 << Z80FlagF5Bit;
+    constexpr std::uint8_t Z80FlagZMask = 0x01 << Z80FlagZBit;
+    constexpr std::uint8_t Z80FlagSMask = 0x01 << Z80FlagSBit;
 
     class IODevice;
 
@@ -47,17 +47,23 @@ namespace Z80
     : public Cpu
     {
         public:
-            /** IM0 interrupt vectors. */
-        static constexpr UnsignedWord InterruptRst00 = 0x00c7;
-        static constexpr UnsignedWord InterruptRst08 = 0x00cf;
-        static constexpr UnsignedWord InterruptRst10 = 0x00d7;
-        static constexpr UnsignedWord InterruptRst18 = 0x00df;
-        static constexpr UnsignedWord InterruptRst20 = 0x00e7;
-        static constexpr UnsignedWord InterruptRst28 = 0x00ef;
-        static constexpr UnsignedWord InterruptRst30 = 0x00f7;
-        static constexpr UnsignedWord InterruptRst38 = 0x00ff;
+            /** Where the NMI always jumps to. */
+            static constexpr MemoryType::Address NmiRoutineAddress = 0x0066;
 
-        using Memory = ::Memory<UnsignedByte>;
+            /** WHere the interrupt routine for IM1 is located. */
+            static constexpr MemoryType::Address InterruptIm1RoutineAddress = 0x0038;
+
+            /** IM0 interrupt vectors. */
+            static constexpr UnsignedWord InterruptRst00 = 0x00c7;
+            static constexpr UnsignedWord InterruptRst08 = 0x00cf;
+            static constexpr UnsignedWord InterruptRst10 = 0x00d7;
+            static constexpr UnsignedWord InterruptRst18 = 0x00df;
+            static constexpr UnsignedWord InterruptRst20 = 0x00e7;
+            static constexpr UnsignedWord InterruptRst28 = 0x00ef;
+            static constexpr UnsignedWord InterruptRst30 = 0x00f7;
+            static constexpr UnsignedWord InterruptRst38 = 0x00ff;
+
+            using Memory = ::Memory<UnsignedByte>;
 
             /**
              * Initialise a new Z80 with a memory object.

@@ -157,6 +157,9 @@ namespace Interpreter
         /** Helper to execute the .autoflags command. */
         void dotAutoShowFlags(const Tokens & tokens) noexcept;
 
+        /** Helper to execute the .autoregs command. */
+        void dotAutoShowRegisters(const Tokens & tokens) noexcept;
+
         /** Helper to execute the .status command. */
         void dotStatus() const noexcept;
 
@@ -181,12 +184,15 @@ namespace Interpreter
         /** Helper to execute the .rv/.regvalue/.registervalue command. */
         void dotRegisterValue(Register16 reg, const NumberFormats & fmt = AllFormats) const noexcept;
 
+        /** Helper to execute the .clearflags command. */
+        void dotClearFlags() const noexcept;
+
         /**
          * Helper to run a single instruction on the Z80 CPU.
          * 
          * @param opcode The instruction to run.
          */
-        void runOpcode(const Opcode & opcode) noexcept;
+        void runOpcode(const Opcode & opcode) const noexcept;
 
         /**
          * Helper to dispatch a token stream for assembly.
@@ -821,6 +827,9 @@ namespace Interpreter
         
         /** Whether or not the flags should be output after each instruction executed. */
         bool m_autoShowFlags;
+
+        /** Whether or not the registers should be output after each instruction executed. */
+        bool m_autoShowRegisters;
     };
 }
 
