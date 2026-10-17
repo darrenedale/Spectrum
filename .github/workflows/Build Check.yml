@@ -16,9 +16,6 @@ jobs:
         build-type: [Debug, Release]
         # interpreter doesn't use Qt
 
-    concurrency:
-      group: "z80interpreter"
-
     steps:
       - name: Checkout source
         uses: actions/checkout@v7
