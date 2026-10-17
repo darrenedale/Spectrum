@@ -40,7 +40,7 @@ jobs:
 
           cmake --build "$GITHUB_WORKSPACE"/build/interpreter/${{ matrix.build-type }} --target z80interpreter -j$(nproc)
           BUILD_DURATION=$(( $(date +%s%3N) - $BUILD_START_TIMESTAMP ))
-          echo "Interpreter build took {$BUILD_DURATION}ms." > "$GITHUB_STEP_SUMMARY"
+          echo "Interpreter build took ${BUILD_DURATION}ms." > "$GITHUB_STEP_SUMMARY"
 
   build-disassembler:
     name: Build Z80 disassembler
@@ -75,7 +75,7 @@ jobs:
 
           cmake --build "$GITHUB_WORKSPACE"/build/disassembler/${{ matrix.build-type }} --target z80-disassembler -j$(nproc)
           BUILD_DURATION=$(( $(date +%s%3N) - $BUILD_START_TIMESTAMP ))
-          echo "Disassembler build took {$BUILD_DURATION}ms." > "$GITHUB_STEP_SUMMARY"
+          echo "Disassembler build took ${BUILD_DURATION}ms." > "$GITHUB_STEP_SUMMARY"
 
   build-emulator:
     name: Build Spectrum emulator
