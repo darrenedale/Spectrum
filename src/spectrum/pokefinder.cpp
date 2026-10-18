@@ -98,9 +98,9 @@ void PokeFinder::searchForBeforeValue() noexcept
         m_possibleAddresses.push_back(m_memory->addressableSize() - 1);
     }
 
+#if !defined(NDEBUG)
     const auto duration = std::chrono::steady_clock::now() - start;
 
-#if !defined(NDEBUG)
     Util::debugln(
         "Found {} addresses with value {} in {} ms",
         m_possibleAddresses.size(),
