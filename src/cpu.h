@@ -128,7 +128,7 @@ public:
      */
     void setClockSpeedMHz(const double mhz)
     {
-        m_clockSpeed = static_cast<unsigned long long>(mhz * 1000000);
+        m_clockSpeed = static_cast<unsigned long long>(mhz * 1'000'000);
     }
 
     /**
@@ -150,7 +150,7 @@ public:
     [[nodiscard]]
     double clockSpeedMHz() const
     {
-        return static_cast<double>(m_clockSpeed) / 1000000.0;
+        return static_cast<double>(m_clockSpeed) / 1'000'000.0;
     }
 
 protected:

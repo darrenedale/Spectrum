@@ -9,7 +9,7 @@
 
 namespace Test::Z80
 {
-    using Memory = ::Z80::UnsignedByte[65536];
+    using Memory = ::Z80::UnsignedByte[65'536];
 }
 
 #endif //SPECTRUM_TEST_Z80_MEMORY_H

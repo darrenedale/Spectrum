@@ -148,7 +148,7 @@ namespace
 }
 
 Runner::Runner(std::string testFileBaseName)
-: Runner(std::move(testFileBaseName), new ::Z80::Z80(new SimpleMemory(65536)))
+: Runner(std::move(testFileBaseName), new ::Z80::Z80(new SimpleMemory(65'536)))
 {
     m_borrowedCpu = false;
     m_ioDevice = std::make_unique<TestIoDevice>();

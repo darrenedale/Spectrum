@@ -67,9 +67,9 @@ void PagingDevicePlus2a::writeByte(const UnsignedWord port, const UnsignedByte v
         return;
     }
     
-    if (0b0111111111111101 == (port | 0b0011111111111101)) {
+    if (0b01111111'11111101 == (port | 0b00111111'11111101)) {
         writePort7ffd(value);
-    } else if (0b0001111111111101 == (port | 0b0000111111111101)) {
+    } else if (0b00011111'11111101 == (port | 0b00001111'11111101)) {
         writePort1ffd(value);
     }
 }

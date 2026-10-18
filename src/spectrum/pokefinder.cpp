@@ -26,7 +26,7 @@ using namespace Spectrum;
 
 namespace
 {
-    constexpr int InitialMatchingAddressCapacity = 2048;
+    constexpr int InitialMatchingAddressCapacity = 2'048;
 }
 
 PokeFinder::PokeFinder(Memory* memory)

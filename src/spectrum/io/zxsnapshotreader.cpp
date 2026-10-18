@@ -204,7 +204,7 @@ bool ZxSnapshotReader::couldBeSnapshot(std::istream & in)
     }
 
     // byte 49426 must be 0 for DI, 1 for EI
-    in.seekg(49426, std::ios_base::beg);
+    in.seekg(49'426, std::ios_base::beg);
     std::istream::char_type byteValue;
     in.get(byteValue);
 
@@ -213,14 +213,14 @@ bool ZxSnapshotReader::couldBeSnapshot(std::istream & in)
     }
 
     // byte 49429 must be 0 for B/W, 1 for colour
-    in.seekg(49429, std::ios_base::beg);
+    in.seekg(49'429, std::ios_base::beg);
 
     if (in.fail() || 0 != byteValue || 1 != byteValue) {
         return false;
     }
 
     // BE word at 49474 must be -1 for IM0, 0 for IM1, 1 for IM2
-    in.seekg(49474, std::ios_base::beg);
+    in.seekg(49'474, std::ios_base::beg);
     std::int16_t wordValue;
     in.read(reinterpret_cast<std::istream::char_type *>(&wordValue), sizeof(wordValue));
 
