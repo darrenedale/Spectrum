@@ -45,6 +45,23 @@ FilenameWidget::FilenameWidget(const Type type, const QString & fileName, QWidge
 
 FilenameWidget::~FilenameWidget() noexcept = default;
 
+void FilenameWidget::setType(const Type type) noexcept
+{
+    m_type = type;
+
+    if (Type::Save == m_type) {
+        m_choose->setIcon(QIcon::fromTheme(
+            QStringLiteral("file-save"),
+            Application::icon(QStringLiteral("save"))
+        ));
+    } else {
+        m_choose->setIcon(QIcon::fromTheme(
+            QStringLiteral("file-open"),
+            Application::icon(QStringLiteral("open"))
+        ));
+    }
+}
+
 bool FilenameWidget::hasFilename() const noexcept
 {
     return !m_filename->text().isEmpty();
@@ -75,13 +92,25 @@ void FilenameWidget::connectWidgets() noexcept
     connect(m_filename.get(), &QLineEdit::textChanged, this, &FilenameWidget::filenameChanged);
 
     connect(m_choose.get(), &QToolButton::clicked, [this]() {
-        const auto fileName = QFileDialog::getSaveFileName(
-            this,
-            tr(Type::Save == m_type ? "Save" : "Open"),
-            m_filename->text(),
-            QStringLiteral("Poke Files (*.pok)"),
-            nullptr
-        );
+        QString fileName;
+
+        if (Type::Open == m_type) {
+            fileName = QFileDialog::getOpenFileName(
+                this,
+                tr("Open"),
+                m_filename->text(),
+                QStringLiteral("Poke Files (*.pok)"),
+                nullptr
+            );
+        } else {
+            fileName = QFileDialog::getSaveFileName(
+                this,
+                tr("Save"),
+                m_filename->text(),
+                QStringLiteral("Poke Files (*.pok)"),
+                nullptr
+            );
+        }
 
         if (fileName.isEmpty()) {
             return;

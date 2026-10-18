@@ -7,6 +7,7 @@
 
 #include <istream>
 #include <optional>
+
 #include "../pokedefinition.h"
 
 namespace Spectrum::Io

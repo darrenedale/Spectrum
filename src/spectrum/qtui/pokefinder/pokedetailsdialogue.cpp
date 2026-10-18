@@ -16,19 +16,26 @@
 
 using namespace Spectrum::QtUi;
 
+namespace
+{
+    constexpr auto WindowTitleCreate = "Save poke";
+    constexpr auto WindowTitleAdd = "Add poke";
+}
+
 PokeDetailsDialogue::PokeDetailsDialogue(QWidget *parent) noexcept
-: PokeDetailsDialogue(QLatin1String(""), 0, 0, parent)
+: PokeDetailsDialogue(QLatin1String(""), 0, 0, Mode::Create, parent)
 {}
 
-PokeDetailsDialogue::PokeDetailsDialogue(const QString & name, const Z80::UnsignedWord address, const Z80::UnsignedByte value, QWidget * parent) noexcept
+PokeDetailsDialogue::PokeDetailsDialogue(const QString & name, const Z80::UnsignedWord address, const Z80::UnsignedByte value, const Mode mode, QWidget * parent) noexcept
 : QDialog(parent),
+  m_mode(mode),
   m_address(address),
   m_nameWidget(std::make_unique<QLineEdit>(name, this)),
   m_valueWidget(std::make_unique<HexSpinBox>(2, this)),
   m_addressDisplay(std::make_unique<QLabel>(this)),
   m_filenameWidget(std::make_unique<FilenameWidget>(FilenameWidget::Type::Save, this))
 {
-    setWindowTitle(tr("Poke details"));
+    setWindowTitle(Mode::Create == mode ? tr(WindowTitleCreate) : tr(WindowTitleAdd));
     m_valueWidget->setValue(value);
     m_nameWidget->setPlaceholderText(tr("Poke name"));
 
@@ -41,6 +48,13 @@ PokeDetailsDialogue::PokeDetailsDialogue(const QString & name, const Z80::Unsign
 }
 
 PokeDetailsDialogue::~PokeDetailsDialogue() noexcept = default;
+
+void PokeDetailsDialogue::setMode(const Mode mode) noexcept
+{
+    m_mode = mode;
+    setWindowTitle(Mode::Create == mode ? tr(WindowTitleCreate) : tr(WindowTitleAdd));
+    m_filenameWidget->setType(mode == Mode::Create ? FilenameWidget::Type::Save : FilenameWidget::Type::Open);
+}
 
 void PokeDetailsDialogue::setName(const QString& name) noexcept
 {

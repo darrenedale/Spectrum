@@ -38,6 +38,8 @@ namespace Spectrum::QtUi
                 return m_type;
             }
 
+            void setType(Type) noexcept;
+
             [[nodiscard]]
             bool hasFilename() const noexcept;
 
