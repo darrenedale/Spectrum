@@ -23,10 +23,15 @@
 
 using namespace Spectrum;
 
+namespace
+{
+    constexpr int InitialMatchingAddressCapacity = 2048;
+}
+
 PokeFinder::PokeFinder(Memory* memory)
 : m_memory(memory)
 {
-    m_possibleAddresses.reserve(2048);
+    m_possibleAddresses.reserve(InitialMatchingAddressCapacity);
 }
 
 void PokeFinder::setMemory(Memory * memory) noexcept
@@ -77,9 +82,9 @@ void PokeFinder::searchForBeforeValue() noexcept
         if (
             // compare both Word and Byte values
             value == m_memory->readWord<Word>(address)
-            || value == static_cast<std::uint16_t>(m_memory->readByte(address))
+            || value == static_cast<::Z80::UnsignedWord>(m_memory->readByte(address))
         ) {
-            m_possibleAddresses.emplace_back(static_cast<Address>(address));
+            m_possibleAddresses.push_back(address);
         }
     }
 

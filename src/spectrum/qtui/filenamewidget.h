@@ -48,6 +48,8 @@ namespace Spectrum::QtUi
             [[nodiscard]]
             QString filename() const noexcept;
 
+            void setFilter(const QString &) noexcept;
+
         Q_SIGNALS:
             void filenameChanged(const QString &) const;
             void chooseFileActivated();
@@ -59,6 +61,7 @@ namespace Spectrum::QtUi
             Type m_type;
             std::unique_ptr<QLineEdit> m_filename;
             std::unique_ptr<QToolButton> m_choose;
+            QString m_filter;
     };
 } // Spectrum::QtUi
 

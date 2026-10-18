@@ -77,6 +77,11 @@ QString FilenameWidget::filename() const noexcept
     return m_filename->text();
 }
 
+void FilenameWidget::setFilter(const QString & filter) noexcept
+{
+    m_filter = filter;
+}
+
 void FilenameWidget::layoutWidget() noexcept
 {
     auto * layout = new QHBoxLayout(this);
@@ -99,7 +104,7 @@ void FilenameWidget::connectWidgets() noexcept
                 this,
                 tr("Open"),
                 m_filename->text(),
-                QStringLiteral("Poke Files (*.pok)"),
+                m_filter,
                 nullptr
             );
         } else {
@@ -107,7 +112,7 @@ void FilenameWidget::connectWidgets() noexcept
                 this,
                 tr("Save"),
                 m_filename->text(),
-                QStringLiteral("Poke Files (*.pok)"),
+                m_filter,
                 nullptr
             );
         }

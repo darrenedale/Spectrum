@@ -30,10 +30,10 @@ PokeDetailsDialogue::PokeDetailsDialogue(const QString & name, const Z80::Unsign
 : QDialog(parent),
   m_mode(mode),
   m_address(address),
+  m_filenameWidget(std::make_unique<FilenameWidget>(FilenameWidget::Type::Save, this)),
   m_nameWidget(std::make_unique<QLineEdit>(name, this)),
-  m_valueWidget(std::make_unique<HexSpinBox>(2, this)),
   m_addressDisplay(std::make_unique<QLabel>(this)),
-  m_filenameWidget(std::make_unique<FilenameWidget>(FilenameWidget::Type::Save, this))
+  m_valueWidget(std::make_unique<HexSpinBox>(2, this))
 {
     setWindowTitle(Mode::Create == mode ? tr(WindowTitleCreate) : tr(WindowTitleAdd));
     m_valueWidget->setValue(value);
@@ -43,6 +43,7 @@ PokeDetailsDialogue::PokeDetailsDialogue(const QString & name, const Z80::Unsign
         new QRegularExpressionValidator(QRegularExpression("\\s*\\w+.*"), m_nameWidget.get())
     );
 
+    m_filenameWidget->setFilter(QStringLiteral("Poke Files (*.pok)"));
     setAddress(address);
     layoutWidget();
 }
