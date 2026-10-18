@@ -4,6 +4,7 @@
 #include <QMainWindow>
 
 #include "../../pokefinder.h"
+#include "pokedetailsdialogue.h"
 
 namespace Spectrum::QtUi
 {
@@ -70,7 +71,7 @@ namespace Spectrum::QtUi::PokeFinder
 	        void rescanAfterValue(int) noexcept;
 
 	        void showAddressListContextMenu(const QPoint &) noexcept;
-	        void showCreatePokeFileDialogue(::Z80::UnsignedWord address, ::Z80::UnsignedByte) noexcept;
+	        void showSavePokeDialogue(::Z80::UnsignedWord address, ::Z80::UnsignedByte, PokeDetailsDialogue::Mode = PokeDetailsDialogue::Mode::Create) noexcept;
 
 	        /**
 	         * Helper to create the toolbars for the window.

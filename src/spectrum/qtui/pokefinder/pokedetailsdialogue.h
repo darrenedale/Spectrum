@@ -26,9 +26,15 @@ namespace Spectrum::QtUi
         Q_OBJECT
 
         public:
+            enum class Mode: std::uint8_t
+            {
+                Create,
+                Add,
+            };
+
             explicit PokeDetailsDialogue(QWidget * parent = nullptr) noexcept;
 
-            PokeDetailsDialogue(const QString &, ::Z80::UnsignedWord, ::Z80::UnsignedByte, QWidget * parent = nullptr) noexcept;
+            PokeDetailsDialogue(const QString &, ::Z80::UnsignedWord, ::Z80::UnsignedByte, Mode = Mode::Create, QWidget * parent = nullptr) noexcept;
             PokeDetailsDialogue(const PokeDetailsDialogue &) = delete;
             PokeDetailsDialogue(PokeDetailsDialogue &&) = delete;
             PokeDetailsDialogue operator=(const PokeDetailsDialogue &) = delete;
@@ -55,9 +61,18 @@ namespace Spectrum::QtUi
 
             void setValue(::Z80::UnsignedByte value) noexcept;
 
+            [[nodiscard]]
+            Mode mode() const noexcept
+            {
+                return m_mode;
+            }
+
+            void setMode(Mode) noexcept;
+
         private:
             void layoutWidget() noexcept;
 
+            Mode m_mode;
             ::Z80::UnsignedWord m_address;
             std::unique_ptr<FilenameWidget> m_filenameWidget;
             std::unique_ptr<QLineEdit>(m_nameWidget);

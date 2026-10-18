@@ -27,12 +27,50 @@
 #include "../pokewidget.h"
 #include "../thread.h"
 #include "../../pokedefinition.h"
+#include "../../io/pokfilereader.h"
 #include "../../io/pokfilewriter.h"
 #include "../../../util/assert.h"
 #include "../../../util/debug.h"
 
 using namespace std::string_literals;
 using namespace Spectrum::QtUi::PokeFinder;
+
+namespace
+{
+    using namespace Spectrum::Io;
+
+    void createPokFile(const Spectrum::PokeDefinition & poke, const std::string & filename) noexcept
+    {
+        auto writer = PokFileWriter(filename);
+        writer.addPoke(poke);
+        writer.close();
+
+        Spectrum::QtUi::Application::showNotification(QObject::tr("Created .pok file \"%1\".").arg(filename));
+    }
+
+    void addToPokFile(const Spectrum::PokeDefinition & poke, const std::string & filename) noexcept
+    {
+        assert(std::filesystem::exists(filename));
+        std::vector pokes = {poke};
+
+        {
+            auto reader = PokFileReader(filename);
+
+            while (reader.hasMorePokes()) {
+                pokes.push_back(std::move(*reader.nextPoke()));
+            }
+        }
+
+        auto writer = PokFileWriter(filename);
+
+        for (const auto & writePoke : pokes) {
+            writer.addPoke(writePoke);
+        }
+
+        writer.close();
+        Spectrum::QtUi::Application::showNotification(QObject::tr("Added poke to .pok file \"%1\".").arg(filename));
+    }
+}
 
 PokeFinderWindow::PokeFinderWindow(QWidget * parent )
 : PokeFinderWindow(nullptr, parent)
@@ -427,8 +465,10 @@ void PokeFinderWindow::showAddressListContextMenu(const QPoint & pos) noexcept
     widgetAction->setDefaultWidget(pokeWidget);
     contextMenu.addAction(widgetAction);
 
-    auto * pokeFileAction = new QAction(tr("Create .pok file"));
-    contextMenu.addAction(pokeFileAction);
+    auto * createPokeFileAction = new QAction(tr("Create .pok file"));
+    auto * addToPokeFileAction = new QAction(tr("Add to .pok file"));
+    contextMenu.addAction(createPokeFileAction);
+    contextMenu.addAction(addToPokeFileAction);
 
     connect(pokeWidget, &PokeWidget::pokeClicked, [this](const ::Z80::UnsignedWord pokeAddress, const ::Z80::UnsignedByte value) {
         m_thread->spectrum().memory()->writeByte(pokeAddress, value);
@@ -440,17 +480,23 @@ void PokeFinderWindow::showAddressListContextMenu(const QPoint & pos) noexcept
         );
     });
 
-    connect(pokeFileAction, &QAction::triggered, [this, address, value]() {
+    connect(createPokeFileAction, &QAction::triggered, [this, address, value]() {
         Util::debugln("create .pok file triggered");
-        showCreatePokeFileDialogue(address, value);
+        showSavePokeDialogue(address, value);
+    });
+
+    connect(addToPokeFileAction, &QAction::triggered, [this, address, value]() {
+        Util::debugln("create .pok file triggered");
+        showSavePokeDialogue(address, value, PokeDetailsDialogue::Mode::Add);
     });
 
     contextMenu.exec(QCursor::pos());
 }
 
-void PokeFinderWindow::showCreatePokeFileDialogue(const ::Z80::UnsignedWord address, const ::Z80::UnsignedByte value) noexcept
+void PokeFinderWindow::showSavePokeDialogue(const ::Z80::UnsignedWord address, const ::Z80::UnsignedByte value, PokeDetailsDialogue::Mode mode) noexcept
 {
     auto pokeDialogue = PokeDetailsDialogue(this);
+    pokeDialogue.setMode(mode);
     pokeDialogue.setAddress(address);
     pokeDialogue.setValue(value);
 
@@ -462,6 +508,11 @@ void PokeFinderWindow::showCreatePokeFileDialogue(const ::Z80::UnsignedWord addr
 
     if (filename.empty()) {
         return;
+    }
+
+    if (PokeDetailsDialogue::Mode::Add == mode && !std::filesystem::exists(filename)) {
+        mode = PokeDetailsDialogue::Mode::Create;
+        Application::showNotification(tr("The poke file %1 does not exist, creating a new file.").arg(filename));
     }
 
     auto pokeName = pokeDialogue.name().toStdString();
@@ -494,9 +545,9 @@ void PokeFinderWindow::showCreatePokeFileDialogue(const ::Z80::UnsignedWord addr
         .bytes = {pokeValue},
     });
 
-    auto writer = Io::PokFileWriter(filename);
-    writer.addPoke(pokeDefinition);
-    writer.close();
-
-    Application::showNotification(tr("Created .pok file \"%1\".").arg(filename));
+    if (PokeDetailsDialogue::Mode::Create == mode) {
+        createPokFile(pokeDefinition, filename);
+    } else {
+        addToPokFile(pokeDefinition, filename);
+    }
 }
