@@ -17,6 +17,7 @@
 
 #include "pokefinder.h"
 
+#include <chrono>
 #include <ranges>
 
 #include "../util/debug.h"
@@ -78,6 +79,10 @@ void PokeFinder::searchForBeforeValue() noexcept
     Util::debugln("looking for addresses containing {}", before());
     const auto value = before();
 
+#if !defined(NDEBUG)
+    const auto start = std::chrono::steady_clock::now();
+#endif
+
     for (Address address = 0x0000; address < m_memory->addressableSize() - 1; ++address) {
         if (
             // compare both Word and Byte values
@@ -93,5 +98,14 @@ void PokeFinder::searchForBeforeValue() noexcept
         m_possibleAddresses.push_back(m_memory->addressableSize() - 1);
     }
 
-    Util::debugln("Found {} addresses with value {}", m_possibleAddresses.size(), value);
+    const auto duration = std::chrono::steady_clock::now() - start;
+
+#if !defined(NDEBUG)
+    Util::debugln(
+        "Found {} addresses with value {} in {} ms",
+        m_possibleAddresses.size(),
+        value,
+        std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()
+    );
+#endif
 }

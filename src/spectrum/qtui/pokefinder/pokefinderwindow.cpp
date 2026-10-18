@@ -395,10 +395,8 @@ void PokeFinderWindow::rescanBeforeValue(const int value) noexcept
         return;
     }
 
-    const int lives = m_before->value();
-    m_pokeFinder.setBefore(static_cast<PokeFinder::Word>(lives));
-
-    model->setBeforeAddresses(lives, m_pokeFinder.matchingBeforeAddresses());
+    m_pokeFinder.setBefore(static_cast<PokeFinder::Word>(value));
+    model->setBeforeAddresses(value, m_pokeFinder.matchingBeforeAddresses());
     addressListProxyModel()->setFilterRegularExpression("");
     m_scanAfter->setEnabled(true);
 }
@@ -415,8 +413,7 @@ void PokeFinderWindow::rescanAfterValue(const int value) noexcept
         return;
     }
 
-    const auto after = m_after->value();
-    model->setAfterAddresses(after, m_pokeFinder.matchingAfterAddresses(after));
+    model->setAfterAddresses(value, m_pokeFinder.matchingAfterAddresses(value));
     m_scanAfter->setEnabled(true);
 
     proxyModel->setFilterRegularExpression("\\d+");
