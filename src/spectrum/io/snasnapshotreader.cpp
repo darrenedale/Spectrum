@@ -123,7 +123,7 @@ bool SnaSnapshotReader::couldBeSnapshot(std::istream & in)
 
 bool SnaSnapshotReader::couldBeSnapshot(const std::string & fileName)
 {
-    if (49179 != std::filesystem::file_size(fileName)) {
+    if (49'179 != std::filesystem::file_size(fileName)) {
         Util::debugln(".zx snapshots are always 49179 bytes in size");;
         return false;
     }

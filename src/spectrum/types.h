@@ -20,7 +20,7 @@ namespace Spectrum
      *
      * A lightweight way of passing the display area of a Spectrum's memory between objects.
      */
-    using DisplayFile = std::span<Byte, 6912>;
+    using DisplayFile = std::span<Byte, 6'912>;
 
     /**
      * Enumeration of Spectrum colours.

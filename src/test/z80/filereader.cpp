@@ -116,8 +116,8 @@ void FileReader::skipEmptyLines()
 std::optional<std::string> FileReader::readLine()
 {
     sp_assert(isOpen(), "call to FileReader::readLine on closed reader");
-    char buffer[4096];
-    m_inStream.getline(buffer, 4096);
+    char buffer[4'096];
+    m_inStream.getline(buffer, 4'096);
 
     if (m_inStream.fail()) {
         std::cerr << "Error reading line from stream\n";

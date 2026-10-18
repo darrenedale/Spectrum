@@ -59,7 +59,7 @@ namespace Spectrum::Devices
         [[nodiscard]] inline bool checkWritePort(::Z80::UnsignedWord port) const override
         {
             // respond if bits 2 and 15 are both set low in the port, other bits are irrelevant
-            return (0b0111111111111101 == (port | 0b0111111111111101));
+            return (0b01111111'11111101 == (port | 0b01111111'11111101));
         }
 
         /**

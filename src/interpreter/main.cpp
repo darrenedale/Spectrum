@@ -9,7 +9,7 @@ using namespace Interpreter;
 int main(int argc, char * argv[])
 {
     using Memory = SimpleMemory<::Z80::UnsignedByte>;
-	const auto memory = std::make_unique<Memory>(65536);
+	const auto memory = std::make_unique<Memory>(65'536);
 	Z80Interpreter::run(std::make_unique<Z80::Z80>(memory.get()));
 	return 0;
 }

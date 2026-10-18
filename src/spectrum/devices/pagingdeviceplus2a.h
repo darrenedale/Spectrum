@@ -61,8 +61,8 @@ namespace Spectrum::Devices
         {
             // respond if bits 1 and 15 are both set low and bit 14 is set high in the port, other bits are irrelevant
             // respond if bits 1, 13, 14 and 15 are set low and bit 12 is set high in the port, other bits are irrelevant
-            return (0b0111111111111101 == (port | 0b0011111111111101))
-                || (0b0001111111111101 == (port | 0b0000111111111101));            
+            return (0b01111111'11111101 == (port | 0b00111111'11111101))
+                || (0b00011111'11111101 == (port | 0b00001111'11111101));
         }
 
         /**

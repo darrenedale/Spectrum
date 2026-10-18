@@ -187,7 +187,7 @@ namespace Interpreter
         [[nodiscard]]
         bool isWord() const noexcept
         {
-            return OperandType::NumberLiteral == m_type && 0 <= m_number && 65535 >= m_number;
+            return OperandType::NumberLiteral == m_type && 0 <= m_number && 65'535 >= m_number;
         }
 
         /**
@@ -198,7 +198,7 @@ namespace Interpreter
         [[nodiscard]]
         bool isSignedWord() const noexcept
         {
-            return OperandType::NumberLiteral == m_type && -32767 <= m_number && 32768 >= m_number;
+            return OperandType::NumberLiteral == m_type && -32'767 <= m_number && 32'768 >= m_number;
         }
 
         /**
