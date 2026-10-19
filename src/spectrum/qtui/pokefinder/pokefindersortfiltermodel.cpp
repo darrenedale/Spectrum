@@ -13,16 +13,32 @@ using PokeFinderClass = Spectrum::PokeFinder;
 
 void PokeFinderSortFilterModel::hideNonMatchingAddresses(const bool hide) noexcept
 {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
     beginFilterChange();
     m_hideNonMatchingAddresses = hide;
     endFilterChange(Direction::Rows);
+#elif QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    m_hideNonMatchingAddresses = hide;
+    invalidateRowsFilter();
+#else
+    m_hideNonMatchingAddresses = hide;
+    invalidateFilter();
+#endif
 }
 
 void PokeFinderSortFilterModel::hideRomAddresses(const bool show) noexcept
 {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
     beginFilterChange();
     m_hideRomAddresses = show;
     endFilterChange(Direction::Rows);
+#elif QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    m_hideNonMatchingAddresses = hide;
+    invalidateRowsFilter();
+#else
+    m_hideRomAddresses = show;
+    invalidateFilter();
+#endif
 }
 
 bool PokeFinderSortFilterModel::filterAcceptsRow(const int sourceRow, const QModelIndex & sourceParent) const noexcept

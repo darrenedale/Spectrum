@@ -20,6 +20,7 @@
 #include "pokefindersortfiltermodel.h"
 #include "pokefinderwindow.h"
 
+#include <filesystem>
 #include <QSettings>
 
 #include "pokedetailsdialogue.h"
@@ -38,6 +39,7 @@ using namespace Spectrum::QtUi::PokeFinder;
 namespace
 {
     using namespace Spectrum::Io;
+    using namespace Spectrum::QtUi;
 
     void createPokFile(const Spectrum::PokeDefinition & poke, const std::string & filename) noexcept
     {
@@ -45,7 +47,14 @@ namespace
         writer.addPoke(poke);
         writer.close();
 
-        Spectrum::QtUi::Application::showNotification(QObject::tr("Created .pok file \"%1\".").arg(filename));
+        Application::showNotification(
+            QObject::tr("Created .pok file \"%1\".")
+#if QT_VERSION > QT_VERSION_CHECK(6, 9, 0)
+            .arg(filename)
+#else
+            .arg(filename.data())
+#endif
+        );
     }
 
     void addToPokFile(const Spectrum::PokeDefinition & poke, const std::string & filename) noexcept
@@ -68,7 +77,15 @@ namespace
         }
 
         writer.close();
-        Spectrum::QtUi::Application::showNotification(QObject::tr("Added poke to .pok file \"%1\".").arg(filename));
+
+        Application::showNotification(
+            QObject::tr("Added poke to .pok file \"%1\".")
+    #if QT_VERSION > QT_VERSION_CHECK(6, 9, 0)
+            .arg(filename)
+    #else
+            .arg(filename.data())
+    #endif
+        );
     }
 }
 
@@ -204,11 +221,19 @@ void PokeFinderWindow::connectWidgets()
 {
     connect(&m_pauseResume, &QAction::triggered, this, &PokeFinderWindow::pauseResumeTriggered);
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     // Re-scan the Spectrum memory for the "before" value when it changes
     connect(m_before, &QSpinBox::valueChanged, this, &PokeFinderWindow::rescanBeforeValue);
 
     // Re-scan the matching "before" addresses the "after" value when it changes
     connect(m_after, &QSpinBox::valueChanged, this, &PokeFinderWindow::rescanAfterValue);
+#else
+    // Re-scan the Spectrum memory for the "before" value when it changes
+    connect(m_before, QOverload<int>::of(&QSpinBox::valueChanged), this, &PokeFinderWindow::rescanBeforeValue);
+
+    // Re-scan the matching "before" addresses the "after" value when it changes
+    connect(m_after, QOverload<int>::of(&QSpinBox::valueChanged), this, &PokeFinderWindow::rescanAfterValue);
+#endif
 
     connect(m_before, &QSpinBox::textChanged, this, [this](const QString & valueText) {
         if (valueText.isEmpty()) {
@@ -509,7 +534,13 @@ void PokeFinderWindow::showSavePokeDialogue(const ::Z80::UnsignedWord address, c
 
     if (PokeDetailsDialogue::Mode::Add == mode && !std::filesystem::exists(filename)) {
         mode = PokeDetailsDialogue::Mode::Create;
-        Application::showNotification(tr("The poke file %1 does not exist, creating a new file.").arg(filename));
+        Application::showNotification(tr("The poke file %1 does not exist, creating a new file.").arg(
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+            filename
+#else
+            QString::fromStdString(filename)
+#endif
+        ));
     }
 
     auto pokeName = pokeDialogue.name().toStdString();
