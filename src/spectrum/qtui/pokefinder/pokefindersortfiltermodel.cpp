@@ -17,9 +17,12 @@ void PokeFinderSortFilterModel::hideNonMatchingAddresses(const bool hide) noexce
     beginFilterChange();
     m_hideNonMatchingAddresses = hide;
     endFilterChange(Direction::Rows);
-#else
+#elif QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     m_hideNonMatchingAddresses = hide;
     invalidateRowsFilter();
+#else
+    m_hideNonMatchingAddresses = hide;
+    invalidateFilter();
 #endif
 }
 
@@ -29,9 +32,12 @@ void PokeFinderSortFilterModel::hideRomAddresses(const bool show) noexcept
     beginFilterChange();
     m_hideRomAddresses = show;
     endFilterChange(Direction::Rows);
+#elif QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    m_hideNonMatchingAddresses = hide;
+    invalidateRowsFilter();
 #else
     m_hideRomAddresses = show;
-    invalidateRowsFilter();
+    invalidateFilter();
 #endif
 }
 
