@@ -9,7 +9,7 @@ permissions:
 jobs:
   build-interpreter:
     name: Build Z80 interpreter
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
 
     strategy:
       matrix:
@@ -44,7 +44,7 @@ jobs:
 
   build-disassembler:
     name: Build Z80 disassembler
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
 
     strategy:
       matrix:
@@ -79,7 +79,7 @@ jobs:
 
   build-emulator:
     name: Build Spectrum emulator
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
 
     strategy:
       matrix:
