@@ -41,6 +41,7 @@ namespace
     using namespace Spectrum::Io;
     using namespace Spectrum::QtUi;
 
+    /** Helper to create a new .pok file with a given poke. */
     void createPokFile(const Spectrum::PokeDefinition & poke, const std::string & filename) noexcept
     {
         auto writer = PokFileWriter(filename);
@@ -57,6 +58,7 @@ namespace
         );
     }
 
+    /** Helper to append a poke to an existing .pok file. */
     void addToPokFile(const Spectrum::PokeDefinition & poke, const std::string & filename) noexcept
     {
         assert(std::filesystem::exists(filename));
@@ -89,7 +91,7 @@ namespace
     }
 }
 
-PokeFinderWindow::PokeFinderWindow(QWidget * parent )
+PokeFinderWindow::PokeFinderWindow(QWidget * parent)
 : PokeFinderWindow(nullptr, parent)
 {}
 
@@ -228,6 +230,8 @@ void PokeFinderWindow::connectWidgets()
     // Re-scan the matching "before" addresses the "after" value when it changes
     connect(m_after, &QSpinBox::valueChanged, this, &PokeFinderWindow::rescanAfterValue);
 #else
+    // Qt5 needs the valueChanged overload to be explicitly resolved
+
     // Re-scan the Spectrum memory for the "before" value when it changes
     connect(m_before, QOverload<int>::of(&QSpinBox::valueChanged), this, &PokeFinderWindow::rescanBeforeValue);
 
@@ -481,7 +485,7 @@ void PokeFinderWindow::showAddressListContextMenu(const QPoint & pos) noexcept
     QMenu contextMenu(m_addressList);
     contextMenu.addSection(tr("Poke"));
 
-    auto * pokeWidget = new PokeWidget(address, m_thread->spectrum().memory()->readByte(address), this);
+    auto * pokeWidget = new PokeWidget(address, m_thread->spectrum().memory()->readByte(address), PokeWidget::ValueBase::Decimal, this);
     auto * widgetAction = new QWidgetAction(this);
     pokeWidget->focusValue();
     widgetAction->setDefaultWidget(pokeWidget);

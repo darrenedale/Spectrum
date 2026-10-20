@@ -15,8 +15,9 @@ namespace Spectrum::QtUi
     /**
      * Widget to enable the user to enter the address and byte value for a poke into the Spectrum's memory.
      *
-     * The widget lays out an address widget (HexSpinBox), value widget (HexSpinBox) and trigger button (QToolButton) in a simple horizontal layout. It has one
-     * signal which is emitted when the user clicks the trigger button, and which carries the current address and value the user wishes to poke.
+     * The widget lays out an address widget (HexSpinBox), value widget (QSpinBox/HexSpinBox) and trigger button
+     * (QToolButton) in a simple horizontal layout. It has one signal which is emitted when the user clicks the trigger
+     * button, and which carries the current address and value the user wishes to poke.
      */
     class PokeWidget
     : public QWidget
@@ -24,27 +25,35 @@ namespace Spectrum::QtUi
         Q_OBJECT
 
         public:
-            /**
-             * Initialise a new PokeWidget with a target address.
-             *
-             * @param address The address to poke into.
-             */
-            PokeWidget(::Z80::UnsignedWord address, QWidget *);
+            /** The numeric bases in which the value can be entered. */
+            enum class ValueBase: std::uint8_t
+            {
+                Decimal,
+                Hexadecimal,
+            };
 
-            /**
-             * Initialise a new PokeWidget with a value to poke.
-             *
-             * @param value The value to poke.
-             */
-            explicit PokeWidget(::Z80::UnsignedByte value, QWidget * = nullptr);
+            /** Initialise a new PokeWidget with a target address. */
+            PokeWidget(::Z80::UnsignedWord, QWidget *);
 
-            /**
-             * (Default) initialise a new PokeWidget with an optional address and value to poke.
-             *
-             * @param address The address to poke into. Defaults to 0x0000.
-             * @param value The value to poke. Defaults to 0x00.
-             */
-            explicit PokeWidget(::Z80::UnsignedWord address = 0x0000, ::Z80::UnsignedByte value = 0x00, QWidget * = nullptr);
+            /** Initialise a new PokeWidget with a target address and the numeric base for the value. */
+            PokeWidget(::Z80::UnsignedWord, ValueBase, QWidget *);
+
+            /** Initialise a new PokeWidget with a value to poke. */
+            explicit PokeWidget(::Z80::UnsignedByte, QWidget * = nullptr);
+
+            /** Initialise a new PokeWidget with a value to poke and the numeric base to display it in. */
+            PokeWidget(::Z80::UnsignedByte, ValueBase, QWidget * = nullptr);
+
+            /** Initialise a new PokeWidget with a target address and a value to poke. */
+            PokeWidget(::Z80::UnsignedWord, ::Z80::UnsignedByte, QWidget *);
+
+            /** (Default) initialise a new PokeWidget with an optional address, value and numeric base for the value. */
+            explicit PokeWidget(
+                ::Z80::UnsignedWord = 0x0000,
+                ::Z80::UnsignedByte = 0x00,
+                ValueBase = ValueBase::Hexadecimal,
+                QWidget * = nullptr
+            );
 
             /** Poke widgets cannot be copy constructed. */
             PokeWidget(const PokeWidget &) = delete;
@@ -58,6 +67,7 @@ namespace Spectrum::QtUi
             /** Poke widgets cannot be move assigned. */
             void operator=(PokeWidget &&) = delete;
 
+            /** The destructor is defaulted in the implementation file. */
             ~PokeWidget() override;
 
             /**
@@ -65,7 +75,8 @@ namespace Spectrum::QtUi
              *
              * @return The address.
              */
-            [[nodiscard]] ::Z80::UnsignedWord address() const
+            [[nodiscard]]
+            ::Z80::UnsignedWord address() const
             {
                 return m_address.value();
             }
@@ -75,9 +86,10 @@ namespace Spectrum::QtUi
              *
              * @return The value.
              */
-            [[nodiscard]] ::Z80::UnsignedByte value() const
+            [[nodiscard]]
+            ::Z80::UnsignedByte value() const
             {
-                return m_value.value();
+                return m_value->value();
             }
 
             /**
@@ -97,8 +109,17 @@ namespace Spectrum::QtUi
              */
             void setValue(const ::Z80::UnsignedByte value)
             {
-                m_value.setValue(value);
+                m_value->setValue(value);
             }
+
+            /** The numeric base of the value widget. */
+            [[nodiscard]]
+            ValueBase valueBase() const noexcept
+            {
+                return m_valueBase;
+            }
+
+            void setValueBase(ValueBase) noexcept;
 
             /** Place the focus on the address widget. */
             void focusAddress()
@@ -109,7 +130,7 @@ namespace Spectrum::QtUi
             /** Place the focus on the value widget. */
             void focusValue()
             {
-                m_value.setFocus();
+                m_value->setFocus();
             }
 
             /** Select the whole value in the address widget. */
@@ -121,7 +142,7 @@ namespace Spectrum::QtUi
             /** Select the whole value in the value widget. */
             void selectValue()
             {
-                m_value.selectAll();
+                m_value->selectAll();
             }
 
         Q_SIGNALS:
@@ -138,10 +159,13 @@ namespace Spectrum::QtUi
             HexSpinBox m_address;
 
             /** The value widget. */
-            HexSpinBox m_value;
+            std::unique_ptr<QSpinBox> m_value;
 
             /** The "do the poke" button. */
             QToolButton m_poke;
+
+            /** The numeric base of the value widget. */
+            ValueBase m_valueBase;
     };
 }
 
