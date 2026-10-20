@@ -219,7 +219,7 @@ void CheatsView::removeCheat(int idx)
         return;
     }
 
-    const auto * item = m_layout.itemAt(idx);
+    auto * item = m_layout.itemAt(idx);
 
     if (!item->widget()) {
         Util::debugln("item at index {} is not a widget", idx);
