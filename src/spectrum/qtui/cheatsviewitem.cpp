@@ -69,8 +69,7 @@ void CheatsViewItem::setActivated(const bool activated)
 
 void CheatsViewItem::reset()
 {
-    const auto blocked = m_onOff.blockSignals(true);
+    QSignalBlocker blocker(m_onOff);
     m_onOff.setChecked(false);
     m_onOff.setText(tr("Off"));
-    m_onOff.blockSignals(blocked);
 }
