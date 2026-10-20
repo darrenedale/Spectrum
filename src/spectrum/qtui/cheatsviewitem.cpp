@@ -5,8 +5,10 @@
 #include <utility>
 #include <QHBoxLayout>
 #include <QLabel>
+
 #include "application.h"
 #include "cheatsviewitem.h"
+#include "../../util/debug.h"
 
 using namespace Spectrum::QtUi;
 
@@ -37,7 +39,9 @@ CheatsViewItem::CheatsViewItem(const QString & name, QString  uuid, QWidget * pa
 
     setLayout(layout);
 
-    connect(&m_onOff, &QToolButton::toggled, [this](bool on) {
+    connect(&m_onOff, &QToolButton::toggled, [this](const bool on) {
+        Util::debugln("Cheat {} toggled to {}, emitting signal", m_uuid.toStdString(), on ? "On" : "Off");
+
         if (on) {
             Q_EMIT activationRequested(m_uuid);
         } else {
@@ -52,7 +56,7 @@ CheatsViewItem::CheatsViewItem(const QString & name, QString  uuid, QWidget * pa
 
 CheatsViewItem::~CheatsViewItem() = default;
 
-void CheatsViewItem::setActivated(bool activated)
+void CheatsViewItem::setActivated(const bool activated)
 {
     m_onOff.setChecked(activated);
 
@@ -61,4 +65,11 @@ void CheatsViewItem::setActivated(bool activated)
     } else {
         m_onOff.setText(tr("Off"));
     }
+}
+
+void CheatsViewItem::reset()
+{
+    QSignalBlocker blocker(m_onOff);
+    m_onOff.setChecked(false);
+    m_onOff.setText(tr("Off"));
 }

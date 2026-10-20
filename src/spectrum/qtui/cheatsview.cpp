@@ -6,8 +6,6 @@
 
 #include <QApplication>
 #include <QFileDialog>
-#include <QLabel>
-#include <QRegularExpression>
 #include <QStyle>
 #include <QToolBar>
 #include <QVariant>
@@ -28,10 +26,6 @@ using namespace Spectrum::Io;
 namespace
 {
     constexpr auto UuidPropertyName = "pokeUuid";
-
-    /** Regular expression to match and extract the extension from the name of a poke file. */
-    const auto PokeFileExtensionRegularExpression = QRegularExpression(R"(^.*\(\*\.([a-zA-Z0-9_-]+)\)$)");
-
 }
 
 CheatsView::CheatsView(QWidget * parent)
@@ -136,12 +130,11 @@ void CheatsView::loadCheats(const QString & fileName)
 void CheatsView::setActionIconSize(const QSize & size)
 {
     m_actionIconSize = size;
-
     m_toolBar.setIconSize(size);
     auto count = m_layout.count() - 1;
 
     while (1 <= count) {
-        auto * widget = qobject_cast<CheatsViewItem *>(m_layout.itemAt(count)->widget());
+        auto * widget = dynamic_cast<CheatsViewItem *>(m_layout.itemAt(count)->widget());
         --count;
 
         if (!widget) {
@@ -185,6 +178,28 @@ void CheatsView::clearCheats()
     }
 }
 
+void CheatsView::resetCheatStates() noexcept
+{
+    for (auto & [uuid, cheat] : m_cheats) {
+        Util::debugln("resetting cheat {}", uuid);
+        cheat.resetPokes();
+    }
+
+    // NOTE first child widget is the "toolbar", last child widget is the spacer
+    auto count = m_layout.count() - 1;
+
+    while (1 <= count) {
+        auto * widget = dynamic_cast<CheatsViewItem *>(m_layout.itemAt(count)->widget());
+        --count;
+
+        if (!widget) {
+            continue;
+        }
+
+        widget->reset();
+    }
+}
+
 void CheatsView::addCheatWidget(const QString & name, const QString & uuid)
 {
     auto * item = new CheatsViewItem(name, uuid, this);
@@ -211,7 +226,7 @@ void CheatsView::removeCheat(int idx)
         return;
     }
 
-    auto uuid = item->widget()->property(UuidPropertyName).toString();
+    const auto uuid = item->widget()->property(UuidPropertyName).toString();
 
     if (uuid.isEmpty()) {
         Util::debugln("item at index {} has an empty UUID", idx);
@@ -238,7 +253,7 @@ QWidget * CheatsView::findCheatWidget(const QString & uuid) const
     auto count = m_layout.count() - 1;
 
     while (1 <= count) {
-        auto * widget = qobject_cast<CheatsViewItem *>(m_layout.itemAt(count)->widget());
+        auto * widget = dynamic_cast<CheatsViewItem *>(m_layout.itemAt(count)->widget());
         --count;
 
         if (!widget) {
@@ -272,16 +287,6 @@ void CheatsView::loadCheatsTriggered()
     }
 
     m_lastLoadDir = QFileInfo(fileName).path();
-    auto format = lastFilter;
-
-    if (!format.isEmpty()) {
-        if (const auto matches = PokeFileExtensionRegularExpression.match(format); matches.hasMatch()) {
-            format = matches.captured(1).toLower();
-        } else {
-            format.clear();
-        }
-    }
-
     loadCheats(fileName);
 }
 
@@ -310,13 +315,12 @@ void CheatsView::removeCheatTriggered(const QString & uuid)
 
 void CheatsView::applyCheatTriggered(const QString & uuid)
 {
-    auto stdUuid = uuid.toStdString();
+    const auto stdUuid = uuid.toStdString();
 
     if (!m_cheats.contains(stdUuid)) {
         Util::debugln("Poke with UUID {} not found", stdUuid);
         return;
     }
 
-    const auto & poke = m_cheats[stdUuid];
-    Q_EMIT applyCheatRequested(poke);
+    Q_EMIT applyCheatRequested(m_cheats[stdUuid]);
 }
