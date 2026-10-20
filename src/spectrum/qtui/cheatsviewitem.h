@@ -58,6 +58,7 @@ namespace Spectrum::QtUi
                 setActivated(false);
             }
 
+            /** Reset the cheat state without emitting the changed signal. */
             void reset();
 
             /** Fetch the internal UUID of the item. */
