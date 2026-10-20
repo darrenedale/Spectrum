@@ -473,7 +473,7 @@ MainWindow::MainWindow(QWidget * parent)
     // the pokes widget is going in a dock as it's intended to be supplementary functionality so scale its content down
     // in size so that it's not intrusive
     auto font = m_pokesWidget.font();
-    font.setPointSizeF(font.pointSizeF() * 0.90);
+    font.setPointSizeF(font.pointSizeF() * 0.9);
     m_pokesWidget.setFont(font);
     auto iconSize = m_pokesWidget.actionIconSize();
     iconSize *= 0.9;
