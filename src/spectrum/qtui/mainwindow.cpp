@@ -1380,12 +1380,16 @@ void MainWindow::connectSignals()
     connect(&m_pokesWidget, &CheatsView::applyCheatRequested, [this](const PokeDefinition & poke) {
         // TODO check if poke has any user-provided values
         poke.apply(*m_spectrum);
-        statusBar()->showMessage(tr("%1 poke activated.").arg(QString::fromStdString(poke.name())));
+        const auto message = tr("%1 poke applied.").arg(QString::fromStdString(poke.name()));
+        statusBar()->showMessage(message);
+        Application::showNotification(message);
     });
 
     connect(&m_pokesWidget, &CheatsView::undoCheatRequested, [this](const PokeDefinition & poke) {
         poke.undo(*m_spectrum);
-        statusBar()->showMessage(tr("%1 poke deactivated.").arg(QString::fromStdString(poke.name())));
+        const auto message = tr("%1 poke deactivated.").arg(QString::fromStdString(poke.name()));
+        statusBar()->showMessage(message);
+        Application::showNotification(message);
     });
 }
 

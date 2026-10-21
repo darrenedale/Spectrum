@@ -94,6 +94,9 @@ namespace Spectrum::QtUi
             /** The internal UUID for the item. */
             QString m_uuid;
 
+            /** The reapply action widget. */
+            QToolButton m_reapply;
+
             /** The enable/disable action widget. */
             QToolButton m_onOff;
 
