@@ -41,6 +41,8 @@ namespace
     using namespace Spectrum::Io;
     using namespace Spectrum::QtUi;
 
+    constexpr int SoughtValueSentinel = -1;
+
     /** Helper to create a new .pok file with a given poke. */
     void createPokFile(const Spectrum::PokeDefinition & poke, const std::string & filename) noexcept
     {
@@ -117,13 +119,15 @@ PokeFinderWindow::PokeFinderWindow(Thread * thread, QWidget * parent )
     m_before->setMaximum(0xffff);
     m_before->setToolTip(tr("Search for all addresses in the Spectrum's memory that contain this value."));
     m_before->setSpecialValueText(tr("None"));
+    m_before->setValue(SoughtValueSentinel);
 
     m_scanBefore->setToolTip("Start a new poke search by looking for all addresses in the Spectrum memory that contain this value.");
 
     m_after->setMinimum(-1);
     m_after->setMaximum(0xffff);
-    m_before->setSpecialValueText(tr("None"));
-    m_before->setToolTip(tr("Search for this value in all addresses in the Spectrum's memory that were identified as containing the <i>before</i> value."));
+    m_after->setSpecialValueText(tr("None"));
+    m_after->setToolTip(tr("Search for this value in all addresses in the Spectrum's memory that were identified as containing the <i>before</i> value."));
+    m_after->setValue(SoughtValueSentinel);
 
     m_scanAfter->setToolTip("Search for addresses that have changed from the <i>before</i> value to this value.");
     m_scanAfter->setEnabled(false);
@@ -241,13 +245,13 @@ void PokeFinderWindow::connectWidgets()
 
     connect(m_before, &QSpinBox::textChanged, this, [this](const QString & valueText) {
         if (valueText.isEmpty()) {
-            m_before->setValue(-1);
+            m_before->setValue(SoughtValueSentinel);
         }
     });
 
     connect(m_after, &QSpinBox::textChanged, this, [this](const QString & valueText) {
         if (valueText.isEmpty()) {
-            m_after->setValue(-1);
+            m_after->setValue(SoughtValueSentinel);
         }
     });
 
@@ -271,8 +275,8 @@ void PokeFinderWindow::connectWidgets()
     });
 
     connect(m_clear, &QAbstractButton::clicked, this, [this] {
-        m_before->setValue(-1);
-        m_after->setValue(-1);
+        m_before->setValue(SoughtValueSentinel);
+        m_after->setValue(SoughtValueSentinel);
 
         auto * model = addressListModel();
         model->removeRows(0, model->rowCount());
@@ -302,10 +306,10 @@ void PokeFinderWindow::showEvent(QShowEvent * event) noexcept
 
 void PokeFinderWindow::keyReleaseEvent(QKeyEvent * event) noexcept
 {
-    if (event->key() == Qt::Key_1 && event->modifiers() | Qt::ControlModifier) {
+    if (event->key() == Qt::Key_1 && event->modifiers() & Qt::ControlModifier) {
         m_before->setFocus();
         m_before->selectAll();
-    } else if (event->key() == Qt::Key_2 && event->modifiers() | Qt::ControlModifier) {
+    } else if (event->key() == Qt::Key_2 && event->modifiers() & Qt::ControlModifier) {
         m_after->setFocus();
         m_after->selectAll();
     }
@@ -419,8 +423,9 @@ void PokeFinderWindow::rescanBeforeValue(const int value) noexcept
 
     auto * model = addressListModel();
 
-    if (-1 == value) {
+    if (SoughtValueSentinel == value) {
         model->removeRows(0, model->rowCount());
+        m_scanAfter->setEnabled(false);
         return;
     }
 
@@ -437,7 +442,7 @@ void PokeFinderWindow::rescanAfterValue(const int value) noexcept
     auto * proxyModel = addressListProxyModel();
     auto * model = addressListModel();
 
-    if (-1 == value) {
+    if (SoughtValueSentinel == value) {
         model->setBeforeAddresses(m_before->value(), m_pokeFinder.matchingBeforeAddresses());
         return;
     }
