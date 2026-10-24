@@ -120,7 +120,7 @@
 
 // NOTE there are no 16-bit subtraction instructions so no macro for managing the H flag in this scenario
 
-// update P/V flag for 8-bit overflow during addition 
+// update P/V flag for 8-bit overflow during addition
 #define Z80_FLAG_P_UPDATE_OVERFLOW_ADD(orig,delta,result)    \
 {                                                            \
     UnsignedByte tmpOverflow = (                             \
