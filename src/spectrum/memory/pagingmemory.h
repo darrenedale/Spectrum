@@ -15,9 +15,9 @@
 
 #include "pagingmemoryinterface.h"
 #include "../../memory.h"
-#include "../../util/compiler.h"
 #include "../../mappablememoryinterface.h"
 #include "../../util/assert.h"
+#include "../../util/build.h"
 #include "../../z80/types.h"
 
 namespace Spectrum::Memory

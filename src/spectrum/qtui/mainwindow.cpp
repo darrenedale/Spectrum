@@ -55,7 +55,7 @@
 #include "../spectrumplus2a.h"
 #include "../spectrumplus3.h"
 #include "../../util/assert.h"
-#include "../../util/compiler.h"
+#include "../../util/build.h"
 
 using namespace Spectrum::Devices;
 using namespace Spectrum::Io;

@@ -7,8 +7,8 @@
 // Credit to Jonathan Boccara for the STRINGIFIED_PRAGMA macro
 //
 
-#ifndef SPECTRUM_UTIL_COMPILER_H
-#define SPECTRUM_UTIL_COMPILER_H
+#ifndef SPECTRUM_UTIL_BUILD_H
+#define SPECTRUM_UTIL_BUILD_H
 
 #if defined(__clang__)
 
@@ -59,4 +59,4 @@
 
 #endif
 
-#endif //SPECTRUM_UTIL_COMPILER_H
+#endif // SPECTRUM_UTIL_BUILD_H

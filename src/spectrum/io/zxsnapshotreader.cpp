@@ -7,9 +7,9 @@
 #include <filesystem>
 #include "zxsnapshotreader.h"
 #include "../spectrum48k.h"
+#include "../../util/build.h"
 #include "../../util/debug.h"
 #include "../../util/endian.h"
-#include "../../util/compiler.h"
 
 using namespace Spectrum::Io;
 

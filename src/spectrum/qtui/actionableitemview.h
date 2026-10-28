@@ -22,7 +22,7 @@
 #include <QApplication>
 
 #include "../../util/assert.h"
-#include "../../util/compiler.h"
+#include "../../util/build.h"
 
 namespace Spectrum::QtUi
 {

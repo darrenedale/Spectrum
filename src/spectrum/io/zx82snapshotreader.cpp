@@ -9,8 +9,8 @@
 #include "zx82snapshotreader.h"
 #include "../spectrum48k.h"
 #include "../../util/endian.h"
+#include "../../util/build.h"
 #include "../../util/debug.h"
-#include "../../util/compiler.h"
 
 using namespace Spectrum::Io;
 using ::Z80::UnsignedByte;
