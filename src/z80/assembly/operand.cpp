@@ -10,7 +10,7 @@
 #include "operand.h"
 #include "../z80.h"
 #include "../../util/assert.h"
-#include "../../util/compiler.h"
+#include "../../util/build.h"
 
 using namespace Z80::Assembly;
 

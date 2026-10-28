@@ -4,8 +4,8 @@
 
 #include <array>
 #include "zxsnapshotwriter.h"
+#include "../../util/build.h"
 #include "../../util/debug.h"
-#include "../../util/compiler.h"
 
 using namespace Spectrum::Io;
 

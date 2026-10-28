@@ -8,7 +8,7 @@
 #include "z80snapshotwriter.h"
 #include "../memory/pagingmemoryinterface.h"
 #include "../../util/assert.h"
-#include "../../util/compiler.h"
+#include "../../util/build.h"
 #include "../../util/debug.h"
 
 using namespace Spectrum::Io;

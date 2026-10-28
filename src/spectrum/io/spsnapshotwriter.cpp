@@ -3,7 +3,7 @@
 //
 
 #include "spsnapshotwriter.h"
-#include "../../util/compiler.h"
+#include "../../util/build.h"
 
 using namespace Spectrum::Io;
 

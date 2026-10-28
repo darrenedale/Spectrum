@@ -4,7 +4,7 @@
 
 #include "executionhistory.h"
 #include "z80.h"
-#include "../util/compiler.h"
+#include "../util/build.h"
 
 using ::Z80::Assembly::AddressingMode;
 using ::Z80::Assembly::Operand;

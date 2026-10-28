@@ -14,7 +14,7 @@
 #include "../spectrumplus2a.h"
 #include "../spectrumplus3.h"
 #include "../../util/assert.h"
-#include "../../util/compiler.h"
+#include "../../util/build.h"
 #include "../../util/debug.h"
 
 using namespace Spectrum::Io;
